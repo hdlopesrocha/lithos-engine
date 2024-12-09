@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "iostream": "cpp",
+        "functional": "cpp"
+    },
+    "cmake.sourceDirectory": "/home/hdlrocha/lithos/dependencies/rapidjson"
+}
