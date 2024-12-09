@@ -1,6 +1,8 @@
 
 #include "gl/gl.hpp"
 #include <math.h>
+#include <glm/gtc/type_ptr.hpp>
+
 #include "math/math.hpp"
 
 
@@ -8,8 +10,13 @@ class MainApplication : public LithosApplication {
 	std::vector<Image> images;
   	Camera camera;
 	Octree * tree;
-	GLuint vertexShader, fragmentShader, shaderProgram;
-
+	
+	GLuint vertexShader;
+	GLuint fragmentShader;
+	GLuint shaderProgram;
+	GLuint modelLoc;
+	GLuint viewLoc;
+	GLuint projectionLoc;
 
 public:
 	MainApplication() {
@@ -31,16 +38,15 @@ public:
         images.push_back(loadTextureImage("textures/dirt.png"));
         images.push_back(loadTextureImage("textures/grid3.png"));
 
-
 		std::string vertCode = readFile("shaders/vertShader.glsl");
-		//std::cout << vertCode << std::endl;
-
 		std::string fragCode = readFile("shaders/fragShader.glsl");
-		//std::cout << fragCode << std::endl;
-
 		vertexShader = compileShader(vertCode,GL_VERTEX_SHADER);
 		fragmentShader = compileShader(fragCode,GL_FRAGMENT_SHADER);
 		shaderProgram = createShaderProgram(vertexShader, fragmentShader);
+		modelLoc = glGetUniformLocation(shaderProgram, "model");
+		viewLoc = glGetUniformLocation(shaderProgram, "view");
+		projectionLoc = glGetUniformLocation(shaderProgram, "projection");
+
 
 		// Use the shader program
 		glUseProgram(shaderProgram);
@@ -118,6 +124,13 @@ public:
 		glm::mat4 translate = glm::translate(glm::mat4(1.0f), -camera.pos);
 	    camera.view = rotate * translate;
 
+
+		glm::mat4 model = glm::mat4(1.0f); // Identity matrix
+
+		// Send matrices to the shader
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(camera.view));
+		glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(camera.projection));
     }
 
     virtual void clean(){
