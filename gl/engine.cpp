@@ -139,3 +139,52 @@ int LithosApplication::getWidth(){
 int LithosApplication::getHeight(){
 	return HEIGHT;
 }
+
+
+std::string LithosApplication::readFile(const std::string& filePath) {
+    std::ifstream shaderFile(filePath);
+    if (!shaderFile.is_open()) {
+        std::cerr << "Failed to open shader file: " << filePath << std::endl;
+        return "";
+    }
+    
+    std::stringstream shaderStream;
+    shaderStream << shaderFile.rdbuf();
+    return shaderStream.str();
+}
+
+GLuint LithosApplication::compileShader(const std::string& shaderCode, GLenum shaderType) {
+    GLuint shader = glCreateShader(shaderType);
+    const char* shaderSource = shaderCode.c_str();
+    glShaderSource(shader, 1, &shaderSource, nullptr);
+    glCompileShader(shader);
+
+    // Check for compilation errors
+    GLint success;
+    glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
+    if (!success) {
+        char infoLog[512];
+        glGetShaderInfoLog(shader, 512, nullptr, infoLog);
+        std::cerr << "Shader compilation failed: " << infoLog << std::endl;
+    }
+
+    return shader;
+}
+
+GLuint LithosApplication::createShaderProgram(GLuint vertexShader, GLuint fragmentShader) {
+    GLuint program = glCreateProgram();
+    glAttachShader(program, vertexShader);
+    glAttachShader(program, fragmentShader);
+    glLinkProgram(program);
+
+    // Check for linking errors
+    GLint success;
+    glGetProgramiv(program, GL_LINK_STATUS, &success);
+    if (!success) {
+        char infoLog[512];
+        glGetProgramInfoLog(program, 512, nullptr, infoLog);
+        std::cerr << "Program linking failed: " << infoLog << std::endl;
+    }
+
+    return program;
+}

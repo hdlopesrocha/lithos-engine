@@ -8,6 +8,8 @@ class MainApplication : public LithosApplication {
 	std::vector<Image> images;
   	Camera camera;
 	Octree * tree;
+	GLuint vertexShader, fragmentShader, shaderProgram;
+
 
 public:
 	MainApplication() {
@@ -28,6 +30,21 @@ public:
         images.push_back(loadTextureImage("textures/lava.png"));
         images.push_back(loadTextureImage("textures/dirt.png"));
         images.push_back(loadTextureImage("textures/grid3.png"));
+
+
+		std::string vertCode = readFile("shaders/vertShader.glsl");
+		//std::cout << vertCode << std::endl;
+
+		std::string fragCode = readFile("shaders/fragShader.glsl");
+		//std::cout << fragCode << std::endl;
+
+		vertexShader = compileShader(vertCode,GL_VERTEX_SHADER);
+		fragmentShader = compileShader(fragCode,GL_FRAGMENT_SHADER);
+		shaderProgram = createShaderProgram(vertexShader, fragmentShader);
+
+		// Use the shader program
+		glUseProgram(shaderProgram);
+
 
         camera.quaternion =   glm::angleAxis(glm::radians(180.0f), glm::vec3(0, 0, 1))
    	    					* glm::angleAxis(glm::radians(145.0f), glm::vec3(1, 0, 0))
@@ -105,6 +122,8 @@ public:
 
     virtual void clean(){
 
+		// Cleanup and exit
+		glDeleteProgram(shaderProgram);
     }
 
 };

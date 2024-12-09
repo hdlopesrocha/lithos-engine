@@ -221,6 +221,11 @@ class OctreeNode {
 		void setChild(int i, OctreeNode * node);
 };
 
+class IteratorHandler {
+	public: 
+		virtual void iterate(int level, OctreeNode * node, BoundingCube cube) = 0;
+};
+
 class Octree: public BoundingCube {
 	public: 
 		float minSize;
@@ -234,11 +239,6 @@ class Octree: public BoundingCube {
 		OctreeNode * getNodeAt(glm::vec3 pos, int level);
 		void save(std::string filename);
 		static glm::vec3 getShift(int i);
-};
-
-class IteratorHandler {
-	public: 
-		virtual void iterate(int level, OctreeNode * node, BoundingCube cube) = 0;
 };
 
 class Tesselator : public IteratorHandler{

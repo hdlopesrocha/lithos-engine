@@ -14,9 +14,8 @@ compile:
 	mkdir -p bin/models
 	cp -rf textures bin
 	cp -rf models bin
+	cp -rf shaders bin
 
-	glslangValidator -V shaders/shader.vert -o bin/shaders/vert.spv
-	glslangValidator -V shaders/shader.frag -o bin/shaders/frag.spv
 	$(CC) $(SRC) $(CFLAGS) -o bin/app  
 
 run:
