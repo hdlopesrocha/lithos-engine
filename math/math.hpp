@@ -243,11 +243,12 @@ class Octree: public BoundingCube {
 
 class Tesselator : public IteratorHandler{
 	Octree * tree;
-	std::vector<Vertex> vertices;
-	std::vector<uint16_t> indices;
 	std::map <std::string, int> compactMap;
 
 	public: 
+		std::vector<Vertex> vertices;
+		std::vector<uint16_t> indices;
+
 		Tesselator(Octree * tree);
 		void iterate(int level, OctreeNode * node, BoundingCube cube);
 		void addVertex(Vertex vertex);
