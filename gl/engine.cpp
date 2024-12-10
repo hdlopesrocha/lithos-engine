@@ -3,6 +3,9 @@
 #include <stb_image.h>
 
 #include "gl.hpp"
+double lastFrameTime = 0.0;
+
+
 
 int LithosApplication::initWindow() {
     // Initialize GLFW
@@ -58,14 +61,23 @@ void LithosApplication::mainLoop() {
     while(alive) {
         // Main loop
         if (!glfwWindowShouldClose(window)) {
-            update(0.0f);
-            glClear(GL_COLOR_BUFFER_BIT);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+   // Get current time
+    double currentTime = glfwGetTime();
+    // Calculate delta time (time since last frame)
+    double deltaTime = currentTime - lastFrameTime;
+    // Update last frame time to the current time
+    lastFrameTime = currentTime;
+
+            update(deltaTime);
             draw();
             glfwSwapBuffers(window);
             glfwPollEvents();
         }
     }
 }
+
 
 
 void LithosApplication::run() {

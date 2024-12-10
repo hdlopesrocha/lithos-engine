@@ -83,6 +83,8 @@ private:
 	int initWindow();
     void mainLoop();
     static void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
+    void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+
     GLFWwindow* window;
     bool alive = true;
 	int keyboard[KEYBOARD_SIZE];
