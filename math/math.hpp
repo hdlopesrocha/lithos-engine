@@ -25,7 +25,7 @@ struct Vertex {
     glm::vec3 pos;
     glm::vec3 normal;
     glm::vec2 texCoord;
-    unsigned int texIndex;
+    uint texIndex;
 
     Vertex(){
 		this->pos = glm::vec3(0);
@@ -41,7 +41,7 @@ struct Vertex {
     	this->texIndex = 0;
     }
 
-    Vertex(glm::vec3 pos,glm::vec3 normal,glm::vec2 texCoord, unsigned int texIndex) {
+    Vertex(glm::vec3 pos,glm::vec3 normal,glm::vec2 texCoord, uint texIndex) {
     	this->pos = pos;
     	this->normal = normal;
     	this->texCoord = texCoord;

@@ -1,8 +1,28 @@
 #version 460 core
 
-in vec3 fragColor; // Interpolated color from the vertex shader
+uniform sampler2D textures[16]; // Texture to sample from
+uniform vec3 lightDirection;     // Direction of the light (assumed to be normalized)
+
+in vec3 oNormal;
+in vec2 oTextureCoord;
+in float oTextureWeights[16];
+
 out vec4 color;    // Final fragment color
 
 void main() {
-    color = vec4(fragColor, 1.0); // Output color with alpha = 1.0
+    vec3 n = normalize(oNormal);
+    float diffuse = max(dot(n, -lightDirection), 0.0);
+//    diffuse = clamp(diffuse, 0.5, 1.0);
+ 
+
+
+    vec4 mixedColor = vec4(0.0);
+    for(int i=0 ; i < 16; ++i) {
+        float w = oTextureWeights[i];
+        if(w>0.0) {
+            mixedColor += texture(textures[i], oTextureCoord)*w;
+        }
+	}
+
+    color = vec4(mixedColor.rgb*diffuse, mixedColor.a); 
 }

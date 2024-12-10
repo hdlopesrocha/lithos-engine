@@ -18,6 +18,7 @@ class MainApplication : public LithosApplication {
 	GLuint modelLoc;
 	GLuint viewLoc;
 	GLuint projectionLoc;
+	GLuint lightDirectionLoc;
 	GLuint vao, vbo, ebo;
 
 public:
@@ -31,6 +32,8 @@ public:
 
     virtual void setup() {
 glEnable(GL_DEPTH_TEST);
+glEnable(GL_BLEND);
+glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
         images.push_back(loadTextureImage("textures/pixel.jpg"));
         images.push_back(loadTextureImage("textures/grid.png"));
@@ -47,13 +50,24 @@ glEnable(GL_DEPTH_TEST);
 		vertexShader = compileShader(vertCode,GL_VERTEX_SHADER);
 		fragmentShader = compileShader(fragCode,GL_FRAGMENT_SHADER);
 		shaderProgram = createShaderProgram(vertexShader, fragmentShader);
-		modelLoc = glGetUniformLocation(shaderProgram, "model");
-		viewLoc = glGetUniformLocation(shaderProgram, "view");
-		projectionLoc = glGetUniformLocation(shaderProgram, "projection");
-
 
 		// Use the shader program
 		glUseProgram(shaderProgram);
+
+		modelLoc = glGetUniformLocation(shaderProgram, "model");
+		viewLoc = glGetUniformLocation(shaderProgram, "view");
+		projectionLoc = glGetUniformLocation(shaderProgram, "projection");
+		lightDirectionLoc = glGetUniformLocation(shaderProgram, "lightDirection");
+
+		for(int i=0 ; i < images.size() ; ++i) {
+			glActiveTexture(GL_TEXTURE0 + i); 
+		    glBindTexture(GL_TEXTURE_2D, images[i].textureID);    // Bind the texture to the active unit
+			GLint texLocation = glGetUniformLocation(shaderProgram, ("textures[" + std::to_string(i) + "]").c_str());
+		    glUniform1i(texLocation, i);
+		}
+
+		
+
 
 
         camera.quaternion =   glm::angleAxis(glm::radians(180.0f), glm::vec3(0, 0, 1))
@@ -69,20 +83,29 @@ glEnable(GL_DEPTH_TEST);
 		tesselator = new Tesselator(tree);
 		tree->iterate(tesselator);
 
+		for(int i=0; i < tesselator->vertices.size(); ++i) {
+			Vertex v = tesselator->vertices[i];
+			//std::cout << v.toString() << std::endl;
+		}
+
 		glGenVertexArrays(1, &vao);
 		glGenBuffers(1, &vbo);
 		glGenBuffers(1, &ebo);
-	
+
 		glBindVertexArray(vao);
 		glBindBuffer(GL_ARRAY_BUFFER, vbo);
 		glBufferData(GL_ARRAY_BUFFER, tesselator->vertices.size()*sizeof(Vertex), tesselator->vertices.data(), GL_STATIC_DRAW);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, tesselator->indices.size()*sizeof(uint16_t), tesselator->indices.data(), GL_STATIC_DRAW);
 
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) offsetof(Vertex, pos));
 		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) (sizeof(float)*3));
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) offsetof(Vertex, normal));
 		glEnableVertexAttribArray(1);
+		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) offsetof(Vertex, texCoord));
+		glEnableVertexAttribArray(2);		
+		glVertexAttribIPointer(3, 1, GL_UNSIGNED_INT, sizeof(Vertex), (void*) offsetof(Vertex, texIndex) );
+		glEnableVertexAttribArray(3);
 
 		glClearColor (0.1,0.1,0.1,1.0);
 		glEnable(GL_DEPTH_TEST);
@@ -93,13 +116,14 @@ glEnable(GL_DEPTH_TEST);
     virtual void draw() {
 		glViewport(0, 0, getWidth(), getHeight());
 
-		//std::cout << "Drawing #indices = "<< tesselator2->indices.size() << std::endl;
+		
+		//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		glBindVertexArray(vao);
 		glDrawElements(GL_TRIANGLES, tesselator->indices.size(), GL_UNSIGNED_SHORT, 0);
-		GLenum error = glGetError();
-if (error != GL_NO_ERROR) {
-    printf("OpenGL Error: %d\n", error);
-}
+		
+
+
+		//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     }
 
     virtual void update(float deltaTime){
@@ -162,6 +186,7 @@ if (error != GL_NO_ERROR) {
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(camera.view));
 		glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(camera.projection));
+		glUniform3f(lightDirectionLoc, -1.0,-1.0,-1.0);
     }
 
     virtual void clean(){
