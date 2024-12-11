@@ -25,7 +25,7 @@ struct Vertex {
     glm::vec3 pos;
     glm::vec3 normal;
     glm::vec2 texCoord;
-    uint texIndex;
+    int texIndex;
 
     Vertex(){
 		this->pos = glm::vec3(0);
@@ -46,6 +46,13 @@ struct Vertex {
     	this->normal = normal;
     	this->texCoord = texCoord;
     	this->texIndex = texIndex;
+    }
+
+
+    std::string toKey() {
+		std::stringstream ss;
+		ss << "[" << pos.x <<  " " <<  pos.y <<  " " <<  pos.z << " " << texCoord.x <<  " " <<  texCoord.y <<"]";
+		return ss.str();
     }
 
     std::string toString() {

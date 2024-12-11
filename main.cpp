@@ -31,9 +31,14 @@ public:
 	}
 
     virtual void setup() {
-glEnable(GL_DEPTH_TEST);
-glEnable(GL_BLEND);
-glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glEnable(GL_DEPTH_TEST);
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glEnable(GL_CULL_FACE); // Enable face culling
+		glCullFace(GL_BACK); // Or GL_FRONT
+		glFrontFace(GL_CCW); // Ensure this matches your vertex data
+   
+
 
         images.push_back(loadTextureImage("textures/pixel.jpg"));
         images.push_back(loadTextureImage("textures/grid.png"));
@@ -108,10 +113,7 @@ glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glEnableVertexAttribArray(3);
 
 		glClearColor (0.1,0.1,0.1,1.0);
-		glEnable(GL_DEPTH_TEST);
-		glCullFace(GL_BACK); // Or GL_FRONT
-		glFrontFace(GL_CCW); // Ensure this matches your vertex data
-    }
+	 }
 
     virtual void draw() {
 		glViewport(0, 0, getWidth(), getHeight());

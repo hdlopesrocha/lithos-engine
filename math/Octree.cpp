@@ -89,7 +89,7 @@ bool canSplit(BoundingCube cube, float minSize){
 
 OctreeNode * addAux(ContainmentHandler * handler, OctreeNode * node, BoundingCube cube, float minSize) {
 	bool isLeaf = !canSplit(cube, minSize);
-	Vertex vertex = cube.getCenter();
+	Vertex vertex;
 	ContainmentResult check = handler->check(cube, &vertex);
 	
 	if(check.type == ContainmentType::Disjoint) {
@@ -99,7 +99,9 @@ OctreeNode * addAux(ContainmentHandler * handler, OctreeNode * node, BoundingCub
 	if(node == NULL) {
 		node = new OctreeNode(vertex);
 	}
-	node->vertex = vertex;
+	if(check.type == ContainmentType::Intersects) {
+		node->vertex = vertex;
+	}
 	node->leaf = isLeaf;
 	node->solid = check.type;
 	
