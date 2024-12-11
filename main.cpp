@@ -2,15 +2,20 @@
 #include "gl/gl.hpp"
 #include <math.h>
 #include <glm/gtc/type_ptr.hpp>
-
+#include "DebugTesselator.hpp"
 #include "math/math.hpp"
 
+class Geometry {
+	public:
+	GLuint vao, vbo, ebo;
+};
 
 class MainApplication : public LithosApplication {
 	std::vector<Image> images;
   	Camera camera;
 	Octree * tree;
 	Tesselator * tesselator;
+	DebugTesselator * debugTesselator;
 
 	GLuint vertexShader;
 	GLuint fragmentShader;
@@ -19,7 +24,9 @@ class MainApplication : public LithosApplication {
 	GLuint viewLoc;
 	GLuint projectionLoc;
 	GLuint lightDirectionLoc;
-	GLuint vao, vbo, ebo;
+	GLuint lightEnabledLoc;
+	Geometry vertexArrayObject;
+	Geometry vaoDebug;
 
 public:
 	MainApplication() {
@@ -28,6 +35,30 @@ public:
 
 	~MainApplication() {
 
+	}
+
+	Geometry tesselatorToGeometry(TesselatorHandler * t){
+		Geometry geo;
+		glGenVertexArrays(1, &geo.vao);
+		glGenBuffers(1, &geo.vbo);
+		glGenBuffers(1, &geo.ebo);
+
+		glBindVertexArray(geo.vao);
+		glBindBuffer(GL_ARRAY_BUFFER, geo.vbo);
+		glBufferData(GL_ARRAY_BUFFER, t->vertices.size()*sizeof(Vertex), t->vertices.data(), GL_STATIC_DRAW);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, geo.ebo);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, t->indices.size()*sizeof(uint16_t), t->indices.data(), GL_STATIC_DRAW);
+		
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) offsetof(Vertex, pos));
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) offsetof(Vertex, normal));
+		glEnableVertexAttribArray(1);
+		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) offsetof(Vertex, texCoord));
+		glEnableVertexAttribArray(2);		
+		glVertexAttribIPointer(3, 1, GL_UNSIGNED_INT, sizeof(Vertex), (void*) offsetof(Vertex, texIndex) );
+		glEnableVertexAttribArray(3);
+		
+		return geo;
 	}
 
     virtual void setup() {
@@ -49,6 +80,7 @@ public:
         images.push_back(loadTextureImage("textures/lava.png"));
         images.push_back(loadTextureImage("textures/dirt.png"));
         images.push_back(loadTextureImage("textures/grid3.png"));
+        images.push_back(loadTextureImage("textures/gridRed.png"));
 
 		std::string vertCode = readFile("shaders/vertShader.glsl");
 		std::string fragCode = readFile("shaders/fragShader.glsl");
@@ -63,6 +95,9 @@ public:
 		viewLoc = glGetUniformLocation(shaderProgram, "view");
 		projectionLoc = glGetUniformLocation(shaderProgram, "projection");
 		lightDirectionLoc = glGetUniformLocation(shaderProgram, "lightDirection");
+		lightEnabledLoc = glGetUniformLocation(shaderProgram, "lightEnabled");
+
+
 
 		for(int i=0 ; i < images.size() ; ++i) {
 			glActiveTexture(GL_TEXTURE0 + i); 
@@ -80,48 +115,63 @@ public:
    	    					* glm::angleAxis(glm::radians(135.0f), glm::vec3(0, 1, 0));  
 		camera.pos = glm::vec3(48,48,48);
 
-		tree = new Octree(2.0);
+		tree = new Octree(1.0);
 
 		BoundingSphere sph(glm::vec3(0,0,0),20);
-		tree->add(new SphereContainmentHandler(sph, 8));
+		tree->add(new SphereContainmentHandler(sph, 2));
+
+		BoundingSphere sph2(glm::vec3(-11,11,11),10);
+		//tree->add(new SphereContainmentHandler(sph2, 5));
+
+		BoundingSphere sph3(glm::vec3(11,11,-11),10);
+		//tree->del(new SphereContainmentHandler(sph3, 4));
+
+		BoundingSphere sph4(glm::vec3(4,4,-4),8);
+		//tree->del(new SphereContainmentHandler(sph4, 6));
+
+		BoundingSphere sph5(glm::vec3(11,11,-11),4);
+		//tree->add(new SphereContainmentHandler(sph5, 3));
+
+		BoundingBox box1(glm::vec3(0,-24,0),glm::vec3(24,0,24));
+		tree->add(new BoxContainmentHandler(box1,4));
+
 
 		tesselator = new Tesselator(tree);
-		tree->iterate(tesselator);
+		debugTesselator = new DebugTesselator(tree);
 
-		for(int i=0; i < tesselator->vertices.size(); ++i) {
-			Vertex v = tesselator->vertices[i];
-			//std::cout << v.toString() << std::endl;
+		tree->iterate((IteratorHandler*)tesselator);
+		tree->iterate((IteratorHandler*)debugTesselator);
+
+		for(int i=0; i < debugTesselator->vertices.size(); ++i) {
+			Vertex v = debugTesselator->vertices[i];
+		//	std::cout << v.toString() << std::endl;
 		}
 
-		glGenVertexArrays(1, &vao);
-		glGenBuffers(1, &vbo);
-		glGenBuffers(1, &ebo);
+		for(int i=0; i < debugTesselator->indices.size(); i+=3) {
+		//	std::cout << debugTesselator->indices[i] << " " << debugTesselator->indices[i+1] << " " << debugTesselator->indices[i+2] << std::endl;
+		}
 
-		glBindVertexArray(vao);
-		glBindBuffer(GL_ARRAY_BUFFER, vbo);
-		glBufferData(GL_ARRAY_BUFFER, tesselator->vertices.size()*sizeof(Vertex), tesselator->vertices.data(), GL_STATIC_DRAW);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, tesselator->indices.size()*sizeof(uint16_t), tesselator->indices.data(), GL_STATIC_DRAW);
 
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) offsetof(Vertex, pos));
-		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) offsetof(Vertex, normal));
-		glEnableVertexAttribArray(1);
-		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) offsetof(Vertex, texCoord));
-		glEnableVertexAttribArray(2);		
-		glVertexAttribIPointer(3, 1, GL_UNSIGNED_INT, sizeof(Vertex), (void*) offsetof(Vertex, texIndex) );
-		glEnableVertexAttribArray(3);
+		vertexArrayObject = tesselatorToGeometry(tesselator);
+		vaoDebug = tesselatorToGeometry(debugTesselator);
 
 		glClearColor (0.1,0.1,0.1,1.0);
 	 }
 
     virtual void draw() {
 		glViewport(0, 0, getWidth(), getHeight());
+		glEnable(GL_CULL_FACE);
 
-		
+		glUniform1ui(lightEnabledLoc, 1);
+
 		//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-		glBindVertexArray(vao);
+		glBindVertexArray(vertexArrayObject.vao);
 		glDrawElements(GL_TRIANGLES, tesselator->indices.size(), GL_UNSIGNED_SHORT, 0);
+	
+		glDisable(GL_CULL_FACE);
+		glUniform1ui(lightEnabledLoc, 0);
+		glBindVertexArray(vaoDebug.vao);
+		glDrawElements(GL_TRIANGLES, debugTesselator->indices.size(), GL_UNSIGNED_SHORT, 0);
 		
 
 

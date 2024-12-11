@@ -2,6 +2,7 @@
 
 uniform sampler2D textures[16]; // Texture to sample from
 uniform vec3 lightDirection;     // Direction of the light (assumed to be normalized)
+uniform uint lightEnabled;
 
 in vec3 oNormal;
 in vec2 oTextureCoord;
@@ -13,7 +14,9 @@ void main() {
     vec3 n = normalize(oNormal);
     float diffuse = max(dot(n, -lightDirection), 0.0);
 //    diffuse = clamp(diffuse, 0.5, 1.0);
- 
+    if(lightEnabled == 0) {
+        diffuse = 1.0;
+    }
 
 
     vec4 mixedColor = vec4(0.0);

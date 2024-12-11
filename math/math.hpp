@@ -233,6 +233,14 @@ class IteratorHandler {
 		virtual void iterate(int level, OctreeNode * node, BoundingCube cube) = 0;
 };
 
+class TesselatorHandler {
+	public: 
+		std::vector<Vertex> vertices;
+		std::vector<uint16_t> indices;
+
+		virtual void iterate(int level, OctreeNode * node, BoundingCube cube) = 0;
+};
+
 class Octree: public BoundingCube {
 	public: 
 		float minSize;
@@ -248,14 +256,11 @@ class Octree: public BoundingCube {
 		static glm::vec3 getShift(int i);
 };
 
-class Tesselator : public IteratorHandler{
+class Tesselator : public TesselatorHandler{
 	Octree * tree;
 	std::map <std::string, int> compactMap;
 
-	public: 
-		std::vector<Vertex> vertices;
-		std::vector<uint16_t> indices;
-
+	public:
 		Tesselator(Octree * tree);
 		void iterate(int level, OctreeNode * node, BoundingCube cube);
 		void addVertex(Vertex vertex);
