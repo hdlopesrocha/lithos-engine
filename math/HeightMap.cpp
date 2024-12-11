@@ -158,7 +158,7 @@ bool HeightMap::hitsBoundary(BoundingCube cube) {
 
     ContainmentResult result = box.contains(cube);
 
-    return result.type == ContainmentType::Intersects && result.mask != 0xf0;
+    return result.type == ContainmentType::Intersects;
 }
 
 ContainmentResult HeightMap::contains(BoundingCube cube) {
@@ -168,17 +168,6 @@ ContainmentResult HeightMap::contains(BoundingCube cube) {
 
 
     if(result.type != ContainmentType::Disjoint && result.type != ContainmentType::IsContained) {
-        // Classify corners
-        unsigned char mask = 0;
-
-        for(int i=0; i < 8; ++i) {
-            glm::vec3 point(cube.getMin()+ Octree::getShift(i)*cube.getLength());
-            if(contains(point)){
-                mask |= (1 << i);
-            }
-        } 
-        result.mask = mask;
-
         glm::vec2 range = getHeightRangeBetween(cube);
         std::cout << range[0] << " ! " << range[1] << std::endl;
         BoundingBox minBox(getMin(), glm::vec3(getMax().x, range[0], getMax().z ));

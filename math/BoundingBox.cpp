@@ -77,7 +77,8 @@ ContainmentResult BoundingBox::contains(BoundingCube cube) {
 
 
     // Classify corners
-    unsigned char mask = 0;
+    unsigned char innerMask = 0;
+    unsigned char outterMask = 0;
 
     for(int i=0; i < 8; ++i) {
         glm::vec3 sh = Octree::getShift(i);
@@ -85,18 +86,18 @@ ContainmentResult BoundingBox::contains(BoundingCube cube) {
         glm::vec3 p2(min2 + sh*getLength());
 
         if(cube.contains(p2)){
-            mask |= (1 << i); 
+            innerMask |= (1 << i); 
         }
         if(contains(p1)){
-            result.mask |= (1 << i); 
+            outterMask |= (1 << i); 
         }
     } 
    
     // Classifify type
-    if(mask == 0xff) {
+    if(innerMask == 0xff) {
         result.type = ContainmentType::IsContained;
     }
-    else if(result.mask == 0xff) {
+    else if(outterMask == 0xff) {
         result.type = ContainmentType::Contains;
     }
     else {
@@ -130,20 +131,22 @@ ContainmentResult BoxContainmentHandler::check(BoundingCube cube, Vertex * verte
         glm::vec3 min = this->box.getMin();
         glm::vec3 max = this->box.getMax();
         glm::vec3 c = cube.getCenter();
-        glm::vec3 a = box.getCenter();
-        glm::vec3 n = glm::normalize(c-a);
-        vertex->normal = n;
+        glm::vec3 n = glm::vec3(0.0);
         vertex->texIndex = this->texture;
+
 
         for(int i=0; i < 3 ; ++i) {
             if(cube.getMax()[i] >= max[i]) {
                 c[i] = max[i];
+                n[i] = 1.0;
             }
             if(cube.getMin()[i] <= min[i]) {
                 c[i] = min[i];
+                 n[i] = -1.0;
             }
         }
         vertex->pos = c;
+        vertex->normal = glm::normalize(n);
     }
     return result;
 }

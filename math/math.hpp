@@ -18,8 +18,7 @@ enum ContainmentType {
 
 struct ContainmentResult {
 	ContainmentType type;
-	unsigned char mask;
-};
+ };
 
 struct Vertex {
     glm::vec3 pos;

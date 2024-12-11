@@ -74,7 +74,6 @@ ContainmentResult BoundingSphere::contains(BoundingCube cube) {
         }
     } 
 
-    result.mask = mask;
     // Classifify type
     if(mask == 0xff) {
         result.type = ContainmentType::Contains;
