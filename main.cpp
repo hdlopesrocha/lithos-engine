@@ -10,6 +10,57 @@ class Geometry {
 	GLuint vao, vbo, ebo;
 };
 
+class HeightMapContainmentHandler : public ContainmentHandler {
+
+	public:
+		HeightMap * map;
+		unsigned char texture;
+		unsigned char textureOut;
+
+		HeightMapContainmentHandler(HeightMap * m, unsigned char t, unsigned char o) : ContainmentHandler(){
+			this->map = m;
+			this->texture = t;
+			this->textureOut = o;
+		}
+
+		glm::vec3 getCenter() {
+			return map->getCenter();
+		}
+		glm::vec3 getPoint(float x, float z) {
+			return glm::vec3(x, map->getHeightAt(x,z) ,z);
+		}
+
+		ContainmentResult check(BoundingCube cube, Vertex * vertex) {
+			ContainmentResult result = map->contains(cube); 
+				
+			if(result.type == ContainmentType::Intersects) {
+				glm::vec3 c = cube.getCenter();
+				glm::vec3 a = map->getCenter();
+		
+
+
+				if(map->hitsBoundary(cube)) {
+					vertex->pos = cube.getCenter();
+					vertex->texIndex = this->textureOut;
+					glm::vec3 n = glm::normalize(c-a);
+					vertex->normal = n;
+				} else {
+					glm::vec3 p0 = getPoint(c[0], c[2]); 
+					glm::vec3 p1 = getPoint(c[0]+1, c[2]); 
+					glm::vec3 p2 = getPoint(c[0], c[2]+1); 
+					glm::vec3 v1 = p1 - p0;
+					glm::vec3 v2 = p2 - p0;
+
+					vertex->normal = glm::cross(v2,v1);
+					vertex->pos = p0;
+					vertex->texIndex = this->texture;
+				}
+			}
+			return result;
+		}
+};
+
+
 class MainApplication : public LithosApplication {
 	std::vector<Image> images;
   	Camera camera;
@@ -117,20 +168,23 @@ public:
 
 		tree = new Octree(1.0);
 
+		HeightMap map(glm::vec3(-64,-32,-64),glm::vec3(64,-16,64), 128, 128);
+		tree->add(new HeightMapContainmentHandler(&map, 2, 7));
+
 		BoundingSphere sph(glm::vec3(0,0,0),20);
 		tree->add(new SphereContainmentHandler(sph, 2));
 
 		BoundingSphere sph2(glm::vec3(-11,11,11),10);
-		//tree->add(new SphereContainmentHandler(sph2, 5));
+		tree->add(new SphereContainmentHandler(sph2, 5));
 
 		BoundingSphere sph3(glm::vec3(11,11,-11),10);
-		//tree->del(new SphereContainmentHandler(sph3, 4));
+		tree->del(new SphereContainmentHandler(sph3, 4));
 
 		BoundingSphere sph4(glm::vec3(4,4,-4),8);
-		//tree->del(new SphereContainmentHandler(sph4, 6));
+		tree->del(new SphereContainmentHandler(sph4, 6));
 
 		BoundingSphere sph5(glm::vec3(11,11,-11),4);
-		//tree->add(new SphereContainmentHandler(sph5, 3));
+		tree->add(new SphereContainmentHandler(sph5, 3));
 
 		BoundingBox box1(glm::vec3(0,-24,0),glm::vec3(24,0,24));
 		tree->add(new BoxContainmentHandler(box1,4));
@@ -167,12 +221,12 @@ public:
 		//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		glBindVertexArray(vertexArrayObject.vao);
 		glDrawElements(GL_TRIANGLES, tesselator->indices.size(), GL_UNSIGNED_SHORT, 0);
-	
+	/*
 		glDisable(GL_CULL_FACE);
 		glUniform1ui(lightEnabledLoc, 0);
 		glBindVertexArray(vaoDebug.vao);
 		glDrawElements(GL_TRIANGLES, debugTesselator->indices.size(), GL_UNSIGNED_SHORT, 0);
-		
+	*/	
 
 
 		//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);

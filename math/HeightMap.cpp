@@ -9,7 +9,8 @@ HeightMap::HeightMap(glm::vec3 min, glm::vec3 max, int width, int height) {
     this->data = std::vector<std::vector<float>>(width, std::vector<float>(height)); 
     for(int x=0 ; x < width ; ++x){
         for(int z=0 ; z < height ; ++z){
-            this->data[x][z] = Math::clamp((float ) ((sin((10.0*x)/width)*cos((10.0*z)/height)+1.0)/(2.0)), 0.1f, 0.9f);
+            float h = Math::clamp((float ) ((sin((10.0*x)/width)*cos((10.0*z)/height)+1.0)/(2.0)), 0.0f, 1.0f);
+            this->data[x][z] = h*0.6 + 0.2;
         }           
     }
 
@@ -169,7 +170,7 @@ ContainmentResult HeightMap::contains(BoundingCube cube) {
 
     if(result.type != ContainmentType::Disjoint && result.type != ContainmentType::IsContained) {
         glm::vec2 range = getHeightRangeBetween(cube);
-        std::cout << range[0] << " ! " << range[1] << std::endl;
+     //   std::cout << range[0] << " ! " << range[1] << std::endl;
         BoundingBox minBox(getMin(), glm::vec3(getMax().x, range[0], getMax().z ));
         BoundingBox maxBox(getMin(), glm::vec3(getMax().x, range[1], getMax().z ));
         
