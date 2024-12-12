@@ -26,6 +26,9 @@ void main() {
             mixedColor += texture(textures[i], oTextureCoord)*w;
         }
 	}
+    if(mixedColor.a == 0.0) {
+        discard;
+    }
 
     color = vec4(mixedColor.rgb*diffuse, mixedColor.a); 
 }

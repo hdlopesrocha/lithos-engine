@@ -229,15 +229,15 @@ class OctreeNode {
 
 class IteratorHandler {
 	public: 
-		virtual void iterate(int level, OctreeNode * node, BoundingCube cube) = 0;
+		virtual int iterate(int level, OctreeNode * node, BoundingCube cube) = 0;
 };
 
 class TesselatorHandler {
 	public: 
 		std::vector<Vertex> vertices;
-		std::vector<uint16_t> indices;
+		std::vector<uint> indices;
 
-		virtual void iterate(int level, OctreeNode * node, BoundingCube cube) = 0;
+		virtual int iterate(int level, OctreeNode * node, BoundingCube cube) = 0;
 };
 
 class Octree: public BoundingCube {
@@ -261,7 +261,7 @@ class Tesselator : public TesselatorHandler{
 
 	public:
 		Tesselator(Octree * tree);
-		void iterate(int level, OctreeNode * node, BoundingCube cube);
+		int iterate(int level, OctreeNode * node, BoundingCube cube);
 		void addVertex(Vertex vertex);
 
 };

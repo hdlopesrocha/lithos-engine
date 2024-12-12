@@ -12,7 +12,6 @@ static std::vector<glm::ivec3> tessOrderDebug;
 static std::vector<glm::vec2> tessTexDebug;
 static bool initializedDebug = false;
 
-
 class DebugTesselator : public TesselatorHandler{
 	Octree * tree;
 	std::map <std::string, int> compactMap;
@@ -41,14 +40,12 @@ class DebugTesselator : public TesselatorHandler{
 				tessTexDebug.push_back(glm::vec2(0,1));
 				tessTexDebug.push_back(glm::vec2(1,1));
 
-
 				for(int i=0 ; i < 8; ++i) {
 					glm::vec3 v = Octree::getShift(i);
 					std::cout << "" << i << ": " << v.x << " "<< v.y << " "<< v.z << std::endl; 
 				}
 				initializedDebug = true;
 			}
-
 		}
 
 		void addVertex(Vertex vertex){
@@ -62,8 +59,8 @@ class DebugTesselator : public TesselatorHandler{
 		//	std::cout << "i=" << idx << std::endl;
 		}
 
-		void iterate(int level, OctreeNode * node, BoundingCube cube) {			
-			if(node->leaf && node->solid == ContainmentType::Intersects || node->solid == ContainmentType::Contains){
+		int iterate(int level, OctreeNode * node, BoundingCube cube) {			
+			if((node->solid == ContainmentType::Intersects && node->leaf) || node->solid == ContainmentType::Contains){
 				std::vector<glm::vec3> corners;
 				// Get corners
 				for(int i=0; i < 8; ++i) {
@@ -84,7 +81,8 @@ class DebugTesselator : public TesselatorHandler{
 						addVertex(vtx);
 					}
 				}
-			} 			 			
+			}
+			return 1; 			 			
 		}
 
 

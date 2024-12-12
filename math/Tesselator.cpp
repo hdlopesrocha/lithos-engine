@@ -49,7 +49,7 @@ void Tesselator::addVertex(Vertex vertex){
 //	std::cout << "i=" << idx << std::endl;
 }
 
-void Tesselator::iterate(int level, OctreeNode * node, BoundingCube cube) {			
+int Tesselator::iterate(int level, OctreeNode * node, BoundingCube cube) {			
 	if(node->leaf && node->solid == ContainmentType::Intersects){
 		std::vector<OctreeNode*> corners;
 		// Get corners
@@ -93,7 +93,8 @@ void Tesselator::iterate(int level, OctreeNode * node, BoundingCube cube) {
 				}
 //			}
 		}
-	} 			 			
+	}
+	return 1; 			 			
 }
 
 

@@ -98,7 +98,7 @@ public:
 		glBindBuffer(GL_ARRAY_BUFFER, geo.vbo);
 		glBufferData(GL_ARRAY_BUFFER, t->vertices.size()*sizeof(Vertex), t->vertices.data(), GL_STATIC_DRAW);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, geo.ebo);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, t->indices.size()*sizeof(uint16_t), t->indices.data(), GL_STATIC_DRAW);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, t->indices.size()*sizeof(uint), t->indices.data(), GL_STATIC_DRAW);
 		
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) offsetof(Vertex, pos));
 		glEnableVertexAttribArray(0);
@@ -220,13 +220,13 @@ public:
 
 		//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		glBindVertexArray(vertexArrayObject.vao);
-		glDrawElements(GL_TRIANGLES, tesselator->indices.size(), GL_UNSIGNED_SHORT, 0);
-	/*
+		glDrawElements(GL_TRIANGLES, tesselator->indices.size(), GL_UNSIGNED_INT, 0);
+	
 		glDisable(GL_CULL_FACE);
 		glUniform1ui(lightEnabledLoc, 0);
 		glBindVertexArray(vaoDebug.vao);
-		glDrawElements(GL_TRIANGLES, debugTesselator->indices.size(), GL_UNSIGNED_SHORT, 0);
-	*/	
+		glDrawElements(GL_TRIANGLES, debugTesselator->indices.size(), GL_UNSIGNED_INT, 0);
+	
 
 
 		//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
