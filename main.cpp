@@ -30,10 +30,10 @@ class HeightMapContainmentHandler : public ContainmentHandler {
 			return glm::vec3(x, map->getHeightAt(x,z) ,z);
 		}
 
-		ContainmentResult check(BoundingCube cube, Vertex * vertex) {
-			ContainmentResult result = map->contains(cube); 
+		ContainmentType check(BoundingCube cube, Vertex * vertex) {
+			ContainmentType result = map->contains(cube); 
 				
-			if(result.type == ContainmentType::Intersects) {
+			if(result == ContainmentType::Intersects) {
 				glm::vec3 c = cube.getCenter();
 				glm::vec3 a = map->getCenter();
 		
@@ -169,7 +169,7 @@ public:
 		tree = new Octree(1.0);
 
 		HeightMap map(glm::vec3(-64,-32,-64),glm::vec3(64,-16,64), 128, 128);
-		tree->add(new HeightMapContainmentHandler(&map, 2, 7));
+		//tree->add(new HeightMapContainmentHandler(&map, 2, 7));
 
 		BoundingSphere sph(glm::vec3(0,0,0),20);
 		tree->add(new SphereContainmentHandler(sph, 2));
@@ -181,10 +181,10 @@ public:
 		tree->del(new SphereContainmentHandler(sph3, 4));
 
 		BoundingSphere sph4(glm::vec3(4,4,-4),8);
-		tree->del(new SphereContainmentHandler(sph4, 6));
+		//tree->del(new SphereContainmentHandler(sph4, 6));
 
 		BoundingSphere sph5(glm::vec3(11,11,-11),4);
-		tree->add(new SphereContainmentHandler(sph5, 3));
+		//tree->add(new SphereContainmentHandler(sph5, 3));
 
 		BoundingBox box1(glm::vec3(0,-24,0),glm::vec3(24,0,24));
 		tree->add(new BoxContainmentHandler(box1,4));

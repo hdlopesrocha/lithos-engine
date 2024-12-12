@@ -50,7 +50,7 @@ void Tesselator::addVertex(Vertex vertex){
 }
 
 int Tesselator::iterate(int level, OctreeNode * node, BoundingCube cube) {			
-	if(node->leaf && node->solid == ContainmentType::Intersects){
+	if(node->height==0 && node->solid == ContainmentType::Intersects){
 		std::vector<OctreeNode*> corners;
 		// Get corners
 		corners.push_back(node);

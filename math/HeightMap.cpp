@@ -157,32 +157,32 @@ bool HeightMap::contains(glm::vec3 point){
 bool HeightMap::hitsBoundary(BoundingCube cube) {
     BoundingBox box(min, max);
 
-    ContainmentResult result = box.contains(cube);
+    ContainmentType result = box.contains(cube);
 
-    return result.type == ContainmentType::Intersects;
+    return result == ContainmentType::Intersects;
 }
 
-ContainmentResult HeightMap::contains(BoundingCube cube) {
+ContainmentType HeightMap::contains(BoundingCube cube) {
     BoundingBox box(min, max);
 
-    ContainmentResult result = box.contains(cube);
+    ContainmentType result = box.contains(cube);
 
 
-    if(result.type != ContainmentType::Disjoint && result.type != ContainmentType::IsContained) {
+    if(result != ContainmentType::Disjoint && result != ContainmentType::IsContained) {
         glm::vec2 range = getHeightRangeBetween(cube);
      //   std::cout << range[0] << " ! " << range[1] << std::endl;
         BoundingBox minBox(getMin(), glm::vec3(getMax().x, range[0], getMax().z ));
         BoundingBox maxBox(getMin(), glm::vec3(getMax().x, range[1], getMax().z ));
         
-        ContainmentResult minResult = minBox.contains(cube);
-        ContainmentResult maxResult = maxBox.contains(cube);
+        ContainmentType minResult = minBox.contains(cube);
+        ContainmentType maxResult = maxBox.contains(cube);
        
-        if(minResult.type == ContainmentType::Contains){       
-            result.type = ContainmentType::Contains;
-        } else if(maxResult.type == ContainmentType::Disjoint){
-            result.type = ContainmentType::Disjoint;
+        if(minResult == ContainmentType::Contains){       
+            result = ContainmentType::Contains;
+        } else if(maxResult == ContainmentType::Disjoint){
+            result = ContainmentType::Disjoint;
         } else {
-            result.type = ContainmentType::Intersects;
+            result = ContainmentType::Intersects;
         }
    }
 

@@ -16,10 +16,6 @@ enum ContainmentType {
 	IsContained
 };
 
-struct ContainmentResult {
-	ContainmentType type;
- };
-
 struct Vertex {
     glm::vec3 pos;
     glm::vec3 normal;
@@ -120,7 +116,7 @@ class BoundingSphere {
 		BoundingSphere();		
 		BoundingSphere(glm::vec3 center, float radius);
 		bool contains(glm::vec3 point);
-		ContainmentResult contains(BoundingCube cube);
+		ContainmentType contains(BoundingCube cube);
 		bool intersects(BoundingCube cube);
 };
 
@@ -145,7 +141,7 @@ class BoundingBox {
 		glm::vec3 getLength();
 		void setMin(glm::vec3 v);
 		void setMax(glm::vec3 v);
-		ContainmentResult contains(BoundingCube cube);
+		ContainmentType contains(BoundingCube cube);
 		bool intersects(BoundingSphere sphere);
 		bool contains(glm::vec3 point);
 };
@@ -183,13 +179,13 @@ class HeightMap {
 		bool hitsBoundary(BoundingCube cube);
 
 		bool contains(glm::vec3 point);
-		ContainmentResult contains(BoundingCube cube);
+		ContainmentType contains(BoundingCube cube);
 
 };
 
 class ContainmentHandler {
 	public: 
-		virtual ContainmentResult check(BoundingCube cube, Vertex * vertex) = 0;
+		virtual ContainmentType check(BoundingCube cube, Vertex * vertex) = 0;
 		virtual glm::vec3 getCenter() = 0;
 };
 
@@ -201,7 +197,7 @@ class SphereContainmentHandler : public ContainmentHandler {
 
 		SphereContainmentHandler(BoundingSphere sphere, unsigned char texture);
 		glm::vec3 getCenter();
-		ContainmentResult check(BoundingCube cube, Vertex * vertex);
+		ContainmentType check(BoundingCube cube, Vertex * vertex);
 };
 
 class BoxContainmentHandler : public ContainmentHandler {
@@ -212,14 +208,14 @@ class BoxContainmentHandler : public ContainmentHandler {
 
 		BoxContainmentHandler(BoundingBox box, unsigned char texture);
 		glm::vec3 getCenter();
-		ContainmentResult check(BoundingCube cube, Vertex * vertex);
+		ContainmentType check(BoundingCube cube, Vertex * vertex);
 };
 
 class OctreeNode {
 	public: 
 		Vertex vertex;
 		ContainmentType solid;
-		bool leaf;
+		int height;
 		OctreeNode *children[8];
 		OctreeNode(Vertex vertex);
 		~OctreeNode();

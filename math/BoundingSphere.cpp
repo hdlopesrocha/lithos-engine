@@ -57,12 +57,12 @@ bool BoundingSphere::intersects(BoundingCube cube) {
     return squaredDistance <= (radius * radius);
 }
 
-ContainmentResult BoundingSphere::contains(BoundingCube cube) {
+ContainmentType BoundingSphere::contains(BoundingCube cube) {
 
 
 
-    ContainmentResult result;
-    result.type = ContainmentType::Disjoint;
+    ContainmentType result;
+    result = ContainmentType::Disjoint;
     
     // Classify corners
     unsigned char mask = 0;
@@ -76,10 +76,10 @@ ContainmentResult BoundingSphere::contains(BoundingCube cube) {
 
     // Classifify type
     if(mask == 0xff) {
-        result.type = ContainmentType::Contains;
+        result = ContainmentType::Contains;
     }
     else if(mask > 0) {
-        result.type = ContainmentType::Intersects;
+        result = ContainmentType::Intersects;
     }
     else {        
         glm::vec3 minSphere = (center-glm::vec3(radius));
@@ -88,9 +88,9 @@ ContainmentResult BoundingSphere::contains(BoundingCube cube) {
         if ( cube.getMin()[0] <=  minSphere[0] && maxSphere[0] <= cube.getMax()[0] && 
              cube.getMin()[1] <=  minSphere[1] && maxSphere[1] <= cube.getMax()[1] && 
              cube.getMin()[2] <=  minSphere[2] && maxSphere[2] <= cube.getMax()[2] ) {
-            result.type = ContainmentType::IsContained;
+            result = ContainmentType::IsContained;
         } else if(intersects(cube)) {
-            result.type = ContainmentType::Intersects;
+            result = ContainmentType::Intersects;
         }
     }  
 
@@ -106,10 +106,10 @@ glm::vec3 SphereContainmentHandler::getCenter() {
     return sphere.center;
 }
 
-ContainmentResult SphereContainmentHandler::check(BoundingCube cube, Vertex * vertex) {
-    ContainmentResult result = sphere.contains(cube); 
+ContainmentType SphereContainmentHandler::check(BoundingCube cube, Vertex * vertex) {
+    ContainmentType result = sphere.contains(cube); 
 
-    if(result.type == ContainmentType::Intersects) {
+    if(result == ContainmentType::Intersects) {
         glm::vec3 c = this->sphere.center;
         float r = this->sphere.radius;
         glm::vec3 a = cube.getCenter();

@@ -67,9 +67,9 @@ bool BoundingBox::contains(glm::vec3 point){
         Math::isBetween(point[2], min[2], max[2]);
 }
 
-ContainmentResult BoundingBox::contains(BoundingCube cube) {
-    ContainmentResult result;
-    result.type = ContainmentType::Intersects;
+ContainmentType BoundingBox::contains(BoundingCube cube) {
+    ContainmentType result;
+    result = ContainmentType::Intersects;
     glm::vec3 min1 = cube.getMin();
     glm::vec3 max1 = cube.getMax();
     glm::vec3 min2 = getMin();
@@ -95,10 +95,10 @@ ContainmentResult BoundingBox::contains(BoundingCube cube) {
    
     // Classifify type
     if(innerMask == 0xff) {
-        result.type = ContainmentType::IsContained;
+        result = ContainmentType::IsContained;
     }
     else if(outterMask == 0xff) {
-        result.type = ContainmentType::Contains;
+        result = ContainmentType::Contains;
     }
     else {
         for(int i=0 ; i < 3 ; ++i){
@@ -108,7 +108,7 @@ ContainmentResult BoundingBox::contains(BoundingCube cube) {
                 || (min2[i] <= max1[i] && max1[i] <= max2[i])){
                 // overlaps in one dimension
             } else {
-                result.type = ContainmentType::Disjoint;
+                result = ContainmentType::Disjoint;
                 break;
             }
         }
@@ -125,9 +125,9 @@ glm::vec3 BoxContainmentHandler::getCenter() {
     return box.getCenter();
 }
 
-ContainmentResult BoxContainmentHandler::check(BoundingCube cube, Vertex * vertex) {
-    ContainmentResult result = box.contains(cube); 
-    if(result.type == ContainmentType::Intersects) {
+ContainmentType BoxContainmentHandler::check(BoundingCube cube, Vertex * vertex) {
+    ContainmentType result = box.contains(cube); 
+    if(result == ContainmentType::Intersects) {
         glm::vec3 min = this->box.getMin();
         glm::vec3 max = this->box.getMax();
         glm::vec3 c = cube.getCenter();
