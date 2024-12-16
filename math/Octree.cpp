@@ -82,14 +82,14 @@ void Octree::expand(ContainmentHandler * handler) {
 	}
 }
 
-int canSplit(BoundingCube cube, float minSize){
+int Octree::getHeight(BoundingCube cube){
 	float r = glm::log2(cube.getLength() / minSize);
 	return r >= 0  ? (int) glm::floor(r) : -1;
 }
 
 
-OctreeNode * addAux(ContainmentHandler * handler, OctreeNode * node, BoundingCube cube, float minSize) {
-	int height = !canSplit(cube, minSize);
+OctreeNode * addAux(Octree * tree, ContainmentHandler * handler, OctreeNode * node, BoundingCube cube) {
+	int height = tree->getHeight(cube);
 	Vertex vertex;
 	ContainmentType check = handler->check(cube, &vertex);
 	
@@ -108,16 +108,15 @@ OctreeNode * addAux(ContainmentHandler * handler, OctreeNode * node, BoundingCub
 	if(check == ContainmentType::Intersects) {
 		node->vertex = vertex;
 	}
-	node->height = height ? 0 : 1;
 	node->solid = check;
 	
 	if(check == ContainmentType::Contains) {
 		node->clear();
 	}
-	else if(height == 0) {
+	else if(height != 0) {
 		for(int i=0; i <8 ; ++i) {
 			BoundingCube subCube = getChildCube(cube,i);
-			node->children[i] = addAux(handler, node->children[i], subCube, minSize);
+			node->children[i] = addAux(tree, handler, node->children[i], subCube);
 		}
 	}
 	return node;
@@ -133,13 +132,12 @@ void split(OctreeNode * node, BoundingCube cube, ContainmentType solid) {
 }
 
 
-OctreeNode * delAux(ContainmentHandler * handler, OctreeNode * node, BoundingCube cube, float minSize) {
+OctreeNode * delAux(Octree * tree,  ContainmentHandler * handler, OctreeNode * node, BoundingCube cube) {
 	Vertex vertex;
 	ContainmentType check = handler->check(cube, &vertex);
 
-	bool height = canSplit(cube, minSize);
-
 	if(check != ContainmentType::Disjoint) {
+		bool height = tree->getHeight(cube);
 		bool isContained = check == ContainmentType::Contains;
 		bool isIntersecting = check == ContainmentType::Intersects;
 
@@ -162,12 +160,11 @@ OctreeNode * delAux(ContainmentHandler * handler, OctreeNode * node, BoundingCub
 			}
 
 			node->solid = check;
-		    node->height = height;
 
 			if(height != 0) {
 				for(int i=0; i <8 ; ++i) {
 					BoundingCube subCube = getChildCube(cube,i);
-					node->children[i] = delAux(handler, node->children[i], subCube, minSize);
+					node->children[i] = delAux(tree, handler, node->children[i], subCube);
 				}	
 			}
 		} 
@@ -177,11 +174,11 @@ OctreeNode * delAux(ContainmentHandler * handler, OctreeNode * node, BoundingCub
 
 void Octree::add(ContainmentHandler * handler) {
 	expand(handler);	
-	root = addAux(handler, root, *this, minSize);
+	root = addAux(this, handler, root, *this);
 }
 
 void Octree::del(ContainmentHandler * handler) {
-	root = delAux(handler, root, *this, minSize);
+	root = delAux(this, handler, root, *this);
 }
 
 void iterateAux(IteratorHandler * handler, int level, OctreeNode * node, BoundingCube cube) {
@@ -206,8 +203,7 @@ void saveAux(std::ofstream * myfile, OctreeNode * node) {
 		Vertex vertex = node->vertex;
 		*myfile << "\n{";
 		*myfile << "\"v\":" << node->vertex.toString() << ",";
-		*myfile << "\"s\":" << (int) node->solid << ",";
-		*myfile << "\"h\":" << node->height;
+		*myfile << "\"s\":" << (int) node->solid;
 		if(node->children != NULL) {
 			for(int i=0; i <8 ; ++i) {
 				OctreeNode * c = node->children[i];

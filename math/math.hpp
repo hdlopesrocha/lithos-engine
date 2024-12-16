@@ -215,7 +215,6 @@ class OctreeNode {
 	public: 
 		Vertex vertex;
 		ContainmentType solid;
-		int height;
 		OctreeNode *children[8];
 		OctreeNode(Vertex vertex);
 		~OctreeNode();
@@ -249,6 +248,7 @@ class Octree: public BoundingCube {
 		OctreeNode * getNodeAt(glm::vec3 pos, int level);
 		void save(std::string filename);
 		static glm::vec3 getShift(int i);
+		int getHeight(BoundingCube cube);
 };
 
 class Tesselator : public TesselatorHandler{
