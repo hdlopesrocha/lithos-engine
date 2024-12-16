@@ -36,16 +36,14 @@ class HeightMapContainmentHandler : public ContainmentHandler {
 			if(result == ContainmentType::Intersects) {
 				glm::vec3 c = cube.getCenter();
 				glm::vec3 a = map->getCenter();
+				glm::vec3 p0 = getPoint(c[0], c[2]); 
 		
-
-
-				if(map->hitsBoundary(cube)) {
+				if(map->hitsBoundary(cube) && cube.getMaxY() <= p0[1]) {
 					vertex->pos = cube.getCenter();
 					vertex->texIndex = this->textureOut;
 					glm::vec3 n = glm::normalize(c-a);
 					vertex->normal = n;
 				} else {
-					glm::vec3 p0 = getPoint(c[0], c[2]); 
 					glm::vec3 p1 = getPoint(c[0]+1, c[2]); 
 					glm::vec3 p2 = getPoint(c[0], c[2]+1); 
 					glm::vec3 v1 = p1 - p0;
@@ -169,7 +167,7 @@ public:
 		tree = new Octree(1.0);
 
 		HeightMap map(glm::vec3(-64,-32,-64),glm::vec3(64,-16,64), 128, 128);
-		//tree->add(new HeightMapContainmentHandler(&map, 2, 7));
+		tree->add(new HeightMapContainmentHandler(&map, 2, 7));
 
 		BoundingSphere sph(glm::vec3(0,0,0),20);
 		tree->add(new SphereContainmentHandler(sph, 2));

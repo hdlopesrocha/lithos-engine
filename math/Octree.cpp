@@ -123,17 +123,17 @@ OctreeNode * addAux(ContainmentHandler * handler, OctreeNode * node, BoundingCub
 	return node;
 }
 
-void split(OctreeNode * node, BoundingCube cube) {
+void split(OctreeNode * node, BoundingCube cube, ContainmentType solid) {
 	for(int i=0; i <8 ; ++i) {
 		BoundingCube subCube = getChildCube(cube,i);
 		node->children[i] = new OctreeNode(subCube.getCenter());
 		// TODO: Confirm
-		node->children[i]->solid = ContainmentType::Contains;
+		node->children[i]->solid = solid;
 	}	
 }
 
 
-OctreeNode * delAux(ContainmentHandler * handler, OctreeNode * node, BoundingCube cube, float minSize, ContainmentType parentMask) {
+OctreeNode * delAux(ContainmentHandler * handler, OctreeNode * node, BoundingCube cube, float minSize) {
 	Vertex vertex;
 	ContainmentType check = handler->check(cube, &vertex);
 
@@ -144,38 +144,32 @@ OctreeNode * delAux(ContainmentHandler * handler, OctreeNode * node, BoundingCub
 		bool isIntersecting = check == ContainmentType::Intersects;
 
 		// Any full containment results in cleaning
-		if(node == NULL && parentMask == ContainmentType::Contains) {
-			node = new OctreeNode(cube.getCenter());
-			node->solid = ContainmentType::Contains;
-		}else if(node!= NULL) {
-			if(node->solid == ContainmentType::Contains) {
-				split(node, cube);
-			}
-			bool wasSurface = node->solid == ContainmentType::Intersects;
-
-			if(isContained) {
+		if(isContained) {
+			if(node != NULL ) {
 				node->clear();
 				delete node;
-				return NULL;
 			}
-	
+			return NULL;
+		}
+		if(node!= NULL) {
+			if(node->solid == ContainmentType::Contains && height != 0) {
+				split(node, cube, ContainmentType::Contains);
+			}
+
+			if(node->solid != ContainmentType::Intersects && isIntersecting) {
+				node->vertex = vertex;
+				node->vertex.normal = -vertex.normal;
+			}
+
 			node->solid = check;
 		    node->height = height;
 
-
-
-			if(!wasSurface && parentMask != ContainmentType::Disjoint && (isContained || isIntersecting)) {
-				node->vertex = vertex;
-				node->vertex.normal = -node->vertex.normal;
-			}
-		
 			if(height != 0) {
 				for(int i=0; i <8 ; ++i) {
 					BoundingCube subCube = getChildCube(cube,i);
-					node->children[i] = delAux(handler, node->children[i], subCube, minSize, check);
+					node->children[i] = delAux(handler, node->children[i], subCube, minSize);
 				}	
 			}
-
 		} 
 	}
 	return node;
@@ -187,7 +181,7 @@ void Octree::add(ContainmentHandler * handler) {
 }
 
 void Octree::del(ContainmentHandler * handler) {
-	root = delAux(handler, root, *this, minSize, ContainmentType::Disjoint);
+	root = delAux(handler, root, *this, minSize);
 }
 
 void iterateAux(IteratorHandler * handler, int level, OctreeNode * node, BoundingCube cube) {

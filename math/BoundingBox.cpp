@@ -134,7 +134,6 @@ ContainmentType BoxContainmentHandler::check(BoundingCube cube, Vertex * vertex)
         glm::vec3 n = glm::vec3(0.0);
         vertex->texIndex = this->texture;
 
-
         for(int i=0; i < 3 ; ++i) {
             if(cube.getMax()[i] >= max[i]) {
                 c[i] = max[i];
