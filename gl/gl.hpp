@@ -106,7 +106,7 @@ public:
 
     std::string readFile(const std::string& filePath);
     GLuint compileShader(const std::string& shaderCode, GLenum shaderType);
-    GLuint createShaderProgram(GLuint vertexShader, GLuint fragmentShader);
+    GLuint createShaderProgram(GLuint vertexShader, GLuint fragmentShader, GLuint tcs, GLuint tes);
 
 };
 

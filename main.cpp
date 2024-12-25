@@ -5,6 +5,8 @@
 #include "DebugTesselator.hpp"
 #include "math/math.hpp"
 
+//#define DEBUG_GEO 0
+
 class Geometry {
 	public:
 	GLuint vao, vbo, ebo;
@@ -64,18 +66,25 @@ class MainApplication : public LithosApplication {
   	Camera camera;
 	Octree * tree;
 	Tesselator * tesselator;
+	#ifdef DEBUG_GEO
 	DebugTesselator * debugTesselator;
+	Geometry vaoDebug;
+	#endif
 
 	GLuint vertexShader;
 	GLuint fragmentShader;
+	GLuint tessControlShader;
+	GLuint tessEvaluationShader;
+
 	GLuint shaderProgram;
 	GLuint modelLoc;
 	GLuint viewLoc;
 	GLuint projectionLoc;
 	GLuint lightDirectionLoc;
 	GLuint lightEnabledLoc;
+	GLuint triplanarEnabledLoc;
 	Geometry vertexArrayObject;
-	Geometry vaoDebug;
+
 
 public:
 	MainApplication() {
@@ -131,11 +140,22 @@ public:
         images.push_back(loadTextureImage("textures/grid3.png"));
         images.push_back(loadTextureImage("textures/gridRed.png"));
 
-		std::string vertCode = readFile("shaders/vertShader.glsl");
-		std::string fragCode = readFile("shaders/fragShader.glsl");
+		std::string vertCode = readFile("shaders/vertex.glsl");
+		std::string fragCode = readFile("shaders/fragment.glsl");
+		std::string controlCode = readFile("shaders/tessControl.glsl");
+		std::string evalCode = readFile("shaders/tessEvaluation.glsl");
+
+
+
 		vertexShader = compileShader(vertCode,GL_VERTEX_SHADER);
 		fragmentShader = compileShader(fragCode,GL_FRAGMENT_SHADER);
-		shaderProgram = createShaderProgram(vertexShader, fragmentShader);
+		tessControlShader = compileShader(controlCode,GL_TESS_CONTROL_SHADER);
+		tessEvaluationShader = compileShader(evalCode,GL_TESS_EVALUATION_SHADER);
+
+
+
+
+		shaderProgram = createShaderProgram(vertexShader, fragmentShader, tessControlShader, tessEvaluationShader);
 
 		// Use the shader program
 		glUseProgram(shaderProgram);
@@ -145,6 +165,7 @@ public:
 		projectionLoc = glGetUniformLocation(shaderProgram, "projection");
 		lightDirectionLoc = glGetUniformLocation(shaderProgram, "lightDirection");
 		lightEnabledLoc = glGetUniformLocation(shaderProgram, "lightEnabled");
+		triplanarEnabledLoc = glGetUniformLocation(shaderProgram, "triplanarEnabled");
 
 
 
@@ -189,25 +210,23 @@ public:
 
 
 		tesselator = new Tesselator(tree);
-		debugTesselator = new DebugTesselator(tree);
-
 		tree->iterate((IteratorHandler*)tesselator);
+
+		#ifdef DEBUG_GEO
+		debugTesselator = new DebugTesselator(tree);
 		tree->iterate((IteratorHandler*)debugTesselator);
-
-		for(int i=0; i < debugTesselator->vertices.size(); ++i) {
-			Vertex v = debugTesselator->vertices[i];
-		//	std::cout << v.toString() << std::endl;
-		}
-
-		for(int i=0; i < debugTesselator->indices.size(); i+=3) {
-		//	std::cout << debugTesselator->indices[i] << " " << debugTesselator->indices[i+1] << " " << debugTesselator->indices[i+2] << std::endl;
-		}
+		#endif
 
 
 		vertexArrayObject = tesselatorToGeometry(tesselator);
+		#ifdef DEBUG_GEO
 		vaoDebug = tesselatorToGeometry(debugTesselator);
+		#endif
 
 		glClearColor (0.1,0.1,0.1,1.0);
+
+
+
 	 }
 
     virtual void draw() {
@@ -215,16 +234,23 @@ public:
 		glEnable(GL_CULL_FACE);
 
 		glUniform1ui(lightEnabledLoc, 1);
+		glUniform1ui(triplanarEnabledLoc, 1);
+		glPatchParameteri(GL_PATCH_VERTICES, 3); // Define the number of control points per patch
 
 		//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		glBindVertexArray(vertexArrayObject.vao);
-		glDrawElements(GL_TRIANGLES, tesselator->indices.size(), GL_UNSIGNED_INT, 0);
-	
+		glDrawElements(GL_PATCHES, tesselator->indices.size(), GL_UNSIGNED_INT, 0);
+
+
+
 		glDisable(GL_CULL_FACE);
 		glUniform1ui(lightEnabledLoc, 0);
+    	glUniform1ui(triplanarEnabledLoc, 0);
+		
+		#ifdef DEBUG_GEO
 		glBindVertexArray(vaoDebug.vao);
 		glDrawElements(GL_TRIANGLES, debugTesselator->indices.size(), GL_UNSIGNED_INT, 0);
-	
+		#endif
 
 
 		//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);

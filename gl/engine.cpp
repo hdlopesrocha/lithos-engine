@@ -183,10 +183,13 @@ GLuint LithosApplication::compileShader(const std::string& shaderCode, GLenum sh
     return shader;
 }
 
-GLuint LithosApplication::createShaderProgram(GLuint vertexShader, GLuint fragmentShader) {
+GLuint LithosApplication::createShaderProgram(GLuint vertexShader, GLuint fragmentShader, GLuint tcs, GLuint tes) {
     GLuint program = glCreateProgram();
     glAttachShader(program, vertexShader);
+    glAttachShader(program, tcs);
+    glAttachShader(program, tes);
     glAttachShader(program, fragmentShader);
+
     glLinkProgram(program);
 
     // Check for linking errors
