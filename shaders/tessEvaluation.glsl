@@ -3,6 +3,9 @@
 layout(triangles, equal_spacing, ccw) in; // Define primitive type and tessellation spacing
 
 
+uniform sampler2D textures[16];
+uniform sampler2D normalMaps[16];
+uniform sampler2D bumpMaps[16];
 
 in float tcTextureWeights[][16];
 in vec2 tcTextureCoord[];
@@ -20,7 +23,10 @@ out vec3 tePosition;
 uniform mat4 model;      // Model transformation matrix
 uniform mat4 view;       // View transformation matrix
 uniform mat4 projection; // Projection transformation matrix
+uniform uint triplanarEnabled;
 
+
+#include<functions.glsl>
 
 void main() {
     // Barycentric coordinates for the current vertex
@@ -44,6 +50,20 @@ void main() {
                   barycentric.y * tcPosition[1] +
                   barycentric.z * tcPosition[2];
 
-    tePosition = pos;
-    gl_Position = projection * view * model * vec4(pos, 1.0);     
+    vec2 uv = teTextureCoord;
+    if(triplanarEnabled == 1) {
+        uv = triplanarMapping(pos, teNormal, 0.1);
+    }
+
+    vec4 mixedColor = vec4(0.0);
+    for(int i=0 ; i < 16; ++i) {
+        float w = teTextureWeights[i];
+        if(w>0.0) {
+            mixedColor += texture(bumpMaps[i], uv)*w;
+        }
+	}
+
+
+    tePosition = pos + teNormal* length(mixedColor);
+    gl_Position = projection * view * model * vec4(tePosition, 1.0);     
 }

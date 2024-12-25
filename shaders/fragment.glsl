@@ -1,6 +1,9 @@
 #version 460 core
 
-uniform sampler2D textures[16]; // Texture to sample from
+uniform sampler2D textures[16];
+uniform sampler2D normalMaps[16];
+uniform sampler2D bumpMaps[16];
+
 uniform vec3 lightDirection;     // Direction of the light (assumed to be normalized)
 uniform uint lightEnabled;
 
@@ -12,6 +15,8 @@ in vec3 tePosition;
 out vec4 color;    // Final fragment color
 uniform uint triplanarEnabled;
 
+#include<functions.glsl>
+
 void main() {
     vec3 n = normalize(teNormal);
     float diffuse = max(dot(n, -lightDirection), 0.0);
@@ -19,19 +24,10 @@ void main() {
         diffuse = 1.0;
     }
 
-    float scale = 0.1;
     vec2 uv = teTextureCoord;
     if(triplanarEnabled == 1) {
-        vec3 absNormal = abs(n);
-        // Determine the dominant axis
-        if (absNormal.x > absNormal.y && absNormal.x > absNormal.z) {
-            uv = tePosition.yz * scale;
-        } else if (absNormal.y > absNormal.x && absNormal.y > absNormal.z) {
-            uv = tePosition.zx * scale;
-        } else {
-            uv = tePosition.xy * scale;
-        }
-    } 
+        uv = triplanarMapping(tePosition, n, 0.1);
+    }
 
 
     vec4 mixedColor = vec4(0.0);

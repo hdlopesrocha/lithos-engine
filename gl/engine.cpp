@@ -134,7 +134,7 @@ Image LithosApplication::loadTextureImage(const std::string& filename) {
         stbi_image_free(data);
         glBindTexture(GL_TEXTURE_2D, 0);
 
-        image.textureID = textureID;
+        image = textureID;
     }
 	return image;
 }

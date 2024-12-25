@@ -62,9 +62,7 @@ struct IndirectDraw {
 };
 
 
-struct Image {
-	uint32_t textureID;
-};
+typedef uint32_t Image;
 
 struct Model3D {
      std::map<std::string, IndexBufferObject> buffers;

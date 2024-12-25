@@ -6,10 +6,31 @@
 #include "math/math.hpp"
 
 //#define DEBUG_GEO 0
+#define TEXTURES_COUNT 16
+
 
 class Geometry {
 	public:
 	GLuint vao, vbo, ebo;
+};
+
+class Texture {
+	public:
+	Image texture;
+	Image normal;
+	Image bump;
+	
+	Texture(Image texture) {
+		this->texture = texture;
+		this->normal = 0;
+		this->bump = 0;
+	}
+
+	Texture(Image texture, Image normal, Image bump) {
+		this->texture = texture;
+		this->normal = normal;
+		this->bump = bump;
+	}
 };
 
 class HeightMapContainmentHandler : public ContainmentHandler {
@@ -62,7 +83,7 @@ class HeightMapContainmentHandler : public ContainmentHandler {
 
 
 class MainApplication : public LithosApplication {
-	std::vector<Image> images;
+	std::vector<Texture> textures;
   	Camera camera;
 	Octree * tree;
 	Tesselator * tesselator;
@@ -119,6 +140,27 @@ public:
 		return geo;
 	}
 
+
+std::string replace(std::string input,  std::string replace_word, std::string replace_by ) {
+
+ 
+
+    // Find the first occurrence of the substring
+    size_t pos = input.find(replace_word);
+
+    // Iterate through the string and replace all
+    // occurrences
+    while (pos != std::string::npos) {
+        // Replace the substring with the specified string
+        input.replace(pos, replace_word.size(), replace_by);
+
+        // Find the next occurrence of the substring
+        pos = input.find(replace_word,
+                         pos + replace_by.size());
+    }
+	return input;
+}
+
     virtual void setup() {
 		glEnable(GL_DEPTH_TEST);
 		glEnable(GL_BLEND);
@@ -129,21 +171,23 @@ public:
    
 
 
-        images.push_back(loadTextureImage("textures/pixel.jpg"));
-        images.push_back(loadTextureImage("textures/grid.png"));
-        images.push_back(loadTextureImage("textures/grass.png"));
-        images.push_back(loadTextureImage("textures/sand.png"));
-        images.push_back(loadTextureImage("textures/rock.png"));
-        images.push_back(loadTextureImage("textures/snow.png"));
-        images.push_back(loadTextureImage("textures/lava.png"));
-        images.push_back(loadTextureImage("textures/dirt.png"));
-        images.push_back(loadTextureImage("textures/grid3.png"));
-        images.push_back(loadTextureImage("textures/gridRed.png"));
+        textures.push_back(Texture(loadTextureImage("textures/pixel.jpg")));
+        textures.push_back(Texture(loadTextureImage("textures/grid.png")));
+        textures.push_back(Texture(loadTextureImage("textures/grass.png"),loadTextureImage("textures/normal.png"),loadTextureImage("textures/bump2.png")));
+        textures.push_back(Texture(loadTextureImage("textures/sand.png")));
+        textures.push_back(Texture(loadTextureImage("textures/rock.png")));
+        textures.push_back(Texture(loadTextureImage("textures/snow.png")));
+        textures.push_back(Texture(loadTextureImage("textures/lava.png")));
+        textures.push_back(Texture(loadTextureImage("textures/dirt.png")));
+        textures.push_back(Texture(loadTextureImage("textures/grid3.png")));
+        textures.push_back(Texture(loadTextureImage("textures/gridRed.png")));
 
-		std::string vertCode = readFile("shaders/vertex.glsl");
-		std::string fragCode = readFile("shaders/fragment.glsl");
-		std::string controlCode = readFile("shaders/tessControl.glsl");
-		std::string evalCode = readFile("shaders/tessEvaluation.glsl");
+		std::string functionsLine = "#include<functions.glsl>";
+		std::string functionsCode = readFile("shaders/functions.glsl");
+		std::string vertCode = replace(readFile("shaders/vertex.glsl"), functionsLine, functionsCode);
+		std::string fragCode = replace(readFile("shaders/fragment.glsl"), functionsLine, functionsCode);
+		std::string controlCode = replace(readFile("shaders/tessControl.glsl"), functionsLine, functionsCode);
+		std::string evalCode = replace(readFile("shaders/tessEvaluation.glsl"), functionsLine, functionsCode);
 
 
 
@@ -169,11 +213,23 @@ public:
 
 
 
-		for(int i=0 ; i < images.size() ; ++i) {
+		for(int i=0 ; i < textures.size() ; ++i) {
 			glActiveTexture(GL_TEXTURE0 + i); 
-		    glBindTexture(GL_TEXTURE_2D, images[i].textureID);    // Bind the texture to the active unit
+		    
+			glBindTexture(GL_TEXTURE_2D, textures[i].texture);    // Bind the texture to the active unit
 			GLint texLocation = glGetUniformLocation(shaderProgram, ("textures[" + std::to_string(i) + "]").c_str());
 		    glUniform1i(texLocation, i);
+
+			glActiveTexture(GL_TEXTURE0 + TEXTURES_COUNT+ i); 
+			glBindTexture(GL_TEXTURE_2D, textures[i].normal);    // Bind the texture to the active unit
+			GLint normalLocation = glGetUniformLocation(shaderProgram, ("normalMaps[" + std::to_string(i) + "]").c_str());
+		    glUniform1i(normalLocation, TEXTURES_COUNT + i);
+		
+			glActiveTexture(GL_TEXTURE0 + TEXTURES_COUNT*2+ i); 
+			glBindTexture(GL_TEXTURE_2D, textures[i].bump);    // Bind the texture to the active unit
+			GLint bumpLocation = glGetUniformLocation(shaderProgram, ("bumpMaps[" + std::to_string(i) + "]").c_str());
+		    glUniform1i(bumpLocation, TEXTURES_COUNT*2+  i);
+		
 		}
 
 		
