@@ -173,14 +173,15 @@ std::string replace(std::string input,  std::string replace_word, std::string re
 
         textures.push_back(Texture(loadTextureImage("textures/pixel.jpg")));
         textures.push_back(Texture(loadTextureImage("textures/grid.png")));
-        textures.push_back(Texture(loadTextureImage("textures/grass.png"),loadTextureImage("textures/normal.png"),loadTextureImage("textures/bump2.png")));
+        textures.push_back(Texture(loadTextureImage("textures/grass.png")));
         textures.push_back(Texture(loadTextureImage("textures/sand.png")));
-        textures.push_back(Texture(loadTextureImage("textures/rock.png")));
+        textures.push_back(Texture(loadTextureImage("textures/rock.png"),loadTextureImage("textures/normal.png"),loadTextureImage("textures/bump.png") ));
         textures.push_back(Texture(loadTextureImage("textures/snow.png")));
         textures.push_back(Texture(loadTextureImage("textures/lava.png")));
         textures.push_back(Texture(loadTextureImage("textures/dirt.png")));
         textures.push_back(Texture(loadTextureImage("textures/grid3.png")));
         textures.push_back(Texture(loadTextureImage("textures/gridRed.png")));
+        textures.push_back(Texture(loadTextureImage("textures/metal_texture.png"),loadTextureImage("textures/metal_normal.png"),loadTextureImage("textures/metal_bump.png") ));
 
 		std::string functionsLine = "#include<functions.glsl>";
 		std::string functionsCode = readFile("shaders/functions.glsl");
@@ -188,8 +189,6 @@ std::string replace(std::string input,  std::string replace_word, std::string re
 		std::string fragCode = replace(readFile("shaders/fragment.glsl"), functionsLine, functionsCode);
 		std::string controlCode = replace(readFile("shaders/tessControl.glsl"), functionsLine, functionsCode);
 		std::string evalCode = replace(readFile("shaders/tessEvaluation.glsl"), functionsLine, functionsCode);
-
-
 
 		vertexShader = compileShader(vertCode,GL_VERTEX_SHADER);
 		fragmentShader = compileShader(fragCode,GL_FRAGMENT_SHADER);
@@ -247,7 +246,7 @@ std::string replace(std::string input,  std::string replace_word, std::string re
 		tree->add(new HeightMapContainmentHandler(&map, 2, 7));
 
 		BoundingSphere sph(glm::vec3(0,0,0),20);
-		tree->add(new SphereContainmentHandler(sph, 2));
+		tree->add(new SphereContainmentHandler(sph, 10));
 
 		BoundingSphere sph2(glm::vec3(-11,11,11),10);
 		tree->add(new SphereContainmentHandler(sph2, 5));
@@ -293,7 +292,7 @@ std::string replace(std::string input,  std::string replace_word, std::string re
 		glUniform1ui(triplanarEnabledLoc, 1);
 		glPatchParameteri(GL_PATCH_VERTICES, 3); // Define the number of control points per patch
 
-		//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		//glPolygonMode(GL_FRONT, GL_LINE);
 		glBindVertexArray(vertexArrayObject.vao);
 		glDrawElements(GL_PATCHES, tesselator->indices.size(), GL_UNSIGNED_INT, 0);
 
@@ -311,8 +310,9 @@ std::string replace(std::string input,  std::string replace_word, std::string re
 
 		//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     }
-
+float time = 0.0f;
     virtual void update(float deltaTime){
+		time += deltaTime;
 	   	if (getKeyboardStatus(GLFW_KEY_ESCAPE) != GLFW_RELEASE) {
 		   	close();
 		}
@@ -372,7 +372,7 @@ std::string replace(std::string input,  std::string replace_word, std::string re
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(camera.view));
 		glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(camera.projection));
-		glUniform3fv(lightDirectionLoc, 1, glm::value_ptr(glm::normalize(glm::vec3(-1.0,-1.0,-1.0))));
+		glUniform3fv(lightDirectionLoc, 1, glm::value_ptr(glm::normalize(glm::vec3(glm::sin(time),-1.0,glm::cos(time)))));
     }
 
     virtual void clean(){

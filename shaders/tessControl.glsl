@@ -10,15 +10,15 @@ in vec3 vPosition[];
 out float tcTextureWeights[][16];
 out vec2 tcTextureCoord[];
 out vec3 tcNormal[];
-out vec3 tcPosition[];
+out vec3 tcPosition[];;
 
 
 void main() {
     // Set tessellation levels (adjust these as needed)
-    gl_TessLevelInner[0] = 4.0; // or higher for more detail
-    gl_TessLevelOuter[0] = 4.0;
-    gl_TessLevelOuter[1] = 4.0;
-    gl_TessLevelOuter[2] = 4.0; // For triangle patches
+    gl_TessLevelInner[0] = 1.0; // or higher for more detail
+    gl_TessLevelOuter[0] = 1.0;
+    gl_TessLevelOuter[1] = 1.0;
+    gl_TessLevelOuter[2] = 1.0; // For triangle patches
 
     tcPosition[gl_InvocationID] = vPosition[gl_InvocationID]; 
     tcNormal[gl_InvocationID] = vNormal[gl_InvocationID];

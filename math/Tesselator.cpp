@@ -49,6 +49,28 @@ void Tesselator::addVertex(Vertex vertex){
 //	std::cout << "i=" << idx << std::endl;
 }
 
+
+int triplanarPlane(glm::vec3 position, glm::vec3 normal) {
+    glm::vec3 absNormal = glm::abs(normal);
+    if (absNormal.x > absNormal.y && absNormal.x > absNormal.z) {
+        return 0;
+    } else if (absNormal.y > absNormal.x && absNormal.y > absNormal.z) {
+        return 1;
+    } else {
+        return 2;
+    }
+}
+
+glm::vec2 triplanarMapping(glm::vec3 position, int plane, float scale) {
+    if (plane == 0) {
+        return glm::vec2(position.y,position.z) * scale;
+    } else if (plane ==1) {
+        return glm::vec2(position.z, position.x) * scale;
+    } else {
+        return glm::vec2(position.x, position.y) * scale;
+    }
+}
+
 int Tesselator::iterate(int level, OctreeNode * node, BoundingCube cube) {			
 	if(tree->getHeight(cube)==0 && node->solid == ContainmentType::Intersects){
 		std::vector<OctreeNode*> corners;
@@ -82,12 +104,13 @@ int Tesselator::iterate(int level, OctreeNode * node, BoundingCube cube) {
 				if(accepted) {
 					uint m = tessEdge[k];
 					bool empty = m & nodeMask;
-					
+
+					int plane = triplanarPlane(node->vertex.pos, node->vertex.normal);
 					for(int j=0; j < 3; ++j){
 						int l = empty ? 2-j : j;
 						OctreeNode * n = corners[triOrder[l]];
 						Vertex vtx = n->vertex;
-						vtx.texCoord = tessTex[l];
+						vtx.texCoord = triplanarMapping(vtx.pos, plane, 0.1);
 						addVertex(vtx);
 					}
 				}

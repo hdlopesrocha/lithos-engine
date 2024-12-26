@@ -13,18 +13,21 @@ out vec3 vNormal;
 out vec3 vPosition;
 
 
-uniform vec3 lightDirection;     // Direction of the light (assumed to be normalized)
+uniform vec3 lightDirection;  
+uniform uint triplanarEnabled;
 
+#include<functions.glsl>
 
 void main() {
 
+    vTextureCoord = textureCoord;
+   
     for (int i = 0; i < 16; ++i) {
         vTextureWeights[i] = 0.0;
     }
 
     vPosition = position;
     vTextureWeights[textureIndex] = 1.0;
-    vTextureCoord = textureCoord;
     vNormal = normal;
 
     gl_Position = vec4(position, 1.0);
