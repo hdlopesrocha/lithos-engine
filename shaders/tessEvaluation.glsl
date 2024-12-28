@@ -2,7 +2,6 @@
 
 layout(triangles, equal_spacing, ccw) in; // Define primitive type and tessellation spacing
 
-
 uniform sampler2D textures[16];
 uniform sampler2D normalMaps[16];
 uniform sampler2D bumpMaps[16];
@@ -16,7 +15,6 @@ out vec3 teNormal;
 out vec2 teTextureCoord;
 out float teTextureWeights[16];
 out vec3 tePosition;
-
 out vec3 teTangent;
 out vec3 teBitangent;
 
@@ -35,7 +33,6 @@ void main() {
     teNormal = normalize(mat3(transpose(inverse(model))) * teNormal);
 
 
-    teTextureCoord = tcTextureCoord[0] * gl_TessCoord[0] + tcTextureCoord[1] * gl_TessCoord[1] + tcTextureCoord[2] * gl_TessCoord[2];
     
     for (int i = 0; i < 16; ++i) {
         teTextureWeights[i] = (gl_TessCoord[0] * tcTextureWeights[0][i] + gl_TessCoord[1] * tcTextureWeights[1][i] + gl_TessCoord[2] * tcTextureWeights[2][i]);
@@ -44,14 +41,8 @@ void main() {
 
     // Interpolate the triangle position using barycentric coordinates
     tePosition = gl_TessCoord[0] * tcPosition[0] + gl_TessCoord[1] * tcPosition[1] + gl_TessCoord[2] * tcPosition[2];
+    teTextureCoord = tcTextureCoord[0] * gl_TessCoord[0] + tcTextureCoord[1] * gl_TessCoord[1] + tcTextureCoord[2] * gl_TessCoord[2];
+    
+    gl_Position = projection * view * model * vec4(tePosition, 1.0);    
 
-    vec2 uv = teTextureCoord;
-    if(triplanarEnabled == 1) {
-        uv = triplanarMapping(tePosition, teNormal, 0.1);
-    }
-
-
-
-
-    gl_Position = projection * view * model * vec4(tePosition, 1.0);     
 }

@@ -12,15 +12,19 @@ out vec2 tcTextureCoord[];
 out vec3 tcNormal[];
 out vec3 tcPosition[];;
 
+uniform vec3 cameraPosition; 
 
 void main() {
-    // Set tessellation levels (adjust these as needed)
-    gl_TessLevelInner[0] = 8.0; // or higher for more detail
-    gl_TessLevelOuter[0] = 8.0;
-    gl_TessLevelOuter[1] = 8.0;
-    gl_TessLevelOuter[2] = 8.0; // For triangle patches
-
+     vec3 patchCentroid = (vPosition[0] + vPosition[1] + vPosition[2]) / 3.0;
+    float distance = length(cameraPosition - patchCentroid);
+    float tessellationFactor = clamp(100.0 / distance, 1.0, 10.0); // Adjust these numbers to fit your scene
+    gl_TessLevelOuter[0] = tessellationFactor;
+    gl_TessLevelOuter[1] = tessellationFactor;
+    gl_TessLevelOuter[2] = tessellationFactor;
+    gl_TessLevelInner[0] = tessellationFactor;
+    
     tcPosition[gl_InvocationID] = vPosition[gl_InvocationID]; 
+
     tcNormal[gl_InvocationID] = vNormal[gl_InvocationID];
     tcTextureCoord[gl_InvocationID] = vTextureCoord[gl_InvocationID];
     for (int i = 0; i < 16; ++i) {

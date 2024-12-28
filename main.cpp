@@ -245,7 +245,7 @@ std::string replace(std::string input,  std::string replace_word, std::string re
    	    					* glm::angleAxis(glm::radians(135.0f), glm::vec3(0, 1, 0));  
 		camera.position = glm::vec3(48,48,48);
 
-		tree = new Octree(1.0);
+		tree = new Octree(2.0);
 
 		HeightMap map(glm::vec3(-64,-32,-64),glm::vec3(64,-16,64), 128, 128);
 		tree->add(new HeightMapContainmentHandler(&map, 2, 7));
@@ -297,7 +297,7 @@ std::string replace(std::string input,  std::string replace_word, std::string re
 		glUniform1ui(triplanarEnabledLoc, 1);
 		glPatchParameteri(GL_PATCH_VERTICES, 3); // Define the number of control points per patch
 
-		//glPolygonMode(GL_FRONT, GL_LINE);
+	//	glPolygonMode(GL_FRONT, GL_LINE);
 		glBindVertexArray(vertexArrayObject.vao);
 		glDrawElements(GL_PATCHES, tesselator->indices.size(), GL_UNSIGNED_INT, 0);
 

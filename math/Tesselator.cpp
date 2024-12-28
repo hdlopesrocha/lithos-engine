@@ -114,12 +114,18 @@ int Tesselator::iterate(int level, OctreeNode * node, BoundingCube cube) {
 					order[j]=l;
 				}
 
-				//glm::ivec2 t = tessTex[texOrder[order[j]]]; 
 
 				Vertex v0 = corners[triangle[order[0]]]->vertex;
 				Vertex v1 = corners[triangle[order[1]]]->vertex;
 				Vertex v2 = corners[triangle[order[2]]]->vertex;
 				Vertex v3 = corners[triangle[order[3]]]->vertex;
+
+				v0.texCoord = tessTex[order[0]]; 
+				v1.texCoord = tessTex[order[1]]; 
+				v2.texCoord = tessTex[order[2]]; 
+				v3.texCoord = tessTex[order[3]]; 
+
+
 
 				addVertex(v0);
 				addVertex(v1);

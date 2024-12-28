@@ -13,7 +13,8 @@ in vec3 teNormal;
 in vec2 teTextureCoord;
 in float teTextureWeights[16];
 in vec3 tePosition;
-
+in vec3 teTangent;
+in vec3 teBitangent;
 
 
 out vec4 color;    // Final fragment color
@@ -21,36 +22,39 @@ uniform uint triplanarEnabled;
 
 #include<functions.glsl>
 
-vec2 parallaxMapping(vec2 texCoords, vec3 viewDir, float scale) {
-    // Number of layers and step size
-    const int numLayers = 32;
-    const float layerDepth = 1.0 / float(numLayers);
 
-    // Initial values
-    float currentDepth = 0.0;
-    vec2 currentTexCoords = texCoords;
 
-    // Depth from the height map
-    float heightFromMap;
+vec2 parallaxMapping2(vec2 uv, vec2 displacement, float pivot ) {
+    int layers = 8;
+	const float layerDepth = 1.0 / float( layers );
+	float currentLayerDepth = 0.0;
 
-    // Step size along the view direction
-    vec2 deltaTexCoords = viewDir.xy * scale / viewDir.z / float(numLayers);
+	vec2 deltaUv = displacement / float( layers );
+	vec2 currentUv = uv + pivot * displacement;
 
-    // Iterative search
-    for (int i = 0; i < numLayers; ++i) {
-        heightFromMap = textureBlend(teTextureWeights, bumpMaps, currentTexCoords).r;
+    float currentDepth = textureBlend(teTextureWeights, bumpMaps, currentUv).r;
 
-        if (currentDepth > heightFromMap) {
-            break;
-        }
 
-        currentTexCoords -= deltaTexCoords;
-        currentDepth += layerDepth;
-    }
+	for( int i = 0; i < layers; i++ ) {
+		if( currentLayerDepth > currentDepth )
+			break;
 
-    // Optionally refine with binary search
-    return currentTexCoords;
+		currentUv -= deltaUv;
+        currentDepth = textureBlend(teTextureWeights, bumpMaps, currentUv).r;
+
+		currentLayerDepth += layerDepth;
+	}
+
+	vec2 prevUv = currentUv + deltaUv;
+	float endDepth = currentDepth - currentLayerDepth;
+    float startDepth = textureBlend(teTextureWeights, bumpMaps, prevUv).r;
+
+	float w = endDepth / ( endDepth - startDepth );
+
+	return mix( currentUv, prevUv, w );
 }
+
+
 
 void main() {
     vec3 normal = normalize(teNormal);
@@ -58,36 +62,42 @@ void main() {
 
 
 
-    // Compute derivatives of position and texture coordinates
+    if(triplanarEnabled == 1) {
+        int plane = triplanarPlane(tePosition, teNormal);
+        uv = triplanarMapping(tePosition, plane) * 0.1;
+    }
+
+
     vec3 dpdx = dFdx(tePosition);
     vec3 dpdy = dFdy(tePosition);
-    vec2 dtdx = dFdx(uv);
-    vec2 dtdy = dFdy(uv);
+    vec2 dUVdx = dFdx(uv);
+    vec2 dUVdy = dFdy(uv);
 
-    // Solve for tangent and bitangent
-    float determinant = dtdx.x * dtdy.y - dtdx.y * dtdy.x;
-    vec3 tangent = normalize( (dtdy.y * dpdx - dtdx.y * dpdy) / determinant);
-    vec3 bitangent = normalize( (-dtdy.x * dpdx + dtdx.x * dpdy) / determinant);
+    // Calculate the determinant for the tangent space matrix
+    float det = dUVdx.x * dUVdy.y - dUVdx.y * dUVdy.x;
+    float invDet = 1.0 / det;
 
-
-    // Construct the TBN matrix
-    mat3 TBN = mat3(normalize(tangent),
-                    normalize(bitangent),
-                    normalize(normal));
+    // Compute tangent and bitangent vectors
+    vec3 tangent = normalize(invDet * (dpdx * dUVdy.y - dpdy * dUVdx.y));
+    vec3 bitangent = normalize(invDet * (dpdy * dUVdx.x - dpdx * dUVdy.x));
 
 
-    
-    vec3 viewDirWorld = normalize(cameraPosition - tePosition);
-    vec3 viewDirTangent = normalize(TBN * viewDirWorld);
+    vec3 normalMap = textureBlend(teTextureWeights, normalMaps, uv).xyz;
+    normalMap = normalize(normalMap * 2.0 - 1.0); // Convert to range [-1, 1]
 
-    
-    float diffuse = max(dot(normal, -lightDirection), 0.0);
+
+    // Transform normal map vector to world space
+    mat3 TBN = mat3(tangent, bitangent, teNormal);
+    vec3 worldNormal = normalize(TBN * normalMap);
+
+
+
+
+
+    float diffuse = max(dot(worldNormal, -lightDirection), 0.0);
     if(lightEnabled == 0) {
         diffuse = 1.0;
     }
-
-    uv = parallaxMapping(uv, viewDirTangent, 0.1);
-
 
     vec4 mixedColor = textureBlend(teTextureWeights, textures, uv);
     if(mixedColor.a == 0.0) {
@@ -97,3 +107,12 @@ void main() {
     color = vec4(mixedColor.rgb*diffuse, mixedColor.a); 
  
  }
+
+
+
+
+
+
+
+
+
