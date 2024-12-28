@@ -57,10 +57,14 @@ vec2 parallaxMapping2(vec2 uv, vec2 displacement, float pivot ) {
 
 
 void main() {
+    float shininess = 16.0;
+    float specularStrength = 0.4;
+    vec3 specularColor = vec3(1.0,1.0,1.0);
+
+
     vec3 normal = normalize(teNormal);
     vec2 uv = teTextureCoord;
-
-
+    vec3 viewDirection = normalize(tePosition - cameraPosition);
 
     if(triplanarEnabled == 1) {
         int plane = triplanarPlane(tePosition, teNormal);
@@ -92,20 +96,29 @@ void main() {
 
 
 
+    vec3 reflection = reflect(-lightDirection, worldNormal);
+    float phongSpec = pow(max(dot(reflection, viewDirection), 0.0), shininess);
 
 
-    float diffuse = max(dot(worldNormal, -lightDirection), 0.0);
-    if(lightEnabled == 0) {
-        diffuse = 1.0;
-    }
+
 
     vec4 mixedColor = textureBlend(teTextureWeights, textures, uv);
     if(mixedColor.a == 0.0) {
         discard;
     }
 
-    color = vec4(mixedColor.rgb*diffuse, mixedColor.a); 
- 
+    if(lightEnabled == 0) {
+        color = mixedColor; 
+    }
+    else {
+
+        
+        float diffuse = max(dot(worldNormal, -lightDirection), 0.0);
+
+
+
+        color = vec4(mixedColor.rgb*diffuse + specularColor * specularStrength * phongSpec, mixedColor.a); 
+    }
  }
 
 
