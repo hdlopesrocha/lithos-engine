@@ -31,23 +31,19 @@ uniform uint triplanarEnabled;
 
 void main() {
    // Interpolate attributes using barycentric coordinates
-    teNormal = tcNormal[0] * gl_TessCoord.x + tcNormal[1] * gl_TessCoord.y + tcNormal[2] * gl_TessCoord.z;
+    teNormal = tcNormal[0] * gl_TessCoord[0] + tcNormal[1] * gl_TessCoord[1] + tcNormal[2] * gl_TessCoord[2];
     teNormal = normalize(mat3(transpose(inverse(model))) * teNormal);
 
 
-
-
-    teTextureCoord = tcTextureCoord[0] * gl_TessCoord.x + tcTextureCoord[1] * gl_TessCoord.y + tcTextureCoord[2] * gl_TessCoord.z;
+    teTextureCoord = tcTextureCoord[0] * gl_TessCoord[0] + tcTextureCoord[1] * gl_TessCoord[1] + tcTextureCoord[2] * gl_TessCoord[2];
     
     for (int i = 0; i < 16; ++i) {
-        teTextureWeights[i] = (gl_TessCoord.x * tcTextureWeights[0][i] + gl_TessCoord.y * tcTextureWeights[1][i] + gl_TessCoord.z * tcTextureWeights[2][i]);
+        teTextureWeights[i] = (gl_TessCoord[0] * tcTextureWeights[0][i] + gl_TessCoord[1] * tcTextureWeights[1][i] + gl_TessCoord[2] * tcTextureWeights[2][i]);
     }
 
 
     // Interpolate the triangle position using barycentric coordinates
-    tePosition = gl_TessCoord.x * tcPosition[0] +
-                  gl_TessCoord.y * tcPosition[1] +
-                  gl_TessCoord.z * tcPosition[2];
+    tePosition = gl_TessCoord[0] * tcPosition[0] + gl_TessCoord[1] * tcPosition[1] + gl_TessCoord[2] * tcPosition[2];
 
     vec2 uv = teTextureCoord;
     if(triplanarEnabled == 1) {

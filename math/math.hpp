@@ -260,7 +260,7 @@ class Tesselator : public TesselatorHandler{
 	public:
 		Tesselator(Octree * tree);
 		int iterate(int level, OctreeNode * node, BoundingCube cube);
-		void addVertex(Vertex vertex);
+		Vertex * addVertex(Vertex vertex);
 
 };
 
