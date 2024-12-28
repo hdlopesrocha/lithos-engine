@@ -28,14 +28,12 @@ Tesselator::Tesselator(Octree * tree) {
 		tessTex.push_back(glm::vec2(1,1));
 		tessTex.push_back(glm::vec2(1,0));
 
-
 		for(int i=0 ; i < 8; ++i) {
 			glm::vec3 v = Octree::getShift(i);
 			std::cout << "" << i << ": " << v.x << " "<< v.y << " "<< v.z << std::endl; 
 		}
 		initialized = true;
 	}
-
 }
 
 Vertex * Tesselator::addVertex(Vertex vertex){
@@ -48,7 +46,6 @@ Vertex * Tesselator::addVertex(Vertex vertex){
 	indices.push_back(idx);
 	return &(vertices[idx]);
 }
-
 
 int triplanarPlane(glm::vec3 position, glm::vec3 normal) {
     glm::vec3 absNormal = glm::abs(normal);
@@ -70,7 +67,6 @@ glm::vec2 triplanarMapping(glm::vec3 position, int plane) {
         return glm::vec2(position.x, position.y);
     }
 }
-
 
 int Tesselator::iterate(int level, OctreeNode * node, BoundingCube cube) {			
 	if(tree->getHeight(cube)==0 && node->solid == ContainmentType::Intersects){
@@ -100,49 +96,46 @@ int Tesselator::iterate(int level, OctreeNode * node, BoundingCube cube) {
 			glm::ivec4 triangle = tessOrder[k];
 			glm::ivec3 texOrder = texIndex[k];
 			uint m = tessEdge[k];
-			
-//			if((nodeMask & tess[0]) && !(nodeMask & tess[1])){
-				bool isSurface = true;
-				bool empty = m & nodeMask;		            
+		
+			bool isSurface = true;
+			bool empty = m & nodeMask;		            
 
-				for(int j=0; j < 4; ++j) {
-					OctreeNode * n = corners[triangle[j]];
-					if(n == NULL || n->solid != ContainmentType::Intersects){
-						isSurface = false;
-						break;
-					}
-				}	
-				if(isSurface) {
-	
-					glm::ivec4 order = glm::ivec4();
-					for(int j=0; j < 4; ++j){
-						int l = empty ? 3-j : j;
-						order[j]=l;
-					}
-
-						//glm::ivec2 t = tessTex[texOrder[order[j]]]; 
-
-					Vertex v0 = corners[triangle[order[0]]]->vertex;
-					Vertex v1 = corners[triangle[order[1]]]->vertex;
-					Vertex v2 = corners[triangle[order[2]]]->vertex;
-					Vertex v3 = corners[triangle[order[3]]]->vertex;
-
-					addVertex(v0);
-					addVertex(v1);
-					addVertex(v2);
-
-					addVertex(v0);
-					addVertex(v2);
-					addVertex(v3);
-
-					glm::vec3 edge1 = v1.position - v0.position;
-					glm::vec3 edge2 = v3.position - v0.position;
-
- 					glm::vec2 deltaUV1 = v1.texCoord - v0.texCoord;
-  				    glm::vec2 deltaUV2 = v3.texCoord - v0.texCoord;
-
+			for(int j=0; j < 4; ++j) {
+				OctreeNode * n = corners[triangle[j]];
+				if(n == NULL || n->solid != ContainmentType::Intersects){
+					isSurface = false;
+					break;
 				}
-//			}
+			}	
+			if(isSurface) {
+				glm::ivec4 order = glm::ivec4();
+				for(int j=0; j < 4; ++j){
+					int l = empty ? 3-j : j;
+					order[j]=l;
+				}
+
+				//glm::ivec2 t = tessTex[texOrder[order[j]]]; 
+
+				Vertex v0 = corners[triangle[order[0]]]->vertex;
+				Vertex v1 = corners[triangle[order[1]]]->vertex;
+				Vertex v2 = corners[triangle[order[2]]]->vertex;
+				Vertex v3 = corners[triangle[order[3]]]->vertex;
+
+				addVertex(v0);
+				addVertex(v1);
+				addVertex(v2);
+
+				addVertex(v0);
+				addVertex(v2);
+				addVertex(v3);
+
+				glm::vec3 edge1 = v1.position - v0.position;
+				glm::vec3 edge2 = v3.position - v0.position;
+
+				glm::vec2 deltaUV1 = v1.texCoord - v0.texCoord;
+				glm::vec2 deltaUV2 = v3.texCoord - v0.texCoord;
+
+			}
 		}
 	}
 	return 1; 			 			
