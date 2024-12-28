@@ -8,13 +8,13 @@
 #include <map> 
 
 struct Vertex {
-    glm::vec3 pos;
+    glm::vec3 position;
     glm::vec3 normal;
 	glm::vec2 texCoord;
 
     std::string toString() {
 		std::stringstream ss;
-		ss << pos.x <<  "," <<  pos.y <<  "," <<  pos.z <<  "," << normal.x <<  "," <<  normal.y <<  "," <<  normal.z <<  "," <<  texCoord.x <<  "," <<  texCoord.y;
+		ss << position.x <<  "," <<  position.y <<  "," <<  position.z <<  "," << normal.x <<  "," <<  normal.y <<  "," <<  normal.z <<  "," <<  texCoord.x <<  "," <<  texCoord.y;
 		return ss.str();
     }
 };
@@ -39,7 +39,7 @@ void loadModel(char * path) {
 	    for (const auto& index : shape.mesh.indices) {
 	        Vertex vertex = {};
 
-			vertex.pos = {
+			vertex.position = {
 			    attrib.vertices[3 * index.vertex_index + 0],
 			    attrib.vertices[3 * index.vertex_index + 1],
 			    attrib.vertices[3 * index.vertex_index + 2]
@@ -74,7 +74,7 @@ void loadModel(char * path) {
 		std::cout << "\t\t\"v\":[";
 	    it = 0;
 		for (const auto& val : vertices) {
-			std::cout << (it++ == 0 ? "" : ",") << val.pos.x << "," << val.pos.y << "," << val.pos.z;
+			std::cout << (it++ == 0 ? "" : ",") << val.position.x << "," << val.position.y << "," << val.position.z;
 		}
 		std::cout << "]," << std::endl;
 

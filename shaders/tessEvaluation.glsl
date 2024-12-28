@@ -54,5 +54,8 @@ void main() {
         uv = triplanarMapping(tePosition, teNormal, 0.1);
     }
 
+
+
+
     gl_Position = projection * view * model * vec4(tePosition, 1.0);     
 }

@@ -144,7 +144,7 @@ ContainmentType BoxContainmentHandler::check(BoundingCube cube, Vertex * vertex)
                  n[i] = -1.0;
             }
         }
-        vertex->pos = c;
+        vertex->position = c;
         vertex->normal = glm::normalize(n);
     }
     return result;

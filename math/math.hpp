@@ -17,27 +17,29 @@ enum ContainmentType {
 };
 
 struct Vertex {
-    glm::vec3 pos;
+    glm::vec3 position;
     glm::vec3 normal;
     glm::vec2 texCoord;
     int texIndex;
+    glm::vec3 tangent;
+    glm::vec3 bitangent;
 
     Vertex(){
-		this->pos = glm::vec3(0);
+		this->position = glm::vec3(0);
     	this->normal = glm::vec3(0);
     	this->texCoord = glm::vec2(0);
     	this->texIndex = 0;
     }
 
     Vertex(glm::vec3 pos) {
-    	this->pos = pos;
+    	this->position = pos;
     	this->normal = glm::vec3(0);
     	this->texCoord = glm::vec2(0);
     	this->texIndex = 0;
     }
 
     Vertex(glm::vec3 pos,glm::vec3 normal,glm::vec2 texCoord, uint texIndex) {
-    	this->pos = pos;
+    	this->position = pos;
     	this->normal = normal;
     	this->texCoord = texCoord;
     	this->texIndex = texIndex;
@@ -46,14 +48,14 @@ struct Vertex {
 
     std::string toKey() {
 		std::stringstream ss;
-		ss << "[" << pos.x <<  " " <<  pos.y <<  " " <<  pos.z << " " << texCoord.x <<  " " <<  texCoord.y <<"]";
+		ss << "[" << position.x <<  " " <<  position.y <<  " " <<  position.z << " " << texCoord.x <<  " " <<  texCoord.y <<"]";
 		return ss.str();
     }
 
     std::string toString() {
 		std::stringstream ss;
 		ss << "{"
-			<< "\"p\":" << "[" << pos.x <<  "," <<  pos.y <<  "," <<  pos.z << "],"
+			<< "\"p\":" << "[" << position.x <<  "," <<  position.y <<  "," <<  position.z << "],"
 			<< "\"n\":" << "[" << normal.x <<  "," <<  normal.y <<  "," <<  normal.z << "],"
 			<< "\"c\":" << "[" << texCoord.x <<  "," <<  texCoord.y << "],"
 			<< "\"i\":" << texIndex

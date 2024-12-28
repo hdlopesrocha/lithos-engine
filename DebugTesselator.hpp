@@ -48,7 +48,7 @@ class DebugTesselator : public TesselatorHandler{
 			}
 		}
 
-		void addVertex(Vertex vertex){
+		Vertex * addVertex(Vertex vertex){
 			std::string key = vertex.toString();
 			if(!compactMap.count(key)) {
 				compactMap[key] = compactMap.size();
@@ -56,6 +56,7 @@ class DebugTesselator : public TesselatorHandler{
 			}
 			int idx = compactMap[key];
 			indices.push_back(idx);
+			return &(vertices[idx]);
 		//	std::cout << "i=" << idx << std::endl;
 		}
 
@@ -74,7 +75,7 @@ class DebugTesselator : public TesselatorHandler{
 			
 					for(int j=0; j < 3; ++j){
 						Vertex vtx;
-						vtx.pos = corners[triOrder[j]];
+						vtx.position = corners[triOrder[j]];
 						vtx.texCoord = tessTexDebug[j];
 						vtx.texIndex = node->solid == ContainmentType::Contains ? 9 : 1;
 						vtx.normal = glm::vec3(0.0);

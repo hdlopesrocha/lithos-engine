@@ -72,7 +72,7 @@ struct Camera {
     glm::mat4 projection;
     glm::mat4 view;
     glm::quat quaternion;
-    glm::vec3 pos;
+    glm::vec3 position;
 };
 
 class LithosApplication {

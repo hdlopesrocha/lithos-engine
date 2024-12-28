@@ -62,7 +62,7 @@ class HeightMapContainmentHandler : public ContainmentHandler {
 				glm::vec3 p0 = getPoint(c[0], c[2]); 
 		
 				if(map->hitsBoundary(cube) && cube.getMaxY() <= p0[1]) {
-					vertex->pos = cube.getCenter();
+					vertex->position = cube.getCenter();
 					vertex->texIndex = this->textureOut;
 					glm::vec3 n = glm::normalize(c-a);
 					vertex->normal = n;
@@ -73,7 +73,7 @@ class HeightMapContainmentHandler : public ContainmentHandler {
 					glm::vec3 v2 = p2 - p0;
 
 					vertex->normal = glm::cross(v2,v1);
-					vertex->pos = p0;
+					vertex->position = p0;
 					vertex->texIndex = this->texture;
 				}
 			}
@@ -104,6 +104,7 @@ class MainApplication : public LithosApplication {
 	GLuint lightDirectionLoc;
 	GLuint lightEnabledLoc;
 	GLuint triplanarEnabledLoc;
+	GLuint cameraPositionLoc;
 	Geometry vertexArrayObject;
 
 
@@ -128,7 +129,7 @@ public:
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, geo.ebo);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, t->indices.size()*sizeof(uint), t->indices.data(), GL_STATIC_DRAW);
 		
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) offsetof(Vertex, pos));
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) offsetof(Vertex, position));
 		glEnableVertexAttribArray(0);
 		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) offsetof(Vertex, normal));
 		glEnableVertexAttribArray(1);
@@ -136,7 +137,10 @@ public:
 		glEnableVertexAttribArray(2);		
 		glVertexAttribIPointer(3, 1, GL_UNSIGNED_INT, sizeof(Vertex), (void*) offsetof(Vertex, texIndex) );
 		glEnableVertexAttribArray(3);
-		
+	    glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) offsetof(Vertex, tangent));
+		glEnableVertexAttribArray(1);
+		glVertexAttribPointer(5, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) offsetof(Vertex, bitangent));
+		glEnableVertexAttribArray(1);	
 		return geo;
 	}
 
@@ -173,15 +177,15 @@ std::string replace(std::string input,  std::string replace_word, std::string re
 
         textures.push_back(Texture(loadTextureImage("textures/pixel.jpg")));
         textures.push_back(Texture(loadTextureImage("textures/grid.png")));
-        textures.push_back(Texture(loadTextureImage("textures/grass.png")));
+        textures.push_back(Texture(loadTextureImage("textures/grass_color.png"),loadTextureImage("textures/grass_normal.png"),loadTextureImage("textures/grass_bump.png") ));
         textures.push_back(Texture(loadTextureImage("textures/sand.png")));
-        textures.push_back(Texture(loadTextureImage("textures/rock.png"),loadTextureImage("textures/normal.png"),loadTextureImage("textures/bump.png") ));
-        textures.push_back(Texture(loadTextureImage("textures/snow.png")));
+        textures.push_back(Texture(loadTextureImage("textures/rock_color.png"),loadTextureImage("textures/rock_normal.png"),loadTextureImage("textures/rock_bump.png") ));
+        textures.push_back(Texture(loadTextureImage("textures/snow_color.png"),loadTextureImage("textures/snow_normal.png"),loadTextureImage("textures/snow_bump.png") ));
         textures.push_back(Texture(loadTextureImage("textures/lava.png")));
         textures.push_back(Texture(loadTextureImage("textures/dirt.png")));
         textures.push_back(Texture(loadTextureImage("textures/grid3.png")));
         textures.push_back(Texture(loadTextureImage("textures/gridRed.png")));
-        textures.push_back(Texture(loadTextureImage("textures/metal_texture.png"),loadTextureImage("textures/metal_normal.png"),loadTextureImage("textures/metal_bump.png") ));
+        textures.push_back(Texture(loadTextureImage("textures/metal_color.png"),loadTextureImage("textures/metal_normal.png"),loadTextureImage("textures/metal_bump.png") ));
 
 		std::string functionsLine = "#include<functions.glsl>";
 		std::string functionsCode = readFile("shaders/functions.glsl");
@@ -209,6 +213,7 @@ std::string replace(std::string input,  std::string replace_word, std::string re
 		lightDirectionLoc = glGetUniformLocation(shaderProgram, "lightDirection");
 		lightEnabledLoc = glGetUniformLocation(shaderProgram, "lightEnabled");
 		triplanarEnabledLoc = glGetUniformLocation(shaderProgram, "triplanarEnabled");
+		cameraPositionLoc = glGetUniformLocation(shaderProgram, "cameraPosition");
 
 
 
@@ -238,7 +243,7 @@ std::string replace(std::string input,  std::string replace_word, std::string re
         camera.quaternion =   glm::angleAxis(glm::radians(180.0f), glm::vec3(0, 0, 1))
    	    					* glm::angleAxis(glm::radians(145.0f), glm::vec3(1, 0, 0))
    	    					* glm::angleAxis(glm::radians(135.0f), glm::vec3(0, 1, 0));  
-		camera.pos = glm::vec3(48,48,48);
+		camera.position = glm::vec3(48,48,48);
 
 		tree = new Octree(1.0);
 
@@ -349,21 +354,21 @@ float time = 0.0f;
 
 	   	float tsense = deltaTime*20;
 	   	if (getKeyboardStatus(GLFW_KEY_UP) != GLFW_RELEASE) {
-	   		camera.pos -= zAxis*tsense;
+	   		camera.position -= zAxis*tsense;
 		}
 	   	if (getKeyboardStatus(GLFW_KEY_DOWN) != GLFW_RELEASE) {
-	   		camera.pos += zAxis*tsense;
+	   		camera.position += zAxis*tsense;
 		}
 	   	if (getKeyboardStatus(GLFW_KEY_RIGHT) != GLFW_RELEASE) {
-	   		camera.pos += xAxis*tsense;
+	   		camera.position += xAxis*tsense;
 		}
    		if (getKeyboardStatus(GLFW_KEY_LEFT) != GLFW_RELEASE) {
-	   		camera.pos -= xAxis*tsense;
+	   		camera.position -= xAxis*tsense;
 		}
 
 		camera.quaternion = glm::normalize(camera.quaternion);
 		glm::mat4 rotate = glm::mat4_cast(camera.quaternion);
-		glm::mat4 translate = glm::translate(glm::mat4(1.0f), -camera.pos);
+		glm::mat4 translate = glm::translate(glm::mat4(1.0f), -camera.position);
 	    camera.view = rotate * translate;
 
 		glm::mat4 model = glm::mat4(1.0f); // Identity matrix
@@ -373,6 +378,7 @@ float time = 0.0f;
 		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(camera.view));
 		glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(camera.projection));
 		glUniform3fv(lightDirectionLoc, 1, glm::value_ptr(glm::normalize(glm::vec3(glm::sin(time),-1.0,glm::cos(time)))));
+		glUniform3fv(cameraPositionLoc, 1, glm::value_ptr(camera.position));
     }
 
     virtual void clean(){
