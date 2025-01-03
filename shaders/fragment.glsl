@@ -97,12 +97,6 @@ void main() {
     vec3 positionTangent = TBN *  tePosition;
     vec3 viewTangent = normalize(positionTangent - cameraTangent);
     
-    //float height = textureBlend(teTextureWeights, bumpMaps, uv).r;    
-    //float minDepth = 0.1; // Prevent division by near-zero
-    //float depth = max(viewTangent.z, minDepth);
-    //vec2 parallaxOffset = (viewTangent.xy/ depth) * (height * parallaxScale);
-
-    
     uv = parallaxMapping2(uv, viewTangent*parallaxScale);
 
 

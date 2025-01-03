@@ -298,7 +298,7 @@ std::string replace(std::string input,  std::string replace_word, std::string re
 		glUniform1ui(triplanarEnabledLoc, 1);
 		glPatchParameteri(GL_PATCH_VERTICES, 3); // Define the number of control points per patch
 
-	//	glPolygonMode(GL_FRONT, GL_LINE);
+//		glPolygonMode(GL_FRONT, GL_LINE);
 		glBindVertexArray(vertexArrayObject.vao);
 		glDrawElements(GL_PATCHES, tesselator->indices.size(), GL_UNSIGNED_INT, 0);
 
@@ -328,7 +328,7 @@ float time = 0.0f;
     
 	 //   modelMatrix = glm::rotate(modelMatrix, deltaTime * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 
-	   	float rsense = 0.002;
+	   	float rsense = 0.01;
 
 	   	if (getKeyboardStatus(GLFW_KEY_W) != GLFW_RELEASE) {
 	   	   	camera.quaternion = glm::angleAxis(+rsense, glm::vec3(1,0,0))*camera.quaternion;
@@ -353,7 +353,7 @@ float time = 0.0f;
 		glm::vec3 yAxis = glm::vec3(0.0f, 1.0f, 0.0f)*camera.quaternion;
 		glm::vec3 zAxis = glm::vec3(0.0f, 0.0f, 1.0f)*camera.quaternion;
 
-	   	float tsense = deltaTime*2;
+	   	float tsense = deltaTime*10;
 	   	if (getKeyboardStatus(GLFW_KEY_UP) != GLFW_RELEASE) {
 	   		camera.position -= zAxis*tsense;
 		}

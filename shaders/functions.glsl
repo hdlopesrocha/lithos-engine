@@ -13,8 +13,8 @@ vec2 triplanarMapping(vec3 position, int plane) {
     switch (plane) {
         case 0: return vec2(-position.z, -position.y);
         case 1: return vec2(position.z, -position.y);
-        case 2: return vec2(-position.z, position.x);
-        case 3: return vec2(-position.z, -position.x);
+        case 2: return vec2(position.x, position.z);
+        case 3: return vec2(position.x, -position.z);
         case 4: return vec2(position.x, -position.y);
         case 5: return vec2(-position.x, -position.y);
         default: return vec2(0.0,0.0);
