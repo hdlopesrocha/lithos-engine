@@ -2,18 +2,18 @@
 
 layout(triangles, equal_spacing, ccw) in; // Define primitive type and tessellation spacing
 
-uniform sampler2D textures[16];
-uniform sampler2D normalMaps[16];
-uniform sampler2D bumpMaps[16];
+uniform sampler2D textures[10];
+uniform sampler2D normalMaps[10];
+uniform sampler2D bumpMaps[10];
 
-in float tcTextureWeights[][16];
+in float tcTextureWeights[][10];
 in vec2 tcTextureCoord[];
 in vec3 tcNormal[];
 in vec3 tcPosition[];
 
 out vec3 teNormal;
 out vec2 teTextureCoord;
-out float teTextureWeights[16];
+out float teTextureWeights[10];
 out vec3 tePosition;
 out vec3 teTangent;
 out vec3 teBitangent;
@@ -34,7 +34,7 @@ void main() {
 
 
     
-    for (int i = 0; i < 16; ++i) {
+    for (int i = 0; i < 10; ++i) {
         teTextureWeights[i] = (gl_TessCoord[0] * tcTextureWeights[0][i] + gl_TessCoord[1] * tcTextureWeights[1][i] + gl_TessCoord[2] * tcTextureWeights[2][i]);
     }
 
@@ -43,6 +43,10 @@ void main() {
     tePosition = gl_TessCoord[0] * tcPosition[0] + gl_TessCoord[1] * tcPosition[1] + gl_TessCoord[2] * tcPosition[2];
     teTextureCoord = tcTextureCoord[0] * gl_TessCoord[0] + tcTextureCoord[1] * gl_TessCoord[1] + tcTextureCoord[2] * gl_TessCoord[2];
     
+
+    //float height = textureBlend(teTextureWeights, bumpMaps, teTextureCoord).r;
+
+
     gl_Position = projection * view * model * vec4(tePosition, 1.0);    
 
 }

@@ -60,7 +60,7 @@ int triplanarPlane(glm::vec3 position, glm::vec3 normal) {
 
 glm::vec2 triplanarMapping(glm::vec3 position, int plane) {
     if (plane == 0) {
-        return glm::vec2(position.y,position.z);
+        return glm::vec2(position.z,position.y);
     } else if (plane ==1) {
         return glm::vec2(position.z, position.x);
     } else {
@@ -114,16 +114,21 @@ int Tesselator::iterate(int level, OctreeNode * node, BoundingCube cube) {
 					order[j]=l;
 				}
 
-
 				Vertex v0 = corners[triangle[order[0]]]->vertex;
 				Vertex v1 = corners[triangle[order[1]]]->vertex;
 				Vertex v2 = corners[triangle[order[2]]]->vertex;
 				Vertex v3 = corners[triangle[order[3]]]->vertex;
+				float scale = 0.1;
+				int plane = triplanarPlane(v0.position, v0.normal);
+				v0.texCoord = triplanarMapping(v0.position, plane)*scale;
+				v1.texCoord = triplanarMapping(v1.position, plane)*scale;
+				v2.texCoord = triplanarMapping(v2.position, plane)*scale;
+				v3.texCoord = triplanarMapping(v3.position, plane)*scale;	
 
-				v0.texCoord = tessTex[order[0]]; 
-				v1.texCoord = tessTex[order[1]]; 
-				v2.texCoord = tessTex[order[2]]; 
-				v3.texCoord = tessTex[order[3]]; 
+				//v0.texCoord = tessTex[order[0]]; 
+				//v1.texCoord = tessTex[order[1]]; 
+				//v2.texCoord = tessTex[order[2]]; 
+				//v3.texCoord = tessTex[order[3]]; 
 
 
 

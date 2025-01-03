@@ -1,28 +1,30 @@
 int triplanarPlane(vec3 position, vec3 normal) {
     vec3 absNormal = abs(normal);
     if (absNormal.x > absNormal.y && absNormal.x > absNormal.z) {
-        return 0;
+        return normal.x > 0 ? 0 : 1;
     } else if (absNormal.y > absNormal.x && absNormal.y > absNormal.z) {
-        return 1;
+        return normal.y > 0 ? 2 : 3;
     } else {
-        return 2;
+        return normal.z > 0 ? 4 : 5;
     }
 }
 
 vec2 triplanarMapping(vec3 position, int plane) {
-    if (plane == 0) {
-        return position.yz;
-    } else if (plane == 1) {
-        return position.zx;
-    } else {
-        return position.xy;
+    switch (plane) {
+        case 0: return vec2(-position.z, -position.y);
+        case 1: return vec2(position.z, -position.y);
+        case 2: return vec2(-position.z, position.x);
+        case 3: return vec2(-position.z, -position.x);
+        case 4: return vec2(position.x, -position.y);
+        case 5: return vec2(-position.x, -position.y);
+        default: return vec2(0.0,0.0);
     }
 }
 
 
-vec4 textureBlend(in float ws[16], sampler2D ts[16], vec2 uv) {
+vec4 textureBlend(in float ws[10], sampler2D ts[10], vec2 uv) {
     vec4 res = vec4(0.0);
-    for(int i=0 ; i < 16; ++i) {
+    for(int i=0 ; i < 10; ++i) {
         float w = ws[i];
         if(w>0.0) {
             res += texture(ts[i], uv)*w;

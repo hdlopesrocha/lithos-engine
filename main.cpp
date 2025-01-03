@@ -6,7 +6,7 @@
 #include "math/math.hpp"
 
 //#define DEBUG_GEO 0
-#define TEXTURES_COUNT 16
+#define TEXTURES_COUNT 10
 
 
 class Geometry {
@@ -105,6 +105,7 @@ class MainApplication : public LithosApplication {
 	GLuint lightEnabledLoc;
 	GLuint triplanarEnabledLoc;
 	GLuint cameraPositionLoc;
+	GLuint timeLoc;
 	Geometry vertexArrayObject;
 
 
@@ -181,11 +182,9 @@ std::string replace(std::string input,  std::string replace_word, std::string re
         textures.push_back(Texture(loadTextureImage("textures/sand.png")));
         textures.push_back(Texture(loadTextureImage("textures/rock_color.png"),loadTextureImage("textures/rock_normal.png"),loadTextureImage("textures/rock_bump.png") ));
         textures.push_back(Texture(loadTextureImage("textures/snow_color.png"),loadTextureImage("textures/snow_normal.png"),loadTextureImage("textures/snow_bump.png") ));
-        textures.push_back(Texture(loadTextureImage("textures/lava.png")));
-        textures.push_back(Texture(loadTextureImage("textures/dirt.png")));
-        textures.push_back(Texture(loadTextureImage("textures/grid3.png")));
-        textures.push_back(Texture(loadTextureImage("textures/gridRed.png")));
         textures.push_back(Texture(loadTextureImage("textures/metal_color.png"),loadTextureImage("textures/metal_normal.png"),loadTextureImage("textures/metal_bump.png") ));
+        textures.push_back(Texture(loadTextureImage("textures/dirt_color.png"),loadTextureImage("textures/dirt_normal.png"),loadTextureImage("textures/dirt_bump.png") ));
+        textures.push_back(Texture(loadTextureImage("textures/bricks_color.png"),loadTextureImage("textures/bricks_normal.png"),loadTextureImage("textures/bricks_bump.png") ));
 
 		std::string functionsLine = "#include<functions.glsl>";
 		std::string functionsCode = readFile("shaders/functions.glsl");
@@ -214,6 +213,7 @@ std::string replace(std::string input,  std::string replace_word, std::string re
 		lightEnabledLoc = glGetUniformLocation(shaderProgram, "lightEnabled");
 		triplanarEnabledLoc = glGetUniformLocation(shaderProgram, "triplanarEnabled");
 		cameraPositionLoc = glGetUniformLocation(shaderProgram, "cameraPosition");
+		timeLoc = glGetUniformLocation(shaderProgram, "time");
 
 
 
@@ -251,7 +251,7 @@ std::string replace(std::string input,  std::string replace_word, std::string re
 		tree->add(new HeightMapContainmentHandler(&map, 2, 7));
 
 		BoundingSphere sph(glm::vec3(0,0,0),20);
-		tree->add(new SphereContainmentHandler(sph, 10));
+		tree->add(new SphereContainmentHandler(sph, 8));
 
 		BoundingSphere sph2(glm::vec3(-11,11,11),10);
 		tree->add(new SphereContainmentHandler(sph2, 5));
@@ -286,6 +286,7 @@ std::string replace(std::string input,  std::string replace_word, std::string re
 		glClearColor (0.1,0.1,0.1,1.0);
 
 
+		glUniform3fv(lightDirectionLoc, 1, glm::value_ptr(glm::normalize(glm::vec3(-1.0,-1.0,-1.0))));
 
 	 }
 
@@ -327,7 +328,7 @@ float time = 0.0f;
     
 	 //   modelMatrix = glm::rotate(modelMatrix, deltaTime * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 
-	   	float rsense = 0.005;
+	   	float rsense = 0.002;
 
 	   	if (getKeyboardStatus(GLFW_KEY_W) != GLFW_RELEASE) {
 	   	   	camera.quaternion = glm::angleAxis(+rsense, glm::vec3(1,0,0))*camera.quaternion;
@@ -352,7 +353,7 @@ float time = 0.0f;
 		glm::vec3 yAxis = glm::vec3(0.0f, 1.0f, 0.0f)*camera.quaternion;
 		glm::vec3 zAxis = glm::vec3(0.0f, 0.0f, 1.0f)*camera.quaternion;
 
-	   	float tsense = deltaTime*20;
+	   	float tsense = deltaTime*2;
 	   	if (getKeyboardStatus(GLFW_KEY_UP) != GLFW_RELEASE) {
 	   		camera.position -= zAxis*tsense;
 		}
@@ -377,8 +378,9 @@ float time = 0.0f;
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(camera.view));
 		glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(camera.projection));
-		glUniform3fv(lightDirectionLoc, 1, glm::value_ptr(glm::normalize(glm::vec3(glm::sin(time),-1.0,glm::cos(time)))));
+		//glUniform3fv(lightDirectionLoc, 1, glm::value_ptr(glm::normalize(glm::vec3(glm::sin(time),-1.0,glm::cos(time)))));
 		glUniform3fv(cameraPositionLoc, 1, glm::value_ptr(camera.position));
+		glUniform1f(timeLoc, time);
     }
 
     virtual void clean(){

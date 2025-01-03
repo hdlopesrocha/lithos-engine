@@ -9,7 +9,7 @@ layout(location = 4) in uint tangent;
 layout(location = 5) in uint bitangent;    
 
 
-out float vTextureWeights[16];
+out float vTextureWeights[10];
 out vec2 vTextureCoord;
 out vec3 vNormal;
 out vec3 vPosition;
@@ -24,7 +24,7 @@ void main() {
 
     vTextureCoord = textureCoord;
    
-    for (int i = 0; i < 16; ++i) {
+    for (int i = 0; i < 10; ++i) {
         vTextureWeights[i] = 0.0;
     }
 
