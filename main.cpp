@@ -213,7 +213,6 @@ std::string replace(std::string input,  std::string replace_word, std::string re
 			glActiveTexture(GL_TEXTURE0 + i); 
 		    Texture t = textures[i];
 
-
 			glBindTexture(GL_TEXTURE_2D, t.texture);    // Bind the texture to the active unit
 			GLint texLocation = glGetUniformLocation(shaderProgram, ("textures[" + std::to_string(i) + "]").c_str());
 		    glUniform1i(texLocation, i);
