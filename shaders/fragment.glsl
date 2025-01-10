@@ -12,10 +12,12 @@ uniform vec3 cameraPosition;
 uniform float time;
 
 
-in vec3 teNormal;
 in vec2 teTextureCoord;
 in float teTextureWeights[10];
 in vec3 tePosition;
+in vec3 teNormal;
+in vec3 teTangent;
+in vec3 teBitangent;
 
 
 out vec4 color;    // Final fragment color
@@ -71,6 +73,11 @@ mat3 getTBN(vec3 pos, vec3 normal, vec2 uv) {
     return mat3(tangent, bitangent, normal);
 }
 
+vec3 visual(vec3 v) {
+    return v*0.5 + vec3(0.5);
+}
+
+
 void main() {
     float effectAmount = sin(time*3.14)*0.5+ 0.5;
     float shininess = 32.0;
@@ -78,6 +85,8 @@ void main() {
     vec3 specularColor = vec3(1.0,1.0,1.0);
 
     vec3 normal = normalize(teNormal);
+    vec3 tangent = normalize(teTangent);
+    vec3 bitangent = normalize(teBitangent);
     vec2 uv = teTextureCoord;
     vec3 viewDirection = normalize(tePosition - cameraPosition);
 
@@ -86,11 +95,12 @@ void main() {
         uv = triplanarMapping(tePosition, plane) * 0.1;
     }
 
-    mat3 TBN = getTBN(tePosition, normal, uv);
+    //mat3 TBN = getTBN(tePosition, normal, uv);
+    mat3 TBN = mat3(tangent, bitangent, normal);
     vec3 viewTangent = normalize(TBN * viewDirection);
     
-    //float scale = floatBlend(teTextureWeights, parallaxScale);
-    //uv = parallaxMapping(uv, viewTangent, scale);
+    float scale = floatBlend(teTextureWeights, parallaxScale);
+    uv = parallaxMapping(uv, viewTangent, scale);
 
     vec3 normalMap = textureBlend(teTextureWeights, normalMaps, uv).xyz;
     normalMap = normalize(normalMap * 2.0 - 1.0); // Convert to range [-1, 1]
@@ -112,6 +122,8 @@ void main() {
         float diffuse = clamp(max(dot(worldNormal, -lightDirection), 0.0), 0.2, 1.0);
         color = vec4(mixedColor.rgb*diffuse + specularColor * specularStrength * phongSpec, mixedColor.a); 
     }
+
+  //  color = vec4(visual(tangent), 1.0);
  }
 
 

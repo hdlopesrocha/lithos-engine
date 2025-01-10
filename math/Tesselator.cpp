@@ -82,6 +82,14 @@ void Tesselator::normalize() {
 	}
 }
 
+void smooth(Vertex * v, glm::vec3 n, glm::vec3 t, glm::vec3 b) {
+	v->normal += n;
+	v->tangent += t;
+	v->bitangent += b;
+}
+
+
+
 void iterateStep(Tesselator *tesselator,  int level, OctreeNode * node, BoundingCube cube, int sign) {
 	if(tesselator->tree->getHeight(cube)==0 && node->solid == ContainmentType::Intersects){
 		std::vector<OctreeNode*> corners;
@@ -126,35 +134,37 @@ void iterateStep(Tesselator *tesselator,  int level, OctreeNode * node, Bounding
 				Vertex v3 = corners[triangle[3]]->vertex;
 
 
-				glm::vec3 a = v1.position - v0.position;
-				glm::vec3 b = v2.position - v0.position;
-				glm::vec3 c = v3.position - v0.position;
-				glm::vec3 n1 = glm::cross(b,a);
-				glm::vec3 n2 = glm::cross(c,b);
-
-
-
-
+				glm::vec3 edge1 = v1.position - v0.position;
+				glm::vec3 edge2 = v3.position - v0.position;
+				glm::vec3 normal = glm::cross(edge2,edge1);
 
 				float scale = 0.1;
-				int plane = triplanarPlane(v0.position, n1);
+				int plane = triplanarPlane(v0.position, normal);
 				v0.texCoord = triplanarMapping(v0.position, plane)*scale;
 				v1.texCoord = triplanarMapping(v1.position, plane)*scale;
 				v2.texCoord = triplanarMapping(v2.position, plane)*scale;
 				v3.texCoord = triplanarMapping(v3.position, plane)*scale;	
 
-
-				tesselator->addVertex(v0)->normal += n1;
-				tesselator->addVertex(v2)->normal += n1;
-				tesselator->addVertex(v1)->normal += n1;
-
-				tesselator->addVertex(v0)->normal += n2;
-				tesselator->addVertex(v3)->normal += n2;
-				tesselator->addVertex(v2)->normal += n2;
-
-
 				glm::vec2 deltaUV1 = v1.texCoord - v0.texCoord;
 				glm::vec2 deltaUV2 = v3.texCoord - v0.texCoord;
+
+			    float f = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV1.y * deltaUV2.x);
+
+
+				glm::vec3 tangent = f * (deltaUV2.y * edge1 - deltaUV1.y * edge2);
+				tangent = glm::normalize(tangent);
+
+				glm::vec3 bitangent = f * (-deltaUV2.x * edge1 + deltaUV1.x * edge2);
+				bitangent = glm::normalize(bitangent);
+
+				smooth(tesselator->addVertex(v0), normal, tangent, bitangent);
+				smooth(tesselator->addVertex(v2), normal, tangent, bitangent);
+				smooth(tesselator->addVertex(v1), normal, tangent, bitangent);
+
+				smooth(tesselator->addVertex(v0), normal, tangent, bitangent);
+				smooth(tesselator->addVertex(v3), normal, tangent, bitangent);
+				smooth(tesselator->addVertex(v2), normal, tangent, bitangent);
+
 
 			}
 		}

@@ -133,9 +133,9 @@ public:
 		glVertexAttribIPointer(3, 1, GL_UNSIGNED_INT, sizeof(Vertex), (void*) offsetof(Vertex, texIndex) );
 		glEnableVertexAttribArray(3);
 	    glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) offsetof(Vertex, tangent));
-		glEnableVertexAttribArray(1);
+		glEnableVertexAttribArray(4);
 		glVertexAttribPointer(5, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) offsetof(Vertex, bitangent));
-		glEnableVertexAttribArray(1);	
+		glEnableVertexAttribArray(5);	
 		return geo;
 	}
 

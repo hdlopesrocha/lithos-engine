@@ -27,6 +27,8 @@ struct Vertex {
     Vertex(){
 		this->position = glm::vec3(0);
     	this->normal = glm::vec3(0);
+    	this->tangent = glm::vec3(0);
+    	this->bitangent = glm::vec3(0);
     	this->texCoord = glm::vec2(0);
     	this->texIndex = 0;
     }
@@ -34,6 +36,8 @@ struct Vertex {
     Vertex(glm::vec3 pos) {
     	this->position = pos;
     	this->normal = glm::vec3(0);
+		this->tangent = glm::vec3(0);
+    	this->bitangent = glm::vec3(0);
     	this->texCoord = glm::vec2(0);
     	this->texIndex = 0;
     }
@@ -41,6 +45,8 @@ struct Vertex {
     Vertex(glm::vec3 pos,glm::vec3 normal,glm::vec2 texCoord, uint texIndex) {
     	this->position = pos;
     	this->normal = normal;
+		this->tangent = glm::vec3(0);
+    	this->bitangent = glm::vec3(0);
     	this->texCoord = texCoord;
     	this->texIndex = texIndex;
     }
