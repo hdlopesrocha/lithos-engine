@@ -3,6 +3,8 @@
 uniform sampler2D textures[10];
 uniform sampler2D normalMaps[10];
 uniform sampler2D bumpMaps[10];
+uniform float parallaxScale[10];
+
 
 uniform vec3 lightDirection; 
 uniform uint lightEnabled;
@@ -14,8 +16,6 @@ in vec3 teNormal;
 in vec2 teTextureCoord;
 in float teTextureWeights[10];
 in vec3 tePosition;
-in vec3 teTangent;
-in vec3 teBitangent;
 
 
 out vec4 color;    // Final fragment color
@@ -23,37 +23,34 @@ uniform uint triplanarEnabled;
 
 #include<functions.glsl>
 
+vec2 parallaxMapping(vec2 uv, vec3 viewDir, float scale) {
+    const float minLayers = 8.0;
+    const float maxLayers = 32.0;
+    float numLayers = mix(maxLayers, minLayers, max(dot(vec3(0.0, 0.0, 1.0), viewDir), 0.0));  
 
-
-vec2 parallaxMapping2(vec2 uv, vec3 viewDir) {
-      
-    int layers = 32;
-	const float deltaDepth = 1.0 / float( layers );
+	const float deltaDepth = 1.0 / float( numLayers );
 	float currentLayerDepth = 0.0;
+	vec2 deltaUv = (viewDir.xy*scale) / float( numLayers );
+	    
+    vec2 currentUv = uv;
+    float currentDepth = 1.0 - textureBlend(teTextureWeights, bumpMaps, currentUv).r;
 
-	vec2 deltaUv = viewDir.xy / float( layers );
-	vec2 currentUv = uv;
-
-    float currentDepth = textureBlend(teTextureWeights, bumpMaps, currentUv).r;
-    
-
-	for( int i = 0; i < layers; i++ ) {
-		if( currentLayerDepth > currentDepth )
-			break;
-
-		currentUv += deltaUv;
-        currentDepth = textureBlend(teTextureWeights, bumpMaps, currentUv).r;
-
+	for(int i=0; i < numLayers ; ++i) {
+        if(currentLayerDepth > currentDepth) {
+            break;
+        }
+		currentUv -= deltaUv;
+        currentDepth = 1.0 - textureBlend(teTextureWeights, bumpMaps, currentUv).r;
 		currentLayerDepth += deltaDepth;
 	}
 
-	vec2 prevUv = currentUv - deltaUv;
-    float startDepth = textureBlend(teTextureWeights, bumpMaps, prevUv).r;
+    vec2 prevUv = currentUv + deltaUv;
 
-	float endDepth = currentDepth - currentLayerDepth;
-	float w = endDepth / ( endDepth - startDepth );
-
-	return mix( currentUv, prevUv, w );
+    float afterDepth  = currentDepth - currentLayerDepth;
+    float beforeDepth = 1.0 - textureBlend(teTextureWeights, bumpMaps, prevUv).r - currentLayerDepth + deltaDepth;
+    
+    float weight = afterDepth / (afterDepth - beforeDepth);
+    return mix(currentUv, prevUv, weight);
 }
 
 mat3 getTBN(vec3 pos, vec3 normal, vec2 uv) {
@@ -77,28 +74,23 @@ mat3 getTBN(vec3 pos, vec3 normal, vec2 uv) {
 void main() {
     float effectAmount = sin(time*3.14)*0.5+ 0.5;
     float shininess = 32.0;
-    float parallaxScale = 0.05;
     float specularStrength = 0.4;
     vec3 specularColor = vec3(1.0,1.0,1.0);
-
 
     vec3 normal = normalize(teNormal);
     vec2 uv = teTextureCoord;
     vec3 viewDirection = normalize(tePosition - cameraPosition);
 
-
     if(triplanarEnabled == 1) {
-        int plane = triplanarPlane(tePosition, teNormal);
+        int plane = triplanarPlane(tePosition, normal);
         uv = triplanarMapping(tePosition, plane) * 0.1;
     }
 
     mat3 TBN = getTBN(tePosition, normal, uv);
-    vec3 cameraTangent = TBN *  cameraPosition;
-    vec3 positionTangent = TBN *  tePosition;
-    vec3 viewTangent = normalize(positionTangent - cameraTangent);
+    vec3 viewTangent = normalize(TBN * viewDirection);
     
-    uv = parallaxMapping2(uv, viewTangent*parallaxScale);
-
+    float scale = floatBlend(teTextureWeights, parallaxScale);
+    uv = parallaxMapping(uv, viewTangent, scale);
 
     vec3 normalMap = textureBlend(teTextureWeights, normalMaps, uv).xyz;
     normalMap = normalize(normalMap * 2.0 - 1.0); // Convert to range [-1, 1]
@@ -107,7 +99,6 @@ void main() {
 
     vec3 reflection = reflect(-lightDirection, worldNormal);
     float phongSpec = pow(max(dot(reflection, viewDirection), 0.0), shininess);
-
 
     vec4 mixedColor = textureBlend(teTextureWeights, textures, uv);
     if(mixedColor.a == 0.0) {
@@ -118,12 +109,7 @@ void main() {
         color = mixedColor; 
     }
     else {
-
-        
-        float diffuse = max(dot(worldNormal, -lightDirection), 0.0);
-
-
-
+        float diffuse = clamp(max(dot(worldNormal, -lightDirection), 0.0), 0.2, 1.0);
         color = vec4(mixedColor.rgb*diffuse + specularColor * specularStrength * phongSpec, mixedColor.a); 
     }
  }

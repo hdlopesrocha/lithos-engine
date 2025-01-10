@@ -153,13 +153,27 @@ bool HeightMap::contains(glm::vec3 point){
     return box.contains(point) && Math::isBetween(point.y, min.y, h);
 }
 
+glm::vec3 getShift(int i) {
+	return glm::vec3( ((i >> 2) % 2) , ((i >> 1) % 2) , ((i >> 0) % 2));
+}
 
 bool HeightMap::hitsBoundary(BoundingCube cube) {
     BoundingBox box(min, max);
 
     ContainmentType result = box.contains(cube);
+    bool allPointsUnderground = true;
 
-    return result == ContainmentType::Intersects;
+
+    for(int i = 0; i<8 ; ++i) {
+        glm::vec3 p = cube.getMin() + cube.getLength() * getShift(i);
+        float y = getHeightAt(p.x, p.y);
+        if(y < p.y) {
+            allPointsUnderground = false;
+            break;
+        }
+    }
+
+    return result == ContainmentType::Intersects && allPointsUnderground;
 }
 
 ContainmentType HeightMap::contains(BoundingCube cube) {

@@ -33,3 +33,13 @@ vec4 textureBlend(in float ws[10], sampler2D ts[10], vec2 uv) {
     return res;
 }
 
+float floatBlend(in float ws[10], float ts[10]) {
+    float res = 0.0;
+    for(int i=0 ; i < 10; ++i) {
+        float w = ws[i];
+        if(w>0.0) {
+            res += ts[i]*w;
+        }
+	}
+    return res;
+}

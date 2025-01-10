@@ -15,9 +15,6 @@ out vec3 teNormal;
 out vec2 teTextureCoord;
 out float teTextureWeights[10];
 out vec3 tePosition;
-out vec3 teTangent;
-out vec3 teBitangent;
-
 
 uniform mat4 model;      // Model transformation matrix
 uniform mat4 view;       // View transformation matrix

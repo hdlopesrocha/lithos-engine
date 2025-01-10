@@ -115,8 +115,6 @@ ContainmentType SphereContainmentHandler::check(BoundingCube cube, Vertex * vert
         glm::vec3 a = cube.getCenter();
         glm::vec3 n = glm::normalize(a-c);
         glm::vec3 p = glm::clamp(c + n*r, cube.getMin(), cube.getMax());
-
-        vertex->normal = n;
         vertex->position = p;
         vertex->texIndex = this->texture;
     }

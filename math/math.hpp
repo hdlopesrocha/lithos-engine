@@ -235,6 +235,7 @@ class TesselatorHandler {
 		std::vector<uint> indices;
 
 		virtual int iterate(int level, OctreeNode * node, BoundingCube cube) = 0;
+
 };
 
 class Octree: public BoundingCube {
@@ -254,13 +255,14 @@ class Octree: public BoundingCube {
 };
 
 class Tesselator : public TesselatorHandler{
-	Octree * tree;
-	std::map <std::string, int> compactMap;
-
 	public:
+		Octree * tree;
+		std::map <std::string, int> compactMap;
+
 		Tesselator(Octree * tree);
 		int iterate(int level, OctreeNode * node, BoundingCube cube);
 		Vertex * addVertex(Vertex vertex);
+	    void normalize();
 
 };
 

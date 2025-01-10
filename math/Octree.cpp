@@ -156,7 +156,7 @@ OctreeNode * delAux(Octree * tree,  ContainmentHandler * handler, OctreeNode * n
 
 			if(node->solid != ContainmentType::Intersects && isIntersecting) {
 				node->vertex = vertex;
-				node->vertex.normal = -vertex.normal;
+				//node->vertex.normal = -vertex.normal;
 			}
 
 			node->solid = check;
