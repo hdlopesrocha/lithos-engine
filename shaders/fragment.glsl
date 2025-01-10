@@ -89,8 +89,8 @@ void main() {
     mat3 TBN = getTBN(tePosition, normal, uv);
     vec3 viewTangent = normalize(TBN * viewDirection);
     
-    float scale = floatBlend(teTextureWeights, parallaxScale);
-    uv = parallaxMapping(uv, viewTangent, scale);
+    //float scale = floatBlend(teTextureWeights, parallaxScale);
+    //uv = parallaxMapping(uv, viewTangent, scale);
 
     vec3 normalMap = textureBlend(teTextureWeights, normalMaps, uv).xyz;
     normalMap = normalize(normalMap * 2.0 - 1.0); // Convert to range [-1, 1]

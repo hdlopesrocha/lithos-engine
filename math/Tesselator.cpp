@@ -54,21 +54,23 @@ Vertex * Tesselator::addVertex(Vertex vertex){
 int triplanarPlane(glm::vec3 position, glm::vec3 normal) {
     glm::vec3 absNormal = glm::abs(normal);
     if (absNormal.x > absNormal.y && absNormal.x > absNormal.z) {
-        return 0;
+        return normal.x > 0 ? 0 : 1;
     } else if (absNormal.y > absNormal.x && absNormal.y > absNormal.z) {
-        return 1;
+        return normal.y > 0 ? 2 : 3;
     } else {
-        return 2;
+        return normal.z > 0 ? 4 : 5;
     }
 }
 
 glm::vec2 triplanarMapping(glm::vec3 position, int plane) {
-    if (plane == 0) {
-        return glm::vec2(position.z,position.y);
-    } else if (plane ==1) {
-        return glm::vec2(position.z, position.x);
-    } else {
-        return glm::vec2(position.x, position.y);
+    switch (plane) {
+        case 0: return glm::vec2(-position.z, -position.y);
+        case 1: return glm::vec2(position.z, -position.y);
+        case 2: return glm::vec2(position.x, position.z);
+        case 3: return glm::vec2(position.x, -position.z);
+        case 4: return glm::vec2(position.x, -position.y);
+        case 5: return glm::vec2(-position.x, -position.y);
+        default: return glm::vec2(0.0,0.0);
     }
 }
 
@@ -101,12 +103,6 @@ void iterateStep(Tesselator *tesselator,  int level, OctreeNode * node, Bounding
 			emptyMask |= c==NULL || (c->solid == ContainmentType::Disjoint) ? (1 << i) : 0;
 			surfaceMask |= c!=NULL && (c->solid == ContainmentType::Intersects) ? (1 << i) : 0;
 			containmentMask |= c!=NULL && (c->solid == ContainmentType::Contains) ? (1 << i) : 0;
-
-
-			if(c!=NULL && c->solid == ContainmentType::Intersects) {
-				Vertex * vtx = &(c->vertex);
-				vtx->texCoord = triplanarMapping(vtx->position, plane)*0.1f;
-			}
 		}
 
 	
@@ -129,18 +125,24 @@ void iterateStep(Tesselator *tesselator,  int level, OctreeNode * node, Bounding
 				Vertex v2 = corners[triangle[2]]->vertex;
 				Vertex v3 = corners[triangle[3]]->vertex;
 
-				float scale = 0.1;
-				int plane = triplanarPlane(v0.position, v0.normal);
-				v0.texCoord = triplanarMapping(v0.position, plane)*scale;
-				v1.texCoord = triplanarMapping(v1.position, plane)*scale;
-				v2.texCoord = triplanarMapping(v2.position, plane)*scale;
-				v3.texCoord = triplanarMapping(v3.position, plane)*scale;	
 
 				glm::vec3 a = v1.position - v0.position;
 				glm::vec3 b = v2.position - v0.position;
 				glm::vec3 c = v3.position - v0.position;
 				glm::vec3 n1 = glm::cross(b,a);
 				glm::vec3 n2 = glm::cross(c,b);
+
+
+
+
+
+				float scale = 0.1;
+				int plane = triplanarPlane(v0.position, n1);
+				v0.texCoord = triplanarMapping(v0.position, plane)*scale;
+				v1.texCoord = triplanarMapping(v1.position, plane)*scale;
+				v2.texCoord = triplanarMapping(v2.position, plane)*scale;
+				v3.texCoord = triplanarMapping(v3.position, plane)*scale;	
+
 
 				tesselator->addVertex(v0)->normal += n1;
 				tesselator->addVertex(v2)->normal += n1;

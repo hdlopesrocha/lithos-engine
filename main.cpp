@@ -288,7 +288,7 @@ std::string replace(std::string input,  std::string replace_word, std::string re
 		glEnable(GL_CULL_FACE);
 
 		glUniform1ui(lightEnabledLoc, 1);
-		glUniform1ui(triplanarEnabledLoc, 1);
+		glUniform1ui(triplanarEnabledLoc, 0);
 		glPatchParameteri(GL_PATCH_VERTICES, 3); // Define the number of control points per patch
 
 //		glPolygonMode(GL_FRONT, GL_LINE);
