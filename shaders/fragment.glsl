@@ -32,7 +32,7 @@ vec2 parallaxMapping(vec2 uv, vec3 viewDir, float scale) {
 
 	const float deltaDepth = 1.0 / float( numLayers );
 	float currentLayerDepth = 0.0;
-	vec2 deltaUv = (viewDir.xy*scale) / float( numLayers );
+	vec2 deltaUv = (viewDir.xy*scale) * deltaDepth;
 	    
     vec2 currentUv = uv;
     float currentDepth = 1.0 - textureBlend(teTextureWeights, bumpMaps, currentUv).r;
@@ -69,6 +69,9 @@ mat3 getTBN(vec3 pos, vec3 normal, vec2 uv) {
     vec3 tangent = normalize(invDet * (dpdx * dUVdy.y - dpdy * dUVdx.y));
     vec3 bitangent = normalize(invDet * (dpdy * dUVdx.x - dpdx * dUVdy.x));
 
+    //tangent = normalize(tangent - dot(tangent, normal) * normal);
+    //bitangent = cross(normal, tangent);
+
     // Transform normal map vector to world space
     return mat3(tangent, bitangent, normal);
 }
@@ -95,12 +98,12 @@ void main() {
         uv = triplanarMapping(tePosition, plane) * 0.1;
     }
 
-    //mat3 TBN = getTBN(tePosition, normal, uv);
-    mat3 TBN = mat3(tangent, bitangent, normal);
-    vec3 viewTangent = normalize(TBN * viewDirection);
+    mat3 TBN = getTBN(tePosition, normal, uv);
+    //mat3 TBN = mat3(tangent, bitangent, normal);
+    vec3 viewTangent = normalize(transpose(TBN) * viewDirection);
     
     float scale = floatBlend(teTextureWeights, parallaxScale);
-    uv = parallaxMapping(uv, viewTangent, scale);
+    uv = parallaxMapping(uv, -viewTangent, scale);
 
     vec3 normalMap = textureBlend(teTextureWeights, normalMaps, uv).xyz;
     normalMap = normalize(normalMap * 2.0 - 1.0); // Convert to range [-1, 1]
@@ -123,7 +126,7 @@ void main() {
         color = vec4(mixedColor.rgb*diffuse + specularColor * specularStrength * phongSpec, mixedColor.a); 
     }
 
-  //  color = vec4(visual(tangent), 1.0);
+   // color = vec4(visual(normal), 1.0);
  }
 
 

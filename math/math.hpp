@@ -54,7 +54,7 @@ struct Vertex {
 
     std::string toKey() {
 		std::stringstream ss;
-		ss << "[" << position.x <<  " " <<  position.y <<  " " <<  position.z << " " << texCoord.x <<  " " <<  texCoord.y <<"]";
+		ss << "[" << position.x <<  " " <<  position.y <<  " " <<  position.z << "]";
 		return ss.str();
     }
 

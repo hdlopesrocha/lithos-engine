@@ -136,6 +136,7 @@ void iterateStep(Tesselator *tesselator,  int level, OctreeNode * node, Bounding
 
 				glm::vec3 edge1 = v1.position - v0.position;
 				glm::vec3 edge2 = v3.position - v0.position;
+
 				glm::vec3 normal = glm::cross(edge2,edge1);
 
 				float scale = 0.1;
@@ -153,9 +154,12 @@ void iterateStep(Tesselator *tesselator,  int level, OctreeNode * node, Bounding
 
 				glm::vec3 tangent = f * (deltaUV2.y * edge1 - deltaUV1.y * edge2);
 				tangent = glm::normalize(tangent);
+    			tangent = glm::normalize(tangent - glm::dot(tangent, normal) * normal);
 
 				glm::vec3 bitangent = f * (-deltaUV2.x * edge1 + deltaUV1.x * edge2);
 				bitangent = glm::normalize(bitangent);
+    			bitangent = glm::normalize(bitangent - glm::dot(bitangent, normal) * normal);
+
 
 				smooth(tesselator->addVertex(v0), normal, tangent, bitangent);
 				smooth(tesselator->addVertex(v2), normal, tangent, bitangent);
