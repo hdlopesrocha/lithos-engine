@@ -57,11 +57,10 @@ class DebugTesselator : public TesselatorHandler{
 			int idx = compactMap[key];
 			indices.push_back(idx);
 			return &(vertices[idx]);
-		//	std::cout << "i=" << idx << std::endl;
 		}
 
 		int iterate(int level, OctreeNode * node, BoundingCube cube) {			
-			if((node->solid == ContainmentType::Intersects &&  tree->getHeight(cube) == 0) || node->solid == ContainmentType::Contains){
+			if((node->solid == ContainmentType::Intersects &&  tree->getHeight(cube) == 0)){
 				std::vector<glm::vec3> corners;
 				// Get corners
 				for(int i=0; i < 8; ++i) {

@@ -22,6 +22,7 @@ in vec3 teBitangent;
 
 out vec4 color;    // Final fragment color
 uniform uint triplanarEnabled;
+uniform uint parallaxEnabled;
 
 #include<functions.glsl>
 
@@ -31,27 +32,25 @@ vec2 parallaxMapping(vec2 uv, vec3 viewDir, float scale) {
     float numLayers = mix(maxLayers, minLayers, max(dot(vec3(0.0, 0.0, 1.0), viewDir), 0.0));  
 
 	const float deltaDepth = 1.0 / float( numLayers );
-	float currentLayerDepth = 0.0;
 	vec2 deltaUv = (viewDir.xy*scale) * deltaDepth;
 	    
+	float currentDepth = 1.0;
     vec2 currentUv = uv;
-    float currentDepth = 1.0 - textureBlend(teTextureWeights, bumpMaps, currentUv).r;
+    float currentHeight = textureBlend(teTextureWeights, bumpMaps, currentUv).r;
 
 	for(int i=0; i < numLayers ; ++i) {
-        if(currentLayerDepth > currentDepth) {
+        if(currentDepth < currentHeight) {
             break;
         }
 		currentUv -= deltaUv;
-        currentDepth = 1.0 - textureBlend(teTextureWeights, bumpMaps, currentUv).r;
-		currentLayerDepth += deltaDepth;
+		currentDepth -= deltaDepth;
+        currentHeight = textureBlend(teTextureWeights, bumpMaps, currentUv).r;
 	}
-
     vec2 prevUv = currentUv + deltaUv;
+    float prevHeight = textureBlend(teTextureWeights, bumpMaps, prevUv).r;
 
-    float afterDepth  = currentDepth - currentLayerDepth;
-    float beforeDepth = 1.0 - textureBlend(teTextureWeights, bumpMaps, prevUv).r - currentLayerDepth + deltaDepth;
-    
-    float weight = afterDepth / (afterDepth - beforeDepth);
+ 
+    float weight = (currentHeight - currentDepth) / (currentHeight  -prevHeight + deltaDepth);
     return mix(currentUv, prevUv, weight);
 }
 
@@ -69,8 +68,8 @@ mat3 getTBN(vec3 pos, vec3 normal, vec2 uv) {
     vec3 tangent = normalize(invDet * (dpdx * dUVdy.y - dpdy * dUVdx.y));
     vec3 bitangent = normalize(invDet * (dpdy * dUVdx.x - dpdx * dUVdy.x));
 
-    //tangent = normalize(tangent - dot(tangent, normal) * normal);
-    //bitangent = cross(normal, tangent);
+    tangent = normalize(tangent - dot(tangent, normal) * normal);
+    bitangent = normalize(cross(tangent, normal));
 
     // Transform normal map vector to world space
     return mat3(tangent, bitangent, normal);
@@ -82,7 +81,7 @@ vec3 visual(vec3 v) {
 
 
 void main() {
-    float effectAmount = sin(time*3.14)*0.5+ 0.5;
+    float effectAmount = sin(time*3.14/4.0);
     float shininess = 32.0;
     float specularStrength = 0.4;
     vec3 specularColor = vec3(1.0,1.0,1.0);
@@ -102,9 +101,17 @@ void main() {
     //mat3 TBN = mat3(tangent, bitangent, normal);
     vec3 viewTangent = normalize(transpose(TBN) * viewDirection);
     
-    float scale = floatBlend(teTextureWeights, parallaxScale);
-    uv = parallaxMapping(uv, -viewTangent, scale);
 
+
+
+    float scale = floatBlend(teTextureWeights, parallaxScale);
+
+
+    scale = scale * clamp(effectAmount*2.0,0.0, 1.0);
+    
+    if(effectAmount > 0.0) {
+       uv = parallaxMapping(uv, -viewTangent, scale);
+    }
     vec3 normalMap = textureBlend(teTextureWeights, normalMaps, uv).xyz;
     normalMap = normalize(normalMap * 2.0 - 1.0); // Convert to range [-1, 1]
 

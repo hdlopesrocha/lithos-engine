@@ -5,7 +5,7 @@
 #include "DebugTesselator.hpp"
 #include "math/math.hpp"
 
-//#define DEBUG_GEO 0
+#define DEBUG_GEO 0
 #define TEXTURES_COUNT 10
 
 
@@ -98,6 +98,7 @@ class MainApplication : public LithosApplication {
 	GLuint lightDirectionLoc;
 	GLuint lightEnabledLoc;
 	GLuint triplanarEnabledLoc;
+	GLuint parallaxEnabledLoc;
 	GLuint cameraPositionLoc;
 	GLuint timeLoc;
 	Geometry vertexArrayObject;
@@ -204,6 +205,7 @@ std::string replace(std::string input,  std::string replace_word, std::string re
 		lightDirectionLoc = glGetUniformLocation(shaderProgram, "lightDirection");
 		lightEnabledLoc = glGetUniformLocation(shaderProgram, "lightEnabled");
 		triplanarEnabledLoc = glGetUniformLocation(shaderProgram, "triplanarEnabled");
+		parallaxEnabledLoc = glGetUniformLocation(shaderProgram, "parallaxEnabled");
 		cameraPositionLoc = glGetUniformLocation(shaderProgram, "cameraPosition");
 		timeLoc = glGetUniformLocation(shaderProgram, "time");
 
@@ -289,6 +291,8 @@ std::string replace(std::string input,  std::string replace_word, std::string re
 
 		glUniform1ui(lightEnabledLoc, 1);
 		glUniform1ui(triplanarEnabledLoc, 1);
+		glUniform1ui(parallaxEnabledLoc, 1);
+
 		glPatchParameteri(GL_PATCH_VERTICES, 3); // Define the number of control points per patch
 
 //		glPolygonMode(GL_FRONT, GL_LINE);
@@ -298,7 +302,8 @@ std::string replace(std::string input,  std::string replace_word, std::string re
 		glDisable(GL_CULL_FACE);
 		glUniform1ui(lightEnabledLoc, 0);
     	glUniform1ui(triplanarEnabledLoc, 0);
-		
+		glUniform1ui(parallaxEnabledLoc, 0);
+
 		#ifdef DEBUG_GEO
 		glBindVertexArray(vaoDebug.vao);
 		glDrawElements(GL_TRIANGLES, debugTesselator->indices.size(), GL_UNSIGNED_INT, 0);

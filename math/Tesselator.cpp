@@ -88,16 +88,14 @@ void smooth(Vertex * v, glm::vec3 n, glm::vec3 t, glm::vec3 b) {
 	v->bitangent += b;
 }
 
-
-
-void iterateStep(Tesselator *tesselator,  int level, OctreeNode * node, BoundingCube cube, int sign) {
-	if(tesselator->tree->getHeight(cube)==0 && node->solid == ContainmentType::Intersects){
+int Tesselator::iterate(int level, OctreeNode * node, BoundingCube cube) {		
+	if(tree->getHeight(cube)==0 && node->solid == ContainmentType::Intersects){
 		std::vector<OctreeNode*> corners;
 		// Get corners
 		corners.push_back(node);
 		for(int i=1; i < 8; ++i) {
-			glm::vec3 pos = cube.getCenter() + Octree::getShift(i)*(cube.getLength()*sign);
-			OctreeNode * n = tesselator->tree->getNodeAt(pos,level);
+			glm::vec3 pos = cube.getCenter() + Octree::getShift(i)*(cube.getLength());
+			OctreeNode * n = tree->getNodeAt(pos,level);
 			corners.push_back(n);
 		}
 	
@@ -161,27 +159,19 @@ void iterateStep(Tesselator *tesselator,  int level, OctreeNode * node, Bounding
     			bitangent = glm::normalize(bitangent - glm::dot(bitangent, normal) * normal);
 
 
-				smooth(tesselator->addVertex(v0), normal, tangent, bitangent);
-				smooth(tesselator->addVertex(v2), normal, tangent, bitangent);
-				smooth(tesselator->addVertex(v1), normal, tangent, bitangent);
+				smooth(addVertex(v0), normal, tangent, bitangent);
+				smooth(addVertex(v2), normal, tangent, bitangent);
+				smooth(addVertex(v1), normal, tangent, bitangent);
 
-				smooth(tesselator->addVertex(v0), normal, tangent, bitangent);
-				smooth(tesselator->addVertex(v3), normal, tangent, bitangent);
-				smooth(tesselator->addVertex(v2), normal, tangent, bitangent);
+				smooth(addVertex(v0), normal, tangent, bitangent);
+				smooth(addVertex(v3), normal, tangent, bitangent);
+				smooth(addVertex(v2), normal, tangent, bitangent);
 
 
 			}
 		}
 	}
-
-}
-
-
-
-int Tesselator::iterate(int level, OctreeNode * node, BoundingCube cube) {		
-	iterateStep(this, level, node, cube, 1);
-	//iterateStep(this, level, node, cube, -1);
-		return 1; 			 			
+	return 1; 			 			
 }
 
 
