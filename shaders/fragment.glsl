@@ -28,24 +28,26 @@ uniform uint parallaxEnabled;
 
 vec2 parallaxMapping(vec2 uv, vec3 viewDir, float scale) {
     const float minLayers = 8.0;
-    const float maxLayers = 32.0;
-    float numLayers = mix(maxLayers, minLayers, max(dot(vec3(0.0, 0.0, 1.0), viewDir), 0.0));  
+    const float maxLayers = 256.0;
+    float numLayers = mix(maxLayers, minLayers, clamp(dot(vec3(0.0, 0.0, 1.0), viewDir), 0.0, 1.0));  
 
-	const float deltaDepth = 1.0 / float( numLayers );
-	vec2 deltaUv = (viewDir.xy*scale) * deltaDepth;
-	    
+	float deltaDepth = 1.0 / float( numLayers );
+	vec2 deltaUv = (viewDir.xy*scale/viewDir.z) * deltaDepth;
+
 	float currentDepth = 1.0;
     vec2 currentUv = uv;
-    float currentHeight = textureBlend(teTextureWeights, bumpMaps, currentUv).r;
+    float currentHeight = 0.0;
 
-	for(int i=0; i < numLayers ; ++i) {
+    for(int i=0; i < numLayers ; ++i) {
+        currentUv -= deltaUv;
+        currentDepth -= deltaDepth;
+        currentHeight = textureBlend(teTextureWeights, bumpMaps, currentUv).r;
+
         if(currentDepth < currentHeight) {
             break;
         }
-		currentUv -= deltaUv;
-		currentDepth -= deltaDepth;
-        currentHeight = textureBlend(teTextureWeights, bumpMaps, currentUv).r;
-	}
+    }
+    
     vec2 prevUv = currentUv + deltaUv;
     float prevHeight = textureBlend(teTextureWeights, bumpMaps, prevUv).r;
 
@@ -107,9 +109,9 @@ void main() {
     float scale = floatBlend(teTextureWeights, parallaxScale);
 
 
-    scale = scale * clamp(effectAmount*2.0,0.0, 1.0);
+   // scale = scale * clamp(effectAmount*2.0,0.0, 1.0);
     
-    if(effectAmount > 0.0) {
+    if(scale > 0.0) {
        uv = parallaxMapping(uv, -viewTangent, scale);
     }
     vec3 normalMap = textureBlend(teTextureWeights, normalMaps, uv).xyz;
