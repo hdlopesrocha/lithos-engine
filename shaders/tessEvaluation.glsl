@@ -10,11 +10,18 @@ in float tcTextureWeights[][10];
 in vec2 tcTextureCoord[];
 in vec3 tcNormal[];
 in vec3 tcPosition[];
+in float tcParallaxScale[];
+in float tcParallaxMinLayers[];
+in float tcParallaxMaxLayers[];
+
 
 out vec3 teNormal;
 out vec2 teTextureCoord;
 out float teTextureWeights[10];
 out vec3 tePosition;
+out float teParallaxScale;
+out float teParallaxMinLayers;
+out float teParallaxMaxLayers;
 
 uniform mat4 model;      // Model transformation matrix
 uniform mat4 view;       // View transformation matrix
@@ -30,6 +37,9 @@ void main() {
     teNormal = tcNormal[0] * gl_TessCoord[0] + tcNormal[1] * gl_TessCoord[1] + tcNormal[2] * gl_TessCoord[2];
     teNormal = normalize(tr * teNormal);
     
+    teParallaxScale = tcParallaxScale[0] * gl_TessCoord[0] + tcParallaxScale[1] * gl_TessCoord[1] + tcParallaxScale[2] * gl_TessCoord[2];
+    teParallaxMinLayers = tcParallaxMinLayers[0] * gl_TessCoord[0] + tcParallaxMinLayers[1] * gl_TessCoord[1] + tcParallaxMinLayers[2] * gl_TessCoord[2];
+    teParallaxMaxLayers = tcParallaxMaxLayers[0] * gl_TessCoord[0] + tcParallaxMaxLayers[1] * gl_TessCoord[1] + tcParallaxMaxLayers[2] * gl_TessCoord[2];
 
     
     for (int i = 0; i < 10; ++i) {

@@ -30,9 +30,9 @@ struct Vertex {
     	this->normal = glm::vec3(0);
     	this->texCoord = glm::vec2(0);
     	this->texIndex = 0;
-		this->parallaxScale = 0;
-		this->parallaxMinLayers = 0;
-		this->parallaxMaxLayers = 0;
+		this->parallaxScale = 0.2;
+		this->parallaxMinLayers = 8;
+		this->parallaxMaxLayers = 32;
     }
 
     Vertex(glm::vec3 pos) : Vertex(){

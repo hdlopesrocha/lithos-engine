@@ -15,7 +15,9 @@ in vec2 teTextureCoord;
 in float teTextureWeights[10];
 in vec3 tePosition;
 in vec3 teNormal;
-
+in float teParallaxScale;
+in float teParallaxMinLayers;
+in float teParallaxMaxLayers;
 
 out vec4 color;    // Final fragment color
 uniform uint triplanarEnabled;
@@ -23,9 +25,7 @@ uniform uint parallaxEnabled;
 
 #include<functions.glsl>
 
-vec2 parallaxMapping(vec2 uv, vec3 viewDir, float scale) {
-    const float minLayers = 8.0;
-    const float maxLayers = 256.0;
+vec2 parallaxMapping(vec2 uv, vec3 viewDir, float scale, float minLayers, float maxLayers) {
     float numLayers = mix(maxLayers, minLayers, clamp(dot(vec3(0.0, 0.0, 1.0), viewDir), 0.0, 1.0));  
 
 	float deltaDepth = 1.0 / float( numLayers );
@@ -98,15 +98,9 @@ void main() {
     vec3 viewTangent = normalize(transpose(TBN) * viewDirection);
     
 
-
-
-    float scale = 0.1;
-
-
-   // scale = scale * clamp(effectAmount*2.0,0.0, 1.0);
     
-    if(scale > 0.0) {
-       uv = parallaxMapping(uv, -viewTangent, scale);
+    if(teParallaxScale > 0.0) {
+       uv = parallaxMapping(uv, -viewTangent, teParallaxScale, teParallaxMinLayers, teParallaxMaxLayers);
     }
     vec3 normalMap = textureBlend(teTextureWeights, normalMaps, uv).xyz;
     normalMap = normalize(normalMap * 2.0 - 1.0); // Convert to range [-1, 1]

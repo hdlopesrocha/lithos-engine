@@ -15,6 +15,9 @@ out float tcTextureWeights[][10];
 out vec2 tcTextureCoord[];
 out vec3 tcNormal[];
 out vec3 tcPosition[];
+out float tcParallaxScale[];
+out float tcParallaxMinLayers[];
+out float tcParallaxMaxLayers[];
 
 uniform vec3 cameraPosition; 
 
@@ -30,6 +33,10 @@ void main() {
     tcPosition[gl_InvocationID] = vPosition[gl_InvocationID]; 
 
     tcNormal[gl_InvocationID] = vNormal[gl_InvocationID];
+    
+    tcParallaxScale[gl_InvocationID] = vParallaxScale[gl_InvocationID];
+    tcParallaxMinLayers[gl_InvocationID] = vParallaxMinLayers[gl_InvocationID];
+    tcParallaxMaxLayers[gl_InvocationID] = vParallaxMaxLayers[gl_InvocationID];
 
     tcTextureCoord[gl_InvocationID] = vTextureCoord[gl_InvocationID];
     for (int i = 0; i < 10; ++i) {
