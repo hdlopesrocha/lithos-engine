@@ -21,22 +21,25 @@ struct Vertex {
     glm::vec3 normal;
     glm::vec2 texCoord;
     int texIndex;
+	float parallaxScale;
+	float parallaxMinLayers;
+	float parallaxMaxLayers;
 
     Vertex(){
 		this->position = glm::vec3(0);
     	this->normal = glm::vec3(0);
     	this->texCoord = glm::vec2(0);
     	this->texIndex = 0;
+		this->parallaxScale = 0;
+		this->parallaxMinLayers = 0;
+		this->parallaxMaxLayers = 0;
     }
 
-    Vertex(glm::vec3 pos) {
+    Vertex(glm::vec3 pos) : Vertex(){
     	this->position = pos;
-    	this->normal = glm::vec3(0);
-    	this->texCoord = glm::vec2(0);
-    	this->texIndex = 0;
     }
 
-    Vertex(glm::vec3 pos,glm::vec3 normal,glm::vec2 texCoord, uint texIndex) {
+    Vertex(glm::vec3 pos,glm::vec3 normal,glm::vec2 texCoord, uint texIndex): Vertex() {
     	this->position = pos;
     	this->normal = normal;
     	this->texCoord = texCoord;
