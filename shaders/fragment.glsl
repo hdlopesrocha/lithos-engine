@@ -26,7 +26,7 @@ uniform uint parallaxEnabled;
 #include<functions.glsl>
 
 vec2 parallaxMapping(vec2 uv, vec3 viewDir, float scale, float minLayers, float maxLayers) {
-    float numLayers = mix(maxLayers, minLayers, clamp(dot(vec3(0.0, 0.0, 1.0), viewDir), 0.0, 1.0));  
+    float numLayers = mix(maxLayers, minLayers, clamp(dot(vec3(0.0, 0.0, -1.0), viewDir), 0.0, 1.0));  
 
 	float deltaDepth = 1.0 / float( numLayers );
 	vec2 deltaUv = (viewDir.xy*scale/viewDir.z) * deltaDepth;
@@ -34,16 +34,28 @@ vec2 parallaxMapping(vec2 uv, vec3 viewDir, float scale, float minLayers, float 
 	float currentDepth = 1.0;
     vec2 currentUv = uv;
     float currentHeight = 0.0;
+    int cycles = 1;
 
-    for(int i=0; i < numLayers ; ++i) {
-        currentUv -= deltaUv;
-        currentDepth -= deltaDepth;
-        currentHeight = textureBlend(teTextureWeights, bumpMaps, currentUv).r;
+    while(cycles > 0) {
+        for(int i=0; i < numLayers ; ++i) {
+            currentUv -= deltaUv;
+            currentDepth -= deltaDepth;
+            currentHeight = textureBlend(teTextureWeights, bumpMaps, currentUv).r;
 
-        if(currentDepth < currentHeight) {
-            break;
+            if(currentDepth < currentHeight) {
+                break;
+            }
+        }
+        --cycles;
+        if(cycles > 0) {
+            currentUv += deltaUv;
+            currentDepth += deltaDepth;
+            currentHeight = textureBlend(teTextureWeights, bumpMaps, currentUv).r;
+            deltaUv /= numLayers;
+            deltaDepth /= numLayers;
         }
     }
+
     
     vec2 prevUv = currentUv + deltaUv;
     float prevHeight = textureBlend(teTextureWeights, bumpMaps, prevUv).r;

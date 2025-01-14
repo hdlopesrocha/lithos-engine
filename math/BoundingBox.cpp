@@ -115,37 +115,3 @@ ContainmentType BoundingBox::contains(BoundingCube cube) {
     }
     return result;
 }
-
-BoxContainmentHandler::BoxContainmentHandler(BoundingBox b, unsigned char t) : ContainmentHandler(){
-    this->box = b;
-    this->texture = t;
-}
-
-glm::vec3 BoxContainmentHandler::getCenter() {
-    return box.getCenter();
-}
-
-ContainmentType BoxContainmentHandler::check(BoundingCube cube, Vertex * vertex) {
-    ContainmentType result = box.contains(cube); 
-    if(result == ContainmentType::Intersects) {
-        glm::vec3 min = this->box.getMin();
-        glm::vec3 max = this->box.getMax();
-        glm::vec3 c = cube.getCenter();
-        glm::vec3 n = glm::vec3(0.0);
-        vertex->texIndex = this->texture;
-
-        for(int i=0; i < 3 ; ++i) {
-            if(cube.getMax()[i] >= max[i]) {
-                c[i] = max[i];
-                n[i] = 1.0;
-            }
-            if(cube.getMin()[i] <= min[i]) {
-                c[i] = min[i];
-                 n[i] = -1.0;
-            }
-        }
-        vertex->position = c;
-        //vertex->normal = glm::normalize(n);
-    }
-    return result;
-}

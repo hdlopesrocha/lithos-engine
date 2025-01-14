@@ -192,27 +192,6 @@ class ContainmentHandler {
 		virtual glm::vec3 getCenter() = 0;
 };
 
-class SphereContainmentHandler : public ContainmentHandler {
-
-	public:
-		BoundingSphere sphere;
-		unsigned char texture;
-
-		SphereContainmentHandler(BoundingSphere sphere, unsigned char texture);
-		glm::vec3 getCenter();
-		ContainmentType check(BoundingCube cube, Vertex * vertex);
-};
-
-class BoxContainmentHandler : public ContainmentHandler {
-
-	public:
-		BoundingBox box;
-		unsigned char texture;
-
-		BoxContainmentHandler(BoundingBox box, unsigned char texture);
-		glm::vec3 getCenter();
-		ContainmentType check(BoundingCube cube, Vertex * vertex);
-};
 
 class OctreeNode {
 	public: 

@@ -97,26 +97,3 @@ ContainmentType BoundingSphere::contains(BoundingCube cube) {
     return result;
 }
 
-SphereContainmentHandler::SphereContainmentHandler(BoundingSphere s, unsigned char t) : ContainmentHandler(){
-    this->sphere = s;
-    this->texture = t;
-}
-
-glm::vec3 SphereContainmentHandler::getCenter() {
-    return sphere.center;
-}
-
-ContainmentType SphereContainmentHandler::check(BoundingCube cube, Vertex * vertex) {
-    ContainmentType result = sphere.contains(cube); 
-
-    if(result == ContainmentType::Intersects) {
-        glm::vec3 c = this->sphere.center;
-        float r = this->sphere.radius;
-        glm::vec3 a = cube.getCenter();
-        glm::vec3 n = glm::normalize(a-c);
-        glm::vec3 p = glm::clamp(c + n*r, cube.getMin(), cube.getMax());
-        vertex->position = p;
-        vertex->texIndex = this->texture;
-    }
-    return result;
-}

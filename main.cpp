@@ -15,6 +15,7 @@ class Geometry {
 
 class Texture {
 	public:
+	int index;
 	Image texture;
 	Image normal;
 	Image bump;
@@ -41,14 +42,96 @@ class Texture {
 	}
 };
 
+
+
+class SphereContainmentHandler : public ContainmentHandler {
+
+	public:
+		BoundingSphere sphere;
+	    Texture * texture;
+
+
+		SphereContainmentHandler(BoundingSphere s, Texture * t) : ContainmentHandler(){
+			this->sphere = s;
+			this->texture = t;
+		}
+
+		glm::vec3 getCenter() {
+			return sphere.center;
+		}
+
+		ContainmentType check(BoundingCube cube, Vertex * vertex) {
+			ContainmentType result = sphere.contains(cube); 
+
+			if(result == ContainmentType::Intersects) {
+				glm::vec3 c = this->sphere.center;
+				float r = this->sphere.radius;
+				glm::vec3 a = cube.getCenter();
+				glm::vec3 n = glm::normalize(a-c);
+				glm::vec3 p = glm::clamp(c + n*r, cube.getMin(), cube.getMax());
+				vertex->position = p;
+				vertex->texIndex = texture->index;
+				vertex->parallaxScale = texture->parallaxScale;
+				vertex->parallaxMinLayers = texture->parallaxMinLayers;
+				vertex->parallaxMaxLayers = texture->parallaxMaxLayers;
+			}
+			return result;
+		}
+
+};
+
+class BoxContainmentHandler : public ContainmentHandler {
+
+	public:
+		BoundingBox box;
+		Texture * texture;
+
+		BoxContainmentHandler(BoundingBox b, Texture * t) : ContainmentHandler(){
+			this->box = b;
+			this->texture = t;
+		}
+
+		glm::vec3 getCenter() {
+			return box.getCenter();
+		}
+
+		ContainmentType check(BoundingCube cube, Vertex * vertex) {
+			ContainmentType result = box.contains(cube); 
+			if(result == ContainmentType::Intersects) {
+				glm::vec3 min = this->box.getMin();
+				glm::vec3 max = this->box.getMax();
+				glm::vec3 c = cube.getCenter();
+				glm::vec3 n = glm::vec3(0.0);
+
+				for(int i=0; i < 3 ; ++i) {
+					if(cube.getMax()[i] >= max[i]) {
+						c[i] = max[i];
+						n[i] = 1.0;
+					}
+					if(cube.getMin()[i] <= min[i]) {
+						c[i] = min[i];
+						n[i] = -1.0;
+					}
+				}
+				vertex->position = c;
+				vertex->texIndex = texture->index;
+				vertex->parallaxScale = texture->parallaxScale;
+				vertex->parallaxMinLayers = texture->parallaxMinLayers;
+				vertex->parallaxMaxLayers = texture->parallaxMaxLayers;		
+			}
+			return result;
+		}
+
+};
+
 class HeightMapContainmentHandler : public ContainmentHandler {
 
 	public:
 		HeightMap * map;
-		unsigned char texture;
-		unsigned char textureOut;
+		Texture * texture;
+		Texture * textureOut;
 
-		HeightMapContainmentHandler(HeightMap * m, unsigned char t, unsigned char o) : ContainmentHandler(){
+		HeightMapContainmentHandler(HeightMap * m, Texture * t, Texture * o) : ContainmentHandler(){
 			this->map = m;
 			this->texture = t;
 			this->textureOut = o;
@@ -65,16 +148,21 @@ class HeightMapContainmentHandler : public ContainmentHandler {
 			ContainmentType result = map->contains(cube); 
 				
 			if(result == ContainmentType::Intersects) {
-		
+				Texture * t;
 				if(map->hitsBoundary(cube)) {
 					vertex->position = cube.getCenter();
-					vertex->texIndex = this->textureOut;
+					t = textureOut;
 				} else {
 					glm::vec3 c = cube.getCenter();
 					glm::vec3 p0 = getPoint(c.x, c.z); 
 					vertex->position = p0;
-					vertex->texIndex = this->texture;
+					t = texture;
 				}
+
+				vertex->texIndex = t->index;
+				vertex->parallaxScale = t->parallaxScale;
+				vertex->parallaxMinLayers = t->parallaxMinLayers;
+				vertex->parallaxMaxLayers = t->parallaxMaxLayers;		
 			}
 			return result;
 		}
@@ -82,7 +170,7 @@ class HeightMapContainmentHandler : public ContainmentHandler {
 
 
 class MainApplication : public LithosApplication {
-	std::vector<Texture> textures;
+	std::vector<Texture*> textures;
   	Camera camera;
 	Octree * tree;
 	Tesselator * tesselator;
@@ -169,6 +257,28 @@ std::string replace(std::string input,  std::string replace_word, std::string re
 	return input;
 }
 
+
+	void bindTextures(std::vector<Texture*> ts) {
+		int activeTexture = 0;
+		for(int i=0 ; i < ts.size() ; ++i) {
+		    Texture * t = ts[i];
+			t->index = i;
+			glActiveTexture(GL_TEXTURE0 + activeTexture); 
+			glBindTexture(GL_TEXTURE_2D, t->texture);    // Bind the texture to the active unit
+		    glUniform1i(glGetUniformLocation(shaderProgram, ("textures[" + std::to_string(i) + "]").c_str()), activeTexture++);
+
+			glActiveTexture(GL_TEXTURE0 + activeTexture); 
+			glBindTexture(GL_TEXTURE_2D, t->normal);    // Bind the texture to the active unit
+		    glUniform1i(glGetUniformLocation(shaderProgram, ("normalMaps[" + std::to_string(i) + "]").c_str()), activeTexture++);
+		
+			glActiveTexture(GL_TEXTURE0 + activeTexture); 
+			glBindTexture(GL_TEXTURE_2D, t->bump);    // Bind the texture to the active unit
+		    glUniform1i(glGetUniformLocation(shaderProgram, ("bumpMaps[" + std::to_string(i) + "]").c_str()), activeTexture++);
+
+		}
+	}
+
+
     virtual void setup() {
 		glEnable(GL_DEPTH_TEST);
 		glEnable(GL_BLEND);
@@ -177,15 +287,15 @@ std::string replace(std::string input,  std::string replace_word, std::string re
 		glCullFace(GL_BACK); // Or GL_FRONT
 		glFrontFace(GL_CCW); // Ensure this matches your vertex data
 
-        textures.push_back(Texture(loadTextureImage("textures/pixel.jpg")));
-        textures.push_back(Texture(loadTextureImage("textures/grid.png")));
-        textures.push_back(Texture(loadTextureImage("textures/grass_color.png"),loadTextureImage("textures/grass_normal.png"),loadTextureImage("textures/grass_bump.png"), 0.05, 8, 32 ));
-        textures.push_back(Texture(loadTextureImage("textures/sand.png")));
-        textures.push_back(Texture(loadTextureImage("textures/rock_color.png"),loadTextureImage("textures/rock_normal.png"),loadTextureImage("textures/rock_bump.png"), 0.2, 8, 32));
-        textures.push_back(Texture(loadTextureImage("textures/snow_color.png"),loadTextureImage("textures/snow_normal.png"),loadTextureImage("textures/snow_bump.png"), 0.1, 8, 32 ));
-        textures.push_back(Texture(loadTextureImage("textures/metal_color.png"),loadTextureImage("textures/metal_normal.png"),loadTextureImage("textures/metal_bump.png"), 0.3, 8, 256 ));
-        textures.push_back(Texture(loadTextureImage("textures/dirt_color.png"),loadTextureImage("textures/dirt_normal.png"),loadTextureImage("textures/dirt_bump.png"), 0.1, 8, 32 ));
-        textures.push_back(Texture(loadTextureImage("textures/bricks_color.png"),loadTextureImage("textures/bricks_normal.png"),loadTextureImage("textures/bricks_bump.png"), 0.05, 8, 32 ));
+        textures.push_back(new Texture(loadTextureImage("textures/pixel.jpg")));
+        textures.push_back(new Texture(loadTextureImage("textures/grid.png")));
+        textures.push_back(new Texture(loadTextureImage("textures/grass_color.png"),loadTextureImage("textures/grass_normal.png"),loadTextureImage("textures/grass_bump.png"), 0.05, 8, 32 ));
+        textures.push_back(new Texture(loadTextureImage("textures/sand.png")));
+        textures.push_back(new Texture(loadTextureImage("textures/rock_color.png"),loadTextureImage("textures/rock_normal.png"),loadTextureImage("textures/rock_bump.png"), 0.2, 8, 32));
+        textures.push_back(new Texture(loadTextureImage("textures/snow_color.png"),loadTextureImage("textures/snow_normal.png"),loadTextureImage("textures/snow_bump.png"), 0.1, 8, 32 ));
+        textures.push_back(new Texture(loadTextureImage("textures/metal_color.png"),loadTextureImage("textures/metal_normal.png"),loadTextureImage("textures/metal_bump.png"), 0.3, 8, 256 ));
+        textures.push_back(new Texture(loadTextureImage("textures/dirt_color.png"),loadTextureImage("textures/dirt_normal.png"),loadTextureImage("textures/dirt_bump.png"), 0.1, 8, 32 ));
+        textures.push_back(new Texture(loadTextureImage("textures/bricks_color.png"),loadTextureImage("textures/bricks_normal.png"),loadTextureImage("textures/bricks_bump.png"), 0.05, 8, 32 ));
 
 		std::string functionsLine = "#include<functions.glsl>";
 		std::string functionsCode = readFile("shaders/functions.glsl");
@@ -218,23 +328,7 @@ std::string replace(std::string input,  std::string replace_word, std::string re
 		timeLoc = glGetUniformLocation(shaderProgram, "time");
 
 
-		int activeTexture = 0;
-		for(int i=0 ; i < textures.size() ; ++i) {
-		    Texture t = textures[i];
-
-			glActiveTexture(GL_TEXTURE0 + activeTexture); 
-			glBindTexture(GL_TEXTURE_2D, t.texture);    // Bind the texture to the active unit
-		    glUniform1i(glGetUniformLocation(shaderProgram, ("textures[" + std::to_string(i) + "]").c_str()), activeTexture++);
-
-			glActiveTexture(GL_TEXTURE0 + activeTexture); 
-			glBindTexture(GL_TEXTURE_2D, t.normal);    // Bind the texture to the active unit
-		    glUniform1i(glGetUniformLocation(shaderProgram, ("normalMaps[" + std::to_string(i) + "]").c_str()), activeTexture++);
-		
-			glActiveTexture(GL_TEXTURE0 + activeTexture); 
-			glBindTexture(GL_TEXTURE_2D, t.bump);    // Bind the texture to the active unit
-		    glUniform1i(glGetUniformLocation(shaderProgram, ("bumpMaps[" + std::to_string(i) + "]").c_str()), activeTexture++);
-
-		}
+		bindTextures(textures);
 
         camera.quaternion =   glm::angleAxis(glm::radians(180.0f), glm::vec3(0, 0, 1))
    	    					* glm::angleAxis(glm::radians(145.0f), glm::vec3(1, 0, 0))
@@ -244,16 +338,16 @@ std::string replace(std::string input,  std::string replace_word, std::string re
 		tree = new Octree(1.0);
 
 		HeightMap map(glm::vec3(-64,-32,-64),glm::vec3(64,-16,64), 128, 128);
-		tree->add(new HeightMapContainmentHandler(&map, 2, 7));
+		tree->add(new HeightMapContainmentHandler(&map, textures[2], textures[7]));
 
 		BoundingSphere sph(glm::vec3(0,0,0),20);
-		tree->add(new SphereContainmentHandler(sph, 6));
+		tree->add(new SphereContainmentHandler(sph, textures[6]));
 
 		BoundingSphere sph2(glm::vec3(-11,11,11),10);
-		tree->add(new SphereContainmentHandler(sph2, 5));
+		tree->add(new SphereContainmentHandler(sph2, textures[5]));
 
 		BoundingSphere sph3(glm::vec3(11,11,-11),10);
-		tree->del(new SphereContainmentHandler(sph3, 4));
+		tree->del(new SphereContainmentHandler(sph3, textures[4]));
 
 		BoundingSphere sph4(glm::vec3(4,4,-4),8);
 		//tree->del(new SphereContainmentHandler(sph4, 6));
@@ -262,7 +356,7 @@ std::string replace(std::string input,  std::string replace_word, std::string re
 		//tree->add(new SphereContainmentHandler(sph5, 3));
 
 		BoundingBox box1(glm::vec3(0,-24,0),glm::vec3(24,0,24));
-		tree->add(new BoxContainmentHandler(box1,4));
+		tree->add(new BoxContainmentHandler(box1,textures[4]));
 
 
 		tesselator = new Tesselator(tree);
