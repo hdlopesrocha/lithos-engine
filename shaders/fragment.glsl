@@ -3,7 +3,6 @@
 uniform sampler2D textures[10];
 uniform sampler2D normalMaps[10];
 uniform sampler2D bumpMaps[10];
-uniform float parallaxScale[10];
 
 
 uniform vec3 lightDirection; 
@@ -16,8 +15,6 @@ in vec2 teTextureCoord;
 in float teTextureWeights[10];
 in vec3 tePosition;
 in vec3 teNormal;
-in vec3 teTangent;
-in vec3 teBitangent;
 
 
 out vec4 color;    // Final fragment color
@@ -89,8 +86,6 @@ void main() {
     vec3 specularColor = vec3(1.0,1.0,1.0);
 
     vec3 normal = normalize(teNormal);
-    vec3 tangent = normalize(teTangent);
-    vec3 bitangent = normalize(teBitangent);
     vec2 uv = teTextureCoord;
     vec3 viewDirection = normalize(tePosition - cameraPosition);
 
@@ -100,13 +95,12 @@ void main() {
     }
 
     mat3 TBN = getTBN(tePosition, normal, uv);
-    //mat3 TBN = mat3(tangent, bitangent, normal);
     vec3 viewTangent = normalize(transpose(TBN) * viewDirection);
     
 
 
 
-    float scale = floatBlend(teTextureWeights, parallaxScale);
+    float scale = 0.1;
 
 
    // scale = scale * clamp(effectAmount*2.0,0.0, 1.0);

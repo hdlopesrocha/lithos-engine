@@ -10,12 +10,8 @@ in float tcTextureWeights[][10];
 in vec2 tcTextureCoord[];
 in vec3 tcNormal[];
 in vec3 tcPosition[];
-in vec3 tcTangent[];
-in vec3 tcBitangent[];
 
 out vec3 teNormal;
-out vec3 teTangent;
-out vec3 teBitangent;
 out vec2 teTextureCoord;
 out float teTextureWeights[10];
 out vec3 tePosition;
@@ -34,11 +30,6 @@ void main() {
     teNormal = tcNormal[0] * gl_TessCoord[0] + tcNormal[1] * gl_TessCoord[1] + tcNormal[2] * gl_TessCoord[2];
     teNormal = normalize(tr * teNormal);
     
-    teTangent = tcTangent[0] * gl_TessCoord[0] + tcTangent[1] * gl_TessCoord[1] + tcTangent[2] * gl_TessCoord[2];
-    teTangent = normalize(tr * teTangent);
-    
-    teBitangent = tcBitangent[0] * gl_TessCoord[0] + tcBitangent[1] * gl_TessCoord[1] + tcBitangent[2] * gl_TessCoord[2];
-    teBitangent = normalize(tr * teBitangent);
 
     
     for (int i = 0; i < 10; ++i) {

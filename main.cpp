@@ -5,7 +5,7 @@
 #include "DebugTesselator.hpp"
 #include "math/math.hpp"
 
-#define DEBUG_GEO 0
+//#define DEBUG_GEO 0
 #define TEXTURES_COUNT 10
 
 
@@ -133,10 +133,7 @@ public:
 		glEnableVertexAttribArray(2);		
 		glVertexAttribIPointer(3, 1, GL_UNSIGNED_INT, sizeof(Vertex), (void*) offsetof(Vertex, texIndex) );
 		glEnableVertexAttribArray(3);
-	    glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) offsetof(Vertex, tangent));
-		glEnableVertexAttribArray(4);
-		glVertexAttribPointer(5, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) offsetof(Vertex, bitangent));
-		glEnableVertexAttribArray(5);	
+	
 		return geo;
 	}
 
@@ -228,9 +225,6 @@ std::string replace(std::string input,  std::string replace_word, std::string re
 			glBindTexture(GL_TEXTURE_2D, t.bump);    // Bind the texture to the active unit
 			GLint bumpLocation = glGetUniformLocation(shaderProgram, ("bumpMaps[" + std::to_string(i) + "]").c_str());
 		    glUniform1i(bumpLocation, TEXTURES_COUNT*2+  i);
-
-			GLint parallaxLocation = glGetUniformLocation(shaderProgram, ("parallaxScale[" + std::to_string(i) + "]").c_str());
-		    glUniform1f(parallaxLocation, t.parallax);
 
 		}
 

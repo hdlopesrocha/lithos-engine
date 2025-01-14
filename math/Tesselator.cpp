@@ -82,10 +82,8 @@ void Tesselator::normalize() {
 	}
 }
 
-void smooth(Vertex * v, glm::vec3 n, glm::vec3 t, glm::vec3 b) {
+void smooth(Vertex * v, glm::vec3 n) {
 	v->normal += n;
-	v->tangent += t;
-	v->bitangent += b;
 }
 
 int Tesselator::iterate(int level, OctreeNode * node, BoundingCube cube) {		
@@ -144,28 +142,14 @@ int Tesselator::iterate(int level, OctreeNode * node, BoundingCube cube) {
 				v2.texCoord = triplanarMapping(v2.position, plane)*scale;
 				v3.texCoord = triplanarMapping(v3.position, plane)*scale;	
 
-				glm::vec2 deltaUV1 = v1.texCoord - v0.texCoord;
-				glm::vec2 deltaUV2 = v3.texCoord - v0.texCoord;
 
-			    float f = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV1.y * deltaUV2.x);
+				smooth(addVertex(v0), normal);
+				smooth(addVertex(v2), normal);
+				smooth(addVertex(v1), normal);
 
-
-				glm::vec3 tangent = f * (deltaUV2.y * edge1 - deltaUV1.y * edge2);
-				tangent = glm::normalize(tangent);
-    			tangent = glm::normalize(tangent - glm::dot(tangent, normal) * normal);
-
-				glm::vec3 bitangent = f * (-deltaUV2.x * edge1 + deltaUV1.x * edge2);
-				bitangent = glm::normalize(bitangent);
-    			bitangent = glm::normalize(bitangent - glm::dot(bitangent, normal) * normal);
-
-
-				smooth(addVertex(v0), normal, tangent, bitangent);
-				smooth(addVertex(v2), normal, tangent, bitangent);
-				smooth(addVertex(v1), normal, tangent, bitangent);
-
-				smooth(addVertex(v0), normal, tangent, bitangent);
-				smooth(addVertex(v3), normal, tangent, bitangent);
-				smooth(addVertex(v2), normal, tangent, bitangent);
+				smooth(addVertex(v0), normal);
+				smooth(addVertex(v3), normal);
+				smooth(addVertex(v2), normal);
 
 
 			}
