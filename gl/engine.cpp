@@ -177,6 +177,7 @@ GLuint LithosApplication::compileShader(const std::string& shaderCode, GLenum sh
     if (!success) {
         char infoLog[512];
         glGetShaderInfoLog(shader, 512, nullptr, infoLog);
+        std::cerr << shaderCode << std::endl;
         std::cerr << "Shader compilation failed: " << infoLog << std::endl;
     }
 

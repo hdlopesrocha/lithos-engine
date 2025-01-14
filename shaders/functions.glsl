@@ -43,3 +43,9 @@ float floatBlend(in float ws[10], float ts[10]) {
 	}
     return res;
 }
+
+struct TextureProperties {
+    float parallaxScale;
+    float parallaxMinLayers;
+    float parallaxMaxLayers;
+};

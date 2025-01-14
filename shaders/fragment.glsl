@@ -3,27 +3,25 @@
 uniform sampler2D textures[10];
 uniform sampler2D normalMaps[10];
 uniform sampler2D bumpMaps[10];
-
-
 uniform vec3 lightDirection; 
 uniform uint lightEnabled;
 uniform vec3 cameraPosition; 
 uniform float time;
+
+#include<functions.glsl>
 
 
 in vec2 teTextureCoord;
 in float teTextureWeights[10];
 in vec3 tePosition;
 in vec3 teNormal;
-in float teParallaxScale;
-in float teParallaxMinLayers;
-in float teParallaxMaxLayers;
+in TextureProperties teProps;
+
 
 out vec4 color;    // Final fragment color
 uniform uint triplanarEnabled;
 uniform uint parallaxEnabled;
 
-#include<functions.glsl>
 
 vec2 parallaxMapping(vec2 uv, vec3 viewDir, float scale, float minLayers, float maxLayers) {
     float numLayers = mix(maxLayers, minLayers, clamp(dot(vec3(0.0, 0.0, -1.0), viewDir), 0.0, 1.0));  
@@ -111,8 +109,8 @@ void main() {
     
 
     
-    if(teParallaxScale > 0.0) {
-       uv = parallaxMapping(uv, -viewTangent, teParallaxScale, teParallaxMinLayers, teParallaxMaxLayers);
+    if(teProps.parallaxScale > 0.0) {
+       uv = parallaxMapping(uv, -viewTangent, teProps.parallaxScale, teProps.parallaxMinLayers, teProps.parallaxMaxLayers);
     }
     vec3 normalMap = textureBlend(teTextureWeights, normalMaps, uv).xyz;
     normalMap = normalize(normalMap * 2.0 - 1.0); // Convert to range [-1, 1]

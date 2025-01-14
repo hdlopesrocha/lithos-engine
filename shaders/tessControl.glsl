@@ -1,23 +1,19 @@
 #version 460 core
 
 layout(vertices = 3) out;
+#include<functions.glsl>
 
 in float vTextureWeights[][10];
 in vec2 vTextureCoord[];
 in vec3 vPosition[];
 in vec3 vNormal[];
-in float vParallaxScale[];
-in float vParallaxMinLayers[];
-in float vParallaxMaxLayers[];
-
+in TextureProperties vProps[];
 
 out float tcTextureWeights[][10];
 out vec2 tcTextureCoord[];
 out vec3 tcNormal[];
 out vec3 tcPosition[];
-out float tcParallaxScale[];
-out float tcParallaxMinLayers[];
-out float tcParallaxMaxLayers[];
+out TextureProperties tcProps[];
 
 uniform vec3 cameraPosition; 
 
@@ -31,12 +27,9 @@ void main() {
     gl_TessLevelInner[0] = tessellationFactor;
 
     tcPosition[gl_InvocationID] = vPosition[gl_InvocationID]; 
-
     tcNormal[gl_InvocationID] = vNormal[gl_InvocationID];
     
-    tcParallaxScale[gl_InvocationID] = vParallaxScale[gl_InvocationID];
-    tcParallaxMinLayers[gl_InvocationID] = vParallaxMinLayers[gl_InvocationID];
-    tcParallaxMaxLayers[gl_InvocationID] = vParallaxMaxLayers[gl_InvocationID];
+    tcProps[gl_InvocationID] = vProps[gl_InvocationID];
 
     tcTextureCoord[gl_InvocationID] = vTextureCoord[gl_InvocationID];
     for (int i = 0; i < 10; ++i) {

@@ -9,19 +9,16 @@ layout(location = 4) in float parallaxScale;
 layout(location = 5) in float parallaxMinLayers;     
 layout(location = 6) in float parallaxMaxLayers;     
 
+#include<functions.glsl>
 
 out float vTextureWeights[10];
 out vec2 vTextureCoord;
 out vec3 vPosition;
 out vec3 vNormal;
-out float vParallaxScale;
-out float vParallaxMinLayers;
-out float vParallaxMaxLayers;
+out TextureProperties vProps;
 
 uniform vec3 lightDirection;  
 uniform uint triplanarEnabled;
-
-#include<functions.glsl>
 
 void main() {
 
@@ -34,8 +31,8 @@ void main() {
     vPosition = position;
     vTextureWeights[textureIndex] = 1.0;
     vNormal = normal;
-    vParallaxScale = parallaxScale;
-    vParallaxMinLayers = parallaxMinLayers;
-    vParallaxMaxLayers = parallaxMaxLayers;
+    vProps.parallaxScale = parallaxScale;
+    vProps.parallaxMinLayers = parallaxMinLayers;
+    vProps.parallaxMaxLayers = parallaxMaxLayers;
     gl_Position = vec4(position, 1.0);
 }
