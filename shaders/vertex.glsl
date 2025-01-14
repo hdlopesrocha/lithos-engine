@@ -5,6 +5,9 @@ layout(location = 0) in vec3 position;
 layout(location = 1) in vec3 normal;    
 layout(location = 2) in vec2 textureCoord;    
 layout(location = 3) in uint textureIndex;     
+layout(location = 4) in float parallaxScale;     
+layout(location = 5) in float parallaxMinLayers;     
+layout(location = 6) in float parallaxMaxLayers;     
 
 
 out float vTextureWeights[10];
