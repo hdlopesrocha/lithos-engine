@@ -6,7 +6,6 @@
 #include "math/math.hpp"
 
 //#define DEBUG_GEO 0
-#define TEXTURES_COUNT 10
 
 
 class Geometry {
@@ -219,24 +218,21 @@ std::string replace(std::string input,  std::string replace_word, std::string re
 		timeLoc = glGetUniformLocation(shaderProgram, "time");
 
 
-
+		int activeTexture = 0;
 		for(int i=0 ; i < textures.size() ; ++i) {
-			glActiveTexture(GL_TEXTURE0 + i); 
 		    Texture t = textures[i];
 
+			glActiveTexture(GL_TEXTURE0 + activeTexture); 
 			glBindTexture(GL_TEXTURE_2D, t.texture);    // Bind the texture to the active unit
-			GLint texLocation = glGetUniformLocation(shaderProgram, ("textures[" + std::to_string(i) + "]").c_str());
-		    glUniform1i(texLocation, i);
+		    glUniform1i(glGetUniformLocation(shaderProgram, ("textures[" + std::to_string(i) + "]").c_str()), activeTexture++);
 
-			glActiveTexture(GL_TEXTURE0 + TEXTURES_COUNT+ i); 
+			glActiveTexture(GL_TEXTURE0 + activeTexture); 
 			glBindTexture(GL_TEXTURE_2D, t.normal);    // Bind the texture to the active unit
-			GLint normalLocation = glGetUniformLocation(shaderProgram, ("normalMaps[" + std::to_string(i) + "]").c_str());
-		    glUniform1i(normalLocation, TEXTURES_COUNT + i);
+		    glUniform1i(glGetUniformLocation(shaderProgram, ("normalMaps[" + std::to_string(i) + "]").c_str()), activeTexture++);
 		
-			glActiveTexture(GL_TEXTURE0 + TEXTURES_COUNT*2+ i); 
+			glActiveTexture(GL_TEXTURE0 + activeTexture); 
 			glBindTexture(GL_TEXTURE_2D, t.bump);    // Bind the texture to the active unit
-			GLint bumpLocation = glGetUniformLocation(shaderProgram, ("bumpMaps[" + std::to_string(i) + "]").c_str());
-		    glUniform1i(bumpLocation, TEXTURES_COUNT*2+  i);
+		    glUniform1i(glGetUniformLocation(shaderProgram, ("bumpMaps[" + std::to_string(i) + "]").c_str()), activeTexture++);
 
 		}
 
