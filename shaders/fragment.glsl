@@ -91,7 +91,6 @@ vec3 visual(vec3 v) {
 
 void main() {
     float effectAmount = sin(time*3.14/4.0);
-    float shininess = 32.0;
     float specularStrength = 0.4;
     vec3 specularColor = vec3(1.0,1.0,1.0);
 
@@ -118,7 +117,7 @@ void main() {
     vec3 worldNormal = normalize(TBN * normalMap);
 
     vec3 reflection = reflect(-lightDirection, worldNormal);
-    float phongSpec = pow(max(dot(reflection, viewDirection), 0.0), shininess);
+    float phongSpec = pow(max(dot(reflection, viewDirection), 0.0), teProps.shininess);
 
     vec4 mixedColor = textureBlend(teTextureWeights, textures, uv);
     if(mixedColor.a == 0.0) {

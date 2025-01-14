@@ -16,6 +16,7 @@ enum ContainmentType {
 	IsContained
 };
 
+
 struct Vertex {
     glm::vec3 position;
     glm::vec3 normal;
@@ -24,6 +25,7 @@ struct Vertex {
 	float parallaxScale;
 	float parallaxMinLayers;
 	float parallaxMaxLayers;
+	float shininess;
 
     Vertex(){
 		this->position = glm::vec3(0);
@@ -33,6 +35,7 @@ struct Vertex {
 		this->parallaxScale = 0.2;
 		this->parallaxMinLayers = 8;
 		this->parallaxMaxLayers = 32;
+		this->shininess = 32;
     }
 
     Vertex(glm::vec3 pos) : Vertex(){

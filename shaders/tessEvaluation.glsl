@@ -42,7 +42,9 @@ void main() {
     teProps.parallaxMaxLayers = tcProps[0].parallaxMaxLayers * gl_TessCoord[0] + 
                                 tcProps[1].parallaxMaxLayers * gl_TessCoord[1] + 
                                 tcProps[2].parallaxMaxLayers * gl_TessCoord[2];
-
+    teProps.shininess = tcProps[0].shininess * gl_TessCoord[0] + 
+                                tcProps[1].shininess * gl_TessCoord[1] + 
+                                tcProps[2].shininess * gl_TessCoord[2];
     
     for (int i = 0; i < 10; ++i) {
         teTextureWeights[i] = (gl_TessCoord[0] * tcTextureWeights[0][i] + gl_TessCoord[1] * tcTextureWeights[1][i] + gl_TessCoord[2] * tcTextureWeights[2][i]);
