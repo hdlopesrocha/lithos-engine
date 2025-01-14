@@ -6,6 +6,10 @@ in float vTextureWeights[][10];
 in vec2 vTextureCoord[];
 in vec3 vPosition[];
 in vec3 vNormal[];
+in float vParallaxScale[];
+in float vParallaxMinLayers[];
+in float vParallaxMaxLayers[];
+
 
 out float tcTextureWeights[][10];
 out vec2 tcTextureCoord[];

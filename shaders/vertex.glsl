@@ -14,7 +14,9 @@ out float vTextureWeights[10];
 out vec2 vTextureCoord;
 out vec3 vPosition;
 out vec3 vNormal;
-
+out float vParallaxScale;
+out float vParallaxMinLayers;
+out float vParallaxMaxLayers;
 
 uniform vec3 lightDirection;  
 uniform uint triplanarEnabled;
@@ -32,6 +34,8 @@ void main() {
     vPosition = position;
     vTextureWeights[textureIndex] = 1.0;
     vNormal = normal;
-
+    vParallaxScale = parallaxScale;
+    vParallaxMinLayers = parallaxMinLayers;
+    vParallaxMaxLayers = parallaxMaxLayers;
     gl_Position = vec4(position, 1.0);
 }
