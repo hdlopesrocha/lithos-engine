@@ -3,6 +3,7 @@
 #include <math.h>
 #include <glm/gtc/type_ptr.hpp>
 #include "DebugTesselator.hpp"
+#include "DebugTesselator2.hpp"
 #include "math/math.hpp"
 
 //#define DEBUG_GEO 0
@@ -181,7 +182,7 @@ class MainApplication : public LithosApplication {
 	Octree * tree;
 	Tesselator * tesselator;
 	#ifdef DEBUG_GEO
-	DebugTesselator * debugTesselator;
+	TesselatorHandler * debugTesselator;
 	Geometry vaoDebug;
 	#endif
 
@@ -296,7 +297,7 @@ std::string replace(std::string input,  std::string replace_word, std::string re
 		glFrontFace(GL_CCW); // Ensure this matches your vertex data
 
         textures.push_back(new Texture(loadTextureImage("textures/pixel.jpg")));
-        textures.push_back(new Texture(loadTextureImage("textures/grid.png")));
+        textures.push_back(new Texture(loadTextureImage("textures/grid3.png")));
         textures.push_back(new Texture(loadTextureImage("textures/grass_color.png"),loadTextureImage("textures/grass_normal.png"),loadTextureImage("textures/grass_bump.png"), 0.01, 8, 32 ,256));
         textures.push_back(new Texture(loadTextureImage("textures/sand.png")));
         textures.push_back(new Texture(loadTextureImage("textures/rock_color.png"),loadTextureImage("textures/rock_normal.png"),loadTextureImage("textures/rock_bump.png"), 0.1, 8, 32,128));
@@ -372,7 +373,7 @@ std::string replace(std::string input,  std::string replace_word, std::string re
 		tesselator->normalize();
 
 		#ifdef DEBUG_GEO
-		debugTesselator = new DebugTesselator(tree);
+		debugTesselator = new DebugTesselator2(tree);
 		tree->iterate((IteratorHandler*)debugTesselator);
 		#endif
 
@@ -392,25 +393,27 @@ std::string replace(std::string input,  std::string replace_word, std::string re
     virtual void draw() {
 		glViewport(0, 0, getWidth(), getHeight());
 		glEnable(GL_CULL_FACE);
-
+		glEnable(GL_DEPTH_TEST);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glUniform1ui(lightEnabledLoc, 1);
 		glUniform1ui(triplanarEnabledLoc, 1);
 		glUniform1ui(parallaxEnabledLoc, 1);
-
 		glPatchParameteri(GL_PATCH_VERTICES, 3); // Define the number of control points per patch
 
 //		glPolygonMode(GL_FRONT, GL_LINE);
 		glBindVertexArray(vertexArrayObject.vao);
 		glDrawElements(GL_PATCHES, tesselator->indices.size(), GL_UNSIGNED_INT, 0);
 
-		glDisable(GL_CULL_FACE);
+		#ifdef DEBUG_GEO
+		//glDisable(GL_CULL_FACE);
+		//glDisable(GL_DEPTH_TEST);
+
 		glUniform1ui(lightEnabledLoc, 0);
     	glUniform1ui(triplanarEnabledLoc, 0);
 		glUniform1ui(parallaxEnabledLoc, 0);
 
-		#ifdef DEBUG_GEO
 		glBindVertexArray(vaoDebug.vao);
-		glDrawElements(GL_TRIANGLES, debugTesselator->indices.size(), GL_UNSIGNED_INT, 0);
+		glDrawElements(GL_PATCHES, debugTesselator->indices.size(), GL_UNSIGNED_INT, 0);
 		#endif
 
 

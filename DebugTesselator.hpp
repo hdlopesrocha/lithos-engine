@@ -76,7 +76,7 @@ class DebugTesselator : public TesselatorHandler{
 						Vertex vtx;
 						vtx.position = corners[triOrder[j]];
 						vtx.texCoord = tessTexDebug[j];
-						vtx.texIndex = node->solid == ContainmentType::Contains ? 9 : 1;
+						vtx.texIndex = 1;
 						vtx.normal = glm::vec3(0.0);
 						addVertex(vtx);
 					}

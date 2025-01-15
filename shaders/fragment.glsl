@@ -5,6 +5,8 @@ uniform sampler2D normalMaps[10];
 uniform sampler2D bumpMaps[10];
 uniform vec3 lightDirection; 
 uniform uint lightEnabled;
+uniform uint triplanarEnabled;
+uniform uint parallaxEnabled;
 uniform vec3 cameraPosition; 
 uniform float time;
 
@@ -19,8 +21,6 @@ in TextureProperties teProps;
 
 
 out vec4 color;    // Final fragment color
-uniform uint triplanarEnabled;
-uniform uint parallaxEnabled;
 
 
 vec2 parallaxMapping(vec2 uv, vec3 viewDir, float scale, float minLayers, float maxLayers) {
@@ -101,9 +101,7 @@ vec3 visual(vec3 v) {
 
 void main() {
     float effectAmount = sin(time*3.14/4.0)*0.5 + 0.5;
-    float specularStrength = 0.4;
-    vec3 specularColor = vec3(1.0,1.0,1.0);
-
+   
     vec3 normal = normalize(teNormal);
     vec2 uv = teTextureCoord;
     vec3 viewDirection = normalize(tePosition - cameraPosition);
@@ -117,32 +115,32 @@ void main() {
     vec3 viewTangent = normalize(transpose(TBN) * viewDirection);
     
 
-    
-    if(teProps.parallaxScale > 0.0) {
+    if(parallaxEnabled == 1 && teProps.parallaxScale > 0.0) {
        uv = parallaxMapping(uv, viewTangent, effectAmount*teProps.parallaxScale , teProps.parallaxMinLayers, teProps.parallaxMaxLayers);
     }
-    vec3 normalMap = textureBlend(teTextureWeights, normalMaps, uv).xyz;
-    normalMap = normalize(normalMap * 2.0 - 1.0); // Convert to range [-1, 1]
-
-    vec3 worldNormal = normalize(TBN * normalMap);
-
-    vec3 reflection = reflect(-lightDirection, worldNormal);
-    float phongSpec = pow(max(dot(reflection, viewDirection), 0.0), teProps.shininess);
-
+  
     vec4 mixedColor = textureBlend(teTextureWeights, textures, uv);
     if(mixedColor.a == 0.0) {
-        discard;
+       // discard;
     }
 
     if(lightEnabled == 0) {
         color = mixedColor; 
     }
     else {
+        float specularStrength = 0.4;
+        vec3 specularColor = vec3(1.0,1.0,1.0);
+
+        vec3 normalMap = textureBlend(teTextureWeights, normalMaps, uv).xyz;
+        normalMap = normalize(normalMap * 2.0 - 1.0); // Convert to range [-1, 1]
+
+        vec3 worldNormal = normalize(TBN * normalMap);
+
+        vec3 reflection = reflect(-lightDirection, worldNormal);
+        float phongSpec = pow(max(dot(reflection, viewDirection), 0.0), teProps.shininess);
         float diffuse = clamp(max(dot(worldNormal, -lightDirection), 0.0), 0.2, 1.0);
         color = vec4(mixedColor.rgb*diffuse + specularColor * specularStrength * phongSpec, mixedColor.a); 
     }
-
-   // color = vec4(visual(normal), 1.0);
  }
 
 
