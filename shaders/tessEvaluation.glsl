@@ -6,6 +6,7 @@ layout(triangles, equal_spacing, ccw) in; // Define primitive type and tessellat
 uniform sampler2D textures[10];
 uniform sampler2D normalMaps[10];
 uniform sampler2D bumpMaps[10];
+uniform uint debugEnabled;
 
 in float tcTextureWeights[][10];
 in vec2 tcTextureCoord[];
@@ -55,7 +56,9 @@ void main() {
     tePosition = gl_TessCoord[0] * tcPosition[0] + gl_TessCoord[1] * tcPosition[1] + gl_TessCoord[2] * tcPosition[2];
     teTextureCoord = tcTextureCoord[0] * gl_TessCoord[0] + tcTextureCoord[1] * gl_TessCoord[1] + tcTextureCoord[2] * gl_TessCoord[2];
     
-
+    if(debugEnabled == 1) {
+        tePosition += teNormal*0.02;
+    }
     //float height = textureBlend(teTextureWeights, bumpMaps, teTextureCoord).r;
 
 

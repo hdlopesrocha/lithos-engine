@@ -197,6 +197,7 @@ class MainApplication : public LithosApplication {
 	GLuint projectionLoc;
 	GLuint lightDirectionLoc;
 	GLuint lightEnabledLoc;
+	GLuint debugEnabledLoc;
 	GLuint triplanarEnabledLoc;
 	GLuint parallaxEnabledLoc;
 	GLuint cameraPositionLoc;
@@ -331,6 +332,7 @@ std::string replace(std::string input,  std::string replace_word, std::string re
 		projectionLoc = glGetUniformLocation(shaderProgram, "projection");
 		lightDirectionLoc = glGetUniformLocation(shaderProgram, "lightDirection");
 		lightEnabledLoc = glGetUniformLocation(shaderProgram, "lightEnabled");
+		debugEnabledLoc = glGetUniformLocation(shaderProgram, "debugEnabled");
 		triplanarEnabledLoc = glGetUniformLocation(shaderProgram, "triplanarEnabled");
 		parallaxEnabledLoc = glGetUniformLocation(shaderProgram, "parallaxEnabled");
 		cameraPositionLoc = glGetUniformLocation(shaderProgram, "cameraPosition");
@@ -344,7 +346,7 @@ std::string replace(std::string input,  std::string replace_word, std::string re
    	    					* glm::angleAxis(glm::radians(135.0f), glm::vec3(0, 1, 0));  
 		camera.position = glm::vec3(48,48,48);
 
-		tree = new Octree(1.0);
+		tree = new Octree(2.0);
 
 		HeightMap map(glm::vec3(-64,-32,-64),glm::vec3(64,-16,64), 128, 128);
 		tree->add(new HeightMapContainmentHandler(&map, textures[2], textures[7]));
@@ -398,19 +400,26 @@ std::string replace(std::string input,  std::string replace_word, std::string re
 		glUniform1ui(lightEnabledLoc, 1);
 		glUniform1ui(triplanarEnabledLoc, 1);
 		glUniform1ui(parallaxEnabledLoc, 1);
+		glUniform1ui(debugEnabledLoc, 0);
 		glPatchParameteri(GL_PATCH_VERTICES, 3); // Define the number of control points per patch
 
-//		glPolygonMode(GL_FRONT, GL_LINE);
 		glBindVertexArray(vertexArrayObject.vao);
+
+		glPolygonMode(GL_FRONT, GL_FILL);
 		glDrawElements(GL_PATCHES, tesselator->indices.size(), GL_UNSIGNED_INT, 0);
 
-		#ifdef DEBUG_GEO
-		//glDisable(GL_CULL_FACE);
-		//glDisable(GL_DEPTH_TEST);
 
 		glUniform1ui(lightEnabledLoc, 0);
     	glUniform1ui(triplanarEnabledLoc, 0);
 		glUniform1ui(parallaxEnabledLoc, 0);
+		glUniform1ui(debugEnabledLoc, 1);
+		glPolygonMode(GL_FRONT, GL_LINE);
+		glDrawElements(GL_PATCHES, tesselator->indices.size(), GL_UNSIGNED_INT, 0);
+
+
+		#ifdef DEBUG_GEO
+		//glDisable(GL_CULL_FACE);
+
 
 		glBindVertexArray(vaoDebug.vao);
 		glDrawElements(GL_PATCHES, debugTesselator->indices.size(), GL_UNSIGNED_INT, 0);

@@ -4,6 +4,7 @@ uniform sampler2D textures[10];
 uniform sampler2D normalMaps[10];
 uniform sampler2D bumpMaps[10];
 uniform vec3 lightDirection; 
+uniform uint debugEnabled;
 uniform uint lightEnabled;
 uniform uint triplanarEnabled;
 uniform uint parallaxEnabled;
@@ -124,7 +125,10 @@ void main() {
        // discard;
     }
 
-    if(lightEnabled == 0) {
+    if(debugEnabled == 1) {
+        color = vec4(1.0,1.0,1.0,0.2);
+    }
+    else if(lightEnabled == 0) {
         color = mixedColor; 
     }
     else {
