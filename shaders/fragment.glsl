@@ -24,43 +24,53 @@ uniform uint parallaxEnabled;
 
 
 vec2 parallaxMapping(vec2 uv, vec3 viewDir, float scale, float minLayers, float maxLayers) {
-    float numLayers = mix(maxLayers, minLayers, clamp(dot(vec3(0.0, 0.0, -1.0), viewDir), 0.0, 1.0));  
+    float numLayers = mix(maxLayers, minLayers, dot(vec3(0.0, 0.0, 1.0), -viewDir));  
 
 	float deltaDepth = 1.0 / float( numLayers );
 	vec2 deltaUv = (viewDir.xy*scale/viewDir.z) * deltaDepth;
-
 	float currentDepth = 1.0;
     vec2 currentUv = uv;
     float currentHeight = 0.0;
-    int cycles = 1;
 
-    while(cycles > 0) {
-        for(int i=0; i < numLayers ; ++i) {
-            currentUv -= deltaUv;
-            currentDepth -= deltaDepth;
-            currentHeight = textureBlend(teTextureWeights, bumpMaps, currentUv).r;
+    int cycles = 5;
+    vec2 prevUv = currentUv;
+    float prevDepth = currentDepth;
+    float prevHeight = currentHeight;
+    float bias = 0.1;
+    
+    for(int i=0; i < numLayers ; ++i) {
+        prevUv = currentUv;
+        prevHeight = currentHeight;
+        prevDepth = currentDepth;
 
-            if(currentDepth < currentHeight) {
-                break;
-            }
-        }
-        --cycles;
-        if(cycles > 0) {
-            currentUv += deltaUv;
-            currentDepth += deltaDepth;
-            currentHeight = textureBlend(teTextureWeights, bumpMaps, currentUv).r;
-            deltaUv /= numLayers;
-            deltaDepth /= numLayers;
+        currentUv -= deltaUv;
+        currentDepth -= deltaDepth;
+        currentHeight = textureBlend(teTextureWeights, bumpMaps, currentUv).r;
+
+        if(currentHeight > currentDepth) {
+            break;
         }
     }
 
-    
-    vec2 prevUv = currentUv + deltaUv;
-    float prevHeight = textureBlend(teTextureWeights, bumpMaps, prevUv).r;
-
- 
-    float weight = (currentHeight - currentDepth) / (currentHeight  -prevHeight + deltaDepth);
-    return mix(currentUv, prevUv, weight);
+    for (int i = 0; i < cycles; ++i) {
+        vec2 midUv = 0.5 * (currentUv + prevUv);
+        float midDepth = 0.5 * (currentDepth + prevDepth);
+        float midHeight = textureBlend(teTextureWeights, bumpMaps, midUv).r;
+        
+        if (midHeight > midDepth) {
+            currentUv = midUv;
+            currentDepth = midDepth;
+            currentHeight = midHeight;
+        } else {
+            prevUv = midUv;
+            prevDepth = midDepth;
+            prevHeight = midHeight;
+        }
+    }
+    float delta1 = currentHeight - currentDepth; 
+    float delta2 = ( currentDepth + deltaDepth ) - prevHeight; 
+    float ratio = delta1/(delta1+delta2);
+    return mix(currentUv, prevUv, ratio);
 }
 
 mat3 getTBN(vec3 pos, vec3 normal, vec2 uv) {
@@ -90,7 +100,7 @@ vec3 visual(vec3 v) {
 
 
 void main() {
-    float effectAmount = sin(time*3.14/4.0);
+    float effectAmount = sin(time*3.14/4.0)*0.5 + 0.5;
     float specularStrength = 0.4;
     vec3 specularColor = vec3(1.0,1.0,1.0);
 
@@ -109,7 +119,7 @@ void main() {
 
     
     if(teProps.parallaxScale > 0.0) {
-       uv = parallaxMapping(uv, -viewTangent, teProps.parallaxScale, teProps.parallaxMinLayers, teProps.parallaxMaxLayers);
+       uv = parallaxMapping(uv, viewTangent, effectAmount*teProps.parallaxScale , teProps.parallaxMinLayers, teProps.parallaxMaxLayers);
     }
     vec3 normalMap = textureBlend(teTextureWeights, normalMaps, uv).xyz;
     normalMap = normalize(normalMap * 2.0 - 1.0); // Convert to range [-1, 1]
@@ -134,12 +144,5 @@ void main() {
 
    // color = vec4(visual(normal), 1.0);
  }
-
-
-
-
-
-
-
 
 
