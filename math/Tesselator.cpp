@@ -117,7 +117,7 @@ void * Tesselator::before(int level, OctreeNode * node, BoundingCube cube, void 
 	return context; 			 			
 }
 
-int Tesselator::after(int level, OctreeNode * node, BoundingCube cube, void * context) {
+void Tesselator::after(int level, OctreeNode * node, BoundingCube cube, void * context) {
 	if(tree->getHeight(cube)==tree->geometryLevel){
 		Geometry * chunk = (Geometry*) context;
 		chunk->normalize();
@@ -126,6 +126,11 @@ int Tesselator::after(int level, OctreeNode * node, BoundingCube cube, void * co
 
 		//delete chunk;	
 	}		
+	return;
+}
+
+
+bool Tesselator::test(int level, OctreeNode * node, BoundingCube cube, void * context) {			
 	return 1;
 }
 

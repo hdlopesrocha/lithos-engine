@@ -12,6 +12,8 @@ class DrawableGeometry {
 class OctreeRenderer : public IteratorHandler{
 	Octree * tree;
 	Geometry chunk;
+	Frustum frustum;
+
 	public: 
 		int loaded = 0;
 
@@ -53,7 +55,9 @@ class OctreeRenderer : public IteratorHandler{
 			return geo;
 		}
 
-
+		void update(Camera * camera) {
+			frustum = Frustum(camera->projection *camera->view  );
+		}
 
 		void * before(int level, OctreeNode * node, BoundingCube cube, void * context) {			
 			if(node->info != NULL){
@@ -77,9 +81,13 @@ class OctreeRenderer : public IteratorHandler{
 			return NULL; 			 			
 		}
 
-		int after(int level, OctreeNode * node, BoundingCube cube, void * context) {			
-			return 1;
+		void after(int level, OctreeNode * node, BoundingCube cube, void * context) {			
+			return;
 		}
 
+		bool test(int level, OctreeNode * node, BoundingCube cube, void * context) {	
+			BoundingBox box = BoundingBox(cube.getMin(), cube.getMax());
+			return frustum.isBoxVisible(box);
+		}
 };
 

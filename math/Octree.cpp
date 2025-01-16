@@ -184,11 +184,13 @@ void Octree::del(ContainmentHandler * handler) {
 
 void iterateAux(IteratorHandler * handler, int level, OctreeNode * node, BoundingCube cube, void * context) {
 	if(node != NULL) {
-		context = handler->before(level,node, cube, context);
-		for(int i=0; i <8 ; ++i) {
-			iterateAux(handler, level+1,node->children[i], getChildCube(cube,i), context);
+		if(handler->test(level,node, cube, context)) {
+			context = handler->before(level,node, cube, context);
+			for(int i=0; i <8 ; ++i) {
+				iterateAux(handler, level+1,node->children[i], getChildCube(cube,i), context);
+			}
+			handler->after(level,node, cube, context);
 		}
-		handler->after(level,node, cube, context);
 	}
 }
 

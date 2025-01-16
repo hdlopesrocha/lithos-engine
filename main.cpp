@@ -384,6 +384,7 @@ std::string replace(std::string input,  std::string replace_word, std::string re
 		glUniform1ui(parallaxEnabledLoc, 0);
 		glUniform1ui(debugEnabledLoc, 1);
 		glPolygonMode(GL_FRONT, GL_LINE);
+		glLineWidth(2.0);
 		tree->iterate(renderer);
 
 		#endif
@@ -448,6 +449,12 @@ float time = 0.0f;
 	    camera.view = rotate * translate;
 
 		glm::mat4 model = glm::mat4(1.0f); // Identity matrix
+
+	   	if (getKeyboardStatus(GLFW_KEY_R) == GLFW_RELEASE) {
+			renderer->update(&camera);
+		}
+
+
 
 		// Send matrices to the shader
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));

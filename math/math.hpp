@@ -211,8 +211,9 @@ class OctreeNode {
 
 class IteratorHandler {
 	public: 
+		virtual bool test(int level, OctreeNode * node, BoundingCube cube, void * context) = 0;
 		virtual void * before(int level, OctreeNode * node, BoundingCube cube, void * context) = 0;
-		virtual int after(int level, OctreeNode * node, BoundingCube cube, void * context) = 0;
+		virtual void after(int level, OctreeNode * node, BoundingCube cube, void * context) = 0;
 };
 
 
@@ -239,7 +240,8 @@ class Tesselator : public IteratorHandler{
 
 		Tesselator(Octree * tree);
 		void * before(int level, OctreeNode * node, BoundingCube cube, void * context);
-		int after(int level, OctreeNode * node, BoundingCube cube, void * context);
+		void after(int level, OctreeNode * node, BoundingCube cube, void * context);
+		bool test(int level, OctreeNode * node, BoundingCube cube, void * context);
 
 
 };
@@ -258,6 +260,43 @@ public:
 
 	Vertex * addVertex(Vertex vertex);
 	void normalize();
+};
+
+
+class Frustum
+{
+public:
+	Frustum() {}
+
+	// m = ProjectionMatrix * ViewMatrix 
+	Frustum(glm::mat4 m);
+
+	// http://iquilezles.org/www/articles/frustumcorrect/frustumcorrect.htm
+	bool isBoxVisible(BoundingBox box);
+
+private:
+	enum Planes
+	{
+		Left = 0,
+		Right,
+		Bottom,
+		Top,
+		Near,
+		Far,
+		Count,
+		Combinations = Count * (Count - 1) / 2
+	};
+
+	template<Planes i, Planes j>
+	struct ij2k
+	{
+		enum { k = i * (9 - i) / 2 + j - 1 };
+	};
+
+	template<Planes a, Planes b, Planes c> glm::vec3 intersection(glm::vec3* crosses);
+	
+	glm::vec4   m_planes[Count];
+	glm::vec3   m_points[8];
 };
 
 

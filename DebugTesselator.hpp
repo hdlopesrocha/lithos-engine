@@ -74,9 +74,12 @@ class DebugTesselator : public IteratorHandler{
 			return NULL; 			 			
 		}
 
-		int after(int level, OctreeNode * node, BoundingCube cube, void * context) {			
-			return 1;
+		void after(int level, OctreeNode * node, BoundingCube cube, void * context) {			
+			return;
 		}
 
+		bool test(int level, OctreeNode * node, BoundingCube cube, void * context) {			
+			return true;
+		}
 };
 

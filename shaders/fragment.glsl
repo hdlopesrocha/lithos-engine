@@ -126,7 +126,7 @@ void main() {
     }
 
     if(debugEnabled == 1) {
-        color = vec4(1.0,1.0,1.0,0.2);
+        color = vec4(1.0,1.0,1.0,0.3);
     }
     else if(lightEnabled == 0) {
         color = mixedColor; 
