@@ -59,7 +59,7 @@ class DebugTesselator : public TesselatorHandler{
 			return &(vertices[idx]);
 		}
 
-		int iterate(int level, OctreeNode * node, BoundingCube cube) {			
+		void * before(int level, OctreeNode * node, BoundingCube cube, void * context) {			
 			if((node->solid == ContainmentType::Intersects &&  tree->getHeight(cube) == 0)){
 				std::vector<glm::vec3> corners;
 				// Get corners
@@ -82,10 +82,12 @@ class DebugTesselator : public TesselatorHandler{
 					}
 				}
 			}
-			return 1; 			 			
+			return NULL; 			 			
 		}
 
-
+		int after(int level, OctreeNode * node, BoundingCube cube, void * context) {			
+			return 1;
+		}
 
 };
 

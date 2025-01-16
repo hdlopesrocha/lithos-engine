@@ -348,7 +348,7 @@ std::string replace(std::string input,  std::string replace_word, std::string re
 
 		tree = new Octree(2.0);
 
-		HeightMap map(glm::vec3(-64,-32,-64),glm::vec3(64,-16,64), 128, 128);
+		HeightMap map(glm::vec3(-64,-64,-64),glm::vec3(64,-16,64), 128, 128);
 		tree->add(new HeightMapContainmentHandler(&map, textures[2], textures[7]));
 
 		BoundingSphere sph(glm::vec3(0,0,0),20);

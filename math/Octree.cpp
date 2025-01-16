@@ -181,19 +181,19 @@ void Octree::del(ContainmentHandler * handler) {
 	root = delAux(this, handler, root, *this);
 }
 
-void iterateAux(IteratorHandler * handler, int level, OctreeNode * node, BoundingCube cube) {
+void iterateAux(IteratorHandler * handler, int level, OctreeNode * node, BoundingCube cube, void * context) {
 	if(node != NULL) {
-		if(handler->iterate(level,node, cube)) {
-			for(int i=0; i <8 ; ++i) {
-				iterateAux(handler, level+1,node->children[i], getChildCube(cube,i));
-			}
+		context = handler->before(level,node, cube, context);
+		for(int i=0; i <8 ; ++i) {
+			iterateAux(handler, level+1,node->children[i], getChildCube(cube,i), context);
 		}
+		handler->after(level,node, cube, context);
 	}
 }
 
 void Octree::iterate(IteratorHandler * handler) {
 	BoundingCube cube(glm::vec3(getMinX(),getMinY(),getMinZ()),getLength());
-	iterateAux(handler, 0, root, cube);
+	iterateAux(handler, 0, root, cube, NULL);
 }
 
 

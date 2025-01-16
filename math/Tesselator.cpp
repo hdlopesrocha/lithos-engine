@@ -86,7 +86,7 @@ void smooth(Vertex * v, glm::vec3 n) {
 	v->normal += n;
 }
 
-int Tesselator::iterate(int level, OctreeNode * node, BoundingCube cube) {		
+void * Tesselator::before(int level, OctreeNode * node, BoundingCube cube, void * context) {		
 	if(tree->getHeight(cube)==0 && node->solid == ContainmentType::Intersects){
 		std::vector<OctreeNode*> corners;
 		// Get corners
@@ -155,7 +155,10 @@ int Tesselator::iterate(int level, OctreeNode * node, BoundingCube cube) {
 			}
 		}
 	}
-	return 1; 			 			
+	return NULL; 			 			
 }
 
+int Tesselator::after(int level, OctreeNode * node, BoundingCube cube, void * context) {		
+	return 1;
+}
 
