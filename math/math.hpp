@@ -201,6 +201,8 @@ class OctreeNode {
 		Vertex vertex;
 		ContainmentType solid;
 		OctreeNode *children[8];
+		void * info;
+		int infoType;
 		OctreeNode(Vertex vertex);
 		~OctreeNode();
 		void clear();
@@ -213,22 +215,14 @@ class IteratorHandler {
 		virtual int after(int level, OctreeNode * node, BoundingCube cube, void * context) = 0;
 };
 
-class TesselatorHandler : public IteratorHandler{
-	public: 
-		std::vector<Vertex> vertices;
-		std::vector<uint> indices;
-
-
-		virtual void * before(int level, OctreeNode * node, BoundingCube cube, void * context) = 0;
-		virtual int after(int level, OctreeNode * node, BoundingCube cube, void * context) = 0;
-};
 
 class Octree: public BoundingCube {
 	public: 
 		float minSize;
+		int geometryLevel;
 		OctreeNode * root;
 
-		Octree(float minSize);
+		Octree(float minSize, int geometryLevel);
 		void expand(ContainmentHandler * handler);
 		void add(ContainmentHandler * handler);
 		void del(ContainmentHandler * handler);
@@ -239,18 +233,33 @@ class Octree: public BoundingCube {
 		int getHeight(BoundingCube cube);
 };
 
-class Tesselator : public TesselatorHandler{
+class Tesselator : public IteratorHandler{
 	public:
 		Octree * tree;
-		std::map <std::string, int> compactMap;
 
 		Tesselator(Octree * tree);
 		void * before(int level, OctreeNode * node, BoundingCube cube, void * context);
 		int after(int level, OctreeNode * node, BoundingCube cube, void * context);
-		Vertex * addVertex(Vertex vertex);
-	    void normalize();
+
 
 };
+
+class Geometry
+{
+private:
+	/* data */
+public:
+	std::vector<Vertex> vertices;
+	std::vector<uint> indices;
+	std::map <std::string, int> compactMap;
+
+	Geometry(/* args */);
+	~Geometry();
+
+	Vertex * addVertex(Vertex vertex);
+	void normalize();
+};
+
 
 class Math
 {
@@ -260,7 +269,8 @@ public:
 	static bool isBetween(float x, float min, float max);	
 	static int clamp(int val, int min, int max);
 	static float clamp(float val, float min, float max);
-
+	static int triplanarPlane(glm::vec3 position, glm::vec3 normal);
+	static glm::vec2 triplanarMapping(glm::vec3 position, int plane);
 
 };
 

@@ -2,6 +2,7 @@
 #include "gl/gl.hpp"
 #include <math.h>
 #include <glm/gtc/type_ptr.hpp>
+#include "OctreeRenderer.hpp"
 #include "DebugTesselator.hpp"
 #include "DebugTesselator2.hpp"
 #include "math/math.hpp"
@@ -9,10 +10,6 @@
 //#define DEBUG_GEO 0
 
 
-class Geometry {
-	public:
-	GLuint vao, vbo, ebo;
-};
 
 class Texture {
 	public:
@@ -181,6 +178,7 @@ class MainApplication : public LithosApplication {
   	Camera camera;
 	Octree * tree;
 	Tesselator * tesselator;
+	OctreeRenderer * renderer;
 	#ifdef DEBUG_GEO
 	TesselatorHandler * debugTesselator;
 	Geometry vaoDebug;
@@ -202,7 +200,6 @@ class MainApplication : public LithosApplication {
 	GLuint parallaxEnabledLoc;
 	GLuint cameraPositionLoc;
 	GLuint timeLoc;
-	Geometry vertexArrayObject;
 
 
 public:
@@ -214,37 +211,6 @@ public:
 
 	}
 
-	Geometry tesselatorToGeometry(TesselatorHandler * t){
-		Geometry geo;
-		glGenVertexArrays(1, &geo.vao);
-		glGenBuffers(1, &geo.vbo);
-		glGenBuffers(1, &geo.ebo);
-
-		glBindVertexArray(geo.vao);
-		glBindBuffer(GL_ARRAY_BUFFER, geo.vbo);
-		glBufferData(GL_ARRAY_BUFFER, t->vertices.size()*sizeof(Vertex), t->vertices.data(), GL_STATIC_DRAW);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, geo.ebo);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, t->indices.size()*sizeof(uint), t->indices.data(), GL_STATIC_DRAW);
-		
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) offsetof(Vertex, position));
-		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) offsetof(Vertex, normal));
-		glEnableVertexAttribArray(1);
-		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) offsetof(Vertex, texCoord));
-		glEnableVertexAttribArray(2);		
-		glVertexAttribIPointer(3, 1, GL_UNSIGNED_INT, sizeof(Vertex), (void*) offsetof(Vertex, texIndex) );
-		glEnableVertexAttribArray(3);
-			
-		glVertexAttribPointer(4, 1, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) offsetof(Vertex, parallaxScale));
-		glEnableVertexAttribArray(4);	
-		glVertexAttribPointer(5, 1, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) offsetof(Vertex, parallaxMinLayers));
-		glEnableVertexAttribArray(5);	
-		glVertexAttribPointer(6, 1, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) offsetof(Vertex, parallaxMaxLayers));
-		glEnableVertexAttribArray(6);	
-		glVertexAttribPointer(7, 1, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) offsetof(Vertex, shininess));
-		glEnableVertexAttribArray(7);	
-		return geo;
-	}
 
 
 std::string replace(std::string input,  std::string replace_word, std::string replace_by ) {
@@ -346,7 +312,7 @@ std::string replace(std::string input,  std::string replace_word, std::string re
    	    					* glm::angleAxis(glm::radians(135.0f), glm::vec3(0, 1, 0));  
 		camera.position = glm::vec3(48,48,48);
 
-		tree = new Octree(2.0);
+		tree = new Octree(2.0, 4);
 
 		HeightMap map(glm::vec3(-64,-64,-64),glm::vec3(64,-16,64), 128, 128);
 		tree->add(new HeightMapContainmentHandler(&map, textures[2], textures[7]));
@@ -372,7 +338,9 @@ std::string replace(std::string input,  std::string replace_word, std::string re
 
 		tesselator = new Tesselator(tree);
 		tree->iterate((IteratorHandler*)tesselator);
-		tesselator->normalize();
+
+		renderer = new OctreeRenderer(tree);
+		//tesselator->normalize();
 
 		#ifdef DEBUG_GEO
 		debugTesselator = new DebugTesselator2(tree);
@@ -380,7 +348,6 @@ std::string replace(std::string input,  std::string replace_word, std::string re
 		#endif
 
 
-		vertexArrayObject = tesselatorToGeometry(tesselator);
 		#ifdef DEBUG_GEO
 		vaoDebug = tesselatorToGeometry(debugTesselator);
 		#endif
@@ -403,26 +370,22 @@ std::string replace(std::string input,  std::string replace_word, std::string re
 		glUniform1ui(debugEnabledLoc, 0);
 		glPatchParameteri(GL_PATCH_VERTICES, 3); // Define the number of control points per patch
 
-		glBindVertexArray(vertexArrayObject.vao);
 
 		glPolygonMode(GL_FRONT, GL_FILL);
-		glDrawElements(GL_PATCHES, tesselator->indices.size(), GL_UNSIGNED_INT, 0);
+		renderer->loaded = 0;
+		tree->iterate(renderer);
 
 
+
+
+		#ifdef DEBUG_GEO
 		glUniform1ui(lightEnabledLoc, 0);
     	glUniform1ui(triplanarEnabledLoc, 0);
 		glUniform1ui(parallaxEnabledLoc, 0);
 		glUniform1ui(debugEnabledLoc, 1);
 		glPolygonMode(GL_FRONT, GL_LINE);
-		glDrawElements(GL_PATCHES, tesselator->indices.size(), GL_UNSIGNED_INT, 0);
+		tree->iterate(renderer);
 
-
-		#ifdef DEBUG_GEO
-		//glDisable(GL_CULL_FACE);
-
-
-		glBindVertexArray(vaoDebug.vao);
-		glDrawElements(GL_PATCHES, debugTesselator->indices.size(), GL_UNSIGNED_INT, 0);
 		#endif
 
 

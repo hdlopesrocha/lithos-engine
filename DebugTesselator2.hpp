@@ -16,10 +16,9 @@ static std::vector<glm::vec2> tessTex2;
 static std::vector<glm::ivec4> texIndex2;
 
 
-class DebugTesselator2 : public TesselatorHandler{
+class DebugTesselator2 : public IteratorHandler{
 	Octree * tree;
-	std::map <std::string, int> compactMap;
-
+	Geometry chunk;
 
 
 
@@ -50,16 +49,6 @@ class DebugTesselator2 : public TesselatorHandler{
 		}
 	}
 
-	Vertex * addVertex(Vertex vertex){
-		std::string key = vertex.toKey();
-		if(!compactMap.count(key)) {
-			compactMap[key] = compactMap.size();
-			vertices.push_back(vertex); 
-		}
-		int idx = compactMap[key];
-		indices.push_back(idx);
-		return &(vertices[idx]);
-	}
 
 
 	void * before(int level, OctreeNode * node, BoundingCube cube, void * context) {		
@@ -126,13 +115,13 @@ class DebugTesselator2 : public TesselatorHandler{
 					v3.texIndex = 1;
 
 
-					addVertex(v0);
-					addVertex(v2);
-					addVertex(v1);
+					chunk.addVertex(v0);
+					chunk.addVertex(v2);
+					chunk.addVertex(v1);
 
-					addVertex(v0);
-					addVertex(v3);
-					addVertex(v2);
+					chunk.addVertex(v0);
+					chunk.addVertex(v3);
+					chunk.addVertex(v2);
 
 
 				}

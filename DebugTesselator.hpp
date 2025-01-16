@@ -12,9 +12,9 @@ static std::vector<glm::ivec3> tessOrderDebug;
 static std::vector<glm::vec2> tessTexDebug;
 static bool initializedDebug = false;
 
-class DebugTesselator : public TesselatorHandler{
+class DebugTesselator : public IteratorHandler{
 	Octree * tree;
-	std::map <std::string, int> compactMap;
+	Geometry chunk;
 
 	public: 
 
@@ -48,17 +48,6 @@ class DebugTesselator : public TesselatorHandler{
 			}
 		}
 
-		Vertex * addVertex(Vertex vertex){
-			std::string key = vertex.toString();
-			if(!compactMap.count(key)) {
-				compactMap[key] = compactMap.size();
-				vertices.push_back(vertex); 
-			}
-			int idx = compactMap[key];
-			indices.push_back(idx);
-			return &(vertices[idx]);
-		}
-
 		void * before(int level, OctreeNode * node, BoundingCube cube, void * context) {			
 			if((node->solid == ContainmentType::Intersects &&  tree->getHeight(cube) == 0)){
 				std::vector<glm::vec3> corners;
@@ -78,7 +67,7 @@ class DebugTesselator : public TesselatorHandler{
 						vtx.texCoord = tessTexDebug[j];
 						vtx.texIndex = 1;
 						vtx.normal = glm::vec3(0.0);
-						addVertex(vtx);
+						chunk.addVertex(vtx);
 					}
 				}
 			}

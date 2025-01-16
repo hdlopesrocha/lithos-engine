@@ -1,6 +1,8 @@
 #include "math.hpp"
 
 OctreeNode::OctreeNode(Vertex vertex) {
+	this->info = NULL;
+	this->infoType = 0;
 	this->vertex = vertex;
     this->solid = ContainmentType::Disjoint;
 	for(int i=0; i < 8 ; ++i) {

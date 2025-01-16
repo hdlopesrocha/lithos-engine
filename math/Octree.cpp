@@ -1,9 +1,10 @@
 #include "math.hpp"
 
 
-Octree::Octree(float minSize) : BoundingCube(glm::vec3(0,0,0), minSize){
+Octree::Octree(float minSize, int geometryLevel) : BoundingCube(glm::vec3(0,0,0), minSize){
 	this->root = new OctreeNode(glm::vec3(minSize*0.5));
 	this->minSize = minSize;
+	this->geometryLevel = geometryLevel;
 }
 
 BoundingCube getChildCube(BoundingCube cube, int i) {
