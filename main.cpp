@@ -62,15 +62,15 @@ class SphereContainmentHandler : public ContainmentHandler {
 		}
 
 		ContainmentType check(BoundingCube cube, Vertex * vertex) {
-			ContainmentType result = sphere.contains(cube); 
+			ContainmentType result = sphere.test(cube); 
 
 			if(result == ContainmentType::Intersects) {
 				glm::vec3 c = this->sphere.center;
 				float r = this->sphere.radius;
 				glm::vec3 a = cube.getCenter();
 				glm::vec3 n = glm::normalize(a-c);
-				glm::vec3 p = glm::clamp(c + n*r, cube.getMin(), cube.getMax());
-				vertex->position = p;
+				glm::vec3 p = c + n*r;
+				vertex->position = glm::clamp(p, cube.getMin(), cube.getMax());
 				vertex->texIndex = texture->index;
 				vertex->parallaxScale = texture->parallaxScale;
 				vertex->parallaxMinLayers = texture->parallaxMinLayers;
@@ -98,7 +98,7 @@ class BoxContainmentHandler : public ContainmentHandler {
 		}
 
 		ContainmentType check(BoundingCube cube, Vertex * vertex) {
-			ContainmentType result = box.contains(cube); 
+			ContainmentType result = box.test(cube); 
 			if(result == ContainmentType::Intersects) {
 				glm::vec3 min = this->box.getMin();
 				glm::vec3 max = this->box.getMax();
@@ -115,7 +115,7 @@ class BoxContainmentHandler : public ContainmentHandler {
 						n[i] = -1.0;
 					}
 				}
-				vertex->position = c;
+				vertex->position = glm::clamp(c, cube.getMin(), cube.getMax());
 				vertex->texIndex = texture->index;
 				vertex->parallaxScale = texture->parallaxScale;
 				vertex->parallaxMinLayers = texture->parallaxMinLayers;
@@ -145,7 +145,7 @@ class HeightMapContainmentHandler : public ContainmentHandler {
 		}
 
 		ContainmentType check(BoundingCube cube, Vertex * vertex) {
-			ContainmentType result = map->contains(cube); 
+			ContainmentType result = map->test(cube); 
 				
 			if(result == ContainmentType::Intersects) {
 				Texture * t;
@@ -307,7 +307,6 @@ std::string replace(std::string input,  std::string replace_word, std::string re
 		cameraPositionLoc = glGetUniformLocation(shaderProgram, "cameraPosition");
 		timeLoc = glGetUniformLocation(shaderProgram, "time");
 
-
 		bindTextures(textures);
 
         camera.quaternion =   glm::angleAxis(glm::radians(180.0f), glm::vec3(0, 0, 1))
@@ -338,7 +337,6 @@ std::string replace(std::string input,  std::string replace_word, std::string re
 		BoundingBox box1(glm::vec3(0,-24,0),glm::vec3(24,0,24));
 		tree->add(new BoxContainmentHandler(box1,textures[8]));
 
-
 		tesselator = new Tesselator(tree);
 		tree->iterate((IteratorHandler*)tesselator);
 
@@ -356,10 +354,7 @@ std::string replace(std::string input,  std::string replace_word, std::string re
 		#endif
 
 		glClearColor (0.1,0.1,0.1,1.0);
-
-
 		glUniform3fv(lightDirectionLoc, 1, glm::value_ptr(glm::normalize(glm::vec3(-1.0,-1.0,-1.0))));
-
 	 }
 
     virtual void draw() {
@@ -378,10 +373,7 @@ std::string replace(std::string input,  std::string replace_word, std::string re
 		renderer->loaded = 0;
 		tree->iterate(renderer);
 
-
-
-
-		#ifdef DEBUG_GEO
+		//#ifdef DEBUG_GEO
 		glUniform1ui(lightEnabledLoc, 0);
     	glUniform1ui(triplanarEnabledLoc, 0);
 		glUniform1ui(parallaxEnabledLoc, 0);
@@ -389,8 +381,7 @@ std::string replace(std::string input,  std::string replace_word, std::string re
 		glPolygonMode(GL_FRONT, GL_LINE);
 		glLineWidth(2.0);
 		tree->iterate(renderer);
-
-		#endif
+		//#endif
 
 
 		//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);

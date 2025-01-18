@@ -57,13 +57,7 @@ bool BoundingSphere::intersects(BoundingCube cube) {
     return squaredDistance <= (radius * radius);
 }
 
-ContainmentType BoundingSphere::contains(BoundingCube cube) {
-
-
-
-    ContainmentType result;
-    result = ContainmentType::Disjoint;
-    
+ContainmentType BoundingSphere::test(BoundingCube cube) {
     // Classify corners
     unsigned char mask = 0;
 
@@ -76,24 +70,15 @@ ContainmentType BoundingSphere::contains(BoundingCube cube) {
 
     // Classifify type
     if(mask == 0xff) {
-        result = ContainmentType::Contains;
+        return ContainmentType::Contains;
     }
     else if(mask > 0) {
-        result = ContainmentType::Intersects;
+        return ContainmentType::Intersects;
     }
-    else {        
-        glm::vec3 minSphere = (center-glm::vec3(radius));
-        glm::vec3 maxSphere = (center+glm::vec3(radius));
-        
-        if ( cube.getMin()[0] <=  minSphere[0] && maxSphere[0] <= cube.getMax()[0] && 
-             cube.getMin()[1] <=  minSphere[1] && maxSphere[1] <= cube.getMax()[1] && 
-             cube.getMin()[2] <=  minSphere[2] && maxSphere[2] <= cube.getMax()[2] ) {
-            result = ContainmentType::IsContained;
-        } else if(intersects(cube)) {
-            result = ContainmentType::Intersects;
-        }
+    else if(cube.contains(*this)) {       
+        return ContainmentType::IsContained;
     }  
 
-    return result;
+    return intersects(cube) ? ContainmentType::Intersects : ContainmentType::Disjoint;
 }
 

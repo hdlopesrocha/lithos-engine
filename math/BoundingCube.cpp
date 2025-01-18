@@ -61,3 +61,22 @@ bool BoundingCube::contains(glm::vec3 point){
         Math::isBetween(point[1], min[1], getMax()[1]) &&
         Math::isBetween(point[2], min[2], getMax()[2]);
 }
+
+bool BoundingCube::contains(BoundingSphere sphere){
+    glm::vec3 minS = (sphere.center-glm::vec3(sphere.radius));
+    BoundingCube cube(minS, sphere.radius*2.0);
+    return contains(cube);
+}
+
+bool BoundingCube::contains(BoundingCube cube){
+
+    glm::vec3 minC = cube.getMin();
+    glm::vec3 maxC = cube.getMax();
+    
+    if ( getMin()[0] <=  minC[0] && maxC[0] <= getMax()[0] && 
+            getMin()[1] <=  minC[1] && maxC[1] <= getMax()[1] && 
+            getMin()[2] <=  minC[2] && maxC[2] <= getMax()[2] ) {
+        return true;
+    }
+    return false;
+}

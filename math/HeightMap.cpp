@@ -162,7 +162,7 @@ bool HeightMap::contains(glm::vec3 point){
 bool HeightMap::hitsBoundary(BoundingCube cube) {
     BoundingBox box(min, max);
 
-    ContainmentType result = box.contains(cube);
+    ContainmentType result = box.test(cube);
     bool allPointsUnderground = true;
 
 
@@ -178,10 +178,10 @@ bool HeightMap::hitsBoundary(BoundingCube cube) {
     return result == ContainmentType::Intersects && allPointsUnderground;
 }
 
-ContainmentType HeightMap::contains(BoundingCube cube) {
+ContainmentType HeightMap::test(BoundingCube cube) {
     BoundingBox box(min, max);
 
-    ContainmentType result = box.contains(cube);
+    ContainmentType result = box.test(cube);
 
 
     if(result != ContainmentType::Disjoint && result != ContainmentType::IsContained) {
@@ -190,8 +190,8 @@ ContainmentType HeightMap::contains(BoundingCube cube) {
         BoundingBox minBox(getMin(), glm::vec3(getMax().x, range[0], getMax().z ));
         BoundingBox maxBox(getMin(), glm::vec3(getMax().x, range[1], getMax().z ));
         
-        ContainmentType minResult = minBox.contains(cube);
-        ContainmentType maxResult = maxBox.contains(cube);
+        ContainmentType minResult = minBox.test(cube);
+        ContainmentType maxResult = maxBox.test(cube);
        
         if(minResult == ContainmentType::Contains){       
             result = ContainmentType::Contains;

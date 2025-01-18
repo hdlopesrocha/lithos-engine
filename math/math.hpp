@@ -9,6 +9,9 @@
 #include <vector>
 #include <map>
 
+
+class BoundingSphere;
+
 enum ContainmentType {
 	Contains,
 	Intersects,
@@ -92,6 +95,7 @@ enum SpaceType {
     Solid
 };
 
+
 class BoundingCube {
 	private: 
 		glm::vec3 min;
@@ -112,6 +116,9 @@ class BoundingCube {
 		void setLength(float l);
 		void setMin(glm::vec3 v);
 		bool contains(glm::vec3 point);
+		bool contains(BoundingSphere sphere);
+		bool contains(BoundingCube cube);
+
 };
 
 
@@ -122,7 +129,7 @@ class BoundingSphere {
 		BoundingSphere();		
 		BoundingSphere(glm::vec3 center, float radius);
 		bool contains(glm::vec3 point);
-		ContainmentType contains(BoundingCube cube);
+		ContainmentType test(BoundingCube cube);
 		bool intersects(BoundingCube cube);
 };
 
@@ -147,7 +154,7 @@ class BoundingBox {
 		glm::vec3 getLength();
 		void setMin(glm::vec3 v);
 		void setMax(glm::vec3 v);
-		ContainmentType contains(BoundingCube cube);
+		ContainmentType test(BoundingCube cube);
 		bool intersects(BoundingSphere sphere);
 		bool contains(glm::vec3 point);
 };
@@ -186,7 +193,7 @@ class HeightMap {
 		bool hitsBoundary(BoundingCube cube);
 
 		bool contains(glm::vec3 point);
-		ContainmentType contains(BoundingCube cube);
+		ContainmentType test(BoundingCube cube);
 
 };
 

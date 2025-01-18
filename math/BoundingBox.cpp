@@ -67,7 +67,7 @@ bool BoundingBox::contains(glm::vec3 point){
         Math::isBetween(point[2], min[2], max[2]);
 }
 
-ContainmentType BoundingBox::contains(BoundingCube cube) {
+ContainmentType BoundingBox::test(BoundingCube cube) {
     ContainmentType result;
     result = ContainmentType::Intersects;
     glm::vec3 min1 = cube.getMin();
