@@ -177,8 +177,9 @@ class HeightMap {
 		void setMin(glm::vec3 v);
 		void setMax(glm::vec3 v);
 		float getHeightAt(float x, float z);
-		glm::vec3 getPointAt(BoundingCube cube);
-		
+		glm::vec3 getPoint(BoundingCube cube);
+    
+
 		float getData(int x, int z);
 		glm::ivec2 getIndexes(float x, float z);
 		glm::vec2 getHeightRangeBetween(BoundingCube cube);

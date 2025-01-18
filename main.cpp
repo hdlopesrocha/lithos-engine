@@ -143,9 +143,6 @@ class HeightMapContainmentHandler : public ContainmentHandler {
 		glm::vec3 getCenter() {
 			return map->getCenter();
 		}
-		glm::vec3 getPoint(float x, float z) {
-			return glm::vec3(x, map->getHeightAt(x,z) ,z);
-		}
 
 		ContainmentType check(BoundingCube cube, Vertex * vertex) {
 			ContainmentType result = map->contains(cube); 
@@ -153,11 +150,17 @@ class HeightMapContainmentHandler : public ContainmentHandler {
 			if(result == ContainmentType::Intersects) {
 				Texture * t;
 				if(map->hitsBoundary(cube)) {
-					vertex->position = cube.getCenter();
+					glm::vec3 top = map->getCenter();
+					top.y = map->getMaxY();
+					glm::vec3 dir = cube.getCenter() - top;
+					vertex->position = cube.getCenter() + dir;
+					vertex->position = glm::clamp(vertex->position, cube.getMin(), cube.getMax());
+					vertex->position = glm::clamp(vertex->position, map->getMin(), map->getMax());
 					t = textureOut;
 				} else {
 					glm::vec3 c = cube.getCenter();
-					glm::vec3 p0 = getPoint(c.x, c.z); 
+					c = glm::clamp(c, map->getMin(), map->getMax());
+					glm::vec3 p0 = map->getPoint(cube); 
 					vertex->position = p0;
 					t = texture;
 				}

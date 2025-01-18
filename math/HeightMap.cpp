@@ -72,22 +72,6 @@ glm::vec2 HeightMap::getHeightRangeBetween(BoundingCube cube) {
     return range;
 }
 
-glm::vec3 HeightMap::getPointAt(BoundingCube cube) {
-    glm::vec3 c = cube.getCenter();
-  
-    glm::vec3 len = getLength();
-
-    float h = this->getHeightAt(c.x, c.z)* len[1]+ getMin()[1];
-    h = Math::clamp(h, cube.getMin().y, cube.getMax().y);
-
-    glm::vec3 vec = glm::vec3(c.x, h, c.z);
-
-    if( cube.contains(vec)) {
-        return vec;
-    }
-    return vec;
-}
-
 float HeightMap::getHeightAt(float x, float z) {
     // bilinear interpolation
     glm::vec3 len = getLength();
@@ -111,6 +95,27 @@ float HeightMap::getHeightAt(float x, float z) {
     float y = (1.0 - qz)*y1 + (qz)*y2;
 
     return min.y + y * len.y;
+}
+
+glm::vec3 getShift(int i) {
+	return glm::vec3( ((i >> 0) % 2) , ((i >> 2) % 2) , ((i >> 1) % 2));
+}
+
+glm::vec3 HeightMap::getPoint(BoundingCube cube) {
+    glm::vec3 v = cube.getCenter();
+    float h = getHeightAt(v.x,v.z);
+    if( Math::isBetween(h, cube.getMinY(), cube.getMaxY())){
+        return glm::vec3(v.x, h, v.z);
+    }  
+   
+    for(int i =0; i < 4 ; ++i) {
+        v = cube.getMin() + cube.getLength() * getShift(i);
+        h = getHeightAt(v.x,v.z);
+        if( Math::isBetween(h, cube.getMinY(), cube.getMaxY())){
+            return glm::vec3(v.x, h, v.z);
+        }
+    }
+    return cube.getCenter();
 }
 
 float HeightMap::getMaxX() {
@@ -153,9 +158,6 @@ bool HeightMap::contains(glm::vec3 point){
     return box.contains(point) && Math::isBetween(point.y, min.y, h);
 }
 
-glm::vec3 getShift(int i) {
-	return glm::vec3( ((i >> 2) % 2) , ((i >> 1) % 2) , ((i >> 0) % 2));
-}
 
 bool HeightMap::hitsBoundary(BoundingCube cube) {
     BoundingBox box(min, max);
