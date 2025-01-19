@@ -27,3 +27,9 @@ debug:
 
 tool:
 	$(CC) $(CFLAGS) -o bin/converter tools/wavefrontConverter.cpp
+	
+install:
+	sudo apt-get install libglm-dev
+	sudo apt-get install libglew-dev 
+	sudo apt-get install libglfw3-dev
+	sudo apt-get install libstb-dev 

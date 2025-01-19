@@ -152,19 +152,17 @@ class HeightMapContainmentHandler : public ContainmentHandler {
 				if(map->hitsBoundary(cube)) {
 					glm::vec3 top = map->getCenter();
 					top.y = map->getMaxY();
-					glm::vec3 dir = cube.getCenter() - top;
-					vertex->position = cube.getCenter() + dir;
-					vertex->position = glm::clamp(vertex->position, cube.getMin(), cube.getMax());
-					vertex->position = glm::clamp(vertex->position, map->getMin(), map->getMax());
+					glm::vec3 dir = glm::normalize(cube.getCenter() - top);
+					vertex->position = cube.getCenter() + dir*cube.getLength();
 					t = textureOut;
 				} else {
-					glm::vec3 c = cube.getCenter();
-					c = glm::clamp(c, map->getMin(), map->getMax());
 					glm::vec3 p0 = map->getPoint(cube); 
 					vertex->position = p0;
 					t = texture;
 				}
-
+				vertex->position = glm::clamp(vertex->position, map->getMin(), map->getMax());
+				vertex->position = glm::clamp(vertex->position, cube.getMin(), cube.getMax());
+				
 				vertex->texIndex = t->index;
 				vertex->parallaxScale = t->parallaxScale;
 				vertex->parallaxMinLayers = t->parallaxMinLayers;
@@ -203,6 +201,7 @@ class MainApplication : public LithosApplication {
 	GLuint parallaxEnabledLoc;
 	GLuint cameraPositionLoc;
 	GLuint timeLoc;
+	float time = 0.0f;
 
 
 public:
@@ -262,9 +261,7 @@ std::string replace(std::string input,  std::string replace_word, std::string re
 		glEnable(GL_DEPTH_TEST);
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		glEnable(GL_CULL_FACE); // Enable face culling
-		glCullFace(GL_BACK); // Or GL_FRONT
-		glFrontFace(GL_CCW); // Ensure this matches your vertex data
+
 
         textures.push_back(new Texture(loadTextureImage("textures/pixel.jpg")));
         textures.push_back(new Texture(loadTextureImage("textures/grid3.png")));
@@ -356,38 +353,8 @@ std::string replace(std::string input,  std::string replace_word, std::string re
 		glClearColor (0.1,0.1,0.1,1.0);
 		glUniform3fv(lightDirectionLoc, 1, glm::value_ptr(glm::normalize(glm::vec3(-1.0,-1.0,-1.0))));
 	 }
-
-    virtual void draw() {
-		glViewport(0, 0, getWidth(), getHeight());
-		glEnable(GL_CULL_FACE);
-		glEnable(GL_DEPTH_TEST);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		glUniform1ui(lightEnabledLoc, 1);
-		glUniform1ui(triplanarEnabledLoc, 1);
-		glUniform1ui(parallaxEnabledLoc, 1);
-		glUniform1ui(debugEnabledLoc, 0);
-		glPatchParameteri(GL_PATCH_VERTICES, 3); // Define the number of control points per patch
-
-
-		glPolygonMode(GL_FRONT, GL_FILL);
-		renderer->loaded = 0;
-		tree->iterate(renderer);
-
-		//#ifdef DEBUG_GEO
-		glUniform1ui(lightEnabledLoc, 0);
-    	glUniform1ui(triplanarEnabledLoc, 0);
-		glUniform1ui(parallaxEnabledLoc, 0);
-		glUniform1ui(debugEnabledLoc, 1);
-		glPolygonMode(GL_FRONT, GL_LINE);
-		glLineWidth(2.0);
-		tree->iterate(renderer);
-		//#endif
-
-
-		//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    }
-float time = 0.0f;
-    virtual void update(float deltaTime){
+	 
+	virtual void update(float deltaTime){
 		time += deltaTime;
 	   	if (getKeyboardStatus(GLFW_KEY_ESCAPE) != GLFW_RELEASE) {
 		   	close();
@@ -448,17 +415,48 @@ float time = 0.0f;
 			renderer->update(&camera);
 		}
 
-
-
 		// Send matrices to the shader
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(camera.view));
 		glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(camera.projection));
-		//glUniform3fv(lightDirectionLoc, 1, glm::value_ptr(glm::normalize(glm::vec3(glm::sin(time),-1.0,glm::cos(time)))));
+		glUniform3fv(lightDirectionLoc, 1, glm::value_ptr(glm::normalize(glm::vec3(glm::sin(time),-1.0,glm::cos(time)))));
 		glUniform3fv(cameraPositionLoc, 1, glm::value_ptr(camera.position));
 		glUniform1f(timeLoc, time);
     }
 
+    virtual void draw() {
+		glViewport(0, 0, getWidth(), getHeight());
+		glEnable(GL_CULL_FACE);
+		glCullFace(GL_BACK); // Or GL_FRONT
+		glFrontFace(GL_CCW); // Ensure this matches your vertex data
+
+		glEnable(GL_DEPTH_TEST);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glUniform1ui(lightEnabledLoc, 1);
+		glUniform1ui(triplanarEnabledLoc, 1);
+		glUniform1ui(parallaxEnabledLoc, 1);
+		glUniform1ui(debugEnabledLoc, 0);
+		glPatchParameteri(GL_PATCH_VERTICES, 3); // Define the number of control points per patch
+
+
+		glPolygonMode(GL_FRONT, GL_FILL);
+		renderer->loaded = 0;
+		tree->iterate(renderer);
+
+		#ifdef DEBUG_GEO
+		glUniform1ui(lightEnabledLoc, 0);
+    	glUniform1ui(triplanarEnabledLoc, 0);
+		glUniform1ui(parallaxEnabledLoc, 0);
+		glUniform1ui(debugEnabledLoc, 1);
+		glPolygonMode(GL_FRONT, GL_LINE);
+		glLineWidth(2.0);
+		tree->iterate(renderer);
+		#endif
+
+
+		//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    }
+    
     virtual void clean(){
 
 		// Cleanup and exit
