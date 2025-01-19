@@ -45,7 +45,7 @@ void * Tesselator::before(int level, OctreeNode * node, BoundingCube cube, void 
 	if(tree->getHeight(cube)==tree->geometryLevel){
 		Geometry * chunk = new Geometry();
 		return chunk;
-	} else if(tree->getHeight(cube)==0 && node->solid == ContainmentType::Intersects){
+	} else if(tree->getHeight(cube)==0 && (node->solid != 0xff && node->solid != 0x00)){
 		Geometry * chunk = (Geometry*) context;
 		std::vector<OctreeNode*> corners;
 		// Get corners
@@ -63,9 +63,9 @@ void * Tesselator::before(int level, OctreeNode * node, BoundingCube cube, void 
 
 		for(int i = 0 ; i < 8 ; ++i) {
 			OctreeNode * c = corners[i];
-			emptyMask |= c==NULL || (c->solid == ContainmentType::Disjoint) ? (1 << i) : 0;
-			surfaceMask |= c!=NULL && (c->solid == ContainmentType::Intersects) ? (1 << i) : 0;
-			containmentMask |= c!=NULL && (c->solid == ContainmentType::Contains) ? (1 << i) : 0;
+			emptyMask |= c==NULL || (c->solid == 0x00) ? (1 << i) : 0;
+			surfaceMask |= c!=NULL && (c->solid != 0x00 && c->solid != 0xff) ? (1 << i) : 0;
+			containmentMask |= c!=NULL && (c->solid == 0xff) ? (1 << i) : 0;
 		}
 
 	

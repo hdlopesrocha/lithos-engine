@@ -158,6 +158,11 @@ bool HeightMap::contains(glm::vec3 point){
     return box.contains(point) && Math::isBetween(point.y, min.y, h);
 }
 
+bool HeightMap::isContained(BoundingCube cube){
+    BoundingBox box(min, max);
+    return cube.contains(box);
+}
+
 
 bool HeightMap::hitsBoundary(BoundingCube cube) {
     BoundingBox box(min, max);

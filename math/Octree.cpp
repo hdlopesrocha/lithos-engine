@@ -38,7 +38,7 @@ OctreeNode * Octree::getNodeAt(glm::vec3 pos, int level) {
 	    
 	    cube = getChildCube(cube, i);
 		OctreeNode * candidate = node->children[i];
-	    if(candidate == NULL && node->solid == ContainmentType::Contains) {
+	    if(candidate == NULL && node->solid == 0xff) {
 			return node;
 		}	
 		else {		
@@ -61,9 +61,7 @@ bool isEmpty(OctreeNode * node){
 
 void Octree::expand(ContainmentHandler * handler) {
 	while (true) {
-		Vertex vertex(getCenter());
-		ContainmentType cont = handler->check(*this, &vertex);
-	    if (cont == ContainmentType::IsContained) {
+	    if (handler->isContained(*this)) {
 	        break;
 	    }
 	
@@ -92,26 +90,34 @@ int Octree::getHeight(BoundingCube cube){
 OctreeNode * addAux(Octree * tree, ContainmentHandler * handler, OctreeNode * node, BoundingCube cube) {
 	int height = tree->getHeight(cube);
 	Vertex vertex;
-	ContainmentType check = handler->check(cube, &vertex);
-	
-	if(check == ContainmentType::Disjoint) {
+	ContainmentType test= handler->test(cube, &vertex);
+	bool isContained = test == ContainmentType::Contains;
+	bool isIntersecting = test == ContainmentType::Intersects;
+	bool isDisjoint = test == ContainmentType::Disjoint;
+
+	uint solid = 0x00;
+	for(int i=0 ; i < 8; ++i) {
+		glm::vec3 p = cube.getMin() + Octree::getShift(i)*(cube.getLength());
+		solid |= handler->contains(p) ? (1 << i) : 0;
+	}
+
+	if(isDisjoint) {
 		return node;
 	}
 
 	if(node == NULL) {
 		node = new OctreeNode(vertex);
 	}
-	else if(node->solid == ContainmentType::Contains) {
+	else if(node->solid == 0xff) {
 		return node;
 	}
 
-
-	if(check == ContainmentType::Intersects) {
+	if(isIntersecting) {
 		node->vertex = vertex;
 	}
-	node->solid = check;
+	node->solid |= solid;
 	
-	if(check == ContainmentType::Contains) {
+	if(isContained) {
 		node->clear();
 	}
 	else if(height != 0) {
@@ -123,7 +129,7 @@ OctreeNode * addAux(Octree * tree, ContainmentHandler * handler, OctreeNode * no
 	return node;
 }
 
-void split(OctreeNode * node, BoundingCube cube, ContainmentType solid) {
+void split(OctreeNode * node, BoundingCube cube, uint solid) {
 	for(int i=0; i <8 ; ++i) {
 		BoundingCube subCube = getChildCube(cube,i);
 		node->children[i] = new OctreeNode(subCube.getCenter());
@@ -135,12 +141,18 @@ void split(OctreeNode * node, BoundingCube cube, ContainmentType solid) {
 
 OctreeNode * delAux(Octree * tree,  ContainmentHandler * handler, OctreeNode * node, BoundingCube cube) {
 	Vertex vertex;
-	ContainmentType check = handler->check(cube, &vertex);
+	ContainmentType test= handler->test(cube, &vertex);
+	bool isContained = test == ContainmentType::Contains;
+	bool isIntersecting = test == ContainmentType::Intersects;
 
-	if(check != ContainmentType::Disjoint) {
+	uint solid = 0x00;
+	for(int i=0 ; i < 8; ++i) {
+		glm::vec3 p = cube.getMin() + Octree::getShift(i)*(cube.getLength());
+		solid |= handler->contains(p) ? (1 << i) : 0;
+	}
+
+	if(test != ContainmentType::Disjoint) {
 		bool height = tree->getHeight(cube);
-		bool isContained = check == ContainmentType::Contains;
-		bool isIntersecting = check == ContainmentType::Intersects;
 
 		// Any full containment results in cleaning
 		if(isContained) {
@@ -151,16 +163,16 @@ OctreeNode * delAux(Octree * tree,  ContainmentHandler * handler, OctreeNode * n
 			return NULL;
 		}
 		if(node!= NULL) {
-			if(node->solid == ContainmentType::Contains && height != 0) {
-				split(node, cube, ContainmentType::Contains);
+			if(node->solid == 0xff && height != 0) {
+				split(node, cube, 0xff);
 			}
 
-			if(node->solid != ContainmentType::Intersects && isIntersecting) {
+			if((node->solid == 0xff || node->solid == 0x00) && isIntersecting) {
 				node->vertex = vertex;
 				//node->vertex.normal = -vertex.normal;
 			}
 
-			node->solid = check;
+			node->solid = solid ^ 0xff;
 
 			if(height != 0) {
 				for(int i=0; i <8 ; ++i) {

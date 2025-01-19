@@ -11,6 +11,7 @@
 
 
 class BoundingSphere;
+class BoundingBox;
 
 enum ContainmentType {
 	Contains,
@@ -89,12 +90,6 @@ struct Triangle {
 		}
 };
 
-enum SpaceType {
-    Empty,
-    Surface,
-    Solid
-};
-
 
 class BoundingCube {
 	private: 
@@ -118,6 +113,7 @@ class BoundingCube {
 		bool contains(glm::vec3 point);
 		bool contains(BoundingSphere sphere);
 		bool contains(BoundingCube cube);
+		bool contains(BoundingBox cube);
 
 };
 
@@ -157,6 +153,7 @@ class BoundingBox {
 		ContainmentType test(BoundingCube cube);
 		bool intersects(BoundingSphere sphere);
 		bool contains(glm::vec3 point);
+
 };
 
 class HeightMap {
@@ -193,13 +190,18 @@ class HeightMap {
 		bool hitsBoundary(BoundingCube cube);
 
 		bool contains(glm::vec3 point);
+		bool isContained(BoundingCube cube);
+
 		ContainmentType test(BoundingCube cube);
 
 };
 
 class ContainmentHandler {
 	public: 
-		virtual ContainmentType check(BoundingCube cube, Vertex * vertex) = 0;
+		virtual ContainmentType test(BoundingCube cube, Vertex * vertex) = 0;
+		virtual bool contains(glm::vec3 pos) = 0;
+		virtual bool isContained(BoundingCube cube) = 0;
+
 		virtual glm::vec3 getCenter() = 0;
 };
 
@@ -207,7 +209,7 @@ class ContainmentHandler {
 class OctreeNode {
 	public: 
 		Vertex vertex;
-		ContainmentType solid;
+		uint solid;
 		OctreeNode *children[8];
 		void * info;
 		int infoType;

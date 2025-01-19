@@ -3,8 +3,6 @@
 #include <math.h>
 #include <glm/gtc/type_ptr.hpp>
 #include "OctreeRenderer.hpp"
-#include "DebugTesselator.hpp"
-#include "DebugTesselator2.hpp"
 #include "math/math.hpp"
 
 //#define DEBUG_GEO 0
@@ -61,7 +59,16 @@ class SphereContainmentHandler : public ContainmentHandler {
 			return sphere.center;
 		}
 
-		ContainmentType check(BoundingCube cube, Vertex * vertex) {
+
+		bool contains(glm::vec3 pos){
+			return sphere.contains(pos);
+		}
+		
+		bool isContained(BoundingCube cube){
+			return cube.contains(sphere);
+		}	
+
+		ContainmentType test(BoundingCube cube, Vertex * vertex) {
 			ContainmentType result = sphere.test(cube); 
 
 			if(result == ContainmentType::Intersects) {
@@ -97,7 +104,16 @@ class BoxContainmentHandler : public ContainmentHandler {
 			return box.getCenter();
 		}
 
-		ContainmentType check(BoundingCube cube, Vertex * vertex) {
+
+		bool contains(glm::vec3 pos){
+			return box.contains(pos);
+		}
+		
+		bool isContained(BoundingCube cube){
+			return cube.contains(box);
+		}
+
+		ContainmentType test(BoundingCube cube, Vertex * vertex) {
 			ContainmentType result = box.test(cube); 
 			if(result == ContainmentType::Intersects) {
 				glm::vec3 min = this->box.getMin();
@@ -144,7 +160,15 @@ class HeightMapContainmentHandler : public ContainmentHandler {
 			return map->getCenter();
 		}
 
-		ContainmentType check(BoundingCube cube, Vertex * vertex) {
+		bool contains(glm::vec3 pos){
+			return map->contains(pos);
+		}
+
+		bool isContained(BoundingCube cube){
+			return map->isContained(cube);
+		}
+
+		ContainmentType test(BoundingCube cube, Vertex * vertex) {
 			ContainmentType result = map->test(cube); 
 				
 			if(result == ContainmentType::Intersects) {
