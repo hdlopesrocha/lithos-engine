@@ -71,14 +71,11 @@ ContainmentType BoundingSphere::test(BoundingCube cube) {
     // Classifify type
     if(mask == 0xff) {
         return ContainmentType::Contains;
-    }
-    else if(mask > 0) {
+    } else if(mask > 0 || intersects(cube)) {
         return ContainmentType::Intersects;
     }
-    else if(cube.contains(*this)) {       
-        return ContainmentType::IsContained;
-    }  
 
-    return intersects(cube) ? ContainmentType::Intersects : ContainmentType::Disjoint;
+
+    return ContainmentType::Disjoint;
 }
 

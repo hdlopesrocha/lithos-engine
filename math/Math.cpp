@@ -1,7 +1,7 @@
 #include "math.hpp"
 
 bool Math::isBetween(float x, float min, float max) {
-	return min < x && x < max;
+	return min <= x && x <= max;
 }
 
 int Math::clamp(int val, int min, int max) {

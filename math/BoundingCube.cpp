@@ -80,3 +80,16 @@ bool BoundingCube::contains(BoundingCube cube){
     }
     return false;
 }
+
+bool BoundingCube::contains(BoundingBox box){
+
+    glm::vec3 minC = box.getMin();
+    glm::vec3 maxC = box.getMax();
+    
+    if ( getMin()[0] <=  minC[0] && maxC[0] <= getMax()[0] && 
+            getMin()[1] <=  minC[1] && maxC[1] <= getMax()[1] && 
+            getMin()[2] <=  minC[2] && maxC[2] <= getMax()[2] ) {
+        return true;
+    }
+    return false;
+}

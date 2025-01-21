@@ -126,12 +126,12 @@ void main() {
     }
 
     if(debugEnabled == 1) {
-        color = vec4(1.0,1.0,1.0,0.3);
-    }
-    else if(lightEnabled == 0) {
+        color = vec4(1.0,1.0,1.0,1.0);
+        return;
+    } else if(lightEnabled == 0) {
         color = mixedColor; 
-    }
-    else {
+        return;
+    } else {
         float specularStrength = 0.4;
         vec3 specularColor = vec3(1.0,1.0,1.0);
 

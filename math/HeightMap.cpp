@@ -158,7 +158,11 @@ bool HeightMap::contains(glm::vec3 point){
     return box.contains(point) && Math::isBetween(point.y, min.y, h);
 }
 
-
+bool HeightMap::isContained(BoundingCube p) {
+    BoundingBox box(min, max);
+    return p.contains(box);
+}
+    
 bool HeightMap::hitsBoundary(BoundingCube cube) {
     BoundingBox box(min, max);
 
@@ -184,7 +188,7 @@ ContainmentType HeightMap::test(BoundingCube cube) {
     ContainmentType result = box.test(cube);
 
 
-    if(result != ContainmentType::Disjoint && result != ContainmentType::IsContained) {
+    if(result != ContainmentType::Disjoint) {
         glm::vec2 range = getHeightRangeBetween(cube);
      //   std::cout << range[0] << " ! " << range[1] << std::endl;
         BoundingBox minBox(getMin(), glm::vec3(getMax().x, range[0], getMax().z ));

@@ -11,12 +11,12 @@
 
 
 class BoundingSphere;
+class BoundingBox;
 
 enum ContainmentType {
 	Contains,
 	Intersects,
-	Disjoint,
-	IsContained
+	Disjoint
 };
 
 
@@ -118,6 +118,7 @@ class BoundingCube {
 		bool contains(glm::vec3 point);
 		bool contains(BoundingSphere sphere);
 		bool contains(BoundingCube cube);
+		bool contains(BoundingBox box);
 
 };
 
@@ -191,7 +192,7 @@ class HeightMap {
 		glm::ivec2 getIndexes(float x, float z);
 		glm::vec2 getHeightRangeBetween(BoundingCube cube);
 		bool hitsBoundary(BoundingCube cube);
-
+		bool isContained(BoundingCube p);
 		bool contains(glm::vec3 point);
 		ContainmentType test(BoundingCube cube);
 
@@ -201,6 +202,8 @@ class ContainmentHandler {
 	public: 
 		virtual ContainmentType check(BoundingCube cube, Vertex * vertex) = 0;
 		virtual glm::vec3 getCenter() = 0;
+		virtual bool contains(glm::vec3 p) = 0;
+		virtual bool isContained(BoundingCube cube) = 0;
 };
 
 
@@ -208,6 +211,7 @@ class OctreeNode {
 	public: 
 		Vertex vertex;
 		ContainmentType solid;
+		uint mask;
 		OctreeNode *children[8];
 		void * info;
 		int infoType;
@@ -266,7 +270,7 @@ public:
 	Geometry(/* args */);
 	~Geometry();
 
-	Vertex * addVertex(Vertex vertex);
+	Vertex * addVertex(Vertex vertex, bool textureUnique);
 	void normalize();
 };
 

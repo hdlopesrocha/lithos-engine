@@ -77,7 +77,6 @@ ContainmentType BoundingBox::test(BoundingCube cube) {
 
 
     // Classify corners
-    unsigned char innerMask = 0;
     unsigned char outterMask = 0;
 
     for(int i=0; i < 8; ++i) {
@@ -85,19 +84,14 @@ ContainmentType BoundingBox::test(BoundingCube cube) {
         glm::vec3 p1(min1 + sh*cube.getLength());
         glm::vec3 p2(min2 + sh*getLength());
 
-        if(cube.contains(p2)){
-            innerMask |= (1 << i); 
-        }
         if(contains(p1)){
             outterMask |= (1 << i); 
         }
     } 
    
     // Classifify type
-    if(innerMask == 0xff) {
-        result = ContainmentType::IsContained;
-    }
-    else if(outterMask == 0xff) {
+ 
+    if(outterMask == 0xff) {
         result = ContainmentType::Contains;
     }
     else {

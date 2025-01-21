@@ -108,5 +108,31 @@ public:
 
 };
 
+class DrawableGeometry {
+	public:
+	GLuint vao, vbo, ebo;
+	int indices;
+
+	DrawableGeometry(Geometry * t);
+    void draw(bool debug);
+};
+
+
+class OctreeRenderer : public IteratorHandler{
+	Octree * tree;
+	Geometry chunk;
+	Frustum frustum;
+
+	public: 
+		int loaded = 0;
+
+		OctreeRenderer(Octree * tree);
+
+		void update(Camera * camera);
+		void * before(int level, OctreeNode * node, BoundingCube cube, void * context);
+		void after(int level, OctreeNode * node, BoundingCube cube, void * context);
+		bool test(int level, OctreeNode * node, BoundingCube cube, void * context);
+};
+
 
 #endif

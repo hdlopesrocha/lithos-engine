@@ -32,7 +32,7 @@ void main() {
     mat3 tr = mat3(transpose(inverse(model)));
    // Interpolate attributes using barycentric coordinates
     teNormal = tcNormal[0] * gl_TessCoord[0] + tcNormal[1] * gl_TessCoord[1] + tcNormal[2] * gl_TessCoord[2];
-    teNormal = normalize(tr * teNormal);
+   // teNormal = normalize(tr * teNormal);
     
     teProps.parallaxScale = tcProps[0].parallaxScale * gl_TessCoord[0] + 
                             tcProps[1].parallaxScale * gl_TessCoord[1] + 

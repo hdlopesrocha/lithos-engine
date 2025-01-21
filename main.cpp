@@ -2,14 +2,10 @@
 #include "gl/gl.hpp"
 #include <math.h>
 #include <glm/gtc/type_ptr.hpp>
-#include "OctreeRenderer.hpp"
 #include "DebugTesselator.hpp"
-#include "DebugTesselator2.hpp"
 #include "math/math.hpp"
 
-//#define DEBUG_GEO 0
-
-
+#define DEBUG_GEO 1
 
 class Texture {
 	public:
@@ -43,136 +39,155 @@ class Texture {
 	}
 };
 
-
-
 class SphereContainmentHandler : public ContainmentHandler {
-
 	public:
-		BoundingSphere sphere;
-	    Texture * texture;
+	BoundingSphere sphere;
+	Texture * texture;
 
+	SphereContainmentHandler(BoundingSphere s, Texture * t) : ContainmentHandler(){
+		this->sphere = s;
+		this->texture = t;
+	}
 
-		SphereContainmentHandler(BoundingSphere s, Texture * t) : ContainmentHandler(){
-			this->sphere = s;
-			this->texture = t;
+	glm::vec3 getCenter() {
+		return sphere.center;
+	}
+
+	bool contains(glm::vec3 p) {
+		return sphere.contains(p);
+	}
+
+	bool isContained(BoundingCube p) {
+		return p.contains(sphere);
+	}
+
+	ContainmentType check(BoundingCube cube, Vertex * vertex) {
+		ContainmentType result = sphere.test(cube); 
+
+		if(result == ContainmentType::Intersects) {
+			glm::vec3 c = this->sphere.center;
+			float r = this->sphere.radius;
+			glm::vec3 a = cube.getCenter();
+			glm::vec3 n = glm::normalize(a-c);
+			glm::vec3 p = c + n*r;
+			vertex->position = glm::clamp(p, cube.getMin(), cube.getMax());
+			//vertex->position = a;
+			vertex->texIndex = texture->index;
+			vertex->parallaxScale = texture->parallaxScale;
+			vertex->parallaxMinLayers = texture->parallaxMinLayers;
+			vertex->parallaxMaxLayers = texture->parallaxMaxLayers;
+			vertex->shininess = texture->shininess;
 		}
-
-		glm::vec3 getCenter() {
-			return sphere.center;
-		}
-
-		ContainmentType check(BoundingCube cube, Vertex * vertex) {
-			ContainmentType result = sphere.test(cube); 
-
-			if(result == ContainmentType::Intersects) {
-				glm::vec3 c = this->sphere.center;
-				float r = this->sphere.radius;
-				glm::vec3 a = cube.getCenter();
-				glm::vec3 n = glm::normalize(a-c);
-				glm::vec3 p = c + n*r;
-				vertex->position = glm::clamp(p, cube.getMin(), cube.getMax());
-				vertex->texIndex = texture->index;
-				vertex->parallaxScale = texture->parallaxScale;
-				vertex->parallaxMinLayers = texture->parallaxMinLayers;
-				vertex->parallaxMaxLayers = texture->parallaxMaxLayers;
-				vertex->shininess = texture->shininess;
-			}
-			return result;
-		}
+		return result;
+	}
 
 };
 
 class BoxContainmentHandler : public ContainmentHandler {
+	public: 
+	BoundingBox box;
+	Texture * texture;
 
-	public:
-		BoundingBox box;
-		Texture * texture;
+	BoxContainmentHandler(BoundingBox b, Texture * t) : ContainmentHandler(){
+		this->box = b;
+		this->texture = t;
+	}
 
-		BoxContainmentHandler(BoundingBox b, Texture * t) : ContainmentHandler(){
-			this->box = b;
-			this->texture = t;
-		}
+	glm::vec3 getCenter() {
+		return box.getCenter();
+	}
 
-		glm::vec3 getCenter() {
-			return box.getCenter();
-		}
+	bool contains(glm::vec3 p) {
+		return box.contains(p);
+	}
 
-		ContainmentType check(BoundingCube cube, Vertex * vertex) {
-			ContainmentType result = box.test(cube); 
-			if(result == ContainmentType::Intersects) {
-				glm::vec3 min = this->box.getMin();
-				glm::vec3 max = this->box.getMax();
-				glm::vec3 c = cube.getCenter();
-				glm::vec3 n = glm::vec3(0.0);
+	bool isContained(BoundingCube p) {
+		return p.contains(box);
+	}
 
-				for(int i=0; i < 3 ; ++i) {
-					if(cube.getMax()[i] >= max[i]) {
-						c[i] = max[i];
-						n[i] = 1.0;
-					}
-					if(cube.getMin()[i] <= min[i]) {
-						c[i] = min[i];
-						n[i] = -1.0;
-					}
+	ContainmentType check(BoundingCube cube, Vertex * vertex) {
+		ContainmentType result = box.test(cube); 
+		if(result == ContainmentType::Intersects) {
+			glm::vec3 min = this->box.getMin();
+			glm::vec3 max = this->box.getMax();
+			glm::vec3 c = cube.getCenter();
+			glm::vec3 n = glm::vec3(0.0);
+
+			for(int i=0; i < 3 ; ++i) {
+				if(cube.getMax()[i] >= max[i]) {
+					c[i] = max[i];
+					n[i] = 1.0;
 				}
-				vertex->position = glm::clamp(c, cube.getMin(), cube.getMax());
-				vertex->texIndex = texture->index;
-				vertex->parallaxScale = texture->parallaxScale;
-				vertex->parallaxMinLayers = texture->parallaxMinLayers;
-				vertex->parallaxMaxLayers = texture->parallaxMaxLayers;	
-				vertex->shininess = texture->shininess;	
+				if(cube.getMin()[i] <= min[i]) {
+					c[i] = min[i];
+					n[i] = -1.0;
+				}
 			}
-			return result;
+			vertex->position = glm::clamp(c, cube.getMin(), cube.getMax());
+			vertex->texIndex = texture->index;
+			vertex->parallaxScale = texture->parallaxScale;
+			vertex->parallaxMinLayers = texture->parallaxMinLayers;
+			vertex->parallaxMaxLayers = texture->parallaxMaxLayers;	
+			vertex->shininess = texture->shininess;	
 		}
+		return result;
+	}
 
 };
 
 class HeightMapContainmentHandler : public ContainmentHandler {
+	public: 
+	HeightMap * map;
+	Texture * texture;
+	Texture * textureOut;
 
-	public:
-		HeightMap * map;
-		Texture * texture;
-		Texture * textureOut;
+	HeightMapContainmentHandler(HeightMap * m, Texture * t, Texture * o) : ContainmentHandler(){
+		this->map = m;
+		this->texture = t;
+		this->textureOut = o;
+	}
 
-		HeightMapContainmentHandler(HeightMap * m, Texture * t, Texture * o) : ContainmentHandler(){
-			this->map = m;
-			this->texture = t;
-			this->textureOut = o;
-		}
+	glm::vec3 getCenter() {
+		return map->getCenter();
+	}
 
-		glm::vec3 getCenter() {
-			return map->getCenter();
-		}
+	bool contains(glm::vec3 p) {
+		return map->contains(p);
+	}
 
-		ContainmentType check(BoundingCube cube, Vertex * vertex) {
-			ContainmentType result = map->test(cube); 
-				
-			if(result == ContainmentType::Intersects) {
-				Texture * t;
-				if(map->hitsBoundary(cube)) {
-					glm::vec3 top = map->getCenter();
-					top.y = map->getMaxY();
-					glm::vec3 dir = cube.getCenter() - top;
-					vertex->position = cube.getCenter() + dir;
-					vertex->position = glm::clamp(vertex->position, cube.getMin(), cube.getMax());
-					vertex->position = glm::clamp(vertex->position, map->getMin(), map->getMax());
-					t = textureOut;
-				} else {
-					glm::vec3 c = cube.getCenter();
-					c = glm::clamp(c, map->getMin(), map->getMax());
-					glm::vec3 p0 = map->getPoint(cube); 
-					vertex->position = p0;
-					t = texture;
-				}
+	bool isContained(BoundingCube p) {
+		return map->isContained(p);
+	}
 
-				vertex->texIndex = t->index;
-				vertex->parallaxScale = t->parallaxScale;
-				vertex->parallaxMinLayers = t->parallaxMinLayers;
-				vertex->parallaxMaxLayers = t->parallaxMaxLayers;	
-				vertex->shininess = t->shininess;
+	ContainmentType check(BoundingCube cube, Vertex * vertex) {
+		ContainmentType result = map->test(cube); 
+			
+		if(result == ContainmentType::Intersects) {
+			Texture * t;
+			if(map->hitsBoundary(cube)) {
+				glm::vec3 top = map->getCenter();
+				top.y = map->getMaxY();
+				glm::vec3 dir = cube.getCenter() - top;
+				vertex->position = cube.getCenter() + dir;
+				vertex->position = glm::clamp(vertex->position, cube.getMin(), cube.getMax());
+				vertex->position = glm::clamp(vertex->position, map->getMin(), map->getMax());
+				t = textureOut;
+			} else {
+				glm::vec3 c = cube.getCenter();
+				c = glm::clamp(c, map->getMin(), map->getMax());
+				glm::vec3 p0 = map->getPoint(cube); 
+				vertex->position = p0;
+				t = texture;
 			}
-			return result;
+
+			vertex->texIndex = t->index;
+			vertex->parallaxScale = t->parallaxScale;
+			vertex->parallaxMinLayers = t->parallaxMinLayers;
+			vertex->parallaxMaxLayers = t->parallaxMaxLayers;	
+			vertex->shininess = t->shininess;
 		}
+		return result;
+	}
 };
 
 
@@ -183,8 +198,7 @@ class MainApplication : public LithosApplication {
 	Tesselator * tesselator;
 	OctreeRenderer * renderer;
 	#ifdef DEBUG_GEO
-	TesselatorHandler * debugTesselator;
-	Geometry vaoDebug;
+	DrawableGeometry * vaoDebug;
 	#endif
 
 	GLuint vertexShader;
@@ -203,6 +217,7 @@ class MainApplication : public LithosApplication {
 	GLuint parallaxEnabledLoc;
 	GLuint cameraPositionLoc;
 	GLuint timeLoc;
+	float time = 0.0f;
 
 
 public:
@@ -214,28 +229,14 @@ public:
 
 	}
 
-
-
-std::string replace(std::string input,  std::string replace_word, std::string replace_by ) {
-
- 
-
-    // Find the first occurrence of the substring
-    size_t pos = input.find(replace_word);
-
-    // Iterate through the string and replace all
-    // occurrences
-    while (pos != std::string::npos) {
-        // Replace the substring with the specified string
-        input.replace(pos, replace_word.size(), replace_by);
-
-        // Find the next occurrence of the substring
-        pos = input.find(replace_word,
-                         pos + replace_by.size());
-    }
-	return input;
-}
-
+	std::string replace(std::string input,  std::string replace_word, std::string replace_by ) {
+		size_t pos = input.find(replace_word);
+		while (pos != std::string::npos) {
+			input.replace(pos, replace_word.size(), replace_by);
+			pos = input.find(replace_word, pos + replace_by.size());
+		}
+		return input;
+	}
 
 	void bindTextures(std::vector<Texture*> ts) {
 		int activeTexture = 0;
@@ -262,12 +263,10 @@ std::string replace(std::string input,  std::string replace_word, std::string re
 		glEnable(GL_DEPTH_TEST);
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		glEnable(GL_CULL_FACE); // Enable face culling
-		glCullFace(GL_BACK); // Or GL_FRONT
-		glFrontFace(GL_CCW); // Ensure this matches your vertex data
+
 
         textures.push_back(new Texture(loadTextureImage("textures/pixel.jpg")));
-        textures.push_back(new Texture(loadTextureImage("textures/grid3.png")));
+        textures.push_back(new Texture(loadTextureImage("textures/grid.png")));
         textures.push_back(new Texture(loadTextureImage("textures/grass_color.png"),loadTextureImage("textures/grass_normal.png"),loadTextureImage("textures/grass_bump.png"), 0.01, 8, 32 ,256));
         textures.push_back(new Texture(loadTextureImage("textures/sand.png")));
         textures.push_back(new Texture(loadTextureImage("textures/rock_color.png"),loadTextureImage("textures/rock_normal.png"),loadTextureImage("textures/rock_bump.png"), 0.1, 8, 32,128));
@@ -287,10 +286,6 @@ std::string replace(std::string input,  std::string replace_word, std::string re
 		fragmentShader = compileShader(fragCode,GL_FRAGMENT_SHADER);
 		tessControlShader = compileShader(controlCode,GL_TESS_CONTROL_SHADER);
 		tessEvaluationShader = compileShader(evalCode,GL_TESS_EVALUATION_SHADER);
-
-
-
-
 		shaderProgram = createShaderProgram(vertexShader, fragmentShader, tessControlShader, tessEvaluationShader);
 
 		// Use the shader program
@@ -338,19 +333,15 @@ std::string replace(std::string input,  std::string replace_word, std::string re
 		tree->add(new BoxContainmentHandler(box1,textures[8]));
 
 		tesselator = new Tesselator(tree);
-		tree->iterate((IteratorHandler*)tesselator);
+		tree->iterate(tesselator);
 
 		renderer = new OctreeRenderer(tree);
 		//tesselator->normalize();
 
 		#ifdef DEBUG_GEO
-		debugTesselator = new DebugTesselator2(tree);
-		tree->iterate((IteratorHandler*)debugTesselator);
-		#endif
-
-
-		#ifdef DEBUG_GEO
-		vaoDebug = tesselatorToGeometry(debugTesselator);
+		DebugTesselator * debugTesselator = new DebugTesselator(tree);
+		tree->iterate(debugTesselator);
+		vaoDebug = new DrawableGeometry(&debugTesselator->chunk);
 		#endif
 
 		glClearColor (0.1,0.1,0.1,1.0);
@@ -359,7 +350,9 @@ std::string replace(std::string input,  std::string replace_word, std::string re
 
     virtual void draw() {
 		glViewport(0, 0, getWidth(), getHeight());
-		glEnable(GL_CULL_FACE);
+		glEnable(GL_CULL_FACE); // Enable face culling
+		glCullFace(GL_BACK); // Or GL_FRONT
+		glFrontFace(GL_CCW); // Ensure this matches your vertex data
 		glEnable(GL_DEPTH_TEST);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glUniform1ui(lightEnabledLoc, 1);
@@ -373,20 +366,23 @@ std::string replace(std::string input,  std::string replace_word, std::string re
 		renderer->loaded = 0;
 		tree->iterate(renderer);
 
-		//#ifdef DEBUG_GEO
+		#ifdef DEBUG_GEO
+
 		glUniform1ui(lightEnabledLoc, 0);
-    	glUniform1ui(triplanarEnabledLoc, 0);
 		glUniform1ui(parallaxEnabledLoc, 0);
-		glUniform1ui(debugEnabledLoc, 1);
-		glPolygonMode(GL_FRONT, GL_LINE);
+    	glUniform1ui(triplanarEnabledLoc, 0);
+		glDisable(GL_CULL_FACE); // Enable face culling
+		//glPolygonMode(GL_FRONT, GL_LINE);
 		glLineWidth(2.0);
-		tree->iterate(renderer);
-		//#endif
-
-
+		glPointSize(4.0);
+		//tree->iterate(renderer);
+		vaoDebug->draw(false);
+		//glUniform1ui(debugEnabledLoc, 1);
+		//glDrawElements(GL_PATCHES, vaoDebug->indices, GL_UNSIGNED_INT, 0);
+		#endif
 		//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     }
-float time = 0.0f;
+
     virtual void update(float deltaTime){
 		time += deltaTime;
 	   	if (getKeyboardStatus(GLFW_KEY_ESCAPE) != GLFW_RELEASE) {
@@ -447,8 +443,6 @@ float time = 0.0f;
 	   	if (getKeyboardStatus(GLFW_KEY_R) == GLFW_RELEASE) {
 			renderer->update(&camera);
 		}
-
-
 
 		// Send matrices to the shader
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
