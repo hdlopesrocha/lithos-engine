@@ -74,8 +74,7 @@ ContainmentType BoundingSphere::test(BoundingCube cube) {
     } else if(mask > 0 || intersects(cube)) {
         return ContainmentType::Intersects;
     }
-
-
+    
     return ContainmentType::Disjoint;
 }
 

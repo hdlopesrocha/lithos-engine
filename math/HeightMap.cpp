@@ -72,6 +72,32 @@ glm::vec2 HeightMap::getHeightRangeBetween(BoundingCube cube) {
     return range;
 }
 
+glm::vec3 HeightMap::getNormalAt(float x, float z) {
+    // bilinear interpolation
+    glm::vec3 len = getLength();
+
+    float px = Math::clamp((x-min.x)/len.x, 0.0, 1.0);
+    float pz = Math::clamp((z-min.z)/len.z, 0.0, 1.0);
+    int ix = floor(px * this->width);
+    int iz = floor(pz * this->height);
+
+    float qx = (px * this->width) - ix;
+    float qz = (pz * this->height) - iz;
+
+    float q11 = getData(ix, iz)* len.y;
+    float q21 = getData(ix+1, iz)* len.y;
+    float q12 = getData(ix, iz+1)* len.y;
+
+    glm::vec3 v11 = glm::vec3(0, q11, 0);
+    glm::vec3 v21 = glm::vec3(len.x/width, q21, 0);
+    glm::vec3 v12 = glm::vec3(0, q12, len.z/height);
+
+    glm::vec3 n21 = glm::normalize(v21 -v11 );
+    glm::vec3 n12 = glm::normalize(v12 -v11 );
+
+    return glm::cross(n12,n21);
+}
+
 float HeightMap::getHeightAt(float x, float z) {
     // bilinear interpolation
     glm::vec3 len = getLength();
@@ -186,7 +212,6 @@ ContainmentType HeightMap::test(BoundingCube cube) {
     BoundingBox box(min, max);
 
     ContainmentType result = box.test(cube);
-
 
     if(result != ContainmentType::Disjoint) {
         glm::vec2 range = getHeightRangeBetween(cube);

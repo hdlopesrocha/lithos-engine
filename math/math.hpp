@@ -186,7 +186,8 @@ class HeightMap {
 		void setMax(glm::vec3 v);
 		float getHeightAt(float x, float z);
 		glm::vec3 getPoint(BoundingCube cube);
-    
+   		glm::vec3 getNormalAt(float x, float z);
+
 
 		float getData(int x, int z);
 		glm::ivec2 getIndexes(float x, float z);
@@ -204,6 +205,7 @@ class ContainmentHandler {
 		virtual glm::vec3 getCenter() = 0;
 		virtual bool contains(glm::vec3 p) = 0;
 		virtual bool isContained(BoundingCube cube) = 0;
+		virtual glm::vec3 getNormal(glm::vec3 pos) = 0;
 };
 
 
@@ -271,7 +273,6 @@ public:
 	~Geometry();
 
 	Vertex * addVertex(Vertex vertex, bool textureUnique);
-	void normalize();
 };
 
 

@@ -5,7 +5,7 @@
 #include "DebugTesselator.hpp"
 #include "math/math.hpp"
 
-#define DEBUG_GEO 1
+//#define DEBUG_GEO 1
 
 class Texture {
 	public:
@@ -61,23 +61,25 @@ class SphereContainmentHandler : public ContainmentHandler {
 		return p.contains(sphere);
 	}
 
+	glm::vec3 getNormal(glm::vec3 pos) {
+		return glm::normalize( pos - sphere.center);
+	}
+
 	ContainmentType check(BoundingCube cube, Vertex * vertex) {
 		ContainmentType result = sphere.test(cube); 
 
-		if(result == ContainmentType::Intersects) {
-			glm::vec3 c = this->sphere.center;
-			float r = this->sphere.radius;
-			glm::vec3 a = cube.getCenter();
-			glm::vec3 n = glm::normalize(a-c);
-			glm::vec3 p = c + n*r;
-			vertex->position = glm::clamp(p, cube.getMin(), cube.getMax());
-			//vertex->position = a;
-			vertex->texIndex = texture->index;
-			vertex->parallaxScale = texture->parallaxScale;
-			vertex->parallaxMinLayers = texture->parallaxMinLayers;
-			vertex->parallaxMaxLayers = texture->parallaxMaxLayers;
-			vertex->shininess = texture->shininess;
-		}
+		glm::vec3 c = this->sphere.center;
+		float r = this->sphere.radius;
+		glm::vec3 a = cube.getCenter();
+		glm::vec3 n = glm::normalize(a-c);
+		glm::vec3 p = c + n*r;
+		vertex->position = glm::clamp(p, cube.getMin(), cube.getMax());
+		vertex->texIndex = texture->index;
+		vertex->parallaxScale = texture->parallaxScale;
+		vertex->parallaxMinLayers = texture->parallaxMinLayers;
+		vertex->parallaxMaxLayers = texture->parallaxMaxLayers;
+		vertex->shininess = texture->shininess;
+
 		return result;
 	}
 
@@ -104,32 +106,50 @@ class BoxContainmentHandler : public ContainmentHandler {
 	bool isContained(BoundingCube p) {
 		return p.contains(box);
 	}
+	
+	glm::vec3 getNormal(glm::vec3 pos) {
+		glm::vec3 c = glm::abs((pos - box.getCenter())/box.getLength() );
+		glm::vec3 min = this->box.getMin();
+		glm::vec3 max = this->box.getMax();
+		glm::vec3 n = glm::vec3(0.0);
+
+		for(int i=0; i < 3 ; ++i) {
+			if(pos[i] >= max[i]) {
+				c[i] = max[i];
+				n[i] = 1.0;
+			}
+			if(pos[i] <= min[i]) {
+				c[i] = min[i];
+				n[i] = -1.0;
+			}
+		}
+		return glm::normalize(n);
+	}
 
 	ContainmentType check(BoundingCube cube, Vertex * vertex) {
 		ContainmentType result = box.test(cube); 
-		if(result == ContainmentType::Intersects) {
-			glm::vec3 min = this->box.getMin();
-			glm::vec3 max = this->box.getMax();
-			glm::vec3 c = cube.getCenter();
-			glm::vec3 n = glm::vec3(0.0);
+		glm::vec3 min = this->box.getMin();
+		glm::vec3 max = this->box.getMax();
+		glm::vec3 c = cube.getCenter();
+		glm::vec3 n = glm::vec3(0.0);
 
-			for(int i=0; i < 3 ; ++i) {
-				if(cube.getMax()[i] >= max[i]) {
-					c[i] = max[i];
-					n[i] = 1.0;
-				}
-				if(cube.getMin()[i] <= min[i]) {
-					c[i] = min[i];
-					n[i] = -1.0;
-				}
+		for(int i=0; i < 3 ; ++i) {
+			if(cube.getMax()[i] >= max[i]) {
+				c[i] = max[i];
+				n[i] = 1.0;
 			}
-			vertex->position = glm::clamp(c, cube.getMin(), cube.getMax());
-			vertex->texIndex = texture->index;
-			vertex->parallaxScale = texture->parallaxScale;
-			vertex->parallaxMinLayers = texture->parallaxMinLayers;
-			vertex->parallaxMaxLayers = texture->parallaxMaxLayers;	
-			vertex->shininess = texture->shininess;	
+			if(cube.getMin()[i] <= min[i]) {
+				c[i] = min[i];
+				n[i] = -1.0;
+			}
 		}
+		vertex->position = glm::clamp(c, cube.getMin(), cube.getMax());
+		vertex->texIndex = texture->index;
+		vertex->parallaxScale = texture->parallaxScale;
+		vertex->parallaxMinLayers = texture->parallaxMinLayers;
+		vertex->parallaxMaxLayers = texture->parallaxMaxLayers;	
+		vertex->shininess = texture->shininess;	
+		
 		return result;
 	}
 
@@ -157,6 +177,15 @@ class HeightMapContainmentHandler : public ContainmentHandler {
 
 	bool isContained(BoundingCube p) {
 		return map->isContained(p);
+	}
+
+	float intersection(glm::vec3 a, glm::vec3 b) {
+		return 0;	
+	} 
+
+	glm::vec3 getNormal(glm::vec3 pos) {
+		return map->getNormalAt(pos.x, pos.z);
+
 	}
 
 	ContainmentType check(BoundingCube cube, Vertex * vertex) {

@@ -83,7 +83,10 @@ int Octree::getHeight(BoundingCube cube){
 	return r >= 0  ? (int) glm::floor(r) : -1;
 }
 
+
+
 uint buildMask(ContainmentHandler * handler, BoundingCube cube) {
+	float d[8];
 	uint mask = 0x00;
 	for(int i=0 ; i < 8 ; ++i) {
 		glm::vec3 p = cube.getMin() + cube.getLength()*Octree::getShift(i);
@@ -110,8 +113,8 @@ OctreeNode * addAux(Octree * tree, ContainmentHandler * handler, OctreeNode * no
 		return node;
 	}
 
-
 	if(check == ContainmentType::Intersects) {
+		vertex.normal = handler->getNormal(vertex.position);
 		node->vertex = vertex;
 	}
 	node->solid = check;
@@ -162,13 +165,11 @@ OctreeNode * delAux(Octree * tree,  ContainmentHandler * handler, OctreeNode * n
 			}
 
 			if(node->solid != ContainmentType::Intersects && isIntersecting) {
+				vertex.normal = -handler->getNormal(vertex.position);
 				node->vertex = vertex;
-				//node->vertex.normal = -vertex.normal;
 			}
 
-			
 			node->mask = (mask ^ 0xff);
-		
 			node->solid = check;
 			
 			if(height != 0) {

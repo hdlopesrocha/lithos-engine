@@ -37,10 +37,6 @@ Tesselator::Tesselator(Octree * tree) {
 	}
 }
 
-void smooth(Vertex * v, glm::vec3 n) {
-	v->normal += n;
-}
-
 void * Tesselator::before(int level, OctreeNode * node, BoundingCube cube, void * context) {		
 	if(tree->getHeight(cube)==tree->geometryLevel){
 		Geometry * chunk = new Geometry();
@@ -77,25 +73,20 @@ void * Tesselator::before(int level, OctreeNode * node, BoundingCube cube, void 
 					Vertex v2 = corners[triangle[2]]->vertex;
 					Vertex v3 = corners[triangle[3]]->vertex;
 
-					glm::vec3 edge1 = v1.position - v0.position;
-					glm::vec3 edge2 = v3.position - v0.position;
-
-					glm::vec3 normal = glm::cross(edge2,edge1);
-
 					float scale = 0.1;
-					int plane = Math::triplanarPlane(v0.position, normal);
+					int plane = Math::triplanarPlane(v0.position, v0.normal);
 					v0.texCoord = Math::triplanarMapping(v0.position, plane)*scale;
 					v1.texCoord = Math::triplanarMapping(v1.position, plane)*scale;
 					v2.texCoord = Math::triplanarMapping(v2.position, plane)*scale;
 					v3.texCoord = Math::triplanarMapping(v3.position, plane)*scale;	
 
-					smooth(chunk->addVertex(v0, false), normal);
-					smooth(chunk->addVertex(v2, false), normal);
-					smooth(chunk->addVertex(v1, false), normal);
+					chunk->addVertex(v0, true);
+					chunk->addVertex(v2, true);
+					chunk->addVertex(v1, true);
 
-					smooth(chunk->addVertex(v0, false), normal);
-					smooth(chunk->addVertex(v3, false), normal);
-					smooth(chunk->addVertex(v2, false), normal);
+					chunk->addVertex(v0, true);
+					chunk->addVertex(v3, true);
+					chunk->addVertex(v2, true);
 				}
 			}
 		}
@@ -106,11 +97,8 @@ void * Tesselator::before(int level, OctreeNode * node, BoundingCube cube, void 
 void Tesselator::after(int level, OctreeNode * node, BoundingCube cube, void * context) {
 	if(tree->getHeight(cube)==tree->geometryLevel){
 		Geometry * chunk = (Geometry*) context;
-		chunk->normalize();
 		node->info = chunk;
 		node->infoType = 0;
-
-		//delete chunk;	
 	}		
 	return;
 }

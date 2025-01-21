@@ -18,10 +18,3 @@ Vertex * Geometry::addVertex(Vertex vertex, bool textureUnique){
     return &(vertices[idx]);
 }
 
-void Geometry::normalize() {
-    for(int i=0; i < vertices.size() ; ++i) {
-        Vertex v = vertices[i];
-        v.normal = glm::normalize(v.normal);
-        vertices[i] = v;
-    }
-}
