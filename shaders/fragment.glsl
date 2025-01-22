@@ -117,7 +117,7 @@ void main() {
     
 
     if(parallaxEnabled == 1 && teProps.parallaxScale > 0.0) {
-       uv = parallaxMapping(uv, viewTangent, effectAmount*teProps.parallaxScale , teProps.parallaxMinLayers, teProps.parallaxMaxLayers);
+       uv = parallaxMapping(uv, viewTangent, teProps.parallaxScale , teProps.parallaxMinLayers, teProps.parallaxMaxLayers);
     }
   
     vec4 mixedColor = textureBlend(teTextureWeights, textures, uv);

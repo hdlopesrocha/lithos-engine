@@ -142,11 +142,10 @@ bool HeightMap::hitsBoundary(BoundingCube cube) {
     ContainmentType result = box.test(cube);
     bool allPointsUnderground = true;
 
-
+    glm::vec2 h = getHeightRangeBetween(cube);
     for(int i = 0; i<8 ; ++i) {
         glm::vec3 p = cube.getMin() + cube.getLength() * getShift(i);
-        float y = getHeightAt(p.x, p.y);
-        if(y < p.y) {
+        if(h[0] <= p.y) {
             allPointsUnderground = false;
             break;
         }

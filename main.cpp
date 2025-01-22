@@ -173,19 +173,15 @@ class HeightMapContainmentHandler : public ContainmentHandler {
 
 		Texture * t;
 		if(map->hitsBoundary(cube)) {
-			glm::vec3 top = map->getCenter();
-			top.y = map->getMaxY();
-			glm::vec3 dir = cube.getCenter() - top;
-			vertex.position = cube.getCenter() + dir;
-			vertex.position = glm::clamp(vertex.position, cube.getMin(), cube.getMax());
-			vertex.position = glm::clamp(vertex.position, map->getMin(), map->getMax());
-			vertex.normal = Math::surfaceNormal(vertex.position, *map);
+			vertex.normal = Math::surfaceNormal(cube.getCenter(), *map);
+			glm::vec3 c = cube.getCenter()+vertex.normal*cube.getLength();
+			c = glm::clamp(c, map->getMin(), map->getMax() );
+			c = glm::clamp(c,cube.getMin(), cube.getMax() );
+			vertex.position = c;
 			t = textureOut;
 		} else {
-			glm::vec3 c = cube.getCenter();
-			c = glm::clamp(c, map->getMin(), map->getMax());
-			glm::vec3 p0 = map->getPoint(cube); 
-			vertex.position = p0;
+			glm::vec3 c = glm::clamp(map->getPoint(cube), map->getMin(), map->getMax());
+			vertex.position = c;
 			vertex.normal = getNormal(vertex.position);
 			t = texture;
 		}
@@ -275,10 +271,10 @@ public:
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 
-        textures.push_back(new Texture(loadTextureImage("textures/pixel.jpg")));
         textures.push_back(new Texture(loadTextureImage("textures/grid.png")));
+        textures.push_back(new Texture(loadTextureImage("textures/lava_color.jpg"),loadTextureImage("textures/lava_normal.jpg"),loadTextureImage("textures/lava_bump.jpg"), 0.1, 8, 32 ,256));
         textures.push_back(new Texture(loadTextureImage("textures/grass_color.png"),loadTextureImage("textures/grass_normal.png"),loadTextureImage("textures/grass_bump.png"), 0.01, 8, 32 ,256));
-        textures.push_back(new Texture(loadTextureImage("textures/sand.png")));
+        textures.push_back(new Texture(loadTextureImage("textures/sand_color.jpg"),loadTextureImage("textures/sand_normal.jpg"),loadTextureImage("textures/sand_bump.jpg"), 0.1, 8, 32 ,256));
         textures.push_back(new Texture(loadTextureImage("textures/rock_color.png"),loadTextureImage("textures/rock_normal.png"),loadTextureImage("textures/rock_bump.png"), 0.1, 8, 32,128));
         textures.push_back(new Texture(loadTextureImage("textures/snow_color.png"),loadTextureImage("textures/snow_normal.png"),loadTextureImage("textures/snow_bump.png"), 0.1, 8, 32, 32 ));
         textures.push_back(new Texture(loadTextureImage("textures/metal_color.png"),loadTextureImage("textures/metal_normal.png"),loadTextureImage("textures/metal_bump.png"), 0.1, 8, 64, 32 ));
@@ -333,14 +329,14 @@ public:
 		BoundingSphere sph3(glm::vec3(11,11,-11),10);
 		tree->del(new SphereContainmentHandler(sph3, textures[4]));
 
-		BoundingSphere sph4(glm::vec3(4,4,-4),8);
-		//tree->del(new SphereContainmentHandler(sph4, 6));
-
-		BoundingSphere sph5(glm::vec3(11,11,-11),4);
-		//tree->add(new SphereContainmentHandler(sph5, 3));
-
 		BoundingBox box1(glm::vec3(0,-24,0),glm::vec3(24,0,24));
 		tree->add(new BoxContainmentHandler(box1,textures[8]));
+
+		BoundingSphere sph4(glm::vec3(4,4,-4),8);
+		tree->del(new SphereContainmentHandler(sph4, textures[1]));
+
+		BoundingSphere sph5(glm::vec3(11,11,-11),4);
+		tree->add(new SphereContainmentHandler(sph5, textures[3]));
 
 		tesselator = new Tesselator(tree);
 		tree->iterate(tesselator);
@@ -357,40 +353,6 @@ public:
 		glClearColor (0.1,0.1,0.1,1.0);
 		glUniform3fv(lightDirectionLoc, 1, glm::value_ptr(glm::normalize(glm::vec3(-1.0,-1.0,-1.0))));
 	 }
-
-    virtual void draw() {
-		glViewport(0, 0, getWidth(), getHeight());
-		glEnable(GL_CULL_FACE); // Enable face culling
-		glCullFace(GL_BACK); // Or GL_FRONT
-		glFrontFace(GL_CCW); // Ensure this matches your vertex data
-		glEnable(GL_DEPTH_TEST);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		glUniform1ui(lightEnabledLoc, 1);
-		glUniform1ui(triplanarEnabledLoc, 1);
-		glUniform1ui(parallaxEnabledLoc, 1);
-		glUniform1ui(debugEnabledLoc, 0);
-		glPatchParameteri(GL_PATCH_VERTICES, 3); // Define the number of control points per patch
-
-		glPolygonMode(GL_FRONT, GL_FILL);
-		renderer->loaded = 0;
-		tree->iterate(renderer);
-
-		#ifdef DEBUG_GEO
-
-		glUniform1ui(lightEnabledLoc, 0);
-		glUniform1ui(parallaxEnabledLoc, 0);
-    	glUniform1ui(triplanarEnabledLoc, 0);
-		glDisable(GL_CULL_FACE); // Enable face culling
-		//glPolygonMode(GL_FRONT, GL_LINE);
-		glLineWidth(2.0);
-		glPointSize(4.0);
-		//tree->iterate(renderer);
-		vaoDebug->draw(false);
-		//glUniform1ui(debugEnabledLoc, 1);
-		//glDrawElements(GL_PATCHES, vaoDebug->indices, GL_UNSIGNED_INT, 0);
-		#endif
-		//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    }
 
     virtual void update(float deltaTime){
 		time += deltaTime;
@@ -457,11 +419,43 @@ public:
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(camera.view));
 		glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(camera.projection));
-		//glUniform3fv(lightDirectionLoc, 1, glm::value_ptr(glm::normalize(glm::vec3(glm::sin(time),-1.0,glm::cos(time)))));
+	//	glUniform3fv(lightDirectionLoc, 1, glm::value_ptr(glm::normalize(glm::vec3(glm::sin(time),-1.0,glm::cos(time)))));
 		glUniform3fv(cameraPositionLoc, 1, glm::value_ptr(camera.position));
 		glUniform1f(timeLoc, time);
     }
 
+    virtual void draw() {
+		glViewport(0, 0, getWidth(), getHeight());
+		glEnable(GL_CULL_FACE); // Enable face culling
+		glCullFace(GL_BACK); // Or GL_FRONT
+		glFrontFace(GL_CCW); // Ensure this matches your vertex data
+		glEnable(GL_DEPTH_TEST);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glUniform1ui(lightEnabledLoc, 1);
+		glUniform1ui(triplanarEnabledLoc, 1);
+		glUniform1ui(parallaxEnabledLoc, 1);
+		glUniform1ui(debugEnabledLoc, 0);
+		glPatchParameteri(GL_PATCH_VERTICES, 3); // Define the number of control points per patch
+
+		glPolygonMode(GL_FRONT, GL_FILL);
+		renderer->loaded = 0;
+		tree->iterate(renderer);
+
+		#ifdef DEBUG_GEO
+		glUniform1ui(debugEnabledLoc, 1);
+		glUniform1ui(lightEnabledLoc, 0);
+		glUniform1ui(parallaxEnabledLoc, 0);
+    	glUniform1ui(triplanarEnabledLoc, 0);
+		glDisable(GL_CULL_FACE); // Enable face culling
+		glPolygonMode(GL_FRONT, GL_LINE);
+		glLineWidth(2.0);
+		glPointSize(4.0);
+		tree->iterate(renderer);
+		//vaoDebug->draw(false);
+		//glDrawElements(GL_PATCHES, vaoDebug->indices, GL_UNSIGNED_INT, 0);
+		#endif
+		//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    }
     virtual void clean(){
 
 		// Cleanup and exit

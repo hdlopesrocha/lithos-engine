@@ -62,7 +62,7 @@ class DebugTesselator : public IteratorHandler{
 						Vertex vtx;
 						vtx.position = corners[triOrder[j]];
 						vtx.texCoord = tessTexDebug[j];
-						vtx.texIndex = 1;
+						vtx.texIndex = 0;
 						vtx.normal = glm::vec3(0.0);
 						chunk.addVertex(vtx, true);
 						//std::cout << vtx.toKey() << std::endl; 
