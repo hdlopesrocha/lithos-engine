@@ -185,8 +185,8 @@ class HeightMap {
 		void setMin(glm::vec3 v);
 		void setMax(glm::vec3 v);
 		float getHeightAt(float x, float z);
-		glm::vec3 getPoint(BoundingCube cube);
    		glm::vec3 getNormalAt(float x, float z);
+		glm::vec3 getPoint(BoundingCube cube);
 
 
 		float getData(int x, int z);
@@ -201,11 +201,11 @@ class HeightMap {
 
 class ContainmentHandler {
 	public: 
-		virtual ContainmentType check(BoundingCube cube, Vertex * vertex) = 0;
+		virtual ContainmentType check(BoundingCube cube) = 0;
+		virtual Vertex getVertex(BoundingCube cube, ContainmentType solid) = 0;
 		virtual glm::vec3 getCenter() = 0;
 		virtual bool contains(glm::vec3 p) = 0;
 		virtual bool isContained(BoundingCube cube) = 0;
-		virtual glm::vec3 getNormal(glm::vec3 pos) = 0;
 };
 
 
@@ -256,7 +256,6 @@ class Tesselator : public IteratorHandler{
 		void * before(int level, OctreeNode * node, BoundingCube cube, void * context);
 		void after(int level, OctreeNode * node, BoundingCube cube, void * context);
 		bool test(int level, OctreeNode * node, BoundingCube cube, void * context);
-
 
 };
 

@@ -65,22 +65,25 @@ class SphereContainmentHandler : public ContainmentHandler {
 		return glm::normalize( pos - sphere.center);
 	}
 
-	ContainmentType check(BoundingCube cube, Vertex * vertex) {
-		ContainmentType result = sphere.test(cube); 
+	ContainmentType check(BoundingCube cube) {
+		return sphere.test(cube); 
+	}
 
+	Vertex getVertex(BoundingCube cube, ContainmentType solid) {
+		Vertex vertex(cube.getCenter());
 		glm::vec3 c = this->sphere.center;
 		float r = this->sphere.radius;
 		glm::vec3 a = cube.getCenter();
 		glm::vec3 n = glm::normalize(a-c);
 		glm::vec3 p = c + n*r;
-		vertex->position = glm::clamp(p, cube.getMin(), cube.getMax());
-		vertex->texIndex = texture->index;
-		vertex->parallaxScale = texture->parallaxScale;
-		vertex->parallaxMinLayers = texture->parallaxMinLayers;
-		vertex->parallaxMaxLayers = texture->parallaxMaxLayers;
-		vertex->shininess = texture->shininess;
-
-		return result;
+		vertex.position = glm::clamp(p, cube.getMin(), cube.getMax());
+		vertex.normal = getNormal(vertex.position);
+		vertex.texIndex = texture->index;
+		vertex.parallaxScale = texture->parallaxScale;
+		vertex.parallaxMinLayers = texture->parallaxMinLayers;
+		vertex.parallaxMaxLayers = texture->parallaxMaxLayers;
+		vertex.shininess = texture->shininess;
+		return vertex;
 	}
 
 };
@@ -126,8 +129,13 @@ class BoxContainmentHandler : public ContainmentHandler {
 		return glm::normalize(n);
 	}
 
-	ContainmentType check(BoundingCube cube, Vertex * vertex) {
-		ContainmentType result = box.test(cube); 
+	ContainmentType check(BoundingCube cube) {
+		return box.test(cube); 
+	}
+
+	Vertex getVertex(BoundingCube cube, ContainmentType solid) {
+		Vertex vertex(cube.getCenter());
+
 		glm::vec3 min = this->box.getMin();
 		glm::vec3 max = this->box.getMax();
 		glm::vec3 c = cube.getCenter();
@@ -143,16 +151,15 @@ class BoxContainmentHandler : public ContainmentHandler {
 				n[i] = -1.0;
 			}
 		}
-		vertex->position = glm::clamp(c, cube.getMin(), cube.getMax());
-		vertex->texIndex = texture->index;
-		vertex->parallaxScale = texture->parallaxScale;
-		vertex->parallaxMinLayers = texture->parallaxMinLayers;
-		vertex->parallaxMaxLayers = texture->parallaxMaxLayers;	
-		vertex->shininess = texture->shininess;	
-		
-		return result;
+		vertex.position = glm::clamp(c, cube.getMin(), cube.getMax());
+		vertex.normal = getNormal(vertex.position);
+		vertex.texIndex = texture->index;
+		vertex.parallaxScale = texture->parallaxScale;
+		vertex.parallaxMinLayers = texture->parallaxMinLayers;
+		vertex.parallaxMaxLayers = texture->parallaxMaxLayers;	
+		vertex.shininess = texture->shininess;	
+		return vertex;
 	}
-
 };
 
 class HeightMapContainmentHandler : public ContainmentHandler {
@@ -185,37 +192,40 @@ class HeightMapContainmentHandler : public ContainmentHandler {
 
 	glm::vec3 getNormal(glm::vec3 pos) {
 		return map->getNormalAt(pos.x, pos.z);
-
 	}
 
-	ContainmentType check(BoundingCube cube, Vertex * vertex) {
-		ContainmentType result = map->test(cube); 
-			
-		if(result == ContainmentType::Intersects) {
-			Texture * t;
-			if(map->hitsBoundary(cube)) {
-				glm::vec3 top = map->getCenter();
-				top.y = map->getMaxY();
-				glm::vec3 dir = cube.getCenter() - top;
-				vertex->position = cube.getCenter() + dir;
-				vertex->position = glm::clamp(vertex->position, cube.getMin(), cube.getMax());
-				vertex->position = glm::clamp(vertex->position, map->getMin(), map->getMax());
-				t = textureOut;
-			} else {
-				glm::vec3 c = cube.getCenter();
-				c = glm::clamp(c, map->getMin(), map->getMax());
-				glm::vec3 p0 = map->getPoint(cube); 
-				vertex->position = p0;
-				t = texture;
-			}
+	ContainmentType check(BoundingCube cube) {
+		return map->test(cube); 
+	}
 
-			vertex->texIndex = t->index;
-			vertex->parallaxScale = t->parallaxScale;
-			vertex->parallaxMinLayers = t->parallaxMinLayers;
-			vertex->parallaxMaxLayers = t->parallaxMaxLayers;	
-			vertex->shininess = t->shininess;
+	Vertex getVertex(BoundingCube cube, ContainmentType solid) {
+		Vertex vertex(cube.getCenter());
+
+		Texture * t;
+		if(map->hitsBoundary(cube)) {
+			glm::vec3 top = map->getCenter();
+			top.y = map->getMaxY();
+			glm::vec3 dir = cube.getCenter() - top;
+			vertex.position = cube.getCenter() + dir;
+			vertex.position = glm::clamp(vertex.position, cube.getMin(), cube.getMax());
+			vertex.position = glm::clamp(vertex.position, map->getMin(), map->getMax());
+			t = textureOut;
+		} else {
+			glm::vec3 c = cube.getCenter();
+			c = glm::clamp(c, map->getMin(), map->getMax());
+			glm::vec3 p0 = map->getPoint(cube); 
+			vertex.position = p0;
+			vertex.normal = getNormal(vertex.position);
+			t = texture;
 		}
-		return result;
+
+		vertex.texIndex = t->index;
+		vertex.parallaxScale = t->parallaxScale;
+		vertex.parallaxMinLayers = t->parallaxMinLayers;
+		vertex.parallaxMaxLayers = t->parallaxMaxLayers;	
+		vertex.shininess = t->shininess;
+	
+		return vertex;
 	}
 };
 
@@ -389,7 +399,6 @@ public:
 		glUniform1ui(parallaxEnabledLoc, 1);
 		glUniform1ui(debugEnabledLoc, 0);
 		glPatchParameteri(GL_PATCH_VERTICES, 3); // Define the number of control points per patch
-
 
 		glPolygonMode(GL_FRONT, GL_FILL);
 		renderer->loaded = 0;
