@@ -105,7 +105,7 @@ public:
     std::string readFile(const std::string& filePath);
     GLuint compileShader(const std::string& shaderCode, GLenum shaderType);
     GLuint createShaderProgram(GLuint vertexShader, GLuint fragmentShader, GLuint tcs, GLuint tes);
-
+    GLuint createDepthTexture(int width, int height);
 };
 
 class DrawableGeometry {
@@ -128,7 +128,7 @@ class OctreeRenderer : public IteratorHandler{
 
 		OctreeRenderer(Octree * tree);
 
-		void update(Camera * camera);
+		void update(glm::mat4 m);
 		void * before(int level, OctreeNode * node, BoundingCube cube, void * context);
 		void after(int level, OctreeNode * node, BoundingCube cube, void * context);
 		bool test(int level, OctreeNode * node, BoundingCube cube, void * context);

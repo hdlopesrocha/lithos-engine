@@ -95,6 +95,16 @@ void LithosApplication::close() {
 	alive = false;
 }
 
+GLuint LithosApplication::createDepthTexture(int width, int height) {
+    GLuint depthMap;
+    glGenTextures(1, &depthMap);
+    glBindTexture(GL_TEXTURE_2D, depthMap);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    return depthMap;
+}
+
 
 Image LithosApplication::loadTextureImage(const std::string& filename) {
     std::cout << "Loading " << filename << std::endl;
@@ -187,8 +197,12 @@ GLuint LithosApplication::compileShader(const std::string& shaderCode, GLenum sh
 GLuint LithosApplication::createShaderProgram(GLuint vertexShader, GLuint fragmentShader, GLuint tcs, GLuint tes) {
     GLuint program = glCreateProgram();
     glAttachShader(program, vertexShader);
-    glAttachShader(program, tcs);
-    glAttachShader(program, tes);
+    if(tcs) {
+        glAttachShader(program, tcs);
+    }
+    if(tes) {
+        glAttachShader(program, tes);
+    }
     glAttachShader(program, fragmentShader);
 
     glLinkProgram(program);

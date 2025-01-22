@@ -8,8 +8,8 @@ OctreeRenderer::OctreeRenderer(Octree * tree) {
 
 }
 
-void OctreeRenderer::update(Camera * camera) {
-	frustum = Frustum(camera->projection *camera->view  );
+void OctreeRenderer::update(glm::mat4 m) {
+	frustum = Frustum(m);
 }
 
 void * OctreeRenderer::before(int level, OctreeNode * node, BoundingCube cube, void * context) {			

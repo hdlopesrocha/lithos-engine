@@ -207,12 +207,9 @@ class MainApplication : public LithosApplication {
 	DrawableGeometry * vaoDebug;
 	#endif
 
-	GLuint vertexShader;
-	GLuint fragmentShader;
-	GLuint tessControlShader;
-	GLuint tessEvaluationShader;
 
-	GLuint shaderProgram;
+	GLuint shaderProgram2D;
+	GLuint shaderProgram3D;
 	GLuint modelLoc;
 	GLuint viewLoc;
 	GLuint projectionLoc;
@@ -223,6 +220,7 @@ class MainApplication : public LithosApplication {
 	GLuint parallaxEnabledLoc;
 	GLuint cameraPositionLoc;
 	GLuint timeLoc;
+	GLuint screen2dVao;
 	float time = 0.0f;
 
 
@@ -251,19 +249,56 @@ public:
 			t->index = i;
 			glActiveTexture(GL_TEXTURE0 + activeTexture); 
 			glBindTexture(GL_TEXTURE_2D, t->texture);    // Bind the texture to the active unit
-		    glUniform1i(glGetUniformLocation(shaderProgram, ("textures[" + std::to_string(i) + "]").c_str()), activeTexture++);
+		    glUniform1i(glGetUniformLocation(shaderProgram3D, ("textures[" + std::to_string(i) + "]").c_str()), activeTexture++);
 
 			glActiveTexture(GL_TEXTURE0 + activeTexture); 
 			glBindTexture(GL_TEXTURE_2D, t->normal);    // Bind the texture to the active unit
-		    glUniform1i(glGetUniformLocation(shaderProgram, ("normalMaps[" + std::to_string(i) + "]").c_str()), activeTexture++);
+		    glUniform1i(glGetUniformLocation(shaderProgram3D, ("normalMaps[" + std::to_string(i) + "]").c_str()), activeTexture++);
 		
 			glActiveTexture(GL_TEXTURE0 + activeTexture); 
 			glBindTexture(GL_TEXTURE_2D, t->bump);    // Bind the texture to the active unit
-		    glUniform1i(glGetUniformLocation(shaderProgram, ("bumpMaps[" + std::to_string(i) + "]").c_str()), activeTexture++);
+		    glUniform1i(glGetUniformLocation(shaderProgram3D, ("bumpMaps[" + std::to_string(i) + "]").c_str()), activeTexture++);
 
 		}
 	}
 
+	GLuint create2DVAO(float w, float h) {
+
+
+		float vertices[] = {
+			// positions   // tex coords
+			0.0f, 0.0f,    0.0f, 0.0f,
+			w, 0.0f,    1.0f, 0.0f,
+			w, h,    1.0f, 1.0f,
+			0.0f, h,    0.0f, 1.0f
+		};
+		unsigned int indices[] = {
+			0, 1, 2,
+			2, 3, 0
+		};
+
+		unsigned int VBO, VAO, EBO;
+		glGenVertexArrays(1, &VAO);
+		glGenBuffers(1, &VBO);
+		glGenBuffers(1, &EBO);
+
+		glBindVertexArray(VAO);
+
+		glBindBuffer(GL_ARRAY_BUFFER, VBO);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+		// Vertex position
+		glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+		glEnableVertexAttribArray(0);
+
+		// Texture coordinates
+		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+		glEnableVertexAttribArray(1);
+		return VAO;
+	}
 
     virtual void setup() {
 		glEnable(GL_DEPTH_TEST);
@@ -281,6 +316,16 @@ public:
         textures.push_back(new Texture(loadTextureImage("textures/dirt_color.png"),loadTextureImage("textures/dirt_normal.png"),loadTextureImage("textures/dirt_bump.png"), 0.1, 8, 32 , 256));
         textures.push_back(new Texture(loadTextureImage("textures/bricks_color.png"),loadTextureImage("textures/bricks_normal.png"),loadTextureImage("textures/bricks_bump.png"), 0.01, 8, 32, 256 ));
 
+
+		std::string vertCode2D = readFile("shaders/vertex2d.glsl");
+		std::string fragCode2D = readFile("shaders/fragment2d.glsl");
+		GLuint vertexShader2D = compileShader(vertCode2D,GL_VERTEX_SHADER);
+		GLuint fragmentShader2D = compileShader(fragCode2D,GL_FRAGMENT_SHADER);
+
+		shaderProgram2D = createShaderProgram(vertexShader2D, fragmentShader2D, 0, 0);
+		glUseProgram(shaderProgram2D);
+		screen2dVao = create2DVAO(100,100);
+
 		std::string functionsLine = "#include<functions.glsl>";
 		std::string functionsCode = readFile("shaders/functions.glsl");
 		std::string vertCode = replace(readFile("shaders/vertex.glsl"), functionsLine, functionsCode);
@@ -288,25 +333,25 @@ public:
 		std::string controlCode = replace(readFile("shaders/tessControl.glsl"), functionsLine, functionsCode);
 		std::string evalCode = replace(readFile("shaders/tessEvaluation.glsl"), functionsLine, functionsCode);
 
-		vertexShader = compileShader(vertCode,GL_VERTEX_SHADER);
-		fragmentShader = compileShader(fragCode,GL_FRAGMENT_SHADER);
-		tessControlShader = compileShader(controlCode,GL_TESS_CONTROL_SHADER);
-		tessEvaluationShader = compileShader(evalCode,GL_TESS_EVALUATION_SHADER);
-		shaderProgram = createShaderProgram(vertexShader, fragmentShader, tessControlShader, tessEvaluationShader);
+		GLuint vertexShader = compileShader(vertCode,GL_VERTEX_SHADER);
+		GLuint fragmentShader = compileShader(fragCode,GL_FRAGMENT_SHADER);
+		GLuint tessControlShader = compileShader(controlCode,GL_TESS_CONTROL_SHADER);
+		GLuint tessEvaluationShader = compileShader(evalCode,GL_TESS_EVALUATION_SHADER);
+		shaderProgram3D = createShaderProgram(vertexShader, fragmentShader, tessControlShader, tessEvaluationShader);
+		glUseProgram(shaderProgram3D);
 
 		// Use the shader program
-		glUseProgram(shaderProgram);
 
-		modelLoc = glGetUniformLocation(shaderProgram, "model");
-		viewLoc = glGetUniformLocation(shaderProgram, "view");
-		projectionLoc = glGetUniformLocation(shaderProgram, "projection");
-		lightDirectionLoc = glGetUniformLocation(shaderProgram, "lightDirection");
-		lightEnabledLoc = glGetUniformLocation(shaderProgram, "lightEnabled");
-		debugEnabledLoc = glGetUniformLocation(shaderProgram, "debugEnabled");
-		triplanarEnabledLoc = glGetUniformLocation(shaderProgram, "triplanarEnabled");
-		parallaxEnabledLoc = glGetUniformLocation(shaderProgram, "parallaxEnabled");
-		cameraPositionLoc = glGetUniformLocation(shaderProgram, "cameraPosition");
-		timeLoc = glGetUniformLocation(shaderProgram, "time");
+		modelLoc = glGetUniformLocation(shaderProgram3D, "model");
+		viewLoc = glGetUniformLocation(shaderProgram3D, "view");
+		projectionLoc = glGetUniformLocation(shaderProgram3D, "projection");
+		lightDirectionLoc = glGetUniformLocation(shaderProgram3D, "lightDirection");
+		lightEnabledLoc = glGetUniformLocation(shaderProgram3D, "lightEnabled");
+		debugEnabledLoc = glGetUniformLocation(shaderProgram3D, "debugEnabled");
+		triplanarEnabledLoc = glGetUniformLocation(shaderProgram3D, "triplanarEnabled");
+		parallaxEnabledLoc = glGetUniformLocation(shaderProgram3D, "parallaxEnabled");
+		cameraPositionLoc = glGetUniformLocation(shaderProgram3D, "cameraPosition");
+		timeLoc = glGetUniformLocation(shaderProgram3D, "time");
 
 		bindTextures(textures);
 
@@ -405,15 +450,26 @@ public:
 		}
 
 		camera.quaternion = glm::normalize(camera.quaternion);
+	
+	   	if (getKeyboardStatus(GLFW_KEY_R) == GLFW_RELEASE) {
+			renderer->update(camera.projection *camera.view);
+		}
+
+
+    }
+
+    virtual void draw() {
+		glViewport(0, 0, getWidth(), getHeight());
+	
+		// ============
+		// 3D component
+		// ============
+		glUseProgram(shaderProgram3D);
+	
 		glm::mat4 rotate = glm::mat4_cast(camera.quaternion);
 		glm::mat4 translate = glm::translate(glm::mat4(1.0f), -camera.position);
 	    camera.view = rotate * translate;
-
 		glm::mat4 model = glm::mat4(1.0f); // Identity matrix
-
-	   	if (getKeyboardStatus(GLFW_KEY_R) == GLFW_RELEASE) {
-			renderer->update(&camera);
-		}
 
 		// Send matrices to the shader
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
@@ -422,22 +478,19 @@ public:
 	//	glUniform3fv(lightDirectionLoc, 1, glm::value_ptr(glm::normalize(glm::vec3(glm::sin(time),-1.0,glm::cos(time)))));
 		glUniform3fv(cameraPositionLoc, 1, glm::value_ptr(camera.position));
 		glUniform1f(timeLoc, time);
-    }
-
-    virtual void draw() {
-		glViewport(0, 0, getWidth(), getHeight());
-		glEnable(GL_CULL_FACE); // Enable face culling
-		glCullFace(GL_BACK); // Or GL_FRONT
-		glFrontFace(GL_CCW); // Ensure this matches your vertex data
-		glEnable(GL_DEPTH_TEST);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glUniform1ui(lightEnabledLoc, 1);
 		glUniform1ui(triplanarEnabledLoc, 1);
 		glUniform1ui(parallaxEnabledLoc, 1);
 		glUniform1ui(debugEnabledLoc, 0);
 		glPatchParameteri(GL_PATCH_VERTICES, 3); // Define the number of control points per patch
 
+		glEnable(GL_CULL_FACE); // Enable face culling
+		glCullFace(GL_BACK); // Or GL_FRONT
+		glFrontFace(GL_CCW); // Ensure this matches your vertex data
+		glEnable(GL_DEPTH_TEST);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glPolygonMode(GL_FRONT, GL_FILL);
+
 		renderer->loaded = 0;
 		tree->iterate(renderer);
 
@@ -455,11 +508,27 @@ public:
 		//glDrawElements(GL_PATCHES, vaoDebug->indices, GL_UNSIGNED_INT, 0);
 		#endif
 		//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+		// ============
+		// 2D component
+		// ============
+		glUseProgram(shaderProgram2D);
+		glm::mat4 projection = glm::ortho(0.0f, (float)getWidth(), (float)getHeight(), 0.0f, -1.0f, 1.0f);
+		glUniformMatrix4fv(glGetUniformLocation(shaderProgram2D, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+		glDisable(GL_DEPTH_TEST);
+		glDisable(GL_CULL_FACE);
+		glActiveTexture(GL_TEXTURE0); 
+		glBindTexture(GL_TEXTURE_2D, textures[1]->texture);
+		glUniform1i(glGetUniformLocation(shaderProgram2D, "texture1"), 0); // Set the sampler uniform
+
+		glBindVertexArray(screen2dVao);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     }
+
     virtual void clean(){
 
 		// Cleanup and exit
-		glDeleteProgram(shaderProgram);
+		glDeleteProgram(shaderProgram3D);
     }
 
 };
