@@ -35,3 +35,27 @@ glm::vec2 Math::triplanarMapping(glm::vec3 position, int plane) {
         default: return glm::vec2(0.0,0.0);
     }
 }
+
+
+glm::vec3 Math::surfaceNormal(glm::vec3 point, BoundingBox box) {
+
+
+    glm::vec3 d = point - box.getCenter(); // Vector from center to the point
+    glm::vec3 ad = glm::abs(d); // Absolute values of components
+
+    glm::vec3 v = glm::vec3(0);
+    // Determine the dominant axis
+    if (ad.x >= ad.y && ad.x >= ad.z) {
+        v+= glm::vec3((d.x > 0? 1.0f : -1.0f), 0.0f, 0.0f); // Normal along X
+    } 
+    
+    if (ad.y >= ad.x && ad.y >= ad.z) {
+        v+= glm::vec3(0.0f, (d.y > 0? 1.0f : -1.0f), 0.0f); // Normal along Y
+    } 
+    
+    if (ad.z >= ad.x && ad.z >= ad.y) {
+        v+= glm::vec3(0.0f, 0.0f, (d.z > 0? 1.0f : -1.0f)); // Normal along Z
+    }
+
+    return glm::normalize(v);
+}

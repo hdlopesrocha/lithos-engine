@@ -168,12 +168,7 @@ OctreeNode * delAux(Octree * tree,  ContainmentHandler * handler, OctreeNode * n
 
 			}
 
-			uint mask = buildMask(handler, cube);
-			uint antiMask = mask ^ 0xff; 
-			
-			std::cout << "m:" << mask << ", a="<<antiMask << ", n=" << node->mask  << std::endl; 
-			node->mask &= antiMask; 
-	
+			node->mask &= buildMask(handler, cube) ^ 0xff; 
 			node->solid = check;
 			
 			if(height != 0) {

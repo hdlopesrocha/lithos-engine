@@ -110,25 +110,6 @@ class BoxContainmentHandler : public ContainmentHandler {
 		return p.contains(box);
 	}
 	
-	glm::vec3 getNormal(glm::vec3 pos) {
-		glm::vec3 c = glm::abs((pos - box.getCenter())/box.getLength() );
-		glm::vec3 min = this->box.getMin();
-		glm::vec3 max = this->box.getMax();
-		glm::vec3 n = glm::vec3(0.0);
-
-		for(int i=0; i < 3 ; ++i) {
-			if(pos[i] >= max[i]) {
-				c[i] = max[i];
-				n[i] = 1.0;
-			}
-			if(pos[i] <= min[i]) {
-				c[i] = min[i];
-				n[i] = -1.0;
-			}
-		}
-		return glm::normalize(n);
-	}
-
 	ContainmentType check(BoundingCube cube) {
 		return box.test(cube); 
 	}
@@ -139,20 +120,9 @@ class BoxContainmentHandler : public ContainmentHandler {
 		glm::vec3 min = this->box.getMin();
 		glm::vec3 max = this->box.getMax();
 		glm::vec3 c = cube.getCenter();
-		glm::vec3 n = glm::vec3(0.0);
-
-		for(int i=0; i < 3 ; ++i) {
-			if(cube.getMax()[i] >= max[i]) {
-				c[i] = max[i];
-				n[i] = 1.0;
-			}
-			if(cube.getMin()[i] <= min[i]) {
-				c[i] = min[i];
-				n[i] = -1.0;
-			}
-		}
-		vertex.position = glm::clamp(c, cube.getMin(), cube.getMax());
-		vertex.normal = getNormal(vertex.position);
+	
+		vertex.position = glm::clamp(c, min, max);
+		vertex.normal = Math::surfaceNormal(vertex.position, box);
 		vertex.texIndex = texture->index;
 		vertex.parallaxScale = texture->parallaxScale;
 		vertex.parallaxMinLayers = texture->parallaxMinLayers;
@@ -209,6 +179,7 @@ class HeightMapContainmentHandler : public ContainmentHandler {
 			vertex.position = cube.getCenter() + dir;
 			vertex.position = glm::clamp(vertex.position, cube.getMin(), cube.getMax());
 			vertex.position = glm::clamp(vertex.position, map->getMin(), map->getMax());
+			vertex.normal = Math::surfaceNormal(vertex.position, *map);
 			t = textureOut;
 		} else {
 			glm::vec3 c = cube.getCenter();

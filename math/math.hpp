@@ -160,30 +160,16 @@ class BoundingBox {
 		bool contains(glm::vec3 point);
 };
 
-class HeightMap {
+class HeightMap: public BoundingBox  {
 	private: 
 		int height;
 		int width;
-		glm::vec3 min;
-		glm::vec3 max;
 		std::vector<std::vector<float>> data; 
 
 	public: 
 		HeightMap();
 		HeightMap(glm::vec3 min, glm::vec3 max, int width, int height);
 		
-		float getMaxX();
-		float getMaxY();
-		float getMaxZ();
-		float getMinX();
-		float getMinY();
-		float getMinZ();
-		glm::vec3 getMin();
-		glm::vec3 getMax();
-		glm::vec3 getCenter();
-		glm::vec3 getLength();
-		void setMin(glm::vec3 v);
-		void setMax(glm::vec3 v);
 		float getHeightAt(float x, float z);
    		glm::vec3 getNormalAt(float x, float z);
 		glm::vec3 getPoint(BoundingCube cube);
@@ -322,6 +308,7 @@ public:
 	static float clamp(float val, float min, float max);
 	static int triplanarPlane(glm::vec3 position, glm::vec3 normal);
 	static glm::vec2 triplanarMapping(glm::vec3 position, int plane);
+	static glm::vec3 surfaceNormal(glm::vec3 point, BoundingBox box);
 
 };
 

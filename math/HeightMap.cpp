@@ -1,11 +1,9 @@
 #include "math.hpp"
 
 
-HeightMap::HeightMap(glm::vec3 min, glm::vec3 max, int width, int height) {
+HeightMap::HeightMap(glm::vec3 min, glm::vec3 max, int width, int height) : BoundingBox(min, max){
     this->width = width;
     this->height = height;
-    this->min = min;
-	this->max = max;
     this->data = std::vector<std::vector<float>>(width, std::vector<float>(height)); 
     for(int x=0 ; x < width ; ++x){
         for(int z=0 ; z < height ; ++z){
@@ -16,27 +14,9 @@ HeightMap::HeightMap(glm::vec3 min, glm::vec3 max, int width, int height) {
 
 }
 
-HeightMap::HeightMap() {
+HeightMap::HeightMap() : BoundingBox(){
     this->width = 0;
     this->height = 0;
-    this->min = glm::vec3(0,0,0);
-    this->max = glm::vec3(0,0,0);
-}
-
-glm::vec3 HeightMap::getMin() {
-    return min;
-}
-
-glm::vec3 HeightMap::getMax() {
-    return max;
-}
-
-glm::vec3 HeightMap::getLength() {
-    return max - min;
-}
-
-glm::vec3 HeightMap::getCenter() {
-    return (min+max)*0.5f;
 }
 
 float HeightMap::getData(int x, int z) {
@@ -45,8 +25,8 @@ float HeightMap::getData(int x, int z) {
 
 glm::ivec2 HeightMap::getIndexes(float x, float z) {
     glm::vec3 len = getLength();
-    float px =(x-min.x)/len.x;
-    float pz =(z-min.z)/len.z;
+    float px =(x-getMinX())/len.x;
+    float pz =(z-getMinZ())/len.z;
     int ix = Math::clamp((int)floor(px * this->width), 0, width-1);
     int iz = Math::clamp((int)floor(pz * this->height), 0, height-1);
     return glm::ivec2(ix, iz);
@@ -66,8 +46,8 @@ glm::vec2 HeightMap::getHeightRangeBetween(BoundingCube cube) {
     }
 
     glm::vec3 len = getLength();
-    range[0] = min[1] + range[0] * len[1];
-    range[1] = min[1] + range[1] * len[1]; 
+    range[0] = getMinY() + range[0] * len[1];
+    range[1] = getMinY() + range[1] * len[1]; 
 
     return range;
 }
@@ -76,8 +56,8 @@ glm::vec3 HeightMap::getNormalAt(float x, float z) {
     // bilinear interpolation
     glm::vec3 len = getLength();
 
-    float px = Math::clamp((x-min.x)/len.x, 0.0, 1.0);
-    float pz = Math::clamp((z-min.z)/len.z, 0.0, 1.0);
+    float px = Math::clamp((x-getMinX())/len.x, 0.0, 1.0);
+    float pz = Math::clamp((z-getMinZ())/len.z, 0.0, 1.0);
     int ix = floor(px * this->width);
     int iz = floor(pz * this->height);
 
@@ -102,8 +82,8 @@ float HeightMap::getHeightAt(float x, float z) {
     // bilinear interpolation
     glm::vec3 len = getLength();
 
-    float px = Math::clamp((x-min.x)/len.x, 0.0, 1.0);
-    float pz = Math::clamp((z-min.z)/len.z, 0.0, 1.0);
+    float px = Math::clamp((x-getMinX())/len.x, 0.0, 1.0);
+    float pz = Math::clamp((z-getMinZ())/len.z, 0.0, 1.0);
     int ix = floor(px * this->width);
     int iz = floor(pz * this->height);
 
@@ -120,7 +100,7 @@ float HeightMap::getHeightAt(float x, float z) {
 
     float y = (1.0 - qz)*y1 + (qz)*y2;
 
-    return min.y + y * len.y;
+    return getMinY() + y * len.y;
 }
 
 glm::vec3 getShift(int i) {
@@ -144,53 +124,20 @@ glm::vec3 HeightMap::getPoint(BoundingCube cube) {
     return cube.getCenter();
 }
 
-float HeightMap::getMaxX() {
-    return max.x;
-}
-
-float HeightMap::getMaxY() {
-    return max.y;
-}
-
-float HeightMap::getMaxZ() {
-    return max.z;
-}
-
-float HeightMap::getMinX() {
-    return min.x;
-}
-
-float HeightMap::getMinY() {
-    return min.y;
-}
-
-float HeightMap::getMinZ() {
-    return min.z;
-}
-
-void HeightMap::setMin(glm::vec3 v) {
-    this->min = v;
-}
-
-void HeightMap::setMax(glm::vec3 v) {
-    this->max = v;
-}
-
-
 bool HeightMap::contains(glm::vec3 point){
-    BoundingBox box(min, max);
+    BoundingBox box(getMin(), getMax());
     float h = getHeightAt(point.x, point.z);
 
-    return box.contains(point) && Math::isBetween(point.y, min.y, h);
+    return box.contains(point) && Math::isBetween(point.y, getMinY(), h);
 }
 
 bool HeightMap::isContained(BoundingCube p) {
-    BoundingBox box(min, max);
+    BoundingBox box(getMin(), getMax());
     return p.contains(box);
 }
     
 bool HeightMap::hitsBoundary(BoundingCube cube) {
-    BoundingBox box(min, max);
+    BoundingBox box(getMin(), getMax());
 
     ContainmentType result = box.test(cube);
     bool allPointsUnderground = true;
@@ -209,7 +156,7 @@ bool HeightMap::hitsBoundary(BoundingCube cube) {
 }
 
 ContainmentType HeightMap::test(BoundingCube cube) {
-    BoundingBox box(min, max);
+    BoundingBox box(getMin(), getMax());
 
     ContainmentType result = box.test(cube);
 
