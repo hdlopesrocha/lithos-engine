@@ -338,7 +338,7 @@ public:
 
 
 		glUseProgram(program2D);
-		screen2dVao = create2DVAO(100,100);
+		screen2dVao = create2DVAO(200,200);
 		fullSreenVao = create2DVAO(getWidth(), getHeight());
 
 		std::string functionsLine = "#include<functions.glsl>";
@@ -578,7 +578,7 @@ public:
 
 		glBindVertexArray(screen2dVao);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-		
+
 		glUniform1i(glGetUniformLocation(program2D, "depthEnabled"), false); 
     }
 

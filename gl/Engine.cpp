@@ -159,7 +159,7 @@ RenderBuffer LithosApplication::createDepthFrameBuffer(int width, int height) {
     // Configure framebuffer
     glBindFramebuffer(GL_FRAMEBUFFER, buffer.frameBuffer);
     glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, buffer.texture,0);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, buffer.texture, 0);
+    //glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, buffer.texture, 0);
 
     glDrawBuffer(GL_NONE);
     glReadBuffer(GL_NONE);
