@@ -492,13 +492,13 @@ public:
 		// ================
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, frameBuffer);
 		glViewport(0, 0, getWidth(), getHeight());
-		glEnable(GL_DEPTH_TEST);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		//glEnable(GL_DEPTH_TEST);
+		//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glUseProgram(programShadow);
 		glUniformMatrix4fv(modelViewProjectionShadowLoc, 1, GL_FALSE, glm::value_ptr(mvp));
 
 		renderer->mode = GL_TRIANGLES;
-		tree->iterate(renderer);
+		//tree->iterate(renderer);
 	
 
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, frameBuffer);
@@ -554,22 +554,27 @@ public:
 		glUniformMatrix4fv(glGetUniformLocation(program2D, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
 		glDisable(GL_DEPTH_TEST);
 		glDisable(GL_CULL_FACE);
+
+		// ==========
+		// Final Pass
+		// ==========
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, originalFrameBuffer);
+		glActiveTexture(GL_TEXTURE0); 
+		glBindTexture(GL_TEXTURE_2D, frameTexture);
+		glUniform1i(glGetUniformLocation(program2D, "texture1"), 0); // Set the sampler uniform
+		
+		glBindVertexArray(fullSreenVao);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		
+		// ==========
+		// 2D overlay
+		// ==========
 		glActiveTexture(GL_TEXTURE0); 
 		glBindTexture(GL_TEXTURE_2D, frameTexture);
 		glUniform1i(glGetUniformLocation(program2D, "texture1"), 0); // Set the sampler uniform
 
 		glBindVertexArray(screen2dVao);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-
-		// ==========
-		// Final Pass
-		// ==========
-		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, originalFrameBuffer);
-		glBindTexture(GL_TEXTURE_2D, frameTexture);
-		glUniform1i(glGetUniformLocation(program2D, "texture1"), 0); // Set the sampler uniform
-		glBindVertexArray(fullSreenVao);
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-		
 
     }
 
