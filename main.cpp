@@ -415,11 +415,7 @@ public:
 		#endif
 
 		glClearColor (0.1,0.1,0.1,1.0);
-		float orthoSize = 10.0f;  // Size of the orthographic box
-
         light.direction = glm::normalize(glm::vec3(-1.0,-1.0,-1.0));
-		light.projection = glm::ortho(-orthoSize, orthoSize, -orthoSize, orthoSize, 0.1f, 512.0f);
-		light.view = glm::lookAt(camera.position, glm::vec3(0), glm::vec3(0,1,0));
 	 }
 
     virtual void update(float deltaTime){
@@ -473,13 +469,20 @@ public:
 		}
 
 		camera.quaternion = glm::normalize(camera.quaternion);
+		glm::vec3 cameraDirection = glm::vec3(0.0f, 0.0f, -1.0f)*camera.quaternion;
 	
-	   	if (getKeyboardStatus(GLFW_KEY_R) == GLFW_RELEASE) {
-			renderer->update(camera.projection *camera.view);
-		}
+
+		float far = 512.0f;
+		float dist = 128.0f;
+	   	glm::vec3 lookAtLightPosition = camera.position;// + cameraDirection*far*0.5f;
 
 
 		light.direction = glm::normalize(glm::vec3(glm::sin(time),-1.0,glm::cos(time)));
+
+		float orthoSize = 256.0f;  // Size of the orthographic box
+
+		light.projection = glm::ortho(-orthoSize, orthoSize, -orthoSize, orthoSize, 0.1f, far);
+		light.view = glm::lookAt(lookAtLightPosition - light.direction*dist, lookAtLightPosition, glm::vec3(0,1,0));
     }
 
     virtual void draw() {
@@ -488,8 +491,8 @@ public:
 		glm::mat4 rotate = glm::mat4_cast(camera.quaternion);
 		glm::mat4 translate = glm::translate(glm::mat4(1.0f), -camera.position);
 	    camera.view = rotate * translate;
-		glm::mat4 mvp = camera.projection * camera.view * model;
-		glm::mat4 lvp = light.projection * light.view * model;
+		glm::mat4 mvp = camera.projection * camera.view;
+		glm::mat4 lvp = light.projection * light.view;
 
 		// ================
 		// Shadow component
@@ -502,6 +505,8 @@ public:
 		glUniformMatrix4fv(modelViewProjectionShadowLoc, 1, GL_FALSE, glm::value_ptr(lvp));
 
 		renderer->mode = GL_TRIANGLES;
+		renderer->update(lvp);
+		
 		tree->iterate(renderer);
 
 
@@ -533,6 +538,7 @@ public:
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glPolygonMode(GL_FRONT, GL_FILL);
 		renderer->mode = GL_PATCHES;
+		renderer->update(mvp);
 		tree->iterate(renderer);
 
 		#ifdef DEBUG_GEO
@@ -580,7 +586,7 @@ public:
 
 		glUniform1f(glGetUniformLocation(program2D, "near"), 0.1f); 
 		glUniform1f(glGetUniformLocation(program2D, "far"), 512.0f); 
-		glUniform1i(glGetUniformLocation(program2D, "depthEnabled"), true);
+		glUniform1i(glGetUniformLocation(program2D, "depthEnabled"), false);
 
 		glBindVertexArray(screen2dVao);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
