@@ -38,6 +38,9 @@ OctreeNode * Octree::getNodeAt(glm::vec3 pos, int level) {
 	    
 	    cube = getChildCube(cube, i);
 		OctreeNode * candidate = node->children[i];
+		if(candidate == NULL) {
+			return node;
+		}
 		node = candidate;
 		--level;
 	}
@@ -83,7 +86,30 @@ int Octree::getHeight(BoundingCube cube){
 	return r >= 0  ? (int) glm::floor(r) : -1;
 }
 
+void simplify(OctreeNode * node) {
+	bool init = false;
+	bool canSimplify = true;
+	uint mask = 0x0;
+	Vertex vertex;
+	
+	for(int i=0; i <8 ; ++i) {
+		OctreeNode * c = node->children[i];
+		if(c!=NULL && c->mask != 0xff) {
+			if(!init) {
+				mask = c->mask;
+				vertex = c->vertex;
+				init = true;
+			}else if(mask != c->mask || vertex.normal != c->vertex.normal || vertex.texIndex != c->vertex.texIndex){
+				canSimplify = false;
+			}
+		}
+	}
+	if(canSimplify && init) {
+		node->vertex = vertex;
+		node->clear();
+	}
 
+}
 
 uint buildMask(ContainmentHandler * handler, BoundingCube cube) {
 	float d[8];
@@ -127,17 +153,18 @@ OctreeNode * addAux(Octree * tree, ContainmentHandler * handler, OctreeNode * no
 			BoundingCube subCube = getChildCube(cube,i);
 			node->children[i] = addAux(tree, handler, node->children[i], subCube);
 		}
+		//simplify(node);
 	}
 	return node;
 }
 
-void split(OctreeNode * node, BoundingCube cube, ContainmentType solid) {
+void split(OctreeNode * node, BoundingCube cube) {
 	for(int i=0; i <8 ; ++i) {
 		BoundingCube subCube = getChildCube(cube,i);
 		node->children[i] = new OctreeNode(subCube.getCenter());
 		// TODO: Confirm
-		node->children[i]->solid = solid;
-		node->children[i]->mask = 0xff;
+		node->children[i]->solid = node->solid;
+		node->children[i]->mask = node->mask;
 	}	
 }
 
@@ -159,13 +186,12 @@ OctreeNode * delAux(Octree * tree,  ContainmentHandler * handler, OctreeNode * n
 		}
 		if(node!= NULL) {
 			if(node->solid == ContainmentType::Contains && height != 0) {
-				split(node, cube, ContainmentType::Contains);
+				split(node, cube);
 			}
 
 			if(node->solid != ContainmentType::Intersects && isIntersecting) {
 				node->vertex = handler->getVertex(cube, check);
 				node->vertex.normal = -node->vertex.normal;
-
 			}
 
 			node->mask &= buildMask(handler, cube) ^ 0xff; 
