@@ -26,7 +26,7 @@ void * OctreeRenderer::before(int level, OctreeNode * node, BoundingCube cube, v
 		// drawable geometry
 		if(node->infoType == 1) {
 			DrawableGeometry * info = (DrawableGeometry*) node->info;
-			info->draw(false);
+			info->draw(mode);
 		}	
 		
 	}

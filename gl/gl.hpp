@@ -120,7 +120,7 @@ class DrawableGeometry {
 	int indices;
 
 	DrawableGeometry(Geometry * t);
-    void draw(bool debug);
+    void draw(uint mode);
 };
 
 
@@ -131,6 +131,7 @@ class OctreeRenderer : public IteratorHandler{
 
 	public: 
 		int loaded = 0;
+        uint mode;
 
 		OctreeRenderer(Octree * tree);
 

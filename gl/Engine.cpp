@@ -101,6 +101,7 @@ void LithosApplication::run() {
         if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE){
             return;
         }
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, originalFrameBuffer);
 
         setup();
         mainLoop();
@@ -122,17 +123,22 @@ GLuint LithosApplication::createDepthTexture(int width, int height) {
     glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    //glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMap, 0);
     return depthMap;
 }
 
 bool LithosApplication::configureFrameBuffer(GLint fb, GLuint dt) {
+
     glBindFramebuffer(GL_FRAMEBUFFER, fb);
     glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, dt,0);
-    glDrawBuffer(GL_NONE);
-    glReadBuffer(GL_NONE);
+
+   // glDrawBuffer(GL_NONE);
+   // glReadBuffer(GL_NONE);
     if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE){
         return false;
     }
+
+    
     return true;
 }
 

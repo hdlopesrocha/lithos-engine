@@ -31,13 +31,10 @@ DrawableGeometry::DrawableGeometry(Geometry * t){
 	glEnableVertexAttribArray(7);	
 }
 
-void DrawableGeometry::draw(bool debug) {
+void DrawableGeometry::draw(uint mode) {
 	if(this->indices) {
 		glBindVertexArray(this->vao);
-		glDrawElements(GL_PATCHES, this->indices, GL_UNSIGNED_INT, 0);
-	}
-	if(debug) {
-		std::cout << "Draw: " << this->indices << std::endl;
+		glDrawElements(mode, this->indices, GL_UNSIGNED_INT, 0);
 	}
 }
 

@@ -208,17 +208,12 @@ class MainApplication : public LithosApplication {
 	#endif
 
 
-	GLuint shaderProgram2D;
-	GLuint shaderProgram3D;
-	GLuint shaderProgramShadow;
+	GLuint program2D;
+	GLuint program3D;
+	GLuint programShadow;
 	
-	GLuint modelLoc;
-	GLuint viewLoc;
-	GLuint projectionLoc;
-
-	GLuint modelShadowLoc;
-	GLuint viewShadowLoc;
-	GLuint projectionShadowLoc;
+	GLuint modelViewProjectionLoc;
+	GLuint modelViewProjectionShadowLoc;
 
 
 	
@@ -230,7 +225,7 @@ class MainApplication : public LithosApplication {
 	GLuint cameraPositionLoc;
 	GLuint timeLoc;
 	GLuint screen2dVao;
-	GLuint depthMap;
+	GLuint depthTexture;
 	float time = 0.0f;
 
 
@@ -259,15 +254,15 @@ public:
 			t->index = i;
 			glActiveTexture(GL_TEXTURE0 + activeTexture); 
 			glBindTexture(GL_TEXTURE_2D, t->texture);    // Bind the texture to the active unit
-		    glUniform1i(glGetUniformLocation(shaderProgram3D, ("textures[" + std::to_string(i) + "]").c_str()), activeTexture++);
+		    glUniform1i(glGetUniformLocation(program3D, ("textures[" + std::to_string(i) + "]").c_str()), activeTexture++);
 
 			glActiveTexture(GL_TEXTURE0 + activeTexture); 
 			glBindTexture(GL_TEXTURE_2D, t->normal);    // Bind the texture to the active unit
-		    glUniform1i(glGetUniformLocation(shaderProgram3D, ("normalMaps[" + std::to_string(i) + "]").c_str()), activeTexture++);
+		    glUniform1i(glGetUniformLocation(program3D, ("normalMaps[" + std::to_string(i) + "]").c_str()), activeTexture++);
 		
 			glActiveTexture(GL_TEXTURE0 + activeTexture); 
 			glBindTexture(GL_TEXTURE_2D, t->bump);    // Bind the texture to the active unit
-		    glUniform1i(glGetUniformLocation(shaderProgram3D, ("bumpMaps[" + std::to_string(i) + "]").c_str()), activeTexture++);
+		    glUniform1i(glGetUniformLocation(program3D, ("bumpMaps[" + std::to_string(i) + "]").c_str()), activeTexture++);
 
 		}
 	}
@@ -315,8 +310,8 @@ public:
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-		depthMap = createDepthTexture(getWidth(), getHeight());
-		if(!configureFrameBuffer(frameBuffer, depthMap)){
+		depthTexture = createDepthTexture(getWidth(), getHeight());
+		if(!configureFrameBuffer(frameBuffer, depthTexture)){
 			return;
 		}
 
@@ -334,17 +329,18 @@ public:
 		std::string fragCodeShadow = readFile("shaders/shadow_fragment.glsl");
 		GLuint vertexShaderShadow = compileShader(vertCodeShadow,GL_VERTEX_SHADER);
 		GLuint fragmentShaderShadow = compileShader(fragCodeShadow,GL_FRAGMENT_SHADER);
-		shaderProgramShadow = createShaderProgram(vertexShaderShadow, fragmentShaderShadow, 0, 0);
+		programShadow = createShaderProgram(vertexShaderShadow, fragmentShaderShadow, 0, 0);
+		glUseProgram(programShadow);
 
 
 		std::string vertCode2D = readFile("shaders/2d_vertex.glsl");
 		std::string fragCode2D = readFile("shaders/2d_fragment.glsl");
 		GLuint vertexShader2D = compileShader(vertCode2D,GL_VERTEX_SHADER);
 		GLuint fragmentShader2D = compileShader(fragCode2D,GL_FRAGMENT_SHADER);
-		shaderProgram2D = createShaderProgram(vertexShader2D, fragmentShader2D, 0, 0);
+		program2D = createShaderProgram(vertexShader2D, fragmentShader2D, 0, 0);
 
 
-		glUseProgram(shaderProgram2D);
+		glUseProgram(program2D);
 		screen2dVao = create2DVAO(100,100);
 
 		std::string functionsLine = "#include<functions.glsl>";
@@ -358,25 +354,21 @@ public:
 		GLuint fragmentShader = compileShader(fragCode,GL_FRAGMENT_SHADER);
 		GLuint tessControlShader = compileShader(controlCode,GL_TESS_CONTROL_SHADER);
 		GLuint tessEvaluationShader = compileShader(evalCode,GL_TESS_EVALUATION_SHADER);
-		shaderProgram3D = createShaderProgram(vertexShader, fragmentShader, tessControlShader, tessEvaluationShader);
-		glUseProgram(shaderProgram3D);
+		program3D = createShaderProgram(vertexShader, fragmentShader, tessControlShader, tessEvaluationShader);
+		glUseProgram(program3D);
 
 		// Use the shader program
 
-		modelShadowLoc = glGetUniformLocation(shaderProgramShadow, "model");
-		viewShadowLoc = glGetUniformLocation(shaderProgramShadow, "view");
-		projectionShadowLoc = glGetUniformLocation(shaderProgramShadow, "projection");
-
-		modelLoc = glGetUniformLocation(shaderProgram3D, "model");
-		viewLoc = glGetUniformLocation(shaderProgram3D, "view");
-		projectionLoc = glGetUniformLocation(shaderProgram3D, "projection");
-		lightDirectionLoc = glGetUniformLocation(shaderProgram3D, "lightDirection");
-		lightEnabledLoc = glGetUniformLocation(shaderProgram3D, "lightEnabled");
-		debugEnabledLoc = glGetUniformLocation(shaderProgram3D, "debugEnabled");
-		triplanarEnabledLoc = glGetUniformLocation(shaderProgram3D, "triplanarEnabled");
-		parallaxEnabledLoc = glGetUniformLocation(shaderProgram3D, "parallaxEnabled");
-		cameraPositionLoc = glGetUniformLocation(shaderProgram3D, "cameraPosition");
-		timeLoc = glGetUniformLocation(shaderProgram3D, "time");
+		modelViewProjectionShadowLoc = glGetUniformLocation(programShadow, "modelViewProjection");
+	
+		modelViewProjectionLoc = glGetUniformLocation(program3D, "modelViewProjection");
+		lightDirectionLoc = glGetUniformLocation(program3D, "lightDirection");
+		lightEnabledLoc = glGetUniformLocation(program3D, "lightEnabled");
+		debugEnabledLoc = glGetUniformLocation(program3D, "debugEnabled");
+		triplanarEnabledLoc = glGetUniformLocation(program3D, "triplanarEnabled");
+		parallaxEnabledLoc = glGetUniformLocation(program3D, "parallaxEnabled");
+		cameraPositionLoc = glGetUniformLocation(program3D, "cameraPosition");
+		timeLoc = glGetUniformLocation(program3D, "time");
 
 		bindTextures(textures);
 
@@ -489,6 +481,10 @@ public:
     virtual void draw() {
 		glm::mat4 model = glm::mat4(1.0f); // Identity matrix
 		renderer->loaded = 0;
+		glm::mat4 rotate = glm::mat4_cast(camera.quaternion);
+		glm::mat4 translate = glm::translate(glm::mat4(1.0f), -camera.position);
+	    camera.view = rotate * translate;
+		glm::mat4 mvp = camera.projection * camera.view * model;
 
 		// ================
 		// Shadow component
@@ -496,10 +492,11 @@ public:
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, frameBuffer);
 		glViewport(0, 0, getWidth(), getHeight());
 		glClear(GL_DEPTH_BUFFER_BIT);
-		glUseProgram(shaderProgramShadow);
-		glUniformMatrix4fv(modelShadowLoc, 1, GL_FALSE, glm::value_ptr(model));
-		glUniformMatrix4fv(viewShadowLoc, 1, GL_FALSE, glm::value_ptr(camera.view));
-		glUniformMatrix4fv(projectionShadowLoc, 1, GL_FALSE, glm::value_ptr(camera.projection));
+		glEnable(GL_DEPTH_TEST);
+
+		glUseProgram(programShadow);
+		glUniformMatrix4fv(modelViewProjectionShadowLoc, 1, GL_FALSE, glm::value_ptr(mvp));
+		renderer->mode = GL_TRIANGLES;
 		tree->iterate(renderer);
 	
 
@@ -510,16 +507,11 @@ public:
 		// ============
 		// 3D component
 		// ============
-		glUseProgram(shaderProgram3D);
+		glUseProgram(program3D);
 	
-		glm::mat4 rotate = glm::mat4_cast(camera.quaternion);
-		glm::mat4 translate = glm::translate(glm::mat4(1.0f), -camera.position);
-	    camera.view = rotate * translate;
-
 		// Send matrices to the shader
-		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(camera.view));
-		glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(camera.projection));
+		glUniformMatrix4fv(modelViewProjectionLoc, 1, GL_FALSE, glm::value_ptr(mvp));
+
 	//	glUniform3fv(lightDirectionLoc, 1, glm::value_ptr(glm::normalize(glm::vec3(glm::sin(time),-1.0,glm::cos(time)))));
 		glUniform3fv(cameraPositionLoc, 1, glm::value_ptr(camera.position));
 		glUniform1f(timeLoc, time);
@@ -535,7 +527,7 @@ public:
 		glEnable(GL_DEPTH_TEST);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glPolygonMode(GL_FRONT, GL_FILL);
-
+		renderer->mode = GL_PATCHES;
 		tree->iterate(renderer);
 
 		#ifdef DEBUG_GEO
@@ -556,14 +548,14 @@ public:
 		// ============
 		// 2D component
 		// ============
-		glUseProgram(shaderProgram2D);
+		glUseProgram(program2D);
 		glm::mat4 projection = glm::ortho(0.0f, (float)getWidth(), (float)getHeight(), 0.0f, -1.0f, 1.0f);
-		glUniformMatrix4fv(glGetUniformLocation(shaderProgram2D, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+		glUniformMatrix4fv(glGetUniformLocation(program2D, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
 		glDisable(GL_DEPTH_TEST);
 		glDisable(GL_CULL_FACE);
 		glActiveTexture(GL_TEXTURE0); 
-		glBindTexture(GL_TEXTURE_2D, depthMap);
-		glUniform1i(glGetUniformLocation(shaderProgram2D, "texture1"), 0); // Set the sampler uniform
+		glBindTexture(GL_TEXTURE_2D, depthTexture);
+		glUniform1i(glGetUniformLocation(program2D, "texture1"), 0); // Set the sampler uniform
 
 		glBindVertexArray(screen2dVao);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
@@ -572,7 +564,7 @@ public:
     virtual void clean(){
 
 		// Cleanup and exit
-		glDeleteProgram(shaderProgram3D);
+		glDeleteProgram(program3D);
     }
 
 };

@@ -7,7 +7,7 @@ This a physics engine.
 Current features:
 
 * Add / Delete matter using cubes / spheres / heightmaps.
-* Multiple textures
+* Texture blending
 * Surface Nets
 * GPU Tesselation with LOD
 * Triplanar Mapping

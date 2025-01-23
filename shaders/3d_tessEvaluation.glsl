@@ -22,17 +22,17 @@ out vec3 tePosition;
 out TextureProperties teProps;
 
 
-uniform mat4 model;      // Model transformation matrix
-uniform mat4 view;       // View transformation matrix
-uniform mat4 projection; // Projection transformation matrix
+
+uniform mat4 modelViewProjection; 
 uniform uint triplanarEnabled;
 
 
 void main() {
-    mat3 tr = mat3(transpose(inverse(model)));
-   // Interpolate attributes using barycentric coordinates
+
     teNormal = tcNormal[0] * gl_TessCoord[0] + tcNormal[1] * gl_TessCoord[1] + tcNormal[2] * gl_TessCoord[2];
-   // teNormal = normalize(tr * teNormal);
+  
+    // mat3 tr = mat3(transpose(inverse(model)));
+    // teNormal = normalize(tr * teNormal);
     
     teProps.parallaxScale = tcProps[0].parallaxScale * gl_TessCoord[0] + 
                             tcProps[1].parallaxScale * gl_TessCoord[1] + 
@@ -62,6 +62,6 @@ void main() {
     //float height = textureBlend(teTextureWeights, bumpMaps, teTextureCoord).r;
 
 
-    gl_Position = projection * view * model * vec4(tePosition, 1.0);    
+    gl_Position = modelViewProjection * vec4(tePosition, 1.0);    
 
 }
