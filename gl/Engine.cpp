@@ -82,18 +82,24 @@ void LithosApplication::mainLoop() {
 
 void LithosApplication::run() {
 	if(!initWindow()) {
-   
+        // Backup original framebuffer
         glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &originalFrameBuffer);
 
+        // Create framebuffer
+        glGenFramebuffers(1, &frameBuffer);        
+        glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
+        frameTexture = createFrameTexture(getWidth(), getHeight());
+
+
+        // Create depthbuffer
         glGenRenderbuffers(1, & depthBuffer);
         glBindRenderbuffer(GL_RENDERBUFFER, depthBuffer);
         glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, getWidth(), getHeight());
 
-        glGenFramebuffers(1, &frameBuffer);        
+        // Configure framebuffer
         glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
         glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthBuffer);
-
-        glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, 0, 0);
+        glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, frameTexture, 0);
 
         GLenum drawBuffers[1] = {GL_COLOR_ATTACHMENT0 };
         glDrawBuffers(1, drawBuffers);
@@ -116,6 +122,17 @@ void LithosApplication::close() {
 	alive = false;
 }
 
+GLuint LithosApplication::createFrameTexture(int width, int height) {
+    GLuint frameTexture;
+    glGenTextures(1, &frameTexture);
+    glBindTexture(GL_TEXTURE_2D, frameTexture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    return frameTexture;
+}
+
+
 GLuint LithosApplication::createDepthTexture(int width, int height) {
     GLuint depthMap;
     glGenTextures(1, &depthMap);
@@ -123,12 +140,11 @@ GLuint LithosApplication::createDepthTexture(int width, int height) {
     glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    //glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMap, 0);
     return depthMap;
 }
 
 bool LithosApplication::configureFrameBuffer(GLint fb, GLuint dt) {
-
+/*
     glBindFramebuffer(GL_FRAMEBUFFER, fb);
     glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, dt,0);
 
@@ -138,7 +154,7 @@ bool LithosApplication::configureFrameBuffer(GLint fb, GLuint dt) {
         return false;
     }
 
-    
+  */  
     return true;
 }
 

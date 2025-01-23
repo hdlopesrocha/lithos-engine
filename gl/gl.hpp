@@ -90,6 +90,7 @@ private:
 public:
     GLint originalFrameBuffer;
     GLuint frameBuffer;
+    GLuint frameTexture;
     GLuint depthBuffer;
 
     virtual void setup() = 0;
@@ -110,6 +111,7 @@ public:
     GLuint compileShader(const std::string& shaderCode, GLenum shaderType);
     GLuint createShaderProgram(GLuint vertexShader, GLuint fragmentShader, GLuint tcs, GLuint tes);
     GLuint createDepthTexture(int width, int height);
+    GLuint createFrameTexture(int width, int height);
     bool configureFrameBuffer(GLint fb, GLuint dt);
 
 };

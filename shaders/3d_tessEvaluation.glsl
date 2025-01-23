@@ -20,10 +20,11 @@ out vec2 teTextureCoord;
 out float teTextureWeights[10];
 out vec3 tePosition;
 out TextureProperties teProps;
-
+out vec4 lightViewPosition;
 
 
 uniform mat4 modelViewProjection; 
+uniform mat4 matrixShadow; 
 uniform uint triplanarEnabled;
 
 
@@ -63,5 +64,6 @@ void main() {
 
 
     gl_Position = modelViewProjection * vec4(tePosition, 1.0);    
+    lightViewPosition = matrixShadow * vec4(tePosition, 1.0);    
 
 }

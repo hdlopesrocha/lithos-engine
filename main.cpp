@@ -225,7 +225,7 @@ class MainApplication : public LithosApplication {
 	GLuint cameraPositionLoc;
 	GLuint timeLoc;
 	GLuint screen2dVao;
-	GLuint depthTexture;
+	//GLuint depthTexture;
 	float time = 0.0f;
 
 
@@ -268,8 +268,6 @@ public:
 	}
 
 	GLuint create2DVAO(float w, float h) {
-
-
 		float vertices[] = {
 			// positions   // tex coords
 			0.0f, 0.0f,    0.0f, 0.0f,
@@ -310,11 +308,11 @@ public:
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-		depthTexture = createDepthTexture(getWidth(), getHeight());
+		/*depthTexture = createDepthTexture(getWidth(), getHeight());
 		if(!configureFrameBuffer(frameBuffer, depthTexture)){
 			return;
 		}
-
+*/
         textures.push_back(new Texture(loadTextureImage("textures/grid.png")));
         textures.push_back(new Texture(loadTextureImage("textures/lava_color.jpg"),loadTextureImage("textures/lava_normal.jpg"),loadTextureImage("textures/lava_bump.jpg"), 0.1, 8, 32 ,256));
         textures.push_back(new Texture(loadTextureImage("textures/grass_color.png"),loadTextureImage("textures/grass_normal.png"),loadTextureImage("textures/grass_bump.png"), 0.01, 8, 32 ,256));
@@ -491,11 +489,11 @@ public:
 		// ================
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, frameBuffer);
 		glViewport(0, 0, getWidth(), getHeight());
-		glClear(GL_DEPTH_BUFFER_BIT);
 		glEnable(GL_DEPTH_TEST);
-
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glUseProgram(programShadow);
 		glUniformMatrix4fv(modelViewProjectionShadowLoc, 1, GL_FALSE, glm::value_ptr(mvp));
+
 		renderer->mode = GL_TRIANGLES;
 		tree->iterate(renderer);
 	
@@ -554,7 +552,7 @@ public:
 		glDisable(GL_DEPTH_TEST);
 		glDisable(GL_CULL_FACE);
 		glActiveTexture(GL_TEXTURE0); 
-		glBindTexture(GL_TEXTURE_2D, depthTexture);
+		glBindTexture(GL_TEXTURE_2D, frameTexture);
 		glUniform1i(glGetUniformLocation(program2D, "texture1"), 0); // Set the sampler uniform
 
 		glBindVertexArray(screen2dVao);

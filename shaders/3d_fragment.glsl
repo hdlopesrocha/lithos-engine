@@ -3,6 +3,7 @@
 uniform sampler2D textures[10];
 uniform sampler2D normalMaps[10];
 uniform sampler2D bumpMaps[10];
+uniform sampler2D shadowMap;
 uniform vec3 lightDirection; 
 uniform uint debugEnabled;
 uniform uint lightEnabled;
@@ -19,7 +20,7 @@ in float teTextureWeights[10];
 in vec3 tePosition;
 in vec3 teNormal;
 in TextureProperties teProps;
-
+in vec4 lightViewPosition;
 
 out vec4 color;    // Final fragment color
 
@@ -127,10 +128,8 @@ void main() {
 
     if(debugEnabled == 1) {
         color = vec4(1.0,1.0,1.0,1.0);
-        return;
     } else if(lightEnabled == 0) {
         color = mixedColor; 
-        return;
     } else {
         float specularStrength = 0.4;
         vec3 specularColor = vec3(1.0,1.0,1.0);
@@ -145,6 +144,10 @@ void main() {
         float diffuse = clamp(max(dot(worldNormal, -lightDirection), 0.0), 0.2, 1.0);
         color = vec4(mixedColor.rgb*diffuse + specularColor * specularStrength * phongSpec, mixedColor.a); 
     }
+
+    vec3 l =lightViewPosition.xyz / lightViewPosition.w; 
+    color *= texture(shadowMap, l.xy).r < l.z ? 0 : 1;
+
  }
 
 
