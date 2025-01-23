@@ -4,7 +4,6 @@ OctreeNode::OctreeNode(Vertex vertex) {
 	this->info = NULL;
 	this->infoType = 0;
 	this->vertex = vertex;
-    this->solid = ContainmentType::Disjoint;
 	this->mask = 0x0;
 	for(int i=0; i < 8 ; ++i) {
 		setChild(i, NULL);
@@ -16,7 +15,7 @@ void OctreeNode::setChild(int i, OctreeNode * node) {
 }
 
 OctreeNode::~OctreeNode() {
-	this->solid = ContainmentType::Disjoint;;
+	this->mask = 0x0;
 	this->clear();
 }
 

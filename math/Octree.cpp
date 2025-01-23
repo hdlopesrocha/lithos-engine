@@ -134,14 +134,13 @@ OctreeNode * addAux(Octree * tree, ContainmentHandler * handler, OctreeNode * no
 		Vertex vertex(cube.getCenter());
 		node = new OctreeNode(vertex);
 	}
-	else if(node->solid == ContainmentType::Contains) {
+	else if(node->mask == 0xff) {
 		return node;
 	}
 
 	if(check == ContainmentType::Intersects) {
 		node->vertex = handler->getVertex(cube, check);
 	}
-	node->solid = check;
 	uint mask = buildMask(handler, cube);
 	node->mask |= mask;
 	
@@ -162,8 +161,6 @@ void split(OctreeNode * node, BoundingCube cube) {
 	for(int i=0; i <8 ; ++i) {
 		BoundingCube subCube = getChildCube(cube,i);
 		node->children[i] = new OctreeNode(subCube.getCenter());
-		// TODO: Confirm
-		node->children[i]->solid = node->solid;
 		node->children[i]->mask = node->mask;
 	}	
 }
@@ -185,17 +182,16 @@ OctreeNode * delAux(Octree * tree,  ContainmentHandler * handler, OctreeNode * n
 			return NULL;
 		}
 		if(node!= NULL) {
-			if(node->solid == ContainmentType::Contains && height != 0) {
+			if(node->mask == 0xff && height != 0) {
 				split(node, cube);
 			}
 
-			if(node->solid != ContainmentType::Intersects && isIntersecting) {
+			if((node->mask == 0xff || node->mask == 0x00) && isIntersecting) {
 				node->vertex = handler->getVertex(cube, check);
 				node->vertex.normal = -node->vertex.normal;
 			}
 
 			node->mask &= buildMask(handler, cube) ^ 0xff; 
-			node->solid = check;
 			
 			if(height != 0) {
 				for(int i=0; i <8 ; ++i) {
@@ -239,7 +235,7 @@ void saveAux(std::ofstream * myfile, OctreeNode * node) {
 		Vertex vertex = node->vertex;
 		*myfile << "\n{";
 		*myfile << "\"v\":" << node->vertex.toString() << ",";
-		*myfile << "\"s\":" << (int) node->solid;
+		*myfile << "\"m\":" << (uint) node->mask;
 		if(node->children != NULL) {
 			for(int i=0; i <8 ; ++i) {
 				OctreeNode * c = node->children[i];

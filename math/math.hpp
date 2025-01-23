@@ -198,7 +198,6 @@ class ContainmentHandler {
 class OctreeNode {
 	public: 
 		Vertex vertex;
-		ContainmentType solid;
 		uint mask;
 		OctreeNode *children[8];
 		void * info;
