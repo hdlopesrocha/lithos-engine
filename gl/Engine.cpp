@@ -86,20 +86,20 @@ void LithosApplication::run() {
         glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &originalFrameBuffer);
 
         // Create framebuffer
-        glGenFramebuffers(1, &frameBuffer);        
-        glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
-        frameTexture = createFrameTexture(getWidth(), getHeight());
+        glGenFramebuffers(1, &renderBuffer.frameBuffer);        
+        glBindFramebuffer(GL_FRAMEBUFFER, renderBuffer.frameBuffer);
+        renderBuffer.frameTexture = createFrameTexture(getWidth(), getHeight());
 
 
         // Create depthbuffer
-        glGenRenderbuffers(1, & depthBuffer);
-        glBindRenderbuffer(GL_RENDERBUFFER, depthBuffer);
+        glGenRenderbuffers(1, & renderBuffer.depthBuffer);
+        glBindRenderbuffer(GL_RENDERBUFFER, renderBuffer.depthBuffer);
         glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, getWidth(), getHeight());
 
         // Configure framebuffer
-        glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
-        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthBuffer);
-        glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, frameTexture, 0);
+        glBindFramebuffer(GL_FRAMEBUFFER, renderBuffer.frameBuffer);
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, renderBuffer.depthBuffer);
+        glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, renderBuffer.frameTexture, 0);
 
         GLenum drawBuffers[1] = {GL_COLOR_ATTACHMENT0 };
         glDrawBuffers(1, drawBuffers);

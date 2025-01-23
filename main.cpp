@@ -490,18 +490,18 @@ public:
 		// ================
 		// Shadow component
 		// ================
-		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, frameBuffer);
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, renderBuffer.frameBuffer);
 		glViewport(0, 0, getWidth(), getHeight());
-		//glEnable(GL_DEPTH_TEST);
-		//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glEnable(GL_DEPTH_TEST);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glUseProgram(programShadow);
 		glUniformMatrix4fv(modelViewProjectionShadowLoc, 1, GL_FALSE, glm::value_ptr(mvp));
 
 		renderer->mode = GL_TRIANGLES;
-		//tree->iterate(renderer);
+		tree->iterate(renderer);
 	
 
-		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, frameBuffer);
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, renderBuffer.frameBuffer);
 		glViewport(0, 0, getWidth(), getHeight());
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -560,7 +560,7 @@ public:
 		// ==========
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, originalFrameBuffer);
 		glActiveTexture(GL_TEXTURE0); 
-		glBindTexture(GL_TEXTURE_2D, frameTexture);
+		glBindTexture(GL_TEXTURE_2D, renderBuffer.frameTexture);
 		glUniform1i(glGetUniformLocation(program2D, "texture1"), 0); // Set the sampler uniform
 		
 		glBindVertexArray(fullSreenVao);
@@ -570,7 +570,7 @@ public:
 		// 2D overlay
 		// ==========
 		glActiveTexture(GL_TEXTURE0); 
-		glBindTexture(GL_TEXTURE_2D, frameTexture);
+		glBindTexture(GL_TEXTURE_2D, renderBuffer.frameTexture);
 		glUniform1i(glGetUniformLocation(program2D, "texture1"), 0); // Set the sampler uniform
 
 		glBindVertexArray(screen2dVao);

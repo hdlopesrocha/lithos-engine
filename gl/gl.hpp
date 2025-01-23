@@ -75,6 +75,12 @@ struct Camera {
     glm::vec3 position;
 };
 
+struct RenderBuffer {
+    GLuint frameBuffer;
+    GLuint frameTexture;
+    GLuint depthBuffer;
+};
+
 class LithosApplication {
 	
 private: 
@@ -89,9 +95,7 @@ private:
 
 public:
     GLint originalFrameBuffer;
-    GLuint frameBuffer;
-    GLuint frameTexture;
-    GLuint depthBuffer;
+    RenderBuffer renderBuffer;
 
     virtual void setup() = 0;
     virtual void draw() = 0;
