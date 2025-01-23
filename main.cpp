@@ -200,6 +200,7 @@ class HeightMapContainmentHandler : public ContainmentHandler {
 class MainApplication : public LithosApplication {
 	std::vector<Texture*> textures;
   	Camera camera;
+	DirectionalLight light;
 	Octree * tree;
 	Tesselator * tesselator;
 	OctreeRenderer * renderer;
@@ -414,7 +415,11 @@ public:
 		#endif
 
 		glClearColor (0.1,0.1,0.1,1.0);
-		glUniform3fv(lightDirectionLoc, 1, glm::value_ptr(glm::normalize(glm::vec3(-1.0,-1.0,-1.0))));
+		float orthoSize = 10.0f;  // Size of the orthographic box
+
+        light.direction = glm::normalize(glm::vec3(-1.0,-1.0,-1.0));
+		light.projection = glm::ortho(-orthoSize, orthoSize, -orthoSize, orthoSize, 0.1f, 512.0f);
+		light.view = glm::lookAt(camera.position, glm::vec3(0), glm::vec3(0,1,0));
 	 }
 
     virtual void update(float deltaTime){
@@ -474,6 +479,7 @@ public:
 		}
 
 
+		light.direction = glm::normalize(glm::vec3(glm::sin(time),-1.0,glm::cos(time)));
     }
 
     virtual void draw() {
@@ -483,6 +489,7 @@ public:
 		glm::mat4 translate = glm::translate(glm::mat4(1.0f), -camera.position);
 	    camera.view = rotate * translate;
 		glm::mat4 mvp = camera.projection * camera.view * model;
+		glm::mat4 lvp = light.projection * light.view * model;
 
 		// ================
 		// Shadow component
@@ -492,7 +499,7 @@ public:
 		glEnable(GL_DEPTH_TEST);
 		glClear(GL_DEPTH_BUFFER_BIT);
 		glUseProgram(programShadow);
-		glUniformMatrix4fv(modelViewProjectionShadowLoc, 1, GL_FALSE, glm::value_ptr(mvp));
+		glUniformMatrix4fv(modelViewProjectionShadowLoc, 1, GL_FALSE, glm::value_ptr(lvp));
 
 		renderer->mode = GL_TRIANGLES;
 		tree->iterate(renderer);
@@ -510,8 +517,7 @@ public:
 	
 		// Send matrices to the shader
 		glUniformMatrix4fv(modelViewProjectionLoc, 1, GL_FALSE, glm::value_ptr(mvp));
-
-	//	glUniform3fv(lightDirectionLoc, 1, glm::value_ptr(glm::normalize(glm::vec3(glm::sin(time),-1.0,glm::cos(time)))));
+		glUniform3fv(lightDirectionLoc, 1, glm::value_ptr(light.direction));
 		glUniform3fv(cameraPositionLoc, 1, glm::value_ptr(camera.position));
 		glUniform1f(timeLoc, time);
 		glUniform1ui(lightEnabledLoc, 1);

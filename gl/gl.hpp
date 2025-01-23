@@ -75,6 +75,12 @@ struct Camera {
     glm::vec3 position;
 };
 
+struct DirectionalLight {
+    glm::vec3 direction;
+    glm::mat4 projection;
+    glm::mat4 view;    
+};
+
 struct RenderBuffer {
     GLuint frameBuffer;
     GLuint depthBuffer;
