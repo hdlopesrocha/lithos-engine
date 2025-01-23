@@ -210,9 +210,18 @@ class MainApplication : public LithosApplication {
 
 	GLuint shaderProgram2D;
 	GLuint shaderProgram3D;
+	GLuint shaderProgramShadow;
+	
 	GLuint modelLoc;
 	GLuint viewLoc;
 	GLuint projectionLoc;
+
+	GLuint modelShadowLoc;
+	GLuint viewShadowLoc;
+	GLuint projectionShadowLoc;
+
+
+	
 	GLuint lightDirectionLoc;
 	GLuint lightEnabledLoc;
 	GLuint debugEnabledLoc;
@@ -221,6 +230,7 @@ class MainApplication : public LithosApplication {
 	GLuint cameraPositionLoc;
 	GLuint timeLoc;
 	GLuint screen2dVao;
+	GLuint depthMap;
 	float time = 0.0f;
 
 
@@ -305,6 +315,10 @@ public:
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+		depthMap = createDepthTexture(getWidth(), getHeight());
+		if(!configureFrameBuffer(frameBuffer, depthMap)){
+			return;
+		}
 
         textures.push_back(new Texture(loadTextureImage("textures/grid.png")));
         textures.push_back(new Texture(loadTextureImage("textures/lava_color.jpg"),loadTextureImage("textures/lava_normal.jpg"),loadTextureImage("textures/lava_bump.jpg"), 0.1, 8, 32 ,256));
@@ -316,22 +330,29 @@ public:
         textures.push_back(new Texture(loadTextureImage("textures/dirt_color.png"),loadTextureImage("textures/dirt_normal.png"),loadTextureImage("textures/dirt_bump.png"), 0.1, 8, 32 , 256));
         textures.push_back(new Texture(loadTextureImage("textures/bricks_color.png"),loadTextureImage("textures/bricks_normal.png"),loadTextureImage("textures/bricks_bump.png"), 0.01, 8, 32, 256 ));
 
+		std::string vertCodeShadow = readFile("shaders/shadow_vertex.glsl");
+		std::string fragCodeShadow = readFile("shaders/shadow_fragment.glsl");
+		GLuint vertexShaderShadow = compileShader(vertCodeShadow,GL_VERTEX_SHADER);
+		GLuint fragmentShaderShadow = compileShader(fragCodeShadow,GL_FRAGMENT_SHADER);
+		shaderProgramShadow = createShaderProgram(vertexShaderShadow, fragmentShaderShadow, 0, 0);
 
-		std::string vertCode2D = readFile("shaders/vertex2d.glsl");
-		std::string fragCode2D = readFile("shaders/fragment2d.glsl");
+
+		std::string vertCode2D = readFile("shaders/2d_vertex.glsl");
+		std::string fragCode2D = readFile("shaders/2d_fragment.glsl");
 		GLuint vertexShader2D = compileShader(vertCode2D,GL_VERTEX_SHADER);
 		GLuint fragmentShader2D = compileShader(fragCode2D,GL_FRAGMENT_SHADER);
-
 		shaderProgram2D = createShaderProgram(vertexShader2D, fragmentShader2D, 0, 0);
+
+
 		glUseProgram(shaderProgram2D);
 		screen2dVao = create2DVAO(100,100);
 
 		std::string functionsLine = "#include<functions.glsl>";
 		std::string functionsCode = readFile("shaders/functions.glsl");
-		std::string vertCode = replace(readFile("shaders/vertex.glsl"), functionsLine, functionsCode);
-		std::string fragCode = replace(readFile("shaders/fragment.glsl"), functionsLine, functionsCode);
-		std::string controlCode = replace(readFile("shaders/tessControl.glsl"), functionsLine, functionsCode);
-		std::string evalCode = replace(readFile("shaders/tessEvaluation.glsl"), functionsLine, functionsCode);
+		std::string vertCode = replace(readFile("shaders/3d_vertex.glsl"), functionsLine, functionsCode);
+		std::string fragCode = replace(readFile("shaders/3d_fragment.glsl"), functionsLine, functionsCode);
+		std::string controlCode = replace(readFile("shaders/3d_tessControl.glsl"), functionsLine, functionsCode);
+		std::string evalCode = replace(readFile("shaders/3d_tessEvaluation.glsl"), functionsLine, functionsCode);
 
 		GLuint vertexShader = compileShader(vertCode,GL_VERTEX_SHADER);
 		GLuint fragmentShader = compileShader(fragCode,GL_FRAGMENT_SHADER);
@@ -341,6 +362,10 @@ public:
 		glUseProgram(shaderProgram3D);
 
 		// Use the shader program
+
+		modelShadowLoc = glGetUniformLocation(shaderProgramShadow, "model");
+		viewShadowLoc = glGetUniformLocation(shaderProgramShadow, "view");
+		projectionShadowLoc = glGetUniformLocation(shaderProgramShadow, "projection");
 
 		modelLoc = glGetUniformLocation(shaderProgram3D, "model");
 		viewLoc = glGetUniformLocation(shaderProgram3D, "view");
@@ -354,6 +379,9 @@ public:
 		timeLoc = glGetUniformLocation(shaderProgram3D, "time");
 
 		bindTextures(textures);
+
+		
+
 
         camera.quaternion =   glm::angleAxis(glm::radians(180.0f), glm::vec3(0, 0, 1))
    	    					* glm::angleAxis(glm::radians(145.0f), glm::vec3(1, 0, 0))
@@ -459,8 +487,26 @@ public:
     }
 
     virtual void draw() {
+		glm::mat4 model = glm::mat4(1.0f); // Identity matrix
+		renderer->loaded = 0;
+
+		// ================
+		// Shadow component
+		// ================
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, frameBuffer);
 		glViewport(0, 0, getWidth(), getHeight());
+		glClear(GL_DEPTH_BUFFER_BIT);
+		glUseProgram(shaderProgramShadow);
+		glUniformMatrix4fv(modelShadowLoc, 1, GL_FALSE, glm::value_ptr(model));
+		glUniformMatrix4fv(viewShadowLoc, 1, GL_FALSE, glm::value_ptr(camera.view));
+		glUniformMatrix4fv(projectionShadowLoc, 1, GL_FALSE, glm::value_ptr(camera.projection));
+		tree->iterate(renderer);
 	
+
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, originalFrameBuffer);
+		glViewport(0, 0, getWidth(), getHeight());
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 		// ============
 		// 3D component
 		// ============
@@ -469,7 +515,6 @@ public:
 		glm::mat4 rotate = glm::mat4_cast(camera.quaternion);
 		glm::mat4 translate = glm::translate(glm::mat4(1.0f), -camera.position);
 	    camera.view = rotate * translate;
-		glm::mat4 model = glm::mat4(1.0f); // Identity matrix
 
 		// Send matrices to the shader
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
@@ -491,7 +536,6 @@ public:
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glPolygonMode(GL_FRONT, GL_FILL);
 
-		renderer->loaded = 0;
 		tree->iterate(renderer);
 
 		#ifdef DEBUG_GEO
@@ -518,7 +562,7 @@ public:
 		glDisable(GL_DEPTH_TEST);
 		glDisable(GL_CULL_FACE);
 		glActiveTexture(GL_TEXTURE0); 
-		glBindTexture(GL_TEXTURE_2D, textures[1]->texture);
+		glBindTexture(GL_TEXTURE_2D, depthMap);
 		glUniform1i(glGetUniformLocation(shaderProgram2D, "texture1"), 0); // Set the sampler uniform
 
 		glBindVertexArray(screen2dVao);

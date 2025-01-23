@@ -88,6 +88,10 @@ private:
 	int keyboard[KEYBOARD_SIZE];
 
 public:
+    GLint originalFrameBuffer;
+    GLuint frameBuffer;
+    GLuint depthBuffer;
+
     virtual void setup() = 0;
     virtual void draw() = 0;
     virtual void update(float deltaTime) = 0;
@@ -106,6 +110,8 @@ public:
     GLuint compileShader(const std::string& shaderCode, GLenum shaderType);
     GLuint createShaderProgram(GLuint vertexShader, GLuint fragmentShader, GLuint tcs, GLuint tes);
     GLuint createDepthTexture(int width, int height);
+    bool configureFrameBuffer(GLint fb, GLuint dt);
+
 };
 
 class DrawableGeometry {

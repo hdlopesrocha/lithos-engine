@@ -82,6 +82,26 @@ void LithosApplication::mainLoop() {
 
 void LithosApplication::run() {
 	if(!initWindow()) {
+   
+        glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &originalFrameBuffer);
+
+        glGenRenderbuffers(1, & depthBuffer);
+        glBindRenderbuffer(GL_RENDERBUFFER, depthBuffer);
+        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, getWidth(), getHeight());
+
+        glGenFramebuffers(1, &frameBuffer);        
+        glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthBuffer);
+
+        glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, 0, 0);
+
+        GLenum drawBuffers[1] = {GL_COLOR_ATTACHMENT0 };
+        glDrawBuffers(1, drawBuffers);
+        
+        if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE){
+            return;
+        }
+
         setup();
         mainLoop();
         clean();
@@ -105,6 +125,16 @@ GLuint LithosApplication::createDepthTexture(int width, int height) {
     return depthMap;
 }
 
+bool LithosApplication::configureFrameBuffer(GLint fb, GLuint dt) {
+    glBindFramebuffer(GL_FRAMEBUFFER, fb);
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, dt,0);
+    glDrawBuffer(GL_NONE);
+    glReadBuffer(GL_NONE);
+    if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE){
+        return false;
+    }
+    return true;
+}
 
 Image LithosApplication::loadTextureImage(const std::string& filename) {
     std::cout << "Loading " << filename << std::endl;
