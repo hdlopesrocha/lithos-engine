@@ -225,6 +225,7 @@ class MainApplication : public LithosApplication {
 	GLuint cameraPositionLoc;
 	GLuint timeLoc;
 	GLuint screen2dVao;
+	GLuint fullSreenVao;
 	//GLuint depthTexture;
 	float time = 0.0f;
 
@@ -270,10 +271,11 @@ public:
 	GLuint create2DVAO(float w, float h) {
 		float vertices[] = {
 			// positions   // tex coords
-			0.0f, 0.0f,    0.0f, 0.0f,
-			w, 0.0f,    1.0f, 0.0f,
-			w, h,    1.0f, 1.0f,
-			0.0f, h,    0.0f, 1.0f
+			0.0f, 0.0f,    0.0f, 1.0f,
+			0.0f, h,    0.0f, 0.0f,
+			w, h,    1.0f, 0.0f,
+			w, 0.0f,    1.0f, 1.0f
+
 		};
 		unsigned int indices[] = {
 			0, 1, 2,
@@ -340,6 +342,7 @@ public:
 
 		glUseProgram(program2D);
 		screen2dVao = create2DVAO(100,100);
+		fullSreenVao = create2DVAO(getWidth(), getHeight());
 
 		std::string functionsLine = "#include<functions.glsl>";
 		std::string functionsCode = readFile("shaders/functions.glsl");
@@ -498,7 +501,7 @@ public:
 		tree->iterate(renderer);
 	
 
-		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, originalFrameBuffer);
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, frameBuffer);
 		glViewport(0, 0, getWidth(), getHeight());
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -557,6 +560,17 @@ public:
 
 		glBindVertexArray(screen2dVao);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+		// ==========
+		// Final Pass
+		// ==========
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, originalFrameBuffer);
+		glBindTexture(GL_TEXTURE_2D, frameTexture);
+		glUniform1i(glGetUniformLocation(program2D, "texture1"), 0); // Set the sampler uniform
+		glBindVertexArray(fullSreenVao);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		
+
     }
 
     virtual void clean(){
