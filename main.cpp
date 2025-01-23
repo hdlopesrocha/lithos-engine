@@ -226,7 +226,7 @@ class MainApplication : public LithosApplication {
 	GLuint timeLoc;
 	GLuint screen2dVao;
 	GLuint fullSreenVao;
-	//GLuint depthTexture;
+	RenderBuffer depthFrameBuffer;
 	float time = 0.0f;
 
 
@@ -310,11 +310,8 @@ public:
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-		/*depthTexture = createDepthTexture(getWidth(), getHeight());
-		if(!configureFrameBuffer(frameBuffer, depthTexture)){
-			return;
-		}
-*/
+		depthFrameBuffer = createDepthFrameBuffer(getWidth(), getHeight());
+
         textures.push_back(new Texture(loadTextureImage("textures/grid.png")));
         textures.push_back(new Texture(loadTextureImage("textures/lava_color.jpg"),loadTextureImage("textures/lava_normal.jpg"),loadTextureImage("textures/lava_bump.jpg"), 0.1, 8, 32 ,256));
         textures.push_back(new Texture(loadTextureImage("textures/grass_color.png"),loadTextureImage("textures/grass_normal.png"),loadTextureImage("textures/grass_bump.png"), 0.01, 8, 32 ,256));
@@ -490,16 +487,17 @@ public:
 		// ================
 		// Shadow component
 		// ================
-		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, renderBuffer.frameBuffer);
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, depthFrameBuffer.frameBuffer);
 		glViewport(0, 0, getWidth(), getHeight());
 		glEnable(GL_DEPTH_TEST);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glClear(GL_DEPTH_BUFFER_BIT);
 		glUseProgram(programShadow);
 		glUniformMatrix4fv(modelViewProjectionShadowLoc, 1, GL_FALSE, glm::value_ptr(mvp));
 
 		renderer->mode = GL_TRIANGLES;
 		tree->iterate(renderer);
-	
+
+
 
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, renderBuffer.frameBuffer);
 		glViewport(0, 0, getWidth(), getHeight());
@@ -560,7 +558,7 @@ public:
 		// ==========
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, originalFrameBuffer);
 		glActiveTexture(GL_TEXTURE0); 
-		glBindTexture(GL_TEXTURE_2D, renderBuffer.frameTexture);
+		glBindTexture(GL_TEXTURE_2D, renderBuffer.texture);
 		glUniform1i(glGetUniformLocation(program2D, "texture1"), 0); // Set the sampler uniform
 		
 		glBindVertexArray(fullSreenVao);
@@ -570,12 +568,18 @@ public:
 		// 2D overlay
 		// ==========
 		glActiveTexture(GL_TEXTURE0); 
-		glBindTexture(GL_TEXTURE_2D, renderBuffer.frameTexture);
+		glBindTexture(GL_TEXTURE_2D, depthFrameBuffer.texture);
 		glUniform1i(glGetUniformLocation(program2D, "texture1"), 0); // Set the sampler uniform
+
+
+		glUniform1f(glGetUniformLocation(program2D, "near"), 0.1f); 
+		glUniform1f(glGetUniformLocation(program2D, "far"), 512.0f); 
+		glUniform1i(glGetUniformLocation(program2D, "depthEnabled"), true);
 
 		glBindVertexArray(screen2dVao);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-
+		
+		glUniform1i(glGetUniformLocation(program2D, "depthEnabled"), false); 
     }
 
     virtual void clean(){

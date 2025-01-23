@@ -77,8 +77,8 @@ struct Camera {
 
 struct RenderBuffer {
     GLuint frameBuffer;
-    GLuint frameTexture;
     GLuint depthBuffer;
+    GLuint texture;
 };
 
 class LithosApplication {
@@ -114,8 +114,7 @@ public:
     std::string readFile(const std::string& filePath);
     GLuint compileShader(const std::string& shaderCode, GLenum shaderType);
     GLuint createShaderProgram(GLuint vertexShader, GLuint fragmentShader, GLuint tcs, GLuint tes);
-    GLuint createDepthTexture(int width, int height);
-    bool configureFrameBuffer(GLint fb, GLuint dt);
+    RenderBuffer createDepthFrameBuffer(int width, int height);
 
 };
 
