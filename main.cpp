@@ -315,7 +315,7 @@ public:
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-		depthFrameBuffer = createDepthFrameBuffer(4096, 4096);
+		depthFrameBuffer = createDepthFrameBuffer(2048, 2048);
 
         textures.push_back(new Texture(loadTextureImage("textures/grid.png")));
         textures.push_back(new Texture(loadTextureImage("textures/lava_color.jpg"),loadTextureImage("textures/lava_normal.jpg"),loadTextureImage("textures/lava_bump.jpg"), 0.1, 8, 32 ,256));
@@ -478,9 +478,9 @@ public:
 		glm::vec3 cameraDirection = glm::vec3(0.0f, 0.0f, -1.0f)*camera.quaternion;
 	
 
-		float far = 512.0f;
-		float dist = 8.0f;
-	   	glm::vec3 lookAtLightPosition = camera.position;// + cameraDirection*far*0.5f;
+		float far = 256.0f;
+		float dist = 32.0f;
+	   	glm::vec3 lookAtLightPosition = camera.position + cameraDirection*far*0.5f;
 
 
 		light.direction = glm::normalize(glm::vec3(glm::sin(time),-1.0,glm::cos(time)));
@@ -515,8 +515,6 @@ public:
 		
 		tree->iterate(renderer);
 
-
-
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, renderBuffer.frameBuffer);
 		glViewport(0, 0, getWidth(), getHeight());
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -525,7 +523,15 @@ public:
 		// 3D component
 		// ============
 		glUseProgram(program3D);
-		glm::mat4 ms =  mlp;
+	    float bias = 0.003;
+		glm::mat4 biasMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f,0.0f,-bias));
+
+
+		glm::mat4 ms =  glm::translate(glm::mat4(1.0f), glm::vec3(0.5)) 
+						* glm::scale(glm::mat4(1.0f), glm::vec3(0.5)) 
+						* biasMatrix
+						* mlp 
+					;
 
 		// Send matrices to the shader
 		glUniformMatrix4fv(modelViewProjectionLoc, 1, GL_FALSE, glm::value_ptr(mvp));

@@ -3,7 +3,7 @@
 uniform sampler2D textures[10];
 uniform sampler2D normalMaps[10];
 uniform sampler2D bumpMaps[10];
-uniform sampler2D shadowMap;
+uniform sampler2DShadow shadowMap;
 uniform vec3 lightDirection; 
 uniform uint debugEnabled;
 uniform uint lightEnabled;
@@ -142,11 +142,8 @@ void main() {
         vec3 reflection = reflect(-lightDirection, worldNormal);
         float phongSpec = pow(max(dot(reflection, viewDirection), 0.0), teProps.shininess);
         float diffuse = clamp(max(dot(worldNormal, -lightDirection), 0.0), 0.2, 1.0);
-        float bias = 0.001;
-        vec3 shadowPos = lightViewPosition.xyz / lightViewPosition.w; 
-        shadowPos = shadowPos*0.5 + 0.5;
 
-        float shadow = texture(shadowMap, shadowPos.xy).r < shadowPos.z - bias? 0.5 : 1.0;
+        float shadow = clamp( textureProj(shadowMap, lightViewPosition), 0.5, 1.0);
 
         color = vec4((mixedColor.rgb*diffuse + specularColor * specularStrength * phongSpec)*shadow , mixedColor.a); 
     }
