@@ -85,6 +85,8 @@ struct RenderBuffer {
     GLuint frameBuffer;
     GLuint depthBuffer;
     GLuint texture;
+    int width;
+    int height;
 };
 
 class LithosApplication {

@@ -80,7 +80,9 @@ void LithosApplication::mainLoop() {
 
 RenderBuffer createRenderFrameBuffer(int width, int height) {
     RenderBuffer buffer;
-
+    buffer.width = width;
+    buffer.height = height;
+    
     // Create framebuffer
     glGenFramebuffers(1, &buffer.frameBuffer);        
     glBindFramebuffer(GL_FRAMEBUFFER, buffer.frameBuffer);
@@ -139,7 +141,9 @@ void LithosApplication::close() {
 
 RenderBuffer LithosApplication::createDepthFrameBuffer(int width, int height) {
     RenderBuffer buffer;
-
+    buffer.width = width;
+    buffer.height = height;
+    
     // Create framebuffer
     glGenFramebuffers(1, &buffer.frameBuffer);        
     glBindFramebuffer(GL_FRAMEBUFFER, buffer.frameBuffer);

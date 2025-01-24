@@ -315,7 +315,7 @@ public:
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-		depthFrameBuffer = createDepthFrameBuffer(getWidth(), getHeight());
+		depthFrameBuffer = createDepthFrameBuffer(4096, 4096);
 
         textures.push_back(new Texture(loadTextureImage("textures/grid.png")));
         textures.push_back(new Texture(loadTextureImage("textures/lava_color.jpg"),loadTextureImage("textures/lava_normal.jpg"),loadTextureImage("textures/lava_bump.jpg"), 0.1, 8, 32 ,256));
@@ -504,7 +504,7 @@ public:
 		// Shadow component
 		// ================
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, depthFrameBuffer.frameBuffer);
-		glViewport(0, 0, getWidth(), getHeight());
+		glViewport(0, 0, depthFrameBuffer.width, depthFrameBuffer.height);
 		glEnable(GL_DEPTH_TEST);
 		glClear(GL_DEPTH_BUFFER_BIT);
 		glUseProgram(programShadow);
