@@ -142,11 +142,14 @@ void main() {
         vec3 reflection = reflect(-lightDirection, worldNormal);
         float phongSpec = pow(max(dot(reflection, viewDirection), 0.0), teProps.shininess);
         float diffuse = clamp(max(dot(worldNormal, -lightDirection), 0.0), 0.2, 1.0);
-        color = vec4(mixedColor.rgb*diffuse + specularColor * specularStrength * phongSpec, mixedColor.a); 
-    }
+        float bias = 0.001;
+        vec3 shadowPos = lightViewPosition.xyz / lightViewPosition.w; 
+        shadowPos = shadowPos*0.5 + 0.5;
 
-    vec3 l =lightViewPosition.xyz / lightViewPosition.w; 
-    color *= texture(shadowMap, l.xy).r < l.z ? 0 : 1;
+        float shadow = texture(shadowMap, shadowPos.xy).r < shadowPos.z - bias? 0.5 : 1.0;
+
+        color = vec4((mixedColor.rgb*diffuse + specularColor * specularStrength * phongSpec)*shadow , mixedColor.a); 
+    }
 
  }
 

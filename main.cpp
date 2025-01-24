@@ -215,15 +215,15 @@ class MainApplication : public LithosApplication {
 	
 	GLuint modelViewProjectionLoc;
 	GLuint modelViewProjectionShadowLoc;
+	GLuint matrixShadowLoc;
 
-
-	
 	GLuint lightDirectionLoc;
 	GLuint lightEnabledLoc;
 	GLuint debugEnabledLoc;
 	GLuint triplanarEnabledLoc;
 	GLuint parallaxEnabledLoc;
 	GLuint cameraPositionLoc;
+	GLuint shadowMapLoc;
 	GLuint timeLoc;
 	GLuint screen2dVao;
 	GLuint fullSreenVao;
@@ -267,6 +267,10 @@ public:
 		    glUniform1i(glGetUniformLocation(program3D, ("bumpMaps[" + std::to_string(i) + "]").c_str()), activeTexture++);
 
 		}
+		glActiveTexture(GL_TEXTURE0 + activeTexture); 
+		glBindTexture(GL_TEXTURE_2D, depthFrameBuffer.texture);
+		glUniform1i(shadowMapLoc, activeTexture++);
+
 	}
 
 	GLuint create2DVAO(float w, float h) {
@@ -361,6 +365,7 @@ public:
 		modelViewProjectionShadowLoc = glGetUniformLocation(programShadow, "modelViewProjection");
 	
 		modelViewProjectionLoc = glGetUniformLocation(program3D, "modelViewProjection");
+		matrixShadowLoc = glGetUniformLocation(program3D, "matrixShadow");
 		lightDirectionLoc = glGetUniformLocation(program3D, "lightDirection");
 		lightEnabledLoc = glGetUniformLocation(program3D, "lightEnabled");
 		debugEnabledLoc = glGetUniformLocation(program3D, "debugEnabled");
@@ -368,9 +373,10 @@ public:
 		parallaxEnabledLoc = glGetUniformLocation(program3D, "parallaxEnabled");
 		cameraPositionLoc = glGetUniformLocation(program3D, "cameraPosition");
 		timeLoc = glGetUniformLocation(program3D, "time");
-
+		shadowMapLoc = glGetUniformLocation(program3D, "shadowMap");
+		
 		bindTextures(textures);
-
+		
 		
 
 
@@ -473,7 +479,7 @@ public:
 	
 
 		float far = 512.0f;
-		float dist = 128.0f;
+		float dist = 8.0f;
 	   	glm::vec3 lookAtLightPosition = camera.position;// + cameraDirection*far*0.5f;
 
 
@@ -492,7 +498,7 @@ public:
 		glm::mat4 translate = glm::translate(glm::mat4(1.0f), -camera.position);
 	    camera.view = rotate * translate;
 		glm::mat4 mvp = camera.projection * camera.view;
-		glm::mat4 lvp = light.projection * light.view;
+		glm::mat4 mlp = light.projection * light.view;
 
 		// ================
 		// Shadow component
@@ -502,10 +508,10 @@ public:
 		glEnable(GL_DEPTH_TEST);
 		glClear(GL_DEPTH_BUFFER_BIT);
 		glUseProgram(programShadow);
-		glUniformMatrix4fv(modelViewProjectionShadowLoc, 1, GL_FALSE, glm::value_ptr(lvp));
+		glUniformMatrix4fv(modelViewProjectionShadowLoc, 1, GL_FALSE, glm::value_ptr(mlp));
 
 		renderer->mode = GL_TRIANGLES;
-		renderer->update(lvp);
+		renderer->update(mlp);
 		
 		tree->iterate(renderer);
 
@@ -519,9 +525,11 @@ public:
 		// 3D component
 		// ============
 		glUseProgram(program3D);
-	
+		glm::mat4 ms =  mlp;
+
 		// Send matrices to the shader
 		glUniformMatrix4fv(modelViewProjectionLoc, 1, GL_FALSE, glm::value_ptr(mvp));
+		glUniformMatrix4fv(matrixShadowLoc, 1, GL_FALSE, glm::value_ptr(ms  ));
 		glUniform3fv(lightDirectionLoc, 1, glm::value_ptr(light.direction));
 		glUniform3fv(cameraPositionLoc, 1, glm::value_ptr(camera.position));
 		glUniform1f(timeLoc, time);
@@ -529,6 +537,7 @@ public:
 		glUniform1ui(triplanarEnabledLoc, 1);
 		glUniform1ui(parallaxEnabledLoc, 1);
 		glUniform1ui(debugEnabledLoc, 0);
+		
 		glPatchParameteri(GL_PATCH_VERTICES, 3); // Define the number of control points per patch
 
 		glEnable(GL_CULL_FACE); // Enable face culling
