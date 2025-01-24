@@ -1,9 +1,12 @@
 #version 460 core
+#define PI 3.1415926535897932384626433832795
 
 uniform sampler2D textures[10];
 uniform sampler2D normalMaps[10];
 uniform sampler2D bumpMaps[10];
-uniform sampler2DShadow shadowMap;
+
+uniform sampler2D shadowMap;
+uniform sampler2D noise;
 uniform vec3 lightDirection; 
 uniform uint debugEnabled;
 uniform uint lightEnabled;
@@ -143,9 +146,47 @@ void main() {
         float phongSpec = pow(max(dot(reflection, viewDirection), 0.0), teProps.shininess);
         float diffuse = clamp(max(dot(worldNormal, -lightDirection), 0.0), 0.2, 1.0);
 
-        float shadow = clamp( textureProj(shadowMap, lightViewPosition), 0.5, 1.0);
+        vec3 shadowPosition = lightViewPosition.xyz / lightViewPosition.w; 
+        float bias = 0.001;
+        float shadow = texture(shadowMap, shadowPosition.xy).r;
+        float blurRadius = 100.0;
+        float texelSize = 1.0/4098.0;
 
-        color = vec4((mixedColor.rgb*diffuse + specularColor * specularStrength * phongSpec)*shadow , mixedColor.a); 
+        vec2 noiseCoords = (tePosition.xy+ tePosition.z)* PI;
+        float sumShadow = 0.0;
+        int maxSamples = 0;
+
+       /* for(int samples=0; samples < maxSamples ; ++samples) {
+            vec4 noiseSample = texture(noise, noiseCoords);
+            float sAngle = noiseSample.r * 2.0 * PI;
+            float sRadius = noiseSample.g * blurRadius* texelSize;
+            float sX = sRadius * cos(sAngle);
+            float sY = sRadius * sin(sAngle);
+            float shadowValue = texture(shadowMap, shadowPosition.xy+vec2(sX,sY)).r < shadowPosition.z-bias ? 0.0 : 1.0;
+            sumShadow += shadowValue;
+            noiseCoords += noiseSample.xy;
+        }*/
+        
+        int blurSize= 5;
+        for(int i=-blurSize; i <= blurSize; ++i) {
+            for(int j=-blurSize; j <= blurSize; ++j) {
+                vec2 shadowUV = shadowPosition.xy+vec2(i,j)*texelSize;
+
+                float shadowValue = texture(shadowMap, shadowUV).r;
+
+                if(shadowValue >= shadow) {
+                    sumShadow += shadowValue < shadowPosition.z-bias ? 0.0 : 1.0;
+                    ++maxSamples;
+                }
+
+            }
+        }
+        float shadowAlpha = 0.6;
+        float finalShadow = sumShadow/maxSamples;
+
+        finalShadow = (1.0 - shadowAlpha) + finalShadow*shadowAlpha;
+
+        color = vec4((mixedColor.rgb*diffuse + specularColor * specularStrength * phongSpec)*finalShadow , mixedColor.a); 
     }
 
  }

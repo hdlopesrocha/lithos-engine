@@ -12,6 +12,7 @@ Current features:
 * GPU Tesselation with LOD
 * Triplanar Mapping
 * Parallax Occlusion Mapping 
+* Shadow Mapping
 
 ## Screenshot
 ![Alt text](screenshot.png?raw=true "Screenshot")

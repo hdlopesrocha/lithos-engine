@@ -224,7 +224,10 @@ class MainApplication : public LithosApplication {
 	GLuint parallaxEnabledLoc;
 	GLuint cameraPositionLoc;
 	GLuint shadowMapLoc;
+	GLuint noiseLoc;
 	GLuint timeLoc;
+
+	GLuint noiseTexture;
 	GLuint screen2dVao;
 	GLuint fullSreenVao;
 	RenderBuffer depthFrameBuffer;
@@ -271,6 +274,9 @@ public:
 		glBindTexture(GL_TEXTURE_2D, depthFrameBuffer.texture);
 		glUniform1i(shadowMapLoc, activeTexture++);
 
+		glActiveTexture(GL_TEXTURE0 + activeTexture); 
+		glBindTexture(GL_TEXTURE_2D, noiseTexture);
+		glUniform1i(noiseLoc, activeTexture++);
 	}
 
 	GLuint create2DVAO(float w, float h) {
@@ -315,7 +321,7 @@ public:
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-		depthFrameBuffer = createDepthFrameBuffer(2048, 2048);
+		depthFrameBuffer = createDepthFrameBuffer(4098, 4098);
 
         textures.push_back(new Texture(loadTextureImage("textures/grid.png")));
         textures.push_back(new Texture(loadTextureImage("textures/lava_color.jpg"),loadTextureImage("textures/lava_normal.jpg"),loadTextureImage("textures/lava_bump.jpg"), 0.1, 8, 32 ,256));
@@ -326,6 +332,7 @@ public:
         textures.push_back(new Texture(loadTextureImage("textures/metal_color.png"),loadTextureImage("textures/metal_normal.png"),loadTextureImage("textures/metal_bump.png"), 0.1, 8, 64, 32 ));
         textures.push_back(new Texture(loadTextureImage("textures/dirt_color.png"),loadTextureImage("textures/dirt_normal.png"),loadTextureImage("textures/dirt_bump.png"), 0.1, 8, 32 , 256));
         textures.push_back(new Texture(loadTextureImage("textures/bricks_color.png"),loadTextureImage("textures/bricks_normal.png"),loadTextureImage("textures/bricks_bump.png"), 0.01, 8, 32, 256 ));
+		noiseTexture = loadTextureImage("textures/noise.png");
 
 		std::string vertCodeShadow = readFile("shaders/shadow_vertex.glsl");
 		std::string fragCodeShadow = readFile("shaders/shadow_fragment.glsl");
@@ -374,6 +381,7 @@ public:
 		cameraPositionLoc = glGetUniformLocation(program3D, "cameraPosition");
 		timeLoc = glGetUniformLocation(program3D, "time");
 		shadowMapLoc = glGetUniformLocation(program3D, "shadowMap");
+		noiseLoc = glGetUniformLocation(program3D, "noise");
 		
 		bindTextures(textures);
 		
@@ -480,10 +488,10 @@ public:
 
 		float far = 256.0f;
 		float dist = 32.0f;
-	   	glm::vec3 lookAtLightPosition = camera.position + cameraDirection*far*0.5f;
+	   	glm::vec3 lookAtLightPosition = glm::round(camera.position/16.0f)*16.0f; // + cameraDirection*far*0.5f;
 
 
-		light.direction = glm::normalize(glm::vec3(glm::sin(time),-1.0,glm::cos(time)));
+		//light.direction = glm::normalize(glm::vec3(glm::sin(time),-1.0,glm::cos(time)));
 
 		float orthoSize = 256.0f;  // Size of the orthographic box
 
@@ -529,9 +537,7 @@ public:
 
 		glm::mat4 ms =  glm::translate(glm::mat4(1.0f), glm::vec3(0.5)) 
 						* glm::scale(glm::mat4(1.0f), glm::vec3(0.5)) 
-						* biasMatrix
-						* mlp 
-					;
+						* mlp 					;
 
 		// Send matrices to the shader
 		glUniformMatrix4fv(modelViewProjectionLoc, 1, GL_FALSE, glm::value_ptr(mvp));
