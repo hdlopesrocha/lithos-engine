@@ -395,7 +395,7 @@ public:
 
 		tree = new Octree(2.0, 4);
 
-		HeightMap map(glm::vec3(-64,-64,-64),glm::vec3(64,-16,64), 128, 128);
+		HeightMap map(glm::vec3(-64,-64,-64),glm::vec3(64,-16,64), 128, 128, tree->minSize);
 		tree->add(new HeightMapContainmentHandler(&map, textures[2], textures[7]));
 
 		BoundingSphere sph(glm::vec3(0,0,0),20);
@@ -493,7 +493,7 @@ public:
 	   	glm::vec3 lookAtLightPosition = glm::round(camera.position/16.0f)*16.0f; // + cameraDirection*far*0.5f;
 
 
-		//light.direction = glm::normalize(glm::vec3(glm::sin(time),-1.0,glm::cos(time)));
+		light.direction = glm::normalize(glm::vec3(glm::sin(time),-1.0,glm::cos(time)));
 
 		float orthoSize = 256.0f;  // Size of the orthographic box
 

@@ -164,18 +164,16 @@ class HeightMap: public BoundingBox  {
 	private: 
 		int height;
 		int width;
-		std::vector<std::vector<float>> data; 
+		float step;
 
 	public: 
 		HeightMap();
-		HeightMap(glm::vec3 min, glm::vec3 max, int width, int height);
+		HeightMap(glm::vec3 min, glm::vec3 max, int width, int height, float step);
 		
 		float getHeightAt(float x, float z);
    		glm::vec3 getNormalAt(float x, float z);
 		glm::vec3 getPoint(BoundingCube cube);
 
-
-		float getData(int x, int z);
 		glm::ivec2 getIndexes(float x, float z);
 		glm::vec2 getHeightRangeBetween(BoundingCube cube);
 		bool hitsBoundary(BoundingCube cube);

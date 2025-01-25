@@ -1,76 +1,50 @@
 #include "math.hpp"
 
 
-HeightMap::HeightMap(glm::vec3 min, glm::vec3 max, int width, int height) : BoundingBox(min, max){
+HeightMap::HeightMap(glm::vec3 min, glm::vec3 max, int width, int height, float step) : BoundingBox(min, max){
     this->width = width;
     this->height = height;
-    this->data = std::vector<std::vector<float>>(width, std::vector<float>(height)); 
-    for(int x=0 ; x < width ; ++x){
-        for(int z=0 ; z < height ; ++z){
-            float h = Math::clamp((float ) ((sin((10.0*x)/width)*cos((10.0*z)/height)+1.0)/(2.0)), 0.0f, 1.0f);
-            this->data[x][z] = h*0.6 + 0.2;
-        }           
-    }
-
+    this->step = step;
 }
+
+
 
 HeightMap::HeightMap() : BoundingBox(){
     this->width = 0;
     this->height = 0;
 }
 
-float HeightMap::getData(int x, int z) {
-    return this->data[Math::clamp(x, 0, this->width-1)][Math::clamp(z, 0, this->height-1)];
-}
-
-glm::ivec2 HeightMap::getIndexes(float x, float z) {
+float HeightMap::getHeightAt(float x, float z) {
     glm::vec3 len = getLength();
-    float px =(x-getMinX())/len.x;
-    float pz =(z-getMinZ())/len.z;
-    int ix = Math::clamp((int)floor(px * this->width), 0, width-1);
-    int iz = Math::clamp((int)floor(pz * this->height), 0, height-1);
-    return glm::ivec2(ix, iz);
+    float y =Math::clamp((float ) ((sin((10.0*x)/width)*cos((10.0*z)/height)+1.0)/(2.0)), 0.0f, 1.0f)*0.6+0.2;
+    return getMinY() + y * len.y;
 }
 
 glm::vec2 HeightMap::getHeightRangeBetween(BoundingCube cube) {
-    glm::ivec2 minIdx = getIndexes(cube.getMin().x, cube.getMin().z);
-    glm::ivec2 maxIdx = getIndexes(cube.getMax().x, cube.getMax().z);
-    glm::vec2 range = glm::vec2(getData(minIdx[0], minIdx[1]));
+    glm::vec2 range = glm::vec2(getHeightAt(cube.getCenter().x,cube.getCenter().z));
 
-    for(int x = minIdx[0] ; x <= maxIdx[0]; ++x) {
-        for(int z = minIdx[1] ; z <= maxIdx[1]; ++z) {
-            float h = getData(x,z);
+    for(float x = cube.getMinX() ; x <= cube.getMaxX(); x+=step) {
+        for(float z = cube.getMinZ() ; z <= cube.getMaxZ(); z+=step) {
+            float h = getHeightAt(x,z);
             range[0] = h < range[0] ? h : range[0];
             range[1] = h > range[1] ? h : range[1];
         }        
     }
-
-    glm::vec3 len = getLength();
-    range[0] = getMinY() + range[0] * len[1];
-    range[1] = getMinY() + range[1] * len[1]; 
 
     return range;
 }
 
 glm::vec3 HeightMap::getNormalAt(float x, float z) {
     // bilinear interpolation
-    glm::vec3 len = getLength();
 
-    float px = Math::clamp((x-getMinX())/len.x, 0.0, 1.0);
-    float pz = Math::clamp((z-getMinZ())/len.z, 0.0, 1.0);
-    int ix = floor(px * this->width);
-    int iz = floor(pz * this->height);
 
-    float qx = (px * this->width) - ix;
-    float qz = (pz * this->height) - iz;
-
-    float q11 = getData(ix, iz)* len.y;
-    float q21 = getData(ix+1, iz)* len.y;
-    float q12 = getData(ix, iz+1)* len.y;
+    float q11 = getHeightAt(x, z);
+    float q21 = getHeightAt(x+step, z);
+    float q12 = getHeightAt(x, z+step);
 
     glm::vec3 v11 = glm::vec3(0, q11, 0);
-    glm::vec3 v21 = glm::vec3(len.x/width, q21, 0);
-    glm::vec3 v12 = glm::vec3(0, q12, len.z/height);
+    glm::vec3 v21 = glm::vec3(step, q21, 0);
+    glm::vec3 v12 = glm::vec3(0, q12, step);
 
     glm::vec3 n21 = glm::normalize(v21 -v11 );
     glm::vec3 n12 = glm::normalize(v12 -v11 );
@@ -78,30 +52,6 @@ glm::vec3 HeightMap::getNormalAt(float x, float z) {
     return glm::cross(n12,n21);
 }
 
-float HeightMap::getHeightAt(float x, float z) {
-    // bilinear interpolation
-    glm::vec3 len = getLength();
-
-    float px = Math::clamp((x-getMinX())/len.x, 0.0, 1.0);
-    float pz = Math::clamp((z-getMinZ())/len.z, 0.0, 1.0);
-    int ix = floor(px * this->width);
-    int iz = floor(pz * this->height);
-
-    float qx = (px * this->width) - ix;
-    float qz = (pz * this->height) - iz;
-
-    float q11 = getData(ix, iz);
-    float q21 = getData(ix+1, iz);
-    float q12 = getData(ix, iz+1);
-    float q22 = getData(ix+1, iz+1);
-
-    float y1 = (1.0 - qx)*q11 + (qx)*q21;
-    float y2 = (1.0 - qx)*q12 + (qx)*q22;
-
-    float y = (1.0 - qz)*y1 + (qz)*y2;
-
-    return getMinY() + y * len.y;
-}
 
 glm::vec3 getShift(int i) {
 	return glm::vec3( ((i >> 0) % 2) , ((i >> 2) % 2) , ((i >> 1) % 2));
