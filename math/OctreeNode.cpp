@@ -15,7 +15,6 @@ void OctreeNode::setChild(int i, OctreeNode * node) {
 }
 
 OctreeNode::~OctreeNode() {
-	this->mask = 0x0;
 	this->clear();
 }
 
@@ -29,5 +28,14 @@ void OctreeNode::clear(){
 	}
 }
 
+bool OctreeNode::isEmpty(){
+	for(int i=0; i < 8 ; ++i){
+		OctreeNode * child = children[i];
+		if(child != NULL) {
+			return false;
+		}
+	}
+	return true;
+}
 
 

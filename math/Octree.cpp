@@ -32,9 +32,6 @@ OctreeNode * Octree::getNodeAt(glm::vec3 pos, int level) {
 	  	if(i == -1) {
 	  		return NULL;
 	  	}
-	    /*if(node->children[i] == NULL){
-	    	break;
-	    }*/
 	    
 	    cube = getChildCube(cube, i);
 		OctreeNode * candidate = node->children[i];
@@ -46,15 +43,6 @@ OctreeNode * Octree::getNodeAt(glm::vec3 pos, int level) {
 	}
 
 	return level == 0 ? node : NULL;
-}
-
-bool isEmpty(OctreeNode * node){
-	for(int i=0; i < 8 ; ++i){
-		if(node->children[i] != NULL) {
-			return false;
-		}
-	}
-	return true;
 }
 
 void Octree::expand(ContainmentHandler * handler) {
@@ -71,7 +59,7 @@ void Octree::expand(ContainmentHandler * handler) {
 	    setLength(getLength()*2);
 
 	    OctreeNode * newNode = new OctreeNode(getCenter());
-	    if(isEmpty(root)) {
+	    if(root->isEmpty()) {
 	    	delete root;
 	    }
 	    else {
@@ -88,25 +76,28 @@ int Octree::getHeight(BoundingCube cube){
 
 void simplify(OctreeNode * node) {
 	bool init = false;
-	bool canSimplify = true;
+	bool canSimplify = false;
 	uint mask = 0x0;
 	Vertex vertex;
 	
 	for(int i=0; i <8 ; ++i) {
 		OctreeNode * c = node->children[i];
-		if(c!=NULL && c->mask != 0xff) {
+		if(c!=NULL && c->mask != 0xff && c->mask != 0x00) {
 			if(!init) {
 				mask = c->mask;
 				vertex = c->vertex;
 				init = true;
+				canSimplify = true;
 			}else if(mask != c->mask || vertex.normal != c->vertex.normal || vertex.texIndex != c->vertex.texIndex){
 				canSimplify = false;
+				break;
 			}
 		}
 	}
-	if(canSimplify && init) {
-		node->vertex = vertex;
+	if(canSimplify) {
 		node->clear();
+		node->vertex = vertex;
+		node->mask = mask;
 	}
 
 }
@@ -215,10 +206,13 @@ void Octree::del(ContainmentHandler * handler) {
 
 void iterateAux(IteratorHandler * handler, int level, OctreeNode * node, BoundingCube cube, void * context) {
 	if(node != NULL) {
-		if(handler->test(level,node, cube, context)) {
+		if(handler->test(level, node, cube, context)) {
 			context = handler->before(level,node, cube, context);
 			for(int i=0; i <8 ; ++i) {
-				iterateAux(handler, level+1,node->children[i], getChildCube(cube,i), context);
+				OctreeNode * child = handler->getChild(node, i);
+				if(child != NULL) {
+					iterateAux(handler, level+1, child, getChildCube(cube,i), context);
+				}
 			}
 			handler->after(level,node, cube, context);
 		}

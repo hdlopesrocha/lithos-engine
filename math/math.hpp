@@ -205,6 +205,7 @@ class OctreeNode {
 		OctreeNode(Vertex vertex);
 		~OctreeNode();
 		void clear();
+		bool isEmpty();
 		void setChild(int i, OctreeNode * node);
 };
 
@@ -213,6 +214,7 @@ class IteratorHandler {
 		virtual bool test(int level, OctreeNode * node, BoundingCube cube, void * context) = 0;
 		virtual void * before(int level, OctreeNode * node, BoundingCube cube, void * context) = 0;
 		virtual void after(int level, OctreeNode * node, BoundingCube cube, void * context) = 0;
+		virtual OctreeNode * getChild(OctreeNode * node, int index) =0;
 };
 
 
@@ -241,7 +243,7 @@ class Tesselator : public IteratorHandler{
 		void * before(int level, OctreeNode * node, BoundingCube cube, void * context);
 		void after(int level, OctreeNode * node, BoundingCube cube, void * context);
 		bool test(int level, OctreeNode * node, BoundingCube cube, void * context);
-
+		OctreeNode * getChild(OctreeNode * node, int index);
 };
 
 class Geometry

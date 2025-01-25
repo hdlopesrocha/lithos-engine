@@ -572,10 +572,10 @@ public:
 		glLineWidth(2.0);
 		glPointSize(4.0);
 		tree->iterate(renderer);
-		//vaoDebug->draw(false);
-		//glDrawElements(GL_PATCHES, vaoDebug->indices, GL_UNSIGNED_INT, 0);
+		//vaoDebug->draw(GL_PATCHES);
+		//glPolygonMode(GL_FRONT, GL_FILL);
 		#endif
-		//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 		// ============
 		// 2D component
@@ -613,6 +613,9 @@ public:
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
 		glUniform1i(glGetUniformLocation(program2D, "depthEnabled"), false); 
+
+		glActiveTexture(GL_TEXTURE0); 
+		glBindTexture(GL_TEXTURE_2D, textures[0]->texture);
     }
 
     virtual void clean(){

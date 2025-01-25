@@ -12,6 +12,11 @@ void OctreeRenderer::update(glm::mat4 m) {
 	frustum = Frustum(m);
 }
 
+
+OctreeNode * OctreeRenderer::getChild(OctreeNode * node, int index){
+	return node->children[index];
+}
+
 void * OctreeRenderer::before(int level, OctreeNode * node, BoundingCube cube, void * context) {			
 	if(node->info != NULL){
 		// just geometry not drawable

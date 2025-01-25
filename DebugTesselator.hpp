@@ -44,8 +44,25 @@ class DebugTesselator : public IteratorHandler{
 			}
 		}
 
-		void * before(int level, OctreeNode * node, BoundingCube cube, void * context) {			
-			if((node->mask > 0x00 && node->mask < 0xff &&  tree->getHeight(cube) == 0)){
+		OctreeNode * getChild(OctreeNode * node, int index){
+			return node->children[index];
+		}
+
+		void * before(int level, OctreeNode * node, BoundingCube cube, void * context) {	
+			bool canDraw = false;
+			if(node!=NULL) {
+				canDraw = true;
+				for(int i=0; i < 8; ++i) {
+					if(node->children[i] != NULL) {
+						canDraw = false;
+						break;
+					}
+				}
+
+			}
+
+
+			if(( canDraw)){
 
 				std::vector<glm::vec3> corners;
 				// Get corners
