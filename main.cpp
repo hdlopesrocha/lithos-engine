@@ -395,7 +395,7 @@ public:
 
 		tree = new Octree(2.0, 4);
 
-		HeightMap map(glm::vec3(-64,-64,-64),glm::vec3(64,-16,64), 128, 128, tree->minSize);
+		HeightMap map(glm::vec3(-64,-64,-64),glm::vec3(64,-16,64), tree->minSize);
 		tree->add(new HeightMapContainmentHandler(&map, textures[2], textures[7]));
 
 		BoundingSphere sph(glm::vec3(0,0,0),20);

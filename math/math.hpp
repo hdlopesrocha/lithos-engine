@@ -162,13 +162,11 @@ class BoundingBox {
 
 class HeightMap: public BoundingBox  {
 	private: 
-		int height;
-		int width;
 		float step;
 
 	public: 
 		HeightMap();
-		HeightMap(glm::vec3 min, glm::vec3 max, int width, int height, float step);
+		HeightMap(glm::vec3 min, glm::vec3 max, float step);
 		
 		float getHeightAt(float x, float z);
    		glm::vec3 getNormalAt(float x, float z);

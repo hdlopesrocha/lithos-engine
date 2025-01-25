@@ -1,17 +1,15 @@
 #include "math.hpp"
 
 
-HeightMap::HeightMap(glm::vec3 min, glm::vec3 max, int width, int height, float step) : BoundingBox(min, max){
-    this->width = width;
-    this->height = height;
+HeightMap::HeightMap(glm::vec3 min, glm::vec3 max, float step) : BoundingBox(min, max){
+
     this->step = step;
 }
 
 
 
 HeightMap::HeightMap() : BoundingBox(){
-    this->width = 0;
-    this->height = 0;
+
 }
 
 float HeightMap::getHeightAt(float x, float z) {
