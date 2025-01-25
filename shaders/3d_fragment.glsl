@@ -147,7 +147,7 @@ void main() {
         float diffuse = clamp(max(dot(worldNormal, -lightDirection), 0.0), 0.2, 1.0);
 
         vec3 shadowPosition = lightViewPosition.xyz / lightViewPosition.w; 
-        float bias = 0.001;
+        float bias = 0.002;
         float shadow = texture(shadowMap, shadowPosition.xy).r < shadowPosition.z-bias ? 0.0 : 1.0;;
         float texelSize = 1.0/4098.0;
 
@@ -184,11 +184,11 @@ void main() {
 
 
         float shadowAlpha = 0.6;
-        float finalShadow = sumShadow/totalSamples;
+        float lightPercentage = sumShadow/totalSamples;
 
-        finalShadow = (1.0 - shadowAlpha) + finalShadow*shadowAlpha;
+        float finalShadow = (1.0 - shadowAlpha) + lightPercentage*shadowAlpha;
 
-        color = vec4((mixedColor.rgb*diffuse + specularColor * specularStrength * phongSpec)*finalShadow , mixedColor.a); 
+        color = vec4((mixedColor.rgb*diffuse + specularColor * specularStrength * phongSpec * lightPercentage)*finalShadow , mixedColor.a); 
     }
 
  }
