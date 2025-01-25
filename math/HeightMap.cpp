@@ -16,8 +16,11 @@ HeightMap::HeightMap() : BoundingBox(){
 
 float HeightMap::getHeightAt(float x, float z) {
     glm::vec3 len = getLength();
-    float y =Math::clamp((float ) ((sin((10.0*x)/width)*cos((10.0*z)/height)+1.0)/(2.0)), 0.0f, 1.0f)*0.6+0.2;
-    return getMinY() + y * len.y;
+    float amplitude = 10;
+    float offset = -36;
+    float frequency = 1.0/10.0;
+
+    return offset + amplitude * sin(frequency*x)*cos(frequency*z);
 }
 
 glm::vec2 HeightMap::getHeightRangeBetween(BoundingCube cube) {
