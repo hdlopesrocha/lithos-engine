@@ -200,6 +200,7 @@ class OctreeNode {
 		Vertex vertex;
 		uint mask;
 		OctreeNode *children[8];
+		bool simplified;
 		void * info;
 		int infoType;
 		OctreeNode(Vertex vertex);

@@ -57,7 +57,7 @@ void addQuad(glm::ivec4 quad, std::vector<OctreeNode*> corners, Geometry * chunk
 
 OctreeNode * Tesselator::getChild(OctreeNode * node, int index){
 	OctreeNode * child = node->children[index];
-	return child != NULL ? child : child;
+	return child != NULL ? child : NULL;
 }
 
 void * Tesselator::before(int level, OctreeNode * node, BoundingCube cube, void * context) {		
@@ -68,8 +68,8 @@ void * Tesselator::before(int level, OctreeNode * node, BoundingCube cube, void 
 		Geometry * chunk = (Geometry*) context;
 		std::vector<OctreeNode*> corners;
 		// Get corners
-		corners.push_back(node);
-		for(int i=1; i < 8; ++i) {
+		//corners.push_back(node);
+		for(int i=0; i < 8; ++i) {
 			glm::vec3 pos = cube.getCenter() - cube.getLength() * Octree::getShift(i);
 			OctreeNode * n = tree->getNodeAt(pos,level);
 			corners.push_back(n);
@@ -89,7 +89,7 @@ void * Tesselator::before(int level, OctreeNode * node, BoundingCube cube, void 
 				bool canDraw = true;
 				for(int j=0; j<4 ; ++j) {
 					OctreeNode * n = corners[quad[j]];
-					if(n == NULL || (n == node && quad[j] != 0) || n->mask == 0x0 || n->mask == 0xff) {
+					if(n == NULL || n->mask == 0x0 || n->mask == 0xff) {
 						canDraw = false;
 					}
 				}
@@ -112,6 +112,6 @@ void Tesselator::after(int level, OctreeNode * node, BoundingCube cube, void * c
 }
 
 bool Tesselator::test(int level, OctreeNode * node, BoundingCube cube, void * context) {			
-	return tree->getHeight(cube) >= 0;
+	return node->mask!=0xff && tree->getHeight(cube) >= 0;
 }
 

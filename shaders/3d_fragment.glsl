@@ -126,7 +126,7 @@ void main() {
   
     vec4 mixedColor = textureBlend(teTextureWeights, textures, uv);
     if(mixedColor.a == 0.0) {
-       // discard;
+        discard;
     }
 
     if(debugEnabled == 1) {

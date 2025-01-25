@@ -423,9 +423,11 @@ public:
 		//tesselator->normalize();
 
 		#ifdef DEBUG_GEO
-		DebugTesselator * debugTesselator = new DebugTesselator(tree);
-		tree->iterate(debugTesselator);
-		vaoDebug = new DrawableGeometry(&debugTesselator->chunk);
+		if(DEBUG_GEO == 0) {
+			DebugTesselator * debugTesselator = new DebugTesselator(tree);
+			tree->iterate(debugTesselator);
+			vaoDebug = new DrawableGeometry(&debugTesselator->chunk);
+		}
 		#endif
 
 		glClearColor (0.1,0.1,0.1,1.0);
@@ -563,19 +565,25 @@ public:
 		tree->iterate(renderer);
 
 		#ifdef DEBUG_GEO
-		glUniform1ui(debugEnabledLoc, 1);
+	
 		glUniform1ui(lightEnabledLoc, 0);
 		glUniform1ui(parallaxEnabledLoc, 0);
     	glUniform1ui(triplanarEnabledLoc, 0);
-		glDisable(GL_CULL_FACE); // Enable face culling
-		glPolygonMode(GL_FRONT, GL_LINE);
-		glLineWidth(2.0);
-		glPointSize(4.0);
-		tree->iterate(renderer);
-		//vaoDebug->draw(GL_PATCHES);
-		//glPolygonMode(GL_FRONT, GL_FILL);
+	
+		if(DEBUG_GEO == 1) {
+			glUniform1ui(debugEnabledLoc, 1);
+			glPolygonMode(GL_FRONT, GL_LINE);
+			glLineWidth(2.0);
+			glPointSize(4.0);	
+			tree->iterate(renderer);
+		} else {
+			glDisable(GL_CULL_FACE); // Enable face culling
+			vaoDebug->draw(GL_PATCHES);
+		}
+		
+		
+		glPolygonMode(GL_FRONT, GL_FILL);
 		#endif
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 		// ============
 		// 2D component
