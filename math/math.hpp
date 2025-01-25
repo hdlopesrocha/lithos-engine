@@ -235,6 +235,7 @@ class Octree: public BoundingCube {
 class Tesselator : public IteratorHandler{
 	public:
 		Octree * tree;
+		long triangles = 0;
 
 		Tesselator(Octree * tree);
 		void * before(int level, OctreeNode * node, BoundingCube cube, void * context);

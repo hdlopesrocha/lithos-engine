@@ -432,6 +432,10 @@ public:
 
 		glClearColor (0.1,0.1,0.1,1.0);
         light.direction = glm::normalize(glm::vec3(-1.0,-1.0,-1.0));
+	 
+	 	std::cout << "Setup complete!" << std::endl;
+		std::cout << "#triangles = " << tesselator->triangles << std::endl;
+		
 	 }
 
     virtual void update(float deltaTime){

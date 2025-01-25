@@ -1,5 +1,6 @@
 #include <bitset>
 #include "math.hpp"
+#include <bits/stdc++.h>
 
 //      6-----7
 //     /|    /|
@@ -14,7 +15,6 @@ static std::vector<glm::vec2> tessTex;
 static std::vector<glm::ivec4> texIndex;
 
 static bool initialized = false;
-
 
 Tesselator::Tesselator(Octree * tree) {
 	this->tree = tree;
@@ -33,11 +33,17 @@ Tesselator::Tesselator(Octree * tree) {
 	}
 }
 
-void addQuad(glm::ivec4 quad, std::vector<OctreeNode*> corners, Geometry * chunk, bool reverse) {
-	Vertex v0 = corners[quad[reverse ? 3:0]]->vertex;
-	Vertex v1 = corners[quad[reverse ? 2:1]]->vertex;
-	Vertex v2 = corners[quad[reverse ? 1:2]]->vertex;
-	Vertex v3 = corners[quad[reverse ? 0:3]]->vertex;
+int addQuad(glm::ivec4 quad, std::vector<OctreeNode*> corners, Geometry * chunk, bool reverse) {
+	OctreeNode* c0 = corners[quad[reverse ? 3:0]];
+	OctreeNode* c1 = corners[quad[reverse ? 2:1]];
+	OctreeNode* c2 = corners[quad[reverse ? 1:2]];
+	OctreeNode* c3 = corners[quad[reverse ? 0:3]];
+
+
+	Vertex v0 = c0->vertex;
+	Vertex v1 = c1->vertex;
+	Vertex v2 = c2->vertex;
+	Vertex v3 = c3->vertex;
 
 	float scale = 0.1;
 	int plane = Math::triplanarPlane(v0.position, v0.normal);
@@ -46,13 +52,22 @@ void addQuad(glm::ivec4 quad, std::vector<OctreeNode*> corners, Geometry * chunk
 	v2.texCoord = Math::triplanarMapping(v2.position, plane)*scale;
 	v3.texCoord = Math::triplanarMapping(v3.position, plane)*scale;	
 
-	chunk->addVertex(v0, true);
-	chunk->addVertex(v2, true);
-	chunk->addVertex(v1, true);
+	int count = 0;
 
-	chunk->addVertex(v0, true);
-	chunk->addVertex(v3, true);
-	chunk->addVertex(v2, true);
+	if(c0!= c1 && c1 != c2){
+		chunk->addVertex(v0, true);
+		chunk->addVertex(v2, true);
+		chunk->addVertex(v1, true);
+		++count;
+	}
+
+	if(c0!= c3 && c3 != c2){
+		chunk->addVertex(v0, true);
+		chunk->addVertex(v3, true);
+		chunk->addVertex(v2, true);
+		++count;
+	}
+	return count;
 }
 
 OctreeNode * Tesselator::getChild(OctreeNode * node, int index){
@@ -87,14 +102,18 @@ void * Tesselator::before(int level, OctreeNode * node, BoundingCube cube, void 
 
 			if(sign0 != sign1) {
 				bool canDraw = true;
+	
 				for(int j=0; j<4 ; ++j) {
 					OctreeNode * n = corners[quad[j]];
 					if(n == NULL || n->mask == 0x0 || n->mask == 0xff) {
 						canDraw = false;
+						break;
 					}
 				}
+
+
 				if(canDraw) {
-					addQuad(quad, corners, chunk,  sign1);
+					triangles += addQuad(quad, corners, chunk,  sign1);
 				}
 			}
 		}
