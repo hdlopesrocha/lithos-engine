@@ -150,7 +150,10 @@ OctreeNode * addAux(Octree * tree, ContainmentHandler * handler, OctreeNode * no
 			BoundingCube subCube = getChildCube(cube,i);
 			node->children[i] = addAux(tree, handler, node->children[i], subCube);
 		}
-		simplify(node);
+
+		if(tree->getHeight(cube) < tree->geometryLevel ) {
+			simplify(node);
+	    }
 	}
 	return node;
 }
