@@ -148,41 +148,43 @@ void main() {
 
         vec3 shadowPosition = lightViewPosition.xyz / lightViewPosition.w; 
         float bias = 0.001;
-        float shadow = texture(shadowMap, shadowPosition.xy).r;
-        float blurRadius = 100.0;
+        float shadow = texture(shadowMap, shadowPosition.xy).r < shadowPosition.z-bias ? 0.0 : 1.0;;
         float texelSize = 1.0/4098.0;
 
         vec2 noiseCoords = (tePosition.xy+ tePosition.z)* PI;
-        float sumShadow = 0.0;
-        int maxSamples = 0;
+        float sumShadow = shadow;
 
-       /* for(int samples=0; samples < maxSamples ; ++samples) {
-            vec4 noiseSample = texture(noise, noiseCoords);
-            float sAngle = noiseSample.r * 2.0 * PI;
-            float sRadius = noiseSample.g * blurRadius* texelSize;
-            float sX = sRadius * cos(sAngle);
-            float sY = sRadius * sin(sAngle);
-            float shadowValue = texture(shadowMap, shadowPosition.xy+vec2(sX,sY)).r < shadowPosition.z-bias ? 0.0 : 1.0;
-            sumShadow += shadowValue;
-            noiseCoords += noiseSample.xy;
-        }*/
-        
-        int blurSize= 5;
-        for(int i=-blurSize; i <= blurSize; ++i) {
-            for(int j=-blurSize; j <= blurSize; ++j) {
-                vec2 shadowUV = shadowPosition.xy+vec2(i,j)*texelSize;
 
+        int blurRadius = 4;
+        int totalSamples = 1;
+        int maxSamples = 5;
+
+
+        for(int radius = blurRadius; radius > 0; --radius) {
+            for(int samples=0; samples < maxSamples ; ++samples) {
+
+                vec4 noiseSample = texture(noise, noiseCoords);
+                float sAngle = noiseSample.r * 2.0 * PI;
+                float sRadius = radius;
+                float sX = sRadius * cos(sAngle);
+                float sY = sRadius * sin(sAngle);
+                
+                vec2 shadowUV = shadowPosition.xy+vec2(sX,sY)*texelSize;
                 float shadowValue = texture(shadowMap, shadowUV).r;
-
-                if(shadowValue >= shadow) {
-                    sumShadow += shadowValue < shadowPosition.z-bias ? 0.0 : 1.0;
-                    ++maxSamples;
-                }
-
+                
+                sumShadow += shadowValue < shadowPosition.z-bias ? 0.0 : 1.0;
+                ++totalSamples;
+                
+                noiseCoords += noiseSample.xy;
+            }
+            if(sumShadow == totalSamples || sumShadow == 0) {
+                break;
             }
         }
+
+
         float shadowAlpha = 0.6;
-        float finalShadow = sumShadow/maxSamples;
+        float finalShadow = sumShadow/totalSamples;
 
         finalShadow = (1.0 - shadowAlpha) + finalShadow*shadowAlpha;
 
