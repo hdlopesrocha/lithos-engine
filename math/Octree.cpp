@@ -75,10 +75,9 @@ int Octree::getHeight(BoundingCube cube){
 }
 
 void simplify(OctreeNode * node) {
-	bool init = false;
-	bool canSimplify = false;
-	uint mask = 0x0;
-	Vertex vertex;
+	bool canSimplify = true;
+	uint mask = node->mask;
+	Vertex vertex = node->vertex;
 
 	glm::vec3 sumP = glm::vec3(0);
 	glm::vec3 sumN = glm::vec3(0);
@@ -86,12 +85,7 @@ void simplify(OctreeNode * node) {
 	for(int i=0; i <8 ; ++i) {
 		OctreeNode * c = node->children[i];
 		if(c!=NULL && c->mask != 0xff && c->mask != 0x00) {
-			if(!init) {
-				mask = c->mask;
-				vertex = c->vertex;
-				init = true;
-				canSimplify = true;
-			}else if(mask != c->mask || glm::dot(vertex.normal, c->vertex.normal)< 0.95 || vertex.texIndex != c->vertex.texIndex){
+		    if(mask != c->mask || glm::dot(vertex.normal, c->vertex.normal)< 0.98 || vertex.texIndex != c->vertex.texIndex){
 				canSimplify = false;
 				break;
 			}
@@ -103,9 +97,9 @@ void simplify(OctreeNode * node) {
 	if(canSimplify && nodeCount > 1) {
 		//node->clear();
 		vertex.position = sumP / (float)nodeCount;
-		vertex.normal = sumN / (float)nodeCount;
+		//vertex.normal = sumN / (float)nodeCount;
 		node->vertex = vertex;
-		//node->mask = mask;
+		node->mask = mask;
 		node->simplified = true;
 	}
 
