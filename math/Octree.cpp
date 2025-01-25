@@ -80,7 +80,8 @@ void simplify(OctreeNode * node) {
 	uint mask = 0x0;
 	Vertex vertex;
 
-	glm::vec3 sum = glm::vec3(0);
+	glm::vec3 sumP = glm::vec3(0);
+	glm::vec3 sumN = glm::vec3(0);
 	int nodeCount=0;
 	for(int i=0; i <8 ; ++i) {
 		OctreeNode * c = node->children[i];
@@ -90,17 +91,19 @@ void simplify(OctreeNode * node) {
 				vertex = c->vertex;
 				init = true;
 				canSimplify = true;
-			}else if(mask != c->mask || glm::dot(vertex.normal, c->vertex.normal)< 0.9 || vertex.texIndex != c->vertex.texIndex){
+			}else if(mask != c->mask || glm::dot(vertex.normal, c->vertex.normal)< 0.95 || vertex.texIndex != c->vertex.texIndex){
 				canSimplify = false;
 				break;
 			}
-			sum += c->vertex.position;
+			sumP += c->vertex.position;
+			sumN += c->vertex.normal;
 			++nodeCount;
 		}
 	}
-	if(canSimplify && nodeCount > 3) {
+	if(canSimplify && nodeCount > 1) {
 		//node->clear();
-		vertex.position = sum / (float)nodeCount;
+		vertex.position = sumP / (float)nodeCount;
+		vertex.normal = sumN / (float)nodeCount;
 		node->vertex = vertex;
 		//node->mask = mask;
 		node->simplified = true;
@@ -197,10 +200,14 @@ OctreeNode * delAux(Octree * tree,  ContainmentHandler * handler, OctreeNode * n
 			node->mask &= buildMask(handler, cube) ^ 0xff; 
 			
 			if(height != 0) {
+				node->simplified = false;
 				for(int i=0; i <8 ; ++i) {
 					BoundingCube subCube = getChildCube(cube,i);
 					node->children[i] = delAux(tree, handler, node->children[i], subCube);
 				}	
+				if(tree->getHeight(cube) < tree->geometryLevel ) {
+					simplify(node);
+	    		}
 			}
 		} 
 	}
