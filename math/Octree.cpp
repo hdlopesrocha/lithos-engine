@@ -151,6 +151,8 @@ OctreeNode * addAux(Octree * tree, ContainmentHandler * handler, OctreeNode * no
 			node->children[i] = addAux(tree, handler, node->children[i], subCube);
 		}
 
+		// Avoid simplifying outside the chunk
+		// TODO: adjacent triangles still visit one neighbor, simplifications should be fully contained by a chunk boundary
 		if(tree->getHeight(cube) < tree->geometryLevel ) {
 			simplify(node);
 	    }
