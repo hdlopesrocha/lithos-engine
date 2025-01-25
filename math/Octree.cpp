@@ -94,12 +94,12 @@ void simplify(OctreeNode * node) {
 			++nodeCount;
 		}
 	}
-	if(canSimplify && nodeCount > 1) {
+	if(canSimplify && nodeCount > 2) {
 		//node->clear();
 		vertex.position = sumP / (float)nodeCount;
 		//vertex.normal = sumN / (float)nodeCount;
 		node->vertex = vertex;
-		node->mask = mask;
+		//node->mask = mask;
 		node->simplified = true;
 	}
 

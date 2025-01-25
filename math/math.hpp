@@ -160,15 +160,19 @@ class BoundingBox {
 		bool contains(glm::vec3 point);
 };
 
+
+class HeightFunction {
+	public:
+		virtual float getHeightAt(float x, float z) = 0;
+};
+
 class HeightMap: public BoundingBox  {
 	private: 
 		float step;
-
+		HeightFunction * func;
 	public: 
-		HeightMap();
-		HeightMap(glm::vec3 min, glm::vec3 max, float step);
+		HeightMap(HeightFunction * func, glm::vec3 min, glm::vec3 max, float step);
 		
-		float getHeightAt(float x, float z);
    		glm::vec3 getNormalAt(float x, float z);
 		glm::vec3 getPoint(BoundingCube cube);
 

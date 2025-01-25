@@ -1,32 +1,18 @@
 #include "math.hpp"
 
 
-HeightMap::HeightMap(glm::vec3 min, glm::vec3 max, float step) : BoundingBox(min, max){
-
+HeightMap::HeightMap(HeightFunction * func, glm::vec3 min, glm::vec3 max, float step) : BoundingBox(min, max){
+    this->func = func;
     this->step = step;
 }
 
 
-
-HeightMap::HeightMap() : BoundingBox(){
-
-}
-
-float HeightMap::getHeightAt(float x, float z) {
-    glm::vec3 len = getLength();
-    float amplitude = 10;
-    float offset = -36;
-    float frequency = 1.0/10.0;
-
-    return offset + amplitude * sin(frequency*x)*cos(frequency*z);
-}
-
 glm::vec2 HeightMap::getHeightRangeBetween(BoundingCube cube) {
-    glm::vec2 range = glm::vec2(getHeightAt(cube.getCenter().x,cube.getCenter().z));
+    glm::vec2 range = glm::vec2(func->getHeightAt(cube.getCenter().x,cube.getCenter().z));
 
     for(float x = cube.getMinX() ; x <= cube.getMaxX(); x+=step) {
         for(float z = cube.getMinZ() ; z <= cube.getMaxZ(); z+=step) {
-            float h = getHeightAt(x,z);
+            float h = func->getHeightAt(x,z);
             range[0] = h < range[0] ? h : range[0];
             range[1] = h > range[1] ? h : range[1];
         }        
@@ -39,9 +25,9 @@ glm::vec3 HeightMap::getNormalAt(float x, float z) {
     // bilinear interpolation
 
 
-    float q11 = getHeightAt(x, z);
-    float q21 = getHeightAt(x+step, z);
-    float q12 = getHeightAt(x, z+step);
+    float q11 = func->getHeightAt(x, z);
+    float q21 = func->getHeightAt(x+step, z);
+    float q12 = func->getHeightAt(x, z+step);
 
     glm::vec3 v11 = glm::vec3(0, q11, 0);
     glm::vec3 v21 = glm::vec3(step, q21, 0);
@@ -60,14 +46,14 @@ glm::vec3 getShift(int i) {
 
 glm::vec3 HeightMap::getPoint(BoundingCube cube) {
     glm::vec3 v = cube.getCenter();
-    float h = getHeightAt(v.x,v.z);
+    float h = func->getHeightAt(v.x,v.z);
     if( Math::isBetween(h, cube.getMinY(), cube.getMaxY())){
         return glm::vec3(v.x, h, v.z);
     }  
    
     for(int i =0; i < 4 ; ++i) {
         v = cube.getMin() + cube.getLength() * getShift(i);
-        h = getHeightAt(v.x,v.z);
+        h = func->getHeightAt(v.x,v.z);
         if( Math::isBetween(h, cube.getMinY(), cube.getMaxY())){
             return glm::vec3(v.x, h, v.z);
         }
@@ -77,7 +63,7 @@ glm::vec3 HeightMap::getPoint(BoundingCube cube) {
 
 bool HeightMap::contains(glm::vec3 point){
     BoundingBox box(getMin(), getMax());
-    float h = getHeightAt(point.x, point.z);
+    float h = func->getHeightAt(point.x, point.z);
 
     return box.contains(point) && Math::isBetween(point.y, getMinY(), h);
 }

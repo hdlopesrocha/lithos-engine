@@ -196,6 +196,15 @@ class HeightMapContainmentHandler : public ContainmentHandler {
 	}
 };
 
+class WaveSurface : public HeightFunction {
+	float getHeightAt(float x, float z) {
+		float amplitude = 10;
+		float offset = -36;
+		float frequency = 1.0/10.0;
+
+		return offset + amplitude * sin(frequency*x)*cos(frequency*z);
+	}
+};
 
 class MainApplication : public LithosApplication {
 	std::vector<Texture*> textures;
@@ -395,7 +404,7 @@ public:
 
 		tree = new Octree(2.0, 4);
 
-		HeightMap map(glm::vec3(-64,-64,-64),glm::vec3(64,-16,64), tree->minSize);
+		HeightMap map(new WaveSurface(), glm::vec3(-64,-64,-64),glm::vec3(64,-16,64), tree->minSize);
 		tree->add(new HeightMapContainmentHandler(&map, textures[2], textures[7]));
 
 		BoundingSphere sph(glm::vec3(0,0,0),20);
