@@ -105,7 +105,7 @@ void * Tesselator::before(int level, OctreeNode * node, BoundingCube cube, void 
 	
 				for(int j=0; j<4 ; ++j) {
 					OctreeNode * n = corners[quad[j]];
-					if(n == NULL || n->mask == 0x0 || n->mask == 0xff) {
+					if(n == NULL || n->solid != ContainmentType::Intersects) {
 						canDraw = false;
 						break;
 					}

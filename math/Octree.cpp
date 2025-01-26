@@ -84,7 +84,7 @@ void simplify(OctreeNode * node) {
 	int nodeCount=0;
 	for(int i=0; i <8 ; ++i) {
 		OctreeNode * c = node->children[i];
-		if(c!=NULL && c->mask != 0xff && c->mask != 0x00) {
+		if(c!=NULL && c->solid == ContainmentType::Intersects) {
 		    if(mask != c->mask || glm::dot(vertex.normal, c->vertex.normal)< 0.98 || vertex.texIndex != c->vertex.texIndex){
 				canSimplify = false;
 				break;
@@ -151,7 +151,7 @@ OctreeNode * addAux(Octree * tree, ContainmentHandler * handler, OctreeNode * no
 		// Avoid simplifying outside the chunk
 		// TODO: adjacent triangles still visit one neighbor, simplifications should be fully contained by a chunk boundary
 		if(tree->getHeight(cube) < tree->geometryLevel ) {
-			simplify(node);
+			//simplify(node);
 	    }
 	}
 	return node;
@@ -201,7 +201,7 @@ OctreeNode * delAux(Octree * tree,  ContainmentHandler * handler, OctreeNode * n
 					node->children[i] = delAux(tree, handler, node->children[i], subCube);
 				}	
 				if(tree->getHeight(cube) < tree->geometryLevel ) {
-					simplify(node);
+					//simplify(node);
 	    		}
 			}
 		} 

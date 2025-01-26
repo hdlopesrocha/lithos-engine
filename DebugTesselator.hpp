@@ -61,9 +61,7 @@ class DebugTesselator : public IteratorHandler{
 
 			}
 
-
-			if(node->simplified){
-
+			if(isLeaf){
 				std::vector<glm::vec3> corners;
 				// Get corners
 				for(int i=0; i < 8; ++i) {
