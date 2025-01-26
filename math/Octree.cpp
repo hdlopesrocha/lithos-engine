@@ -128,7 +128,7 @@ OctreeNode * addAux(Octree * tree, ContainmentHandler * handler, OctreeNode * no
 		Vertex vertex(cube.getCenter());
 		node = new OctreeNode(vertex);
 	}
-	else if(node->mask == 0xff) {
+	else if(node->solid == ContainmentType::Contains) {
 		return node;
 	}
 
@@ -161,6 +161,7 @@ void split(OctreeNode * node, BoundingCube cube) {
 	for(int i=0; i <8 ; ++i) {
 		BoundingCube subCube = getChildCube(cube,i);
 		node->children[i] = new OctreeNode(subCube.getCenter());
+		node->children[i]->solid = node->solid;
 		node->children[i]->mask = node->mask;
 	}	
 }
@@ -182,11 +183,12 @@ OctreeNode * delAux(Octree * tree,  ContainmentHandler * handler, OctreeNode * n
 			return NULL;
 		}
 		if(node!= NULL) {
-			if(node->mask == 0xff && height != 0) {
+			// TODO: problem here
+			if(node->solid == ContainmentType::Contains && isIntersecting && height != 0) {
 				split(node, cube);
 			}
 
-			if((node->mask == 0xff || node->mask == 0x00) && isIntersecting) {
+			if(node->solid != ContainmentType::Intersects && isIntersecting) {
 				node->vertex = handler->getVertex(cube, check);
 				node->vertex.normal = -node->vertex.normal;
 			}

@@ -438,13 +438,13 @@ public:
 		HeightMap map(new PerlinSurface(), glm::vec3(-100,-100,-100),glm::vec3(100,0,100), tree->minSize);
 
 		tree->add(new HeightMapContainmentHandler(&map, textures[2], textures[7]));
+		tree->del(new SphereContainmentHandler(BoundingSphere(glm::vec3(00,-30,0),50), textures[7]));
 		tree->add(new SphereContainmentHandler(BoundingSphere(glm::vec3(0,0,0),20), textures[6]));
 		tree->add(new SphereContainmentHandler(BoundingSphere(glm::vec3(-11,11,11),10), textures[5]));
 		tree->del(new SphereContainmentHandler(BoundingSphere(glm::vec3(11,11,-11),10), textures[4]));
 		tree->add(new BoxContainmentHandler(BoundingBox(glm::vec3(0,-24,0),glm::vec3(24,0,24)),textures[8]));
 		tree->del(new SphereContainmentHandler(BoundingSphere(glm::vec3(4,4,-4),8), textures[1]));
 		tree->add(new SphereContainmentHandler(BoundingSphere(glm::vec3(11,11,-11),4), textures[3]));
-		tree->del(new SphereContainmentHandler(BoundingSphere(glm::vec3(0,75,0),50), textures[7]));
 
 		tesselator = new Tesselator(tree);
 		tree->iterate(tesselator);
@@ -584,7 +584,7 @@ public:
 		glUniform1ui(lightEnabledLoc, 1);
 		glUniform1ui(triplanarEnabledLoc, 1);
 		glUniform1ui(parallaxEnabledLoc, 1);
-		glUniform1ui(debugEnabledLoc, 0);
+		glUniform1ui(debugEnabledLoc, 1);
 		
 		glPatchParameteri(GL_PATCH_VERTICES, 3); // Define the number of control points per patch
 
