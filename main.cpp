@@ -5,6 +5,9 @@
 #include "DebugTesselator.hpp"
 #include "math/math.hpp"
 
+#define DB_PERLIN_IMPL
+#include "lib/db_perlin.hpp"
+
 //#define DEBUG_GEO 1
 
 class Texture {
@@ -206,6 +209,34 @@ class WaveSurface : public HeightFunction {
 	}
 };
 
+class PerlinSurface : public HeightFunction {
+
+	float getHeightAt(float x, float z) {
+  	
+
+
+		float amplitude = 20;
+		float offset = -36;
+		float frequency = 1.0/64.0;
+
+
+		float noise = 0;
+		float weight = 1.0;
+		float total = 0.0;
+
+		for(int i = 0 ; i < 5 ; ++i) {
+			noise += db::perlin(double(x) * frequency, double(z) *frequency) * weight;
+			total += weight;
+			weight *= 0.5;
+			frequency *= 2;
+		}
+
+		noise /= total;
+
+		return offset + amplitude * noise;
+	}
+};
+
 class MainApplication : public LithosApplication {
 	std::vector<Texture*> textures;
   	Camera camera;
@@ -402,9 +433,9 @@ public:
    	    					* glm::angleAxis(glm::radians(135.0f), glm::vec3(0, 1, 0));  
 		camera.position = glm::vec3(48,48,48);
 
-		tree = new Octree(2.0, 4);
+		tree = new Octree(2.0, 5);
 
-		HeightMap map(new WaveSurface(), glm::vec3(-64,-64,-64),glm::vec3(64,-16,64), tree->minSize);
+		HeightMap map(new PerlinSurface(), glm::vec3(-100,-64,-100),glm::vec3(100,0,100), tree->minSize);
 		tree->add(new HeightMapContainmentHandler(&map, textures[2], textures[7]));
 
 		BoundingSphere sph(glm::vec3(0,0,0),20);
