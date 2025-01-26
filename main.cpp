@@ -215,8 +215,8 @@ class PerlinSurface : public HeightFunction {
   	
 
 
-		float amplitude = 20;
-		float offset = -36;
+		float amplitude = 40;
+		float offset = -50;
 		float frequency = 1.0/64.0;
 
 
@@ -435,7 +435,7 @@ public:
 
 		tree = new Octree(2.0, 5);
 
-		HeightMap map(new PerlinSurface(), glm::vec3(-100,-64,-100),glm::vec3(100,0,100), tree->minSize);
+		HeightMap map(new PerlinSurface(), glm::vec3(-100,-100,-100),glm::vec3(100,0,100), tree->minSize);
 		tree->add(new HeightMapContainmentHandler(&map, textures[2], textures[7]));
 
 		BoundingSphere sph(glm::vec3(0,0,0),20);

@@ -3,6 +3,7 @@
 OctreeNode::OctreeNode(Vertex vertex) {
 	this->info = NULL;
 	this->infoType = 0;
+	this->solid = ContainmentType::Disjoint;
 	this->vertex = vertex;
 	this->mask = 0x0;
 	this->simplified = false;

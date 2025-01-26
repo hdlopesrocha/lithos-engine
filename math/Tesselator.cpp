@@ -131,6 +131,6 @@ void Tesselator::after(int level, OctreeNode * node, BoundingCube cube, void * c
 }
 
 bool Tesselator::test(int level, OctreeNode * node, BoundingCube cube, void * context) {			
-	return node->mask!=0xff && tree->getHeight(cube) >= 0;
+	return node->solid != ContainmentType::Contains && tree->getHeight(cube) >= 0;
 }
 
