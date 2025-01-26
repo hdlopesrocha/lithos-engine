@@ -128,7 +128,7 @@ OctreeNode * addAux(Octree * tree, ContainmentHandler * handler, OctreeNode * no
 		Vertex vertex(cube.getCenter());
 		node = new OctreeNode(vertex);
 	}
-	else if(node->solid == ContainmentType::Contains) {
+	else if(node->mask == 0xff) {
 		return node;
 	}
 
@@ -151,7 +151,7 @@ OctreeNode * addAux(Octree * tree, ContainmentHandler * handler, OctreeNode * no
 		// Avoid simplifying outside the chunk
 		// TODO: adjacent triangles still visit one neighbor, simplifications should be fully contained by a chunk boundary
 		if(tree->getHeight(cube) < tree->geometryLevel ) {
-			//simplify(node);
+			simplify(node);
 	    }
 	}
 	return node;
@@ -182,11 +182,11 @@ OctreeNode * delAux(Octree * tree,  ContainmentHandler * handler, OctreeNode * n
 			return NULL;
 		}
 		if(node!= NULL) {
-			if(node->solid == ContainmentType::Contains && height != 0) {
+			if(node->mask == 0xff && height != 0) {
 				split(node, cube);
 			}
 
-			if((node->solid == ContainmentType::Intersects) && isIntersecting) {
+			if((node->mask == 0xff || node->mask == 0x00) && isIntersecting) {
 				node->vertex = handler->getVertex(cube, check);
 				node->vertex.normal = -node->vertex.normal;
 			}
@@ -201,7 +201,7 @@ OctreeNode * delAux(Octree * tree,  ContainmentHandler * handler, OctreeNode * n
 					node->children[i] = delAux(tree, handler, node->children[i], subCube);
 				}	
 				if(tree->getHeight(cube) < tree->geometryLevel ) {
-					//simplify(node);
+					simplify(node);
 	    		}
 			}
 		} 
