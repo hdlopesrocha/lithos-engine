@@ -85,7 +85,7 @@ void simplify(OctreeNode * node) {
 	for(int i=0; i <8 ; ++i) {
 		OctreeNode * c = node->children[i];
 		if(c!=NULL && c->solid == ContainmentType::Intersects) {
-		    if(mask != c->mask || glm::dot(vertex.normal, c->vertex.normal)< 0.9999 || vertex.texIndex != c->vertex.texIndex){
+		    if(glm::dot(vertex.normal, c->vertex.normal)< 0.999 || vertex.texIndex != c->vertex.texIndex){
 				canSimplify = false;
 				break;
 			}

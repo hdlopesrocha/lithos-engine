@@ -28,7 +28,7 @@ in vec4 lightViewPosition;
 out vec4 color;    // Final fragment color
 
 
-vec2 parallaxMapping(vec2 uv, vec3 viewDir, float scale, float minLayers, float maxLayers) {
+vec2 parallaxMapping(vec2 uv, vec3 viewDir, float scale, float minLayers, float maxLayers, int approxCycles) {
     float numLayers = mix(maxLayers, minLayers, dot(vec3(0.0, 0.0, 1.0), -viewDir));  
 
 	float deltaDepth = 1.0 / float( numLayers );
@@ -57,7 +57,7 @@ vec2 parallaxMapping(vec2 uv, vec3 viewDir, float scale, float minLayers, float 
         }
     }
 
-    for (int i = 0; i < cycles; ++i) {
+    for (int i = 0; i < approxCycles; ++i) {
         vec2 midUv = 0.5 * (currentUv + prevUv);
         float midDepth = 0.5 * (currentDepth + prevDepth);
         float midHeight = textureBlend(teTextureWeights, bumpMaps, midUv).r;
@@ -106,7 +106,10 @@ vec3 visual(vec3 v) {
 
 void main() {
     float effectAmount = sin(time*3.14/4.0)*0.5 + 0.5;
-   
+    float distance = length(cameraPosition - tePosition);
+    float distanceFactor = clamp(20.0 / distance, 0.0, 1.0); // Adjust these numbers to fit your scene
+
+
     vec3 normal = normalize(teNormal);
     vec2 uv = teTextureCoord;
     vec3 viewDirection = normalize(tePosition - cameraPosition);
@@ -121,7 +124,7 @@ void main() {
     
 
     if(parallaxEnabled == 1 && teProps.parallaxScale > 0.0) {
-       uv = parallaxMapping(uv, viewTangent, teProps.parallaxScale , teProps.parallaxMinLayers, teProps.parallaxMaxLayers);
+       uv = parallaxMapping(uv, viewTangent, distanceFactor*teProps.parallaxScale , distanceFactor*teProps.parallaxMinLayers, distanceFactor*teProps.parallaxMaxLayers, int(ceil(distanceFactor*5.0)));
     }
   
     vec4 mixedColor = textureBlend(teTextureWeights, textures, uv);

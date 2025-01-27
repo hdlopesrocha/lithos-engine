@@ -196,7 +196,7 @@ public:
         textures.push_back(new Texture(loadTextureImage("textures/grid.png")));
         textures.push_back(new Texture(loadTextureImage("textures/lava_color.jpg"),loadTextureImage("textures/lava_normal.jpg"),loadTextureImage("textures/lava_bump.jpg"), 0.1, 8, 32 ,256));
         textures.push_back(new Texture(loadTextureImage("textures/grass_color.png"),loadTextureImage("textures/grass_normal.png"),loadTextureImage("textures/grass_bump.png"), 0.01, 8, 32 ,256));
-        textures.push_back(new Texture(loadTextureImage("textures/sand_color.jpg"),loadTextureImage("textures/sand_normal.jpg"),loadTextureImage("textures/sand_bump.jpg"), 0.1, 8, 32 ,256));
+        textures.push_back(new Texture(loadTextureImage("textures/sand_color.jpg"),loadTextureImage("textures/sand_normal.jpg"),loadTextureImage("textures/sand_bump.jpg"), 0.05, 8, 32 ,256));
         textures.push_back(new Texture(loadTextureImage("textures/rock_color.png"),loadTextureImage("textures/rock_normal.png"),loadTextureImage("textures/rock_bump.png"), 0.1, 8, 32,128));
         textures.push_back(new Texture(loadTextureImage("textures/snow_color.png"),loadTextureImage("textures/snow_normal.png"),loadTextureImage("textures/snow_bump.png"), 0.1, 8, 32, 32 ));
         textures.push_back(new Texture(loadTextureImage("textures/metal_color.png"),loadTextureImage("textures/metal_normal.png"),loadTextureImage("textures/metal_bump.png"), 0.1, 8, 64, 32 ));
