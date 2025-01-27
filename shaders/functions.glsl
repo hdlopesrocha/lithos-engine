@@ -49,4 +49,5 @@ struct TextureProperties {
     float parallaxMinLayers;
     float parallaxMaxLayers;
     float shininess;
+    float specularStrength;
 };

@@ -165,9 +165,10 @@ class Texture {
 	float parallaxMinLayers;
 	float parallaxMaxLayers;
 	float shininess;
+	float specularStrength;
 
 	Texture(Image texture);
-	Texture(Image texture, Image normal, Image bump, float parallaxScale, float parallaxMinLayers, float parallaxMaxLayers, float shininess);
+	Texture(Image texture, Image normal, Image bump, float parallaxScale, float parallaxMinLayers, float parallaxMaxLayers, float shininess,float specularStrength);
 };
 
 

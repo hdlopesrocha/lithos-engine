@@ -28,7 +28,9 @@ DrawableGeometry::DrawableGeometry(Geometry * t){
 	glVertexAttribPointer(6, 1, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) offsetof(Vertex, parallaxMaxLayers));
 	glEnableVertexAttribArray(6);	
 	glVertexAttribPointer(7, 1, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) offsetof(Vertex, shininess));
-	glEnableVertexAttribArray(7);	
+	glEnableVertexAttribArray(7);		
+	glVertexAttribPointer(8, 1, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) offsetof(Vertex, specularStrength));
+	glEnableVertexAttribArray(8);	
 }
 
 void DrawableGeometry::draw(uint mode) {

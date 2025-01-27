@@ -8,9 +8,10 @@ Texture::Texture(Image texture) {
     this->parallaxMinLayers = 0;
     this->parallaxMaxLayers = 0;
     this->shininess = 0;
+    this->specularStrength = 0;
 }
 
-Texture::Texture(Image texture, Image normal, Image bump, float parallaxScale, float parallaxMinLayers, float parallaxMaxLayers, float shininess) {
+Texture::Texture(Image texture, Image normal, Image bump, float parallaxScale, float parallaxMinLayers, float parallaxMaxLayers, float shininess, float specularStrength) {
     this->texture = texture;
     this->normal = normal;
     this->bump = bump;
@@ -18,5 +19,6 @@ Texture::Texture(Image texture, Image normal, Image bump, float parallaxScale, f
     this->parallaxMinLayers = parallaxMinLayers;
     this->parallaxMaxLayers = parallaxMaxLayers;
     this->shininess = shininess;
+    this->specularStrength = specularStrength;
 }
 

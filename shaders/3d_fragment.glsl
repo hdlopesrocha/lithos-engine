@@ -141,7 +141,6 @@ void main() {
     } else if(lightEnabled == 0) {
         color = mixedColor; 
     } else {
-        float specularStrength = 0.4;
         vec3 specularColor = vec3(1.0,1.0,1.0);
 
         vec3 normalMap = textureBlend(teTextureWeights, normalMaps, uv).xyz;
@@ -195,7 +194,7 @@ void main() {
 
         float finalShadow = (1.0 - shadowAlpha) + lightPercentage*shadowAlpha;
 
-        color = vec4((mixedColor.rgb*diffuse + specularColor * specularStrength * phongSpec * lightPercentage)*finalShadow , mixedColor.a); 
+        color = vec4((mixedColor.rgb*diffuse + specularColor * teProps.specularStrength * phongSpec * lightPercentage)*finalShadow , mixedColor.a); 
     }
 
  }
