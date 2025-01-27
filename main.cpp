@@ -9,7 +9,7 @@
 
 //#define DEBUG_GEO 1
 
-class SimpleBrush : public BrushHandler {
+class SimpleBrush : public TextureBrush {
 
 	Texture * texture;
 
@@ -27,7 +27,7 @@ class SimpleBrush : public BrushHandler {
 	}
 };
 
-class LandBrush : public BrushHandler {
+class LandBrush : public TextureBrush {
 
 	Texture * underground;
 	Texture * grass;

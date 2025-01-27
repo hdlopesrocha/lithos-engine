@@ -111,9 +111,9 @@ ContainmentType BoundingBox::test(BoundingCube cube) {
 }
 
 
-BoxContainmentHandler::BoxContainmentHandler(BoundingBox box, BrushHandler * b) : ContainmentHandler(){
+BoxContainmentHandler::BoxContainmentHandler(BoundingBox box, TextureBrush * b) : ContainmentHandler(){
     this->box = box;
-    this->painter = b;
+    this->brush = b;
 }
 
 glm::vec3 BoxContainmentHandler::getCenter() {
@@ -141,6 +141,6 @@ Vertex BoxContainmentHandler::getVertex(BoundingCube cube, ContainmentType solid
 
     vertex.position = glm::clamp(c, min, max);
     vertex.normal = Math::surfaceNormal(vertex.position, box);
-    painter->paint(&vertex);	
+    brush->paint(&vertex);	
     return vertex;
 }

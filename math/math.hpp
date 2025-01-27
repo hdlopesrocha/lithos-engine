@@ -303,7 +303,7 @@ private:
 	glm::vec3   m_points[8];
 };
 
-class BrushHandler {
+class TextureBrush {
 	public:
 	virtual void paint(Vertex * v) = 0;
 };
@@ -312,9 +312,9 @@ class BrushHandler {
 class SphereContainmentHandler : public ContainmentHandler {
 	public:
 	BoundingSphere sphere;
-    BrushHandler * painter;
+    TextureBrush * brush;
 
-	SphereContainmentHandler(BoundingSphere s, BrushHandler * b);
+	SphereContainmentHandler(BoundingSphere s, TextureBrush * b);
 	glm::vec3 getCenter();
 	bool contains(glm::vec3 p);
 	bool isContained(BoundingCube p);
@@ -326,9 +326,9 @@ class SphereContainmentHandler : public ContainmentHandler {
 class BoxContainmentHandler : public ContainmentHandler {
 	public: 
 	BoundingBox box;
-    BrushHandler * painter;
+    TextureBrush * brush;
 
-	BoxContainmentHandler(BoundingBox box, BrushHandler * b);
+	BoxContainmentHandler(BoundingBox box, TextureBrush * b);
 	glm::vec3 getCenter();
 	bool contains(glm::vec3 p);
 	bool isContained(BoundingCube p);
@@ -339,9 +339,9 @@ class BoxContainmentHandler : public ContainmentHandler {
 class HeightMapContainmentHandler : public ContainmentHandler {
 	public: 
 	HeightMap * map;
-    BrushHandler * painter;
+    TextureBrush * brush;
 
-	HeightMapContainmentHandler(HeightMap * m, BrushHandler * b);
+	HeightMapContainmentHandler(HeightMap * m, TextureBrush * b);
 	glm::vec3 getCenter();
 	bool contains(glm::vec3 p);
 	bool isContained(BoundingCube p);

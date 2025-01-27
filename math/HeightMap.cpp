@@ -118,9 +118,9 @@ ContainmentType HeightMap::test(BoundingCube cube) {
 }
 
 
-HeightMapContainmentHandler::HeightMapContainmentHandler(HeightMap * m, BrushHandler * b) : ContainmentHandler(){
+HeightMapContainmentHandler::HeightMapContainmentHandler(HeightMap * m, TextureBrush * b) : ContainmentHandler(){
     this->map = m;
-    this->painter = b;
+    this->brush = b;
 }
 
 glm::vec3 HeightMapContainmentHandler::getCenter() {
@@ -162,7 +162,7 @@ Vertex HeightMapContainmentHandler::getVertex(BoundingCube cube, ContainmentType
         vertex.normal = getNormal(vertex.position);
     }
 
-    painter->paint(&vertex);
+    brush->paint(&vertex);
     return vertex;
 }
 
