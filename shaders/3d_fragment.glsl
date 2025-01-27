@@ -134,7 +134,7 @@ void main() {
 
     if(debugEnabled == 1) {
         if(lightEnabled == 1) {
-            color = vec4(vec3( (1.0+ dot(teNormal, vec3(0.0,1.0,0.0)) )  * 0.5),1.0);
+            color = vec4(visual(teNormal), 1.0);
         }else {
             color = vec4(1.0,1.0,1.0,1.0);
         }
@@ -157,13 +157,13 @@ void main() {
         float shadow = texture(shadowMap, shadowPosition.xy).r < shadowPosition.z-bias ? 0.0 : 1.0;;
         float texelSize = 1.0/4098.0;
 
-        vec2 noiseCoords = (tePosition.xy+ tePosition.z)* PI;
+        vec2 noiseCoords = (tePosition.xy)* PI;
         float sumShadow = shadow;
 
 
-        int blurRadius = 4;
+        int blurRadius = 20;
         int totalSamples = 1;
-        int maxSamples = 5;
+        int maxSamples = 8;
 
 
         for(int radius = blurRadius; radius > 0; --radius) {

@@ -8,8 +8,8 @@
 #define VERTEX_BUFFER_BIND_ID 0
 #define INSTANCE_BUFFER_BIND_ID 1
 #define MAX_FRAMES_IN_FLIGHT 2
-#define WIDTH 1280
-#define HEIGHT 720
+#define WIDTH 1680
+#define HEIGHT 1050
 #define DEBUG 1
 #define NDEBUG 1
 
