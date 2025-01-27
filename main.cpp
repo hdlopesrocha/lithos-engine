@@ -50,14 +50,14 @@ class LandBrush : public BrushHandler {
 		Texture * t;
 		if (glm::dot(glm::vec3(0.0f,1.0f,0.0f), vertex->normal ) <=0 ){
 			t= underground;
+		} else if(glm::dot(glm::vec3(0.0f,1.0f,0.0f), vertex->normal ) < 0.8 ){
+			t = rock;
 		} else if(vertex->position.y < -45){
 			t = sand;
-		} else if(vertex->position.y < -40){
+		} else if(vertex->position.y < -25){
 			t = grass;
-		} else if(glm::dot(glm::vec3(0.0f,1.0f,0.0f), vertex->normal ) > 0.9 ){
-			t = vertex->position.y > -35 ? snow : grass;
 		} else {
-			t = rock;
+			t = snow;
 		}
 
 		vertex->texIndex = t->index;
