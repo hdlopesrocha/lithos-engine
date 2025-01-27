@@ -13,6 +13,8 @@ Current features:
 * Triplanar Mapping
 * Parallax Occlusion Mapping 
 * Shadow Mapping
+* Soft Shadows
+* Gradient Perlin Noise Land Generator
 
 ## Screenshot
 ![Alt text](screenshot.png?raw=true "Screenshot")
