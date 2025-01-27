@@ -1,9 +1,7 @@
 #version 460 core
 #define PI 3.1415926535897932384626433832795
 
-uniform sampler2D textures[10];
-uniform sampler2D normalMaps[10];
-uniform sampler2D bumpMaps[10];
+uniform sampler2DArray textures[10];
 
 uniform sampler2D shadowMap;
 uniform sampler2D noise;
@@ -50,7 +48,7 @@ vec2 parallaxMapping(vec2 uv, vec3 viewDir, float scale, float minLayers, float 
 
         currentUv -= deltaUv;
         currentDepth -= deltaDepth;
-        currentHeight = textureBlend(teTextureWeights, bumpMaps, currentUv).r;
+        currentHeight = textureBlend(teTextureWeights, textures, currentUv, 2).r;
 
         if(currentHeight > currentDepth) {
             break;
@@ -60,7 +58,7 @@ vec2 parallaxMapping(vec2 uv, vec3 viewDir, float scale, float minLayers, float 
     for (int i = 0; i < approxCycles; ++i) {
         vec2 midUv = 0.5 * (currentUv + prevUv);
         float midDepth = 0.5 * (currentDepth + prevDepth);
-        float midHeight = textureBlend(teTextureWeights, bumpMaps, midUv).r;
+        float midHeight = textureBlend(teTextureWeights, textures, midUv, 2).r;
         
         if (midHeight > midDepth) {
             currentUv = midUv;
@@ -127,7 +125,7 @@ void main() {
        uv = parallaxMapping(uv, viewTangent, distanceFactor*teProps.parallaxScale , distanceFactor*teProps.parallaxMinLayers, distanceFactor*teProps.parallaxMaxLayers, int(ceil(distanceFactor*5.0)));
     }
   
-    vec4 mixedColor = textureBlend(teTextureWeights, textures, uv);
+    vec4 mixedColor = textureBlend(teTextureWeights, textures, uv, 0);
     if(mixedColor.a == 0.0) {
         discard;
     }
@@ -143,7 +141,7 @@ void main() {
     } else {
         vec3 specularColor = vec3(1.0,1.0,1.0);
 
-        vec3 normalMap = textureBlend(teTextureWeights, normalMaps, uv).xyz;
+        vec3 normalMap = textureBlend(teTextureWeights, textures, uv, 1).xyz;
         normalMap = normalize(normalMap * 2.0 - 1.0); // Convert to range [-1, 1]
 
         vec3 worldNormal = normalize(TBN * normalMap);
@@ -154,7 +152,7 @@ void main() {
 
         vec3 shadowPosition = lightViewPosition.xyz / lightViewPosition.w; 
         float bias = 0.002;
-        float shadow = texture(shadowMap, shadowPosition.xy).r < shadowPosition.z-bias ? 0.0 : 1.0;;
+        float shadow = texture(shadowMap, shadowPosition.xy).r < shadowPosition.z-bias ? 0.0 : 1.0;
         float texelSize = 1.0/4098.0;
 
         vec2 noiseCoords = (tePosition.xy)* PI;

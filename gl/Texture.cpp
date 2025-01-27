@@ -1,9 +1,7 @@
 #include "gl.hpp"
 
-Texture::Texture(Image texture) {
+Texture::Texture(TextureArray texture) {
     this->texture = texture;
-    this->normal = 0;
-    this->bump = 0;
     this->parallaxScale = 0;
     this->parallaxMinLayers = 0;
     this->parallaxMaxLayers = 0;
@@ -11,10 +9,8 @@ Texture::Texture(Image texture) {
     this->specularStrength = 0;
 }
 
-Texture::Texture(Image texture, Image normal, Image bump, float parallaxScale, float parallaxMinLayers, float parallaxMaxLayers, float shininess, float specularStrength) {
+Texture::Texture(TextureArray texture, float parallaxScale, float parallaxMinLayers, float parallaxMaxLayers, float shininess, float specularStrength) {
     this->texture = texture;
-    this->normal = normal;
-    this->bump = bump;
     this->parallaxScale = parallaxScale;
     this->parallaxMinLayers = parallaxMinLayers;
     this->parallaxMaxLayers = parallaxMaxLayers;

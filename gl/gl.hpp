@@ -62,7 +62,8 @@ struct IndirectDraw {
 };
 
 
-typedef uint32_t Image;
+typedef uint32_t TextureArray;
+typedef uint32_t TextureImage;
 
 struct Model3D {
      std::map<std::string, IndexBufferObject> buffers;
@@ -111,7 +112,8 @@ public:
     virtual void clean() = 0;
     void run();
     void close();
-    Image loadTextureImage(const std::string& filename);
+    TextureArray loadTextureArray(const std::string& color, const std::string& normal, const std::string& bump);
+    TextureImage loadTextureImage(const std::string& color);
     int getKeyboardStatus(int key);
     int getWidth();
     int getHeight();
@@ -158,17 +160,15 @@ class OctreeRenderer : public IteratorHandler{
 class Texture {
 	public:
 	int index;
-	Image texture;
-	Image normal;
-	Image bump;
+	TextureArray texture;
 	float parallaxScale;
 	float parallaxMinLayers;
 	float parallaxMaxLayers;
 	float shininess;
 	float specularStrength;
-
-	Texture(Image texture);
-	Texture(Image texture, Image normal, Image bump, float parallaxScale, float parallaxMinLayers, float parallaxMaxLayers, float shininess,float specularStrength);
+    
+	Texture(TextureArray texture);
+	Texture(TextureArray texture, float parallaxScale, float parallaxMinLayers, float parallaxMaxLayers, float shininess,float specularStrength);
 };
 
 

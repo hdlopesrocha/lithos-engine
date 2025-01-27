@@ -3,9 +3,7 @@
 layout(triangles, equal_spacing, ccw) in; // Define primitive type and tessellation spacing
 #include<functions.glsl>
 
-uniform sampler2D textures[10];
-uniform sampler2D normalMaps[10];
-uniform sampler2D bumpMaps[10];
+uniform sampler2DArray textures[10];
 uniform uint debugEnabled;
 
 in float tcTextureWeights[][10];

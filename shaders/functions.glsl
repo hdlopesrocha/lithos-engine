@@ -22,12 +22,12 @@ vec2 triplanarMapping(vec3 position, int plane) {
 }
 
 
-vec4 textureBlend(in float ws[10], sampler2D ts[10], vec2 uv) {
+vec4 textureBlend(in float ws[10], sampler2DArray ts[10], vec2 uv, int index) {
     vec4 res = vec4(0.0);
     for(int i=0 ; i < 10; ++i) {
         float w = ws[i];
         if(w>0.0) {
-            res += texture(ts[i], uv)*w;
+            res += texture(ts[i], vec3(uv, float(index) ))*w;
         }
 	}
     return res;
