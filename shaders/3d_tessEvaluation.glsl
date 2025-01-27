@@ -61,7 +61,6 @@ void main() {
     if(debugEnabled == 1) {
         tePosition += teNormal*0.02;
     }
-    //float height = textureBlend(teTextureWeights, bumpMaps, teTextureCoord).r;
 
 
     gl_Position = modelViewProjection * vec4(tePosition, 1.0);    

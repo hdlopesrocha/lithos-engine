@@ -204,21 +204,19 @@ TextureArray LithosApplication::loadTextureArray(const std::string& color, const
         std::string filename = filenames[i];
 
         if(filename.size()){
-            std::cout << "Loading " << color << std::endl;
-            datas[i] = stbi_load(color.c_str(), &width, &height, &channels[i], 0);
+            std::cout << "Loading " << filename << std::endl;
+            datas[i] = stbi_load(filename.c_str(), &width, &height, &channels[i], 0);
             if (!datas[i]) {
                 std::cerr << "Failed to load texture: " << color << std::endl;
                 return textureArray;
             }
         }
     }
-
-    glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, GL_RGBA8, width, height, 3);
+    int mipLevels = 1;
+    glTexStorage3D(GL_TEXTURE_2D_ARRAY, mipLevels, GL_RGBA8, width, height, 3);
 
     for(int i = 0; i < 3 ; ++i) {
         if (datas[i]) {
-            std::cerr << "glTexSubImage3D[" << i << "]"<< std::endl;
-  
             glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, i, width, height, 1, channelsToFormat(channels[i]), GL_UNSIGNED_BYTE, datas[i]);
         }
     }

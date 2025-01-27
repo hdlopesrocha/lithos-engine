@@ -27,7 +27,7 @@ vec4 textureBlend(in float ws[10], sampler2DArray ts[10], vec2 uv, int index) {
     for(int i=0 ; i < 10; ++i) {
         float w = ws[i];
         if(w>0.0) {
-            res += texture(ts[i], vec3(uv, float(index) ))*w;
+            res += texture(ts[i], vec3(uv, index))*w;
         }
 	}
     return res;
