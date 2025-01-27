@@ -58,7 +58,6 @@ class DebugTesselator : public IteratorHandler{
 						break;
 					}
 				}
-
 			}
 
 			if(isLeaf){

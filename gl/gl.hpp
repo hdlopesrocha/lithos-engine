@@ -155,5 +155,20 @@ class OctreeRenderer : public IteratorHandler{
 
 };
 
+class Texture {
+	public:
+	int index;
+	Image texture;
+	Image normal;
+	Image bump;
+	float parallaxScale;
+	float parallaxMinLayers;
+	float parallaxMaxLayers;
+	float shininess;
+
+	Texture(Image texture);
+	Texture(Image texture, Image normal, Image bump, float parallaxScale, float parallaxMinLayers, float parallaxMaxLayers, float shininess);
+};
+
 
 #endif

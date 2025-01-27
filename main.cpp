@@ -5,310 +5,68 @@
 #include "DebugTesselator.hpp"
 #include "math/math.hpp"
 
-#define DB_PERLIN_IMPL
-#include "lib/db_perlin.hpp"
+#include "HeightFunctions.hpp"
+#include "CointainmentHandlers.hpp"
 
 //#define DEBUG_GEO 1
 
-class Texture {
-	public:
-	int index;
-	Image texture;
-	Image normal;
-	Image bump;
-	float parallaxScale;
-	float parallaxMinLayers;
-	float parallaxMaxLayers;
-	float shininess;
+class SimpleBrush : public BrushHandler {
 
-	Texture(Image texture) {
-		this->texture = texture;
-		this->normal = 0;
-		this->bump = 0;
-		this->parallaxScale = 0;
-		this->parallaxMinLayers = 0;
-		this->parallaxMaxLayers = 0;
-		this->shininess = 0;
-	}
-
-	Texture(Image texture, Image normal, Image bump, float parallaxScale, float parallaxMinLayers, float parallaxMaxLayers, float shininess) {
-		this->texture = texture;
-		this->normal = normal;
-		this->bump = bump;
-		this->parallaxScale = parallaxScale;
-		this->parallaxMinLayers = parallaxMinLayers;
-		this->parallaxMaxLayers = parallaxMaxLayers;
-		this->shininess = shininess;
-	}
-};
-
-class SphereContainmentHandler : public ContainmentHandler {
-	public:
-	BoundingSphere sphere;
 	Texture * texture;
 
-	SphereContainmentHandler(BoundingSphere s, Texture * t) : ContainmentHandler(){
-		this->sphere = s;
-		this->texture = t;
-	}
-
-	glm::vec3 getCenter() {
-		return sphere.center;
-	}
-
-	bool contains(glm::vec3 p) {
-		return sphere.contains(p);
-	}
-
-	bool isContained(BoundingCube p) {
-		return p.contains(sphere);
-	}
-
-	glm::vec3 getNormal(glm::vec3 pos) {
-		return glm::normalize( pos - sphere.center);
-	}
-
-	ContainmentType check(BoundingCube cube) {
-		return sphere.test(cube); 
-	}
-
-	Vertex getVertex(BoundingCube cube, ContainmentType solid) {
-		Vertex vertex(cube.getCenter());
-		glm::vec3 c = this->sphere.center;
-		float r = this->sphere.radius;
-		glm::vec3 a = cube.getCenter();
-		glm::vec3 n = glm::normalize(a-c);
-		glm::vec3 p = c + n*r;
-		vertex.position = glm::clamp(p, cube.getMin(), cube.getMax());
-		vertex.normal = getNormal(vertex.position);
-		vertex.texIndex = texture->index;
-		vertex.parallaxScale = texture->parallaxScale;
-		vertex.parallaxMinLayers = texture->parallaxMinLayers;
-		vertex.parallaxMaxLayers = texture->parallaxMaxLayers;
-		vertex.shininess = texture->shininess;
-		return vertex;
-	}
-
-};
-
-class BoxContainmentHandler : public ContainmentHandler {
 	public: 
-	BoundingBox box;
-	Texture * texture;
-
-	BoxContainmentHandler(BoundingBox b, Texture * t) : ContainmentHandler(){
-		this->box = b;
-		this->texture = t;
+	SimpleBrush(Texture * texture){
+		this->texture = texture;
 	}
 
-	glm::vec3 getCenter() {
-		return box.getCenter();
-	}
-
-	bool contains(glm::vec3 p) {
-		return box.contains(p);
-	}
-
-	bool isContained(BoundingCube p) {
-		return p.contains(box);
-	}
-	
-	ContainmentType check(BoundingCube cube) {
-		return box.test(cube); 
-	}
-
-	Vertex getVertex(BoundingCube cube, ContainmentType solid) {
-		Vertex vertex(cube.getCenter());
-
-		glm::vec3 min = this->box.getMin();
-		glm::vec3 max = this->box.getMax();
-		glm::vec3 c = cube.getCenter();
-	
-		vertex.position = glm::clamp(c, min, max);
-		vertex.normal = Math::surfaceNormal(vertex.position, box);
-		vertex.texIndex = texture->index;
-		vertex.parallaxScale = texture->parallaxScale;
-		vertex.parallaxMinLayers = texture->parallaxMinLayers;
-		vertex.parallaxMaxLayers = texture->parallaxMaxLayers;	
-		vertex.shininess = texture->shininess;	
-		return vertex;
+	void paint(Vertex * vertex) {
+		vertex->texIndex = texture->index;
+		vertex->parallaxScale = texture->parallaxScale;
+		vertex->parallaxMinLayers = texture->parallaxMinLayers;
+		vertex->parallaxMaxLayers = texture->parallaxMaxLayers;	
+		vertex->shininess = texture->shininess;
 	}
 };
 
-class HeightMapContainmentHandler : public ContainmentHandler {
+class LandBrush : public BrushHandler {
+
+	Texture * underground;
+	Texture * grass;
+	Texture * sand;
+	Texture * rock;
+	Texture * snow;
+
 	public: 
-	HeightMap * map;
-	Texture * texture;
-	Texture * textureOut;
-
-	HeightMapContainmentHandler(HeightMap * m, Texture * t, Texture * o) : ContainmentHandler(){
-		this->map = m;
-		this->texture = t;
-		this->textureOut = o;
+	LandBrush(Texture * underground, Texture * grass, Texture * sand, Texture * rock, Texture * snow){
+		this->underground = underground;
+		this->grass = grass;
+		this->sand = sand;
+		this->rock = rock;
+		this->snow = snow;
 	}
 
-	glm::vec3 getCenter() {
-		return map->getCenter();
-	}
 
-	bool contains(glm::vec3 p) {
-		return map->contains(p);
-	}
-
-	bool isContained(BoundingCube p) {
-		return map->isContained(p);
-	}
-
-	float intersection(glm::vec3 a, glm::vec3 b) {
-		return 0;	
-	} 
-
-	glm::vec3 getNormal(glm::vec3 pos) {
-		return map->getNormalAt(pos.x, pos.z);
-	}
-
-	ContainmentType check(BoundingCube cube) {
-		return map->test(cube); 
-	}
-
-	Vertex getVertex(BoundingCube cube, ContainmentType solid) {
-		Vertex vertex(cube.getCenter());
-
+	void paint(Vertex * vertex) {
 		Texture * t;
-		if(map->hitsBoundary(cube)) {
-			vertex.normal = Math::surfaceNormal(cube.getCenter(), *map);
-			glm::vec3 c = cube.getCenter()+vertex.normal*cube.getLength();
-			c = glm::clamp(c, map->getMin(), map->getMax() );
-			c = glm::clamp(c,cube.getMin(), cube.getMax() );
-			vertex.position = c;
-			t = textureOut;
+		if (glm::dot(glm::vec3(0.0f,1.0f,0.0f), vertex->normal ) <=0 ){
+			t= underground;
+		} else if(vertex->position.y < -45){
+			t = sand;
+		} else if(vertex->position.y < -40){
+			t = grass;
+		} else if(glm::dot(glm::vec3(0.0f,1.0f,0.0f), vertex->normal ) > 0.9 ){
+			t = vertex->position.y > -35 ? snow : grass;
 		} else {
-			glm::vec3 c = glm::clamp(map->getPoint(cube), map->getMin(), map->getMax());
-			vertex.position = c;
-			vertex.normal = getNormal(vertex.position);
-			t = texture;
+			t = rock;
 		}
 
-		vertex.texIndex = t->index;
-		vertex.parallaxScale = t->parallaxScale;
-		vertex.parallaxMinLayers = t->parallaxMinLayers;
-		vertex.parallaxMaxLayers = t->parallaxMaxLayers;	
-		vertex.shininess = t->shininess;
-	
-		return vertex;
+		vertex->texIndex = t->index;
+		vertex->parallaxScale = t->parallaxScale;
+		vertex->parallaxMinLayers = t->parallaxMinLayers;
+		vertex->parallaxMaxLayers = t->parallaxMaxLayers;	
+		vertex->shininess = t->shininess;
 	}
 };
-
-class WaveSurface : public HeightFunction {
-	float getHeightAt(float x, float z) {
-		float amplitude = 10;
-		float offset = -36;
-		float frequency = 1.0/10.0;
-
-		return offset + amplitude * sin(frequency*x)*cos(frequency*z);
-	}
-};
-
-class PerlinSurface : public HeightFunction {
-	public:
-	float amplitude;
-	float frequency;
-	float offset;
-
-
-	PerlinSurface(float amplitude, float frequency, float offset) {
-		this->amplitude = amplitude;
-		this->frequency = frequency;
-		this->offset = offset;
-	}
-
-	float getHeightAt(float x, float z) {
-		float noise = db::perlin(double(x) * frequency, double(z) *frequency);
-		return offset + amplitude * noise;
-	}
-};
-
-
-class FractalPerlinSurface : public HeightFunction {
-	public:
-	float amplitude;
-	float frequency;
-	float offset;
-
-	FractalPerlinSurface(float amplitude, float frequency, float offset) {
-		this->amplitude = amplitude;
-		this->frequency = frequency;
-		this->offset = offset;
-	}
-
-	float getHeightAt(float x, float z) {
-		float noise = 0;
-		float weight = 1.0;
-		float total = 0.0;
-		float f = frequency;
-		int octaves = 8;
-		for(int o = 0 ; o < octaves ; ++o) {
-			PerlinSurface perlin(1.0, f, 0.0);
-			noise += perlin.getHeightAt(x,z) * weight;
-			total += weight;
-			weight *= 0.5;
-			f *= 2;
-		}
-
-		noise /= total;
-
-		return offset + amplitude * noise;
-	}
-};
-
-class GradientPerlinSurface : public HeightFunction {
-	public:
-	float amplitude;
-	float frequency;
-	float offset;
-
-	GradientPerlinSurface(float amplitude, float frequency, float offset) {
-		this->amplitude = amplitude;
-		this->frequency = frequency;
-		this->offset = offset;
-	}
-
-	float getHeightAt(float x, float z) {
-		float noise = 0;
-		float weight = 1.0;
-		float total = 0.0;
-		float f = frequency;
-
-		for(int i = 0 ; i < 6 ; ++i) {
-			PerlinSurface perlin(1 , f, 0);
-			glm::vec3 n = perlin.getNormal(x,z, 0.5);
-		
-			float m = 1.0f -Math::clamp(glm::abs(glm::dot(glm::vec3(0,1,0), n)), 0.0f, 1.0f);
-			float s = glm::pow(glm::e<float>(),- 1280.0f*m);
-
-
-			noise += s*perlin.getHeightAt(x,z) * weight;
-			total +=  weight;
-			weight *= 0.5;
-
-			f *= 2;
-		}
-		
-		noise /= total;
-
-
-		float beachLevel = 0.1;
-		float divisions = 3;
-		// Create beach
-		if(noise < 0.1){
-			noise = beachLevel+ (noise - beachLevel) / divisions;
-		}
-
-
-		return offset + amplitude * noise;
-	}
-};
-
 
 class MainApplication : public LithosApplication {
 	std::vector<Texture*> textures;
@@ -506,18 +264,18 @@ public:
    	    					* glm::angleAxis(glm::radians(135.0f), glm::vec3(0, 1, 0));  
 		camera.position = glm::vec3(48,48,48);
 
-		tree = new Octree(2.0, 5);
+		tree = new Octree(3.0, 5);
 
-		HeightMap map(new GradientPerlinSurface(100, 1.0f/128.0f, -50), glm::vec3(-150,-100,-150),glm::vec3(150,0,150), tree->minSize);
+		HeightMap map(new GradientPerlinSurface(100, 1.0f/128.0f, -50), glm::vec3(-200,-100,-200),glm::vec3(200,0,200), tree->minSize);
 
-		tree->add(new HeightMapContainmentHandler(&map, textures[2], textures[7]));
+		tree->add(new HeightMapContainmentHandler(&map, new LandBrush(textures[7],textures[2],textures[3],textures[4],textures[5])));
 		//tree->del(new SphereContainmentHandler(BoundingSphere(glm::vec3(00,-30,0),50), textures[7]));
-		tree->add(new SphereContainmentHandler(BoundingSphere(glm::vec3(0,0,0),20), textures[6]));
-		tree->add(new SphereContainmentHandler(BoundingSphere(glm::vec3(-11,11,11),10), textures[5]));
-		tree->del(new SphereContainmentHandler(BoundingSphere(glm::vec3(11,11,-11),10), textures[4]));
-		tree->add(new BoxContainmentHandler(BoundingBox(glm::vec3(0,-24,0),glm::vec3(24,0,24)),textures[8]));
-		tree->del(new SphereContainmentHandler(BoundingSphere(glm::vec3(4,4,-4),8), textures[1]));
-		tree->add(new SphereContainmentHandler(BoundingSphere(glm::vec3(11,11,-11),4), textures[3]));
+		tree->add(new SphereContainmentHandler(BoundingSphere(glm::vec3(0,0,0),20), new SimpleBrush(textures[6])));
+		tree->add(new SphereContainmentHandler(BoundingSphere(glm::vec3(-11,11,11),10), new SimpleBrush(textures[5])));
+		tree->del(new SphereContainmentHandler(BoundingSphere(glm::vec3(11,11,-11),10), new SimpleBrush(textures[4])));
+		tree->add(new BoxContainmentHandler(BoundingBox(glm::vec3(0,-24,0),glm::vec3(24,0,24)),new SimpleBrush(textures[8])));
+		tree->del(new SphereContainmentHandler(BoundingSphere(glm::vec3(4,4,-4),8), new SimpleBrush(textures[1])));
+		tree->add(new SphereContainmentHandler(BoundingSphere(glm::vec3(11,11,-11),4), new SimpleBrush(textures[3])));
 
 		tesselator = new Tesselator(tree);
 		tree->iterate(tesselator);
