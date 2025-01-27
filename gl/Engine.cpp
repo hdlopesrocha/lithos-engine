@@ -212,7 +212,7 @@ TextureArray LithosApplication::loadTextureArray(const std::string& color, const
             }
         }
     }
-    int mipLevels = 1;
+    int mipLevels = 1 + floor(log2(glm::max(width, height)));
     glTexStorage3D(GL_TEXTURE_2D_ARRAY, mipLevels, GL_RGBA8, width, height, 3);
 
     for(int i = 0; i < 3 ; ++i) {
