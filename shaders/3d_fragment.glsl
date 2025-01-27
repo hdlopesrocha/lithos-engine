@@ -107,7 +107,7 @@ vec3 visual(vec3 v) {
 void main() {
     float effectAmount = sin(time*3.14/4.0)*0.5 + 0.5;
     float distance = length(cameraPosition - tePosition);
-    float distanceFactor = clamp(20.0 / distance, 0.0, 1.0); // Adjust these numbers to fit your scene
+    float distanceFactor = clamp(32.0 / distance, 0.0, 1.0); // Adjust these numbers to fit your scene
 
 
     vec3 normal = normalize(teNormal);
@@ -123,7 +123,7 @@ void main() {
     vec3 viewTangent = normalize(transpose(TBN) * viewDirection);
     
 
-    if(parallaxEnabled == 1 && teProps.parallaxScale > 0.0) {
+    if(parallaxEnabled == 1 && distanceFactor * teProps.parallaxScale > 0.0) {
        uv = parallaxMapping(uv, viewTangent, distanceFactor*teProps.parallaxScale , distanceFactor*teProps.parallaxMinLayers, distanceFactor*teProps.parallaxMaxLayers, int(ceil(distanceFactor*5.0)));
     }
   
