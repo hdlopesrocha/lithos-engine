@@ -13,7 +13,7 @@ layout(location = 8) in float specularStrength;
 
 #include<functions.glsl>
 
-out float vTextureWeights[10];
+out float vTextureWeights[20];
 out vec2 vTextureCoord;
 out vec3 vPosition;
 out vec3 vNormal;
@@ -26,7 +26,7 @@ void main() {
 
     vTextureCoord = textureCoord;
    
-    for (int i = 0; i < 10; ++i) {
+    for (int i = 0; i < 20; ++i) {
         vTextureWeights[i] = 0.0;
     }
 

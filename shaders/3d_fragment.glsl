@@ -1,7 +1,7 @@
 #version 460 core
 #define PI 3.1415926535897932384626433832795
 
-uniform sampler2DArray textures[10];
+uniform sampler2DArray textures[20];
 
 uniform sampler2D shadowMap;
 uniform sampler2D noise;
@@ -17,7 +17,7 @@ uniform float time;
 
 
 in vec2 teTextureCoord;
-in float teTextureWeights[10];
+in float teTextureWeights[20];
 in vec3 tePosition;
 in vec3 teNormal;
 in TextureProperties teProps;
