@@ -8,7 +8,7 @@
 #define DB_PERLIN_IMPL
 #include "lib/db_perlin.hpp"
 
-//#define DEBUG_GEO 0
+//#define DEBUG_GEO 1
 
 class Texture {
 	public:
@@ -210,25 +210,45 @@ class WaveSurface : public HeightFunction {
 };
 
 class PerlinSurface : public HeightFunction {
+	public:
+
+	float frequency;
+
+	PerlinSurface(float frequency) {
+		this->frequency = frequency;
+	}
 
 	float getHeightAt(float x, float z) {
-  	
+		float noise = db::perlin(double(x) * frequency, double(z) *frequency);
+		return noise;
+	}
+};
 
 
-		float amplitude = 40;
-		float offset = -50;
-		float frequency = 1.0/64.0;
+class FractalPerlinSurface : public HeightFunction {
+	public:
+	float amplitude;
+	float frequency;
+	float offset;
 
+	FractalPerlinSurface(float amplitude, float frequency, float offset) {
+		this->amplitude = amplitude;
+		this->frequency = frequency;
+		this->offset = offset;
+	}
 
+	float getHeightAt(float x, float z) {
 		float noise = 0;
 		float weight = 1.0;
 		float total = 0.0;
-
-		for(int i = 0 ; i < 5 ; ++i) {
-			noise += db::perlin(double(x) * frequency, double(z) *frequency) * weight;
+		float f = frequency;
+		int octaves = 8;
+		for(int o = 0 ; o < octaves ; ++o) {
+			PerlinSurface perlin(f);
+			noise += perlin.getHeightAt(x,z) * weight;
 			total += weight;
 			weight *= 0.5;
-			frequency *= 2;
+			f *= 2;
 		}
 
 		noise /= total;
@@ -236,6 +256,43 @@ class PerlinSurface : public HeightFunction {
 		return offset + amplitude * noise;
 	}
 };
+
+class GradientPerlinSurface : public HeightFunction {
+	public:
+	float amplitude;
+	float frequency;
+	float offset;
+
+	GradientPerlinSurface(float amplitude, float frequency, float offset) {
+		this->amplitude = amplitude;
+		this->frequency = frequency;
+		this->offset = offset;
+	}
+
+	float getHeightAt(float x, float z) {
+		float noise = 0;
+		float weight = 1.0;
+		float total = 0.0;
+		float f = frequency;
+
+		for(int i = 0 ; i < 8 ; ++i) {
+			PerlinSurface perlin(f);
+			glm::vec3 n = perlin.getNormal(x,z, 0.5);
+		
+			float m = Math::clamp( 1.0-glm::abs(glm::dot(glm::vec3(0,1,0), n))/32.0, 0.0f, 1.0f);
+		
+			noise += m*perlin.getHeightAt(x,z) * weight;
+			total +=  weight;
+			weight *= 0.5;
+			f *= 2;
+		}
+
+		noise /= total;
+
+		return offset + amplitude * noise;
+	}
+};
+
 
 class MainApplication : public LithosApplication {
 	std::vector<Texture*> textures;
@@ -435,7 +492,7 @@ public:
 
 		tree = new Octree(2.0, 5);
 
-		HeightMap map(new PerlinSurface(), glm::vec3(-100,-100,-100),glm::vec3(100,0,100), tree->minSize);
+		HeightMap map(new FractalPerlinSurface(40, 1.0f/64.0f, -50), glm::vec3(-100,-100,-100),glm::vec3(100,0,100), tree->minSize);
 
 		tree->add(new HeightMapContainmentHandler(&map, textures[2], textures[7]));
 		tree->del(new SphereContainmentHandler(BoundingSphere(glm::vec3(00,-30,0),50), textures[7]));
@@ -522,14 +579,14 @@ public:
 		glm::vec3 cameraDirection = glm::vec3(0.0f, 0.0f, -1.0f)*camera.quaternion;
 	
 
-		float far = 256.0f;
+		float far = 512.0f;
 		float dist = 32.0f;
 	   	glm::vec3 lookAtLightPosition = glm::round(camera.position/16.0f)*16.0f; // + cameraDirection*far*0.5f;
 
 
 		light.direction = glm::normalize(glm::vec3(glm::sin(time),-1.0,glm::cos(time)));
 
-		float orthoSize = 256.0f;  // Size of the orthographic box
+		float orthoSize = 512.0f;  // Size of the orthographic box
 
 		light.projection = glm::ortho(-orthoSize, orthoSize, -orthoSize, orthoSize, 0.1f, far);
 		light.view = glm::lookAt(lookAtLightPosition - light.direction*dist, lookAtLightPosition, glm::vec3(0,1,0));

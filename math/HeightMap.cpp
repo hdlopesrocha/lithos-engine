@@ -21,17 +21,14 @@ glm::vec2 HeightMap::getHeightRangeBetween(BoundingCube cube) {
     return range;
 }
 
-glm::vec3 HeightMap::getNormalAt(float x, float z) {
-    // bilinear interpolation
-
-
-    float q11 = func->getHeightAt(x, z);
-    float q21 = func->getHeightAt(x+step, z);
-    float q12 = func->getHeightAt(x, z+step);
+glm::vec3 HeightFunction::getNormal(float x, float z, float delta) {
+    float q11 = getHeightAt(x, z);
+    float q21 = getHeightAt(x+delta, z);
+    float q12 = getHeightAt(x, z+delta);
 
     glm::vec3 v11 = glm::vec3(0, q11, 0);
-    glm::vec3 v21 = glm::vec3(step, q21, 0);
-    glm::vec3 v12 = glm::vec3(0, q12, step);
+    glm::vec3 v21 = glm::vec3(delta, q21, 0);
+    glm::vec3 v12 = glm::vec3(0, q12, delta);
 
     glm::vec3 n21 = glm::normalize(v21 -v11 );
     glm::vec3 n12 = glm::normalize(v12 -v11 );
@@ -39,6 +36,9 @@ glm::vec3 HeightMap::getNormalAt(float x, float z) {
     return glm::cross(n12,n21);
 }
 
+glm::vec3 HeightMap::getNormalAt(float x, float z) {
+    return func->getNormal(x,z,step);
+}
 
 glm::vec3 getShift(int i) {
 	return glm::vec3( ((i >> 0) % 2) , ((i >> 2) % 2) , ((i >> 1) % 2));

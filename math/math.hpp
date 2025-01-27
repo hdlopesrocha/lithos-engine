@@ -164,6 +164,8 @@ class BoundingBox {
 class HeightFunction {
 	public:
 		virtual float getHeightAt(float x, float z) = 0;
+		glm::vec3 getNormal(float x, float z, float delta);
+
 };
 
 class HeightMap: public BoundingBox  {
