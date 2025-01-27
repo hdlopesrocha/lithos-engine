@@ -109,3 +109,38 @@ ContainmentType BoundingBox::test(BoundingCube cube) {
     }
     return result;
 }
+
+
+BoxContainmentHandler::BoxContainmentHandler(BoundingBox box, BrushHandler * b) : ContainmentHandler(){
+    this->box = box;
+    this->painter = b;
+}
+
+glm::vec3 BoxContainmentHandler::getCenter() {
+    return box.getCenter();
+}
+
+bool BoxContainmentHandler::contains(glm::vec3 p) {
+    return box.contains(p);
+}
+
+bool BoxContainmentHandler::isContained(BoundingCube p) {
+    return p.contains(box);
+}
+
+ContainmentType BoxContainmentHandler::check(BoundingCube cube) {
+    return box.test(cube); 
+}
+
+Vertex BoxContainmentHandler::getVertex(BoundingCube cube, ContainmentType solid) {
+    Vertex vertex(cube.getCenter());
+
+    glm::vec3 min = this->box.getMin();
+    glm::vec3 max = this->box.getMax();
+    glm::vec3 c = cube.getCenter();
+
+    vertex.position = glm::clamp(c, min, max);
+    vertex.normal = Math::surfaceNormal(vertex.position, box);
+    painter->paint(&vertex);	
+    return vertex;
+}

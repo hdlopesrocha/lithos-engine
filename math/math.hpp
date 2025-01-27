@@ -308,6 +308,50 @@ class BrushHandler {
 	virtual void paint(Vertex * v) = 0;
 };
 
+
+class SphereContainmentHandler : public ContainmentHandler {
+	public:
+	BoundingSphere sphere;
+    BrushHandler * painter;
+
+	SphereContainmentHandler(BoundingSphere s, BrushHandler * b);
+	glm::vec3 getCenter();
+	bool contains(glm::vec3 p);
+	bool isContained(BoundingCube p);
+	glm::vec3 getNormal(glm::vec3 pos);
+	ContainmentType check(BoundingCube cube);
+	Vertex getVertex(BoundingCube cube, ContainmentType solid);
+};
+
+class BoxContainmentHandler : public ContainmentHandler {
+	public: 
+	BoundingBox box;
+    BrushHandler * painter;
+
+	BoxContainmentHandler(BoundingBox box, BrushHandler * b);
+	glm::vec3 getCenter();
+	bool contains(glm::vec3 p);
+	bool isContained(BoundingCube p);
+	ContainmentType check(BoundingCube cube);
+	Vertex getVertex(BoundingCube cube, ContainmentType solid);
+};
+
+class HeightMapContainmentHandler : public ContainmentHandler {
+	public: 
+	HeightMap * map;
+    BrushHandler * painter;
+
+	HeightMapContainmentHandler(HeightMap * m, BrushHandler * b);
+	glm::vec3 getCenter();
+	bool contains(glm::vec3 p);
+	bool isContained(BoundingCube p);
+	float intersection(glm::vec3 a, glm::vec3 b);
+	glm::vec3 getNormal(glm::vec3 pos);
+	ContainmentType check(BoundingCube cube);
+	Vertex getVertex(BoundingCube cube, ContainmentType solid);
+};
+
+
 class Math
 {
 public:

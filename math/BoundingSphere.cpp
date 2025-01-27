@@ -78,3 +78,42 @@ ContainmentType BoundingSphere::test(BoundingCube cube) {
     return ContainmentType::Disjoint;
 }
 
+
+SphereContainmentHandler::SphereContainmentHandler(BoundingSphere s, BrushHandler * b) : ContainmentHandler(){
+    this->sphere = s;
+    this->painter = b;
+}
+
+glm::vec3 SphereContainmentHandler::getCenter() {
+    return sphere.center;
+}
+
+bool SphereContainmentHandler::contains(glm::vec3 p) {
+    return sphere.contains(p);
+}
+
+bool SphereContainmentHandler::isContained(BoundingCube p) {
+    return p.contains(sphere);
+}
+
+glm::vec3 SphereContainmentHandler::getNormal(glm::vec3 pos) {
+    return glm::normalize( pos - sphere.center);
+}
+
+ContainmentType SphereContainmentHandler::check(BoundingCube cube) {
+    return sphere.test(cube); 
+}
+
+Vertex SphereContainmentHandler::getVertex(BoundingCube cube, ContainmentType solid) {
+    Vertex vertex(cube.getCenter());
+    glm::vec3 c = this->sphere.center;
+    float r = this->sphere.radius;
+    glm::vec3 a = cube.getCenter();
+    glm::vec3 n = glm::normalize(a-c);
+    glm::vec3 p = c + n*r;
+    vertex.position = glm::clamp(p, cube.getMin(), cube.getMax());
+    vertex.normal = getNormal(vertex.position);
+
+    painter->paint(&vertex);
+    return vertex;
+}

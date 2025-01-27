@@ -6,7 +6,6 @@
 #include "math/math.hpp"
 
 #include "HeightFunctions.hpp"
-#include "CointainmentHandlers.hpp"
 
 //#define DEBUG_GEO 1
 

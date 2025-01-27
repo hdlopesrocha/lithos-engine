@@ -117,3 +117,52 @@ ContainmentType HeightMap::test(BoundingCube cube) {
     return result;
 }
 
+
+HeightMapContainmentHandler::HeightMapContainmentHandler(HeightMap * m, BrushHandler * b) : ContainmentHandler(){
+    this->map = m;
+    this->painter = b;
+}
+
+glm::vec3 HeightMapContainmentHandler::getCenter() {
+    return map->getCenter();
+}
+
+bool HeightMapContainmentHandler::contains(glm::vec3 p) {
+    return map->contains(p);
+}
+
+bool HeightMapContainmentHandler::isContained(BoundingCube p) {
+    return map->isContained(p);
+}
+
+float HeightMapContainmentHandler::intersection(glm::vec3 a, glm::vec3 b) {
+    return 0;	
+} 
+
+glm::vec3 HeightMapContainmentHandler::getNormal(glm::vec3 pos) {
+    return map->getNormalAt(pos.x, pos.z);
+}
+
+ContainmentType HeightMapContainmentHandler::check(BoundingCube cube) {
+    return map->test(cube); 
+}
+
+Vertex HeightMapContainmentHandler::getVertex(BoundingCube cube, ContainmentType solid) {
+    Vertex vertex(cube.getCenter());
+
+    if(map->hitsBoundary(cube)) {
+        vertex.normal = Math::surfaceNormal(cube.getCenter(), *map);
+        glm::vec3 c = cube.getCenter()+vertex.normal*cube.getLength();
+        c = glm::clamp(c, map->getMin(), map->getMax() );
+        c = glm::clamp(c,cube.getMin(), cube.getMax() );
+        vertex.position = c;
+    } else {
+        glm::vec3 c = glm::clamp(map->getPoint(cube), map->getMin(), map->getMax());
+        vertex.position = c;
+        vertex.normal = getNormal(vertex.position);
+    }
+
+    painter->paint(&vertex);
+    return vertex;
+}
+
