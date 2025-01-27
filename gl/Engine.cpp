@@ -63,7 +63,7 @@ void LithosApplication::mainLoop() {
         if (!glfwWindowShouldClose(window)) {
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        // Get current time
+            // Get current time
             double currentTime = glfwGetTime();
             // Calculate delta time (time since last frame)
             double deltaTime = currentTime - lastFrameTime;
@@ -193,18 +193,19 @@ TextureArray LithosApplication::loadTextureArray(const std::string& color, const
     glBindTexture(GL_TEXTURE_2D_ARRAY, textureArray);
 
     // Load the image
-    int width, height, channels;
+    int width, height;
 
 
     std::string filenames[3] = { color, normal, bump} ;
     unsigned char* datas[3] = {NULL, NULL, NULL};
-    
+    int channels[3];
+
     for(int i = 0; i < 3 ; ++i) {
         std::string filename = filenames[i];
 
         if(filename.size()){
             std::cout << "Loading " << color << std::endl;
-            datas[i] = stbi_load(color.c_str(), &width, &height, &channels, 0);
+            datas[i] = stbi_load(color.c_str(), &width, &height, &channels[i], 0);
             if (!datas[i]) {
                 std::cerr << "Failed to load texture: " << color << std::endl;
                 return textureArray;
@@ -216,7 +217,9 @@ TextureArray LithosApplication::loadTextureArray(const std::string& color, const
 
     for(int i = 0; i < 3 ; ++i) {
         if (datas[i]) {
-            glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, i, width, height, 1, channelsToFormat(channels), GL_UNSIGNED_BYTE, datas[i]);
+            std::cerr << "glTexSubImage3D[" << i << "]"<< std::endl;
+  
+            glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, i, width, height, 1, channelsToFormat(channels[i]), GL_UNSIGNED_BYTE, datas[i]);
         }
     }
 

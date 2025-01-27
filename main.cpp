@@ -1,4 +1,3 @@
-
 #include "gl/gl.hpp"
 #include <math.h>
 #include <glm/gtc/type_ptr.hpp>
@@ -125,14 +124,8 @@ public:
 	}
 
 	void bindTextures(std::vector<Texture*> ts) {
-		int activeTexture = 0;
-		for(int i=0 ; i < ts.size() ; ++i) {
-		    Texture * t = ts[i];
-			t->index = i;
-			glActiveTexture(GL_TEXTURE_2D_ARRAY + activeTexture); 
-			glBindTexture(GL_TEXTURE_2D_ARRAY, t->texture);    // Bind the texture to the active unit
-		    glUniform1i(glGetUniformLocation(program3D, ("textures[" + std::to_string(i) + "]").c_str()), activeTexture++);
-		}
+		int activeTexture = 1;
+		
 		glActiveTexture(GL_TEXTURE0 + activeTexture); 
 		glBindTexture(GL_TEXTURE_2D, depthFrameBuffer.texture);
 		glUniform1i(shadowMapLoc, activeTexture++);
@@ -140,6 +133,17 @@ public:
 		glActiveTexture(GL_TEXTURE0 + activeTexture); 
 		glBindTexture(GL_TEXTURE_2D, noiseTexture);
 		glUniform1i(noiseLoc, activeTexture++);
+
+		for(int i=0 ; i < ts.size() ; ++i) {
+		    Texture * t = ts[i];
+			t->index = i;
+			glActiveTexture(GL_TEXTURE0 + activeTexture); 
+			glBindTexture(GL_TEXTURE_2D_ARRAY, t->texture);    // Bind the texture to the active unit
+			std::cout << "Binding ActiveTexture[" << activeTexture << "] = " << t->texture << std::endl;
+		    glUniform1i(glGetUniformLocation(program3D, ("textures[" + std::to_string(i) + "]").c_str()), activeTexture++);
+		}
+
+
 	}
 
 	GLuint create2DVAO(float w, float h) {
@@ -367,6 +371,7 @@ public:
 		glm::mat4 mvp = camera.projection * camera.view;
 		glm::mat4 mlp = light.projection * light.view;
 
+
 		// ================
 		// Shadow component
 		// ================
@@ -390,6 +395,7 @@ public:
 		// 3D component
 		// ============
 		glUseProgram(program3D);
+
 	    float bias = 0.003;
 		glm::mat4 biasMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f,0.0f,-bias));
 
@@ -479,8 +485,7 @@ public:
 
 		glUniform1i(glGetUniformLocation(program2D, "depthEnabled"), false); 
 
-		glActiveTexture(GL_TEXTURE0); 
-		glBindTexture(GL_TEXTURE_2D_ARRAY, textures[0]->texture);
+
     }
 
     virtual void clean(){
