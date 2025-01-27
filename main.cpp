@@ -211,16 +211,20 @@ class WaveSurface : public HeightFunction {
 
 class PerlinSurface : public HeightFunction {
 	public:
-
+	float amplitude;
 	float frequency;
+	float offset;
 
-	PerlinSurface(float frequency) {
+
+	PerlinSurface(float amplitude, float frequency, float offset) {
+		this->amplitude = amplitude;
 		this->frequency = frequency;
+		this->offset = offset;
 	}
 
 	float getHeightAt(float x, float z) {
 		float noise = db::perlin(double(x) * frequency, double(z) *frequency);
-		return noise;
+		return offset + amplitude * noise;
 	}
 };
 
@@ -244,7 +248,7 @@ class FractalPerlinSurface : public HeightFunction {
 		float f = frequency;
 		int octaves = 8;
 		for(int o = 0 ; o < octaves ; ++o) {
-			PerlinSurface perlin(f);
+			PerlinSurface perlin(1.0, f, 0.0);
 			noise += perlin.getHeightAt(x,z) * weight;
 			total += weight;
 			weight *= 0.5;
@@ -275,19 +279,31 @@ class GradientPerlinSurface : public HeightFunction {
 		float total = 0.0;
 		float f = frequency;
 
-		for(int i = 0 ; i < 8 ; ++i) {
-			PerlinSurface perlin(f);
+		for(int i = 0 ; i < 6 ; ++i) {
+			PerlinSurface perlin(1 , f, 0);
 			glm::vec3 n = perlin.getNormal(x,z, 0.5);
 		
-			float m = Math::clamp( 1.0-glm::abs(glm::dot(glm::vec3(0,1,0), n))/32.0, 0.0f, 1.0f);
-		
-			noise += m*perlin.getHeightAt(x,z) * weight;
+			float m = 1.0f -Math::clamp(glm::abs(glm::dot(glm::vec3(0,1,0), n)), 0.0f, 1.0f);
+			float s = glm::pow(glm::e<float>(),- 1280.0f*m);
+
+
+			noise += s*perlin.getHeightAt(x,z) * weight;
 			total +=  weight;
 			weight *= 0.5;
+
 			f *= 2;
 		}
-
+		
 		noise /= total;
+
+
+		float beachLevel = 0.1;
+		float divisions = 3;
+		// Create beach
+		if(noise < 0.1){
+			noise = beachLevel+ (noise - beachLevel) / divisions;
+		}
+
 
 		return offset + amplitude * noise;
 	}
@@ -492,10 +508,10 @@ public:
 
 		tree = new Octree(2.0, 5);
 
-		HeightMap map(new FractalPerlinSurface(40, 1.0f/64.0f, -50), glm::vec3(-100,-100,-100),glm::vec3(100,0,100), tree->minSize);
+		HeightMap map(new GradientPerlinSurface(100, 1.0f/128.0f, -50), glm::vec3(-150,-100,-150),glm::vec3(150,0,150), tree->minSize);
 
 		tree->add(new HeightMapContainmentHandler(&map, textures[2], textures[7]));
-		tree->del(new SphereContainmentHandler(BoundingSphere(glm::vec3(00,-30,0),50), textures[7]));
+		//tree->del(new SphereContainmentHandler(BoundingSphere(glm::vec3(00,-30,0),50), textures[7]));
 		tree->add(new SphereContainmentHandler(BoundingSphere(glm::vec3(0,0,0),20), textures[6]));
 		tree->add(new SphereContainmentHandler(BoundingSphere(glm::vec3(-11,11,11),10), textures[5]));
 		tree->del(new SphereContainmentHandler(BoundingSphere(glm::vec3(11,11,-11),10), textures[4]));
