@@ -75,6 +75,7 @@ class MainApplication : public LithosApplication {
 	Octree * tree;
 	Tesselator * tesselator;
 	OctreeRenderer * renderer;
+	DrawableGeometry * sphere;
 	#ifdef DEBUG_GEO
 	DrawableGeometry * vaoDebug;
 	#endif
@@ -85,6 +86,7 @@ class MainApplication : public LithosApplication {
 	GLuint programShadow;
 	GLuint programTexture;
 	
+	GLuint modelLoc;
 	GLuint modelViewProjectionLoc;
 	GLuint modelViewProjectionShadowLoc;
 	GLuint matrixShadowLoc;
@@ -94,7 +96,10 @@ class MainApplication : public LithosApplication {
 	GLuint debugEnabledLoc;
 	GLuint triplanarEnabledLoc;
 	GLuint parallaxEnabledLoc;
+	GLuint shadowEnabledLoc;
 	GLuint cameraPositionLoc;
+	GLuint overrideTextureEnabledLoc;
+	GLuint overrideTextureLoc;
 	GLuint shadowMapLoc;
 	GLuint noiseLoc;
 	GLuint timeLoc;
@@ -243,21 +248,31 @@ public:
 		// Use the shader program
 		screen2dVao = create2DVAO(200,200);
 		fillAreaVao = create2DVAO(1,1);
+		SphereGeometry sphereGeometry(20,40);
+		sphere = new DrawableGeometry(&sphereGeometry);
 
 		modelViewProjectionShadowLoc = glGetUniformLocation(programShadow, "modelViewProjection");
-	
+
+		modelLoc = glGetUniformLocation(program3D, "model");
 		modelViewProjectionLoc = glGetUniformLocation(program3D, "modelViewProjection");
 		matrixShadowLoc = glGetUniformLocation(program3D, "matrixShadow");
 		lightDirectionLoc = glGetUniformLocation(program3D, "lightDirection");
 		lightEnabledLoc = glGetUniformLocation(program3D, "lightEnabled");
 		debugEnabledLoc = glGetUniformLocation(program3D, "debugEnabled");
 		triplanarEnabledLoc = glGetUniformLocation(program3D, "triplanarEnabled");
+		shadowEnabledLoc = glGetUniformLocation(program3D, "shadowEnabled");
 		parallaxEnabledLoc = glGetUniformLocation(program3D, "parallaxEnabled");
 		cameraPositionLoc = glGetUniformLocation(program3D, "cameraPosition");
 		timeLoc = glGetUniformLocation(program3D, "time");
 		shadowMapLoc = glGetUniformLocation(program3D, "shadowMap");
 		noiseLoc = glGetUniformLocation(program3D, "noise");
+		overrideTextureLoc = glGetUniformLocation(program3D, "overrideTexture");
+		overrideTextureEnabledLoc = glGetUniformLocation(program3D, "overrideTextureEnabled");
 		
+
+
+
+
 		bindTextures(textures);
 		
 		
@@ -378,14 +393,28 @@ public:
 		light.view = glm::lookAt(lookAtLightPosition - light.direction*dist, lookAtLightPosition, glm::vec3(0,1,0));
     }
 
+	glm::mat4 getCameraMVP(Camera cam, glm::mat4 m) {
+		return cam.projection * cam.view * m;
+	}
+
+	glm::mat4 getLightMVP(DirectionalLight cam, glm::mat4 m) {
+		return cam.projection * cam.view * m;
+	}
+
+	glm::mat4 getCanonicalMVP(glm::mat4 m) {
+		return glm::translate(glm::mat4(1.0f), glm::vec3(0.5)) 
+						* glm::scale(glm::mat4(1.0f), glm::vec3(0.5)) 
+						* m;
+	}
+
     virtual void draw3d() {
 		glm::mat4 model = glm::mat4(1.0f); // Identity matrix
 		renderer->loaded = 0;
 		glm::mat4 rotate = glm::mat4_cast(camera.quaternion);
 		glm::mat4 translate = glm::translate(glm::mat4(1.0f), -camera.position);
 	    camera.view = rotate * translate;
-		glm::mat4 mvp = camera.projection * camera.view;
-		glm::mat4 mlp = light.projection * light.view;
+		glm::mat4 mvp = getCameraMVP(camera, model);
+		glm::mat4 mlp = getLightMVP(light, model);
 
 
 		// ================
@@ -416,12 +445,11 @@ public:
 		glm::mat4 biasMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f,0.0f,-bias));
 
 
-		glm::mat4 ms =  glm::translate(glm::mat4(1.0f), glm::vec3(0.5)) 
-						* glm::scale(glm::mat4(1.0f), glm::vec3(0.5)) 
-						* mlp 					;
+		glm::mat4 ms =  getCanonicalMVP(mlp);
 
 		// Send matrices to the shader
 		glUniformMatrix4fv(modelViewProjectionLoc, 1, GL_FALSE, glm::value_ptr(mvp));
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 		glUniformMatrix4fv(matrixShadowLoc, 1, GL_FALSE, glm::value_ptr(ms  ));
 		glUniform3fv(lightDirectionLoc, 1, glm::value_ptr(light.direction));
 		glUniform3fv(cameraPositionLoc, 1, glm::value_ptr(camera.position));
@@ -430,7 +458,8 @@ public:
 		glUniform1ui(triplanarEnabledLoc, 1);
 		glUniform1ui(parallaxEnabledLoc, 1);
 		glUniform1ui(debugEnabledLoc, 0);
-		
+		glUniform1ui(shadowEnabledLoc, 1);
+
 		glPatchParameteri(GL_PATCH_VERTICES, 3); // Define the number of control points per patch
 
 		glEnable(GL_CULL_FACE); // Enable face culling
@@ -442,6 +471,17 @@ public:
 		renderer->mode = GL_PATCHES;
 		renderer->update(mvp);
 		tree->iterate(renderer);
+
+
+		glm::mat4 model2 = glm::scale(glm::translate(  glm::mat4(1.0f), glm::vec3(0,32,0)), glm::vec3(16,16,16));
+		glm::mat4 mvp2 = getCameraMVP(camera, model2);
+		glUniformMatrix4fv(modelViewProjectionLoc, 1, GL_FALSE, glm::value_ptr(mvp2));
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model2));
+		glUniform1ui(overrideTextureEnabledLoc, 1);
+		glUniform1ui(shadowEnabledLoc, 0);
+		glUniform1ui(overrideTextureLoc, 3);
+		sphere->draw(GL_PATCHES);
+		glUniform1ui(overrideTextureEnabledLoc, 0);
 
 		#ifdef DEBUG_GEO
 	
@@ -463,6 +503,7 @@ public:
 		
 		glPolygonMode(GL_FRONT, GL_FILL);
 		#endif
+
 
 		// ==========
 		// Final Pass

@@ -1,3 +1,6 @@
+uniform bool overrideTextureEnabled;
+uniform uint overrideTexture;
+
 int triplanarPlane(vec3 position, vec3 normal) {
     vec3 absNormal = abs(normal);
     if (absNormal.x > absNormal.y && absNormal.x > absNormal.z) {
@@ -23,6 +26,10 @@ vec2 triplanarMapping(vec3 position, int plane) {
 
 
 vec4 textureBlend(in float ws[20], sampler2DArray ts[20], vec2 uv, int index) {
+    if(overrideTextureEnabled) {
+        return texture(ts[overrideTexture], vec3(uv, index));
+    }
+    
     vec4 res = vec4(0.0);
     for(int i=0 ; i < 20; ++i) {
         float w = ws[i];

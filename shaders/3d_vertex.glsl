@@ -20,7 +20,7 @@ out vec3 vNormal;
 out TextureProperties vProps;
 
 uniform vec3 lightDirection;  
-uniform uint triplanarEnabled;
+uniform mat4 modelViewProjection; 
 
 void main() {
 

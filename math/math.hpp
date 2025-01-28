@@ -269,6 +269,14 @@ public:
 	Vertex * addVertex(Vertex vertex, bool textureUnique);
 };
 
+class SphereGeometry : public Geometry{
+    int lats;
+    int longs;
+public:
+	SphereGeometry(int lats, int longs);
+
+};
+
 
 class Frustum
 {

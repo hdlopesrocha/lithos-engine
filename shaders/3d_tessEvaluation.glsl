@@ -4,7 +4,7 @@ layout(triangles, equal_spacing, ccw) in; // Define primitive type and tessellat
 #include<functions.glsl>
 
 uniform sampler2DArray textures[20];
-uniform uint debugEnabled;
+uniform bool debugEnabled;
 
 in float tcTextureWeights[][20];
 in vec2 tcTextureCoord[];
@@ -23,15 +23,13 @@ out vec4 lightViewPosition;
 
 uniform mat4 modelViewProjection; 
 uniform mat4 matrixShadow; 
-uniform uint triplanarEnabled;
+uniform mat4 model; 
 
 
 void main() {
 
     teNormal = tcNormal[0] * gl_TessCoord[0] + tcNormal[1] * gl_TessCoord[1] + tcNormal[2] * gl_TessCoord[2];
   
-    // mat3 tr = mat3(transpose(inverse(model)));
-    // teNormal = normalize(tr * teNormal);
     
     teProps.parallaxScale = tcProps[0].parallaxScale * gl_TessCoord[0] + 
                             tcProps[1].parallaxScale * gl_TessCoord[1] + 
@@ -58,12 +56,15 @@ void main() {
     tePosition = gl_TessCoord[0] * tcPosition[0] + gl_TessCoord[1] * tcPosition[1] + gl_TessCoord[2] * tcPosition[2];
     teTextureCoord = tcTextureCoord[0] * gl_TessCoord[0] + tcTextureCoord[1] * gl_TessCoord[1] + tcTextureCoord[2] * gl_TessCoord[2];
     
-    if(debugEnabled == 1) {
+    if(debugEnabled) {
         tePosition += teNormal*0.02;
     }
 
-
     gl_Position = modelViewProjection * vec4(tePosition, 1.0);    
-    lightViewPosition = matrixShadow * vec4(tePosition, 1.0);    
+    lightViewPosition = matrixShadow * vec4(tePosition, 1.0);  
 
+
+    tePosition = mat3(model) * tePosition;    
+    // mat3 tr = mat3(transpose(inverse(model)));
+    // teNormal = normalize(tr * teNormal);
 }
