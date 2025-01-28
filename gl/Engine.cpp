@@ -1,5 +1,11 @@
 
 #define STB_IMAGE_IMPLEMENTATION
+
+
+#include "../dependencies/imgui/imgui.h"
+#include "../dependencies/imgui/imgui_impl_glfw.h"
+#include "../dependencies/imgui/imgui_impl_opengl3.h"
+
 #include <stb_image.h>
 
 #include "gl.hpp"
@@ -39,6 +45,16 @@ int LithosApplication::initWindow() {
 	}
 
 	glfwSetKeyCallback(window, keyCallback);
+
+
+    // ImGui
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO();
+    (void)io;
+    ImGui::StyleColorsDark();
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui_ImplOpenGL3_Init("#version 460");
 
 
     // Print OpenGL version

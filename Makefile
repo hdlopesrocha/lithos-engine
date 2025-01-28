@@ -1,11 +1,14 @@
 CC=g++
-SRC=*.cpp gl/*.cpp math/*.cpp
 
 STB_INCLUDE_PATH = dependencies/stb
 RAPID_JSON_PATH = dependencies/rapidjson
 TINYOBJ_INCLUDE_PATH = dependencies/tinyobjloader
+IMGUI_INCLUDE_PATH = dependencies/imgui
 
-CFLAGS = -pg -g -std=c++11 -lGLEW -lglfw -lGL -I$(STB_INCLUDE_PATH) -I$(RAPID_JSON_PATH)/include -I$(TINYOBJ_INCLUDE_PATH)
+SRC=*.cpp gl/*.cpp math/*.cpp $(IMGUI_INCLUDE_PATH)/*.cpp
+
+CFLAGS = -pg -g -std=c++11 -lGLEW -lglfw -lGL -I$(STB_INCLUDE_PATH) -I$(RAPID_JSON_PATH)/include -I$(TINYOBJ_INCLUDE_PATH) 
+
 
 
 compile:
@@ -27,3 +30,6 @@ debug:
 
 tool:
 	$(CC) $(CFLAGS) -o bin/converter tools/wavefrontConverter.cpp
+
+install:
+	sudo apt-get install libimgui-dev 
