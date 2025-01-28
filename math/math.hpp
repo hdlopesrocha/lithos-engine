@@ -29,6 +29,8 @@ struct Vertex {
 	float parallaxMinLayers;
 	float parallaxMaxLayers;
 	float shininess;
+	float specularStrength;
+
 
     Vertex(){
 		this->position = glm::vec3(0);
@@ -39,6 +41,7 @@ struct Vertex {
 		this->parallaxMinLayers = 8;
 		this->parallaxMaxLayers = 32;
 		this->shininess = 32;
+		this->specularStrength = 0.4;
     }
 
     Vertex(glm::vec3 pos) : Vertex(){

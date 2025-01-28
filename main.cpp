@@ -1,4 +1,3 @@
-
 #include "gl/gl.hpp"
 #include <math.h>
 #include <glm/gtc/type_ptr.hpp>
@@ -24,6 +23,7 @@ class SimpleBrush : public TextureBrush {
 		vertex->parallaxMinLayers = texture->parallaxMinLayers;
 		vertex->parallaxMaxLayers = texture->parallaxMaxLayers;	
 		vertex->shininess = texture->shininess;
+		vertex->specularStrength = texture->specularStrength;
 	}
 };
 
@@ -46,24 +46,25 @@ class LandBrush : public TextureBrush {
 
 
 	void paint(Vertex * vertex) {
-		Texture * t;
+		Texture * texture;
 		if (glm::dot(glm::vec3(0.0f,1.0f,0.0f), vertex->normal ) <=0 ){
-			t= underground;
+			texture= underground;
 		} else if(glm::dot(glm::vec3(0.0f,1.0f,0.0f), vertex->normal ) < 0.8 ){
-			t = rock;
+			texture = rock;
 		} else if(vertex->position.y < -45){
-			t = sand;
+			texture = sand;
 		} else if(vertex->position.y < -25){
-			t = grass;
+			texture = grass;
 		} else {
-			t = snow;
+			texture = snow;
 		}
 
-		vertex->texIndex = t->index;
-		vertex->parallaxScale = t->parallaxScale;
-		vertex->parallaxMinLayers = t->parallaxMinLayers;
-		vertex->parallaxMaxLayers = t->parallaxMaxLayers;	
-		vertex->shininess = t->shininess;
+		vertex->texIndex = texture->index;
+		vertex->parallaxScale = texture->parallaxScale;
+		vertex->parallaxMinLayers = texture->parallaxMinLayers;
+		vertex->parallaxMaxLayers = texture->parallaxMaxLayers;	
+		vertex->shininess = texture->shininess;
+		vertex->specularStrength = texture->specularStrength;
 	}
 };
 
@@ -123,23 +124,8 @@ public:
 	}
 
 	void bindTextures(std::vector<Texture*> ts) {
-		int activeTexture = 0;
-		for(int i=0 ; i < ts.size() ; ++i) {
-		    Texture * t = ts[i];
-			t->index = i;
-			glActiveTexture(GL_TEXTURE0 + activeTexture); 
-			glBindTexture(GL_TEXTURE_2D, t->texture);    // Bind the texture to the active unit
-		    glUniform1i(glGetUniformLocation(program3D, ("textures[" + std::to_string(i) + "]").c_str()), activeTexture++);
-
-			glActiveTexture(GL_TEXTURE0 + activeTexture); 
-			glBindTexture(GL_TEXTURE_2D, t->normal);    // Bind the texture to the active unit
-		    glUniform1i(glGetUniformLocation(program3D, ("normalMaps[" + std::to_string(i) + "]").c_str()), activeTexture++);
+		int activeTexture = 1;
 		
-			glActiveTexture(GL_TEXTURE0 + activeTexture); 
-			glBindTexture(GL_TEXTURE_2D, t->bump);    // Bind the texture to the active unit
-		    glUniform1i(glGetUniformLocation(program3D, ("bumpMaps[" + std::to_string(i) + "]").c_str()), activeTexture++);
-
-		}
 		glActiveTexture(GL_TEXTURE0 + activeTexture); 
 		glBindTexture(GL_TEXTURE_2D, depthFrameBuffer.texture);
 		glUniform1i(shadowMapLoc, activeTexture++);
@@ -147,6 +133,17 @@ public:
 		glActiveTexture(GL_TEXTURE0 + activeTexture); 
 		glBindTexture(GL_TEXTURE_2D, noiseTexture);
 		glUniform1i(noiseLoc, activeTexture++);
+
+		for(int i=0 ; i < ts.size() ; ++i) {
+		    Texture * t = ts[i];
+			t->index = i;
+			glActiveTexture(GL_TEXTURE0 + activeTexture); 
+			glBindTexture(GL_TEXTURE_2D_ARRAY, t->texture);    // Bind the texture to the active unit
+			std::cout << "Binding ActiveTexture[" << activeTexture << "] = " << t->texture << std::endl;
+		    glUniform1i(glGetUniformLocation(program3D, ("textures[" + std::to_string(i) + "]").c_str()), activeTexture++);
+		}
+
+
 	}
 
 	GLuint create2DVAO(float w, float h) {
@@ -191,17 +188,17 @@ public:
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-		depthFrameBuffer = createDepthFrameBuffer(4098, 4098);
+		depthFrameBuffer = createDepthFrameBuffer(2048, 2048);
 
-        textures.push_back(new Texture(loadTextureImage("textures/grid.png")));
-        textures.push_back(new Texture(loadTextureImage("textures/lava_color.jpg"),loadTextureImage("textures/lava_normal.jpg"),loadTextureImage("textures/lava_bump.jpg"), 0.1, 8, 32 ,256));
-        textures.push_back(new Texture(loadTextureImage("textures/grass_color.png"),loadTextureImage("textures/grass_normal.png"),loadTextureImage("textures/grass_bump.png"), 0.01, 8, 32 ,256));
-        textures.push_back(new Texture(loadTextureImage("textures/sand_color.jpg"),loadTextureImage("textures/sand_normal.jpg"),loadTextureImage("textures/sand_bump.jpg"), 0.1, 8, 32 ,256));
-        textures.push_back(new Texture(loadTextureImage("textures/rock_color.png"),loadTextureImage("textures/rock_normal.png"),loadTextureImage("textures/rock_bump.png"), 0.1, 8, 32,128));
-        textures.push_back(new Texture(loadTextureImage("textures/snow_color.png"),loadTextureImage("textures/snow_normal.png"),loadTextureImage("textures/snow_bump.png"), 0.1, 8, 32, 32 ));
-        textures.push_back(new Texture(loadTextureImage("textures/metal_color.png"),loadTextureImage("textures/metal_normal.png"),loadTextureImage("textures/metal_bump.png"), 0.1, 8, 64, 32 ));
-        textures.push_back(new Texture(loadTextureImage("textures/dirt_color.png"),loadTextureImage("textures/dirt_normal.png"),loadTextureImage("textures/dirt_bump.png"), 0.1, 8, 32 , 256));
-        textures.push_back(new Texture(loadTextureImage("textures/bricks_color.png"),loadTextureImage("textures/bricks_normal.png"),loadTextureImage("textures/bricks_bump.png"), 0.01, 8, 32, 256 ));
+        textures.push_back(new Texture(loadTextureArray("textures/grid.png","","")));
+        textures.push_back(new Texture(loadTextureArray("textures/lava_color.jpg", "textures/lava_normal.jpg","textures/lava_bump.jpg"), 0.1, 8, 32 ,256, 0.4));
+        textures.push_back(new Texture(loadTextureArray("textures/grass_color.png", "textures/grass_normal.png", "textures/grass_bump.png"), 0.01, 8, 32 ,32, 0.03));
+        textures.push_back(new Texture(loadTextureArray("textures/sand_color.jpg", "textures/sand_normal.jpg", "textures/sand_bump.jpg"), 0.05, 8, 32 ,32,0.02));
+        textures.push_back(new Texture(loadTextureArray("textures/rock_color.png", "textures/rock_normal.png", "textures/rock_bump.png"), 0.1, 8, 32,128, 0.4));
+        textures.push_back(new Texture(loadTextureArray("textures/snow_color.png", "textures/snow_normal.png", "textures/snow_bump.png"), 0.1, 8, 32, 32 , 0.4));
+        textures.push_back(new Texture(loadTextureArray("textures/metal_color.png", "textures/metal_normal.png", "textures/metal_bump.png"), 0.1, 8, 64, 32, 0.6 ));
+        textures.push_back(new Texture(loadTextureArray("textures/dirt_color.png", "textures/dirt_normal.png", "textures/dirt_bump.png"), 0.1, 8, 32 , 256, 0.02));
+        textures.push_back(new Texture(loadTextureArray("textures/bricks_color.png", "textures/bricks_normal.png", "textures/bricks_bump.png"), 0.01, 8, 32, 256, 0.2 ));
 		noiseTexture = loadTextureImage("textures/noise.png");
 
 		std::string vertCodeShadow = readFile("shaders/shadow_vertex.glsl");
@@ -374,6 +371,7 @@ public:
 		glm::mat4 mvp = camera.projection * camera.view;
 		glm::mat4 mlp = light.projection * light.view;
 
+
 		// ================
 		// Shadow component
 		// ================
@@ -397,6 +395,7 @@ public:
 		// 3D component
 		// ============
 		glUseProgram(program3D);
+
 	    float bias = 0.003;
 		glm::mat4 biasMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f,0.0f,-bias));
 
@@ -486,8 +485,7 @@ public:
 
 		glUniform1i(glGetUniformLocation(program2D, "depthEnabled"), false); 
 
-		glActiveTexture(GL_TEXTURE0); 
-		glBindTexture(GL_TEXTURE_2D, textures[0]->texture);
+
     }
 
     virtual void clean(){

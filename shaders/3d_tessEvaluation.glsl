@@ -3,12 +3,10 @@
 layout(triangles, equal_spacing, ccw) in; // Define primitive type and tessellation spacing
 #include<functions.glsl>
 
-uniform sampler2D textures[10];
-uniform sampler2D normalMaps[10];
-uniform sampler2D bumpMaps[10];
+uniform sampler2DArray textures[20];
 uniform uint debugEnabled;
 
-in float tcTextureWeights[][10];
+in float tcTextureWeights[][20];
 in vec2 tcTextureCoord[];
 in vec3 tcNormal[];
 in vec3 tcPosition[];
@@ -17,7 +15,7 @@ in TextureProperties tcProps[];
 
 out vec3 teNormal;
 out vec2 teTextureCoord;
-out float teTextureWeights[10];
+out float teTextureWeights[20];
 out vec3 tePosition;
 out TextureProperties teProps;
 out vec4 lightViewPosition;
@@ -47,8 +45,11 @@ void main() {
     teProps.shininess = tcProps[0].shininess * gl_TessCoord[0] + 
                                 tcProps[1].shininess * gl_TessCoord[1] + 
                                 tcProps[2].shininess * gl_TessCoord[2];
+    teProps.specularStrength = tcProps[0].specularStrength * gl_TessCoord[0] + 
+                                tcProps[1].specularStrength * gl_TessCoord[1] + 
+                                tcProps[2].specularStrength * gl_TessCoord[2];
     
-    for (int i = 0; i < 10; ++i) {
+    for (int i = 0; i < 20; ++i) {
         teTextureWeights[i] = (gl_TessCoord[0] * tcTextureWeights[0][i] + gl_TessCoord[1] * tcTextureWeights[1][i] + gl_TessCoord[2] * tcTextureWeights[2][i]);
     }
 
@@ -60,7 +61,6 @@ void main() {
     if(debugEnabled == 1) {
         tePosition += teNormal*0.02;
     }
-    //float height = textureBlend(teTextureWeights, bumpMaps, teTextureCoord).r;
 
 
     gl_Position = modelViewProjection * vec4(tePosition, 1.0);    

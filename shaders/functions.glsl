@@ -22,20 +22,20 @@ vec2 triplanarMapping(vec3 position, int plane) {
 }
 
 
-vec4 textureBlend(in float ws[10], sampler2D ts[10], vec2 uv) {
+vec4 textureBlend(in float ws[20], sampler2DArray ts[20], vec2 uv, int index) {
     vec4 res = vec4(0.0);
-    for(int i=0 ; i < 10; ++i) {
+    for(int i=0 ; i < 20; ++i) {
         float w = ws[i];
         if(w>0.0) {
-            res += texture(ts[i], uv)*w;
+            res += texture(ts[i], vec3(uv, index))*w;
         }
 	}
     return res;
 }
 
-float floatBlend(in float ws[10], float ts[10]) {
+float floatBlend(in float ws[20], float ts[20]) {
     float res = 0.0;
-    for(int i=0 ; i < 10; ++i) {
+    for(int i=0 ; i < 20; ++i) {
         float w = ws[i];
         if(w>0.0) {
             res += ts[i]*w;
@@ -49,4 +49,5 @@ struct TextureProperties {
     float parallaxMinLayers;
     float parallaxMaxLayers;
     float shininess;
+    float specularStrength;
 };

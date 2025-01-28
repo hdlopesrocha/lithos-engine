@@ -1,9 +1,7 @@
 #version 460 core
 #define PI 3.1415926535897932384626433832795
 
-uniform sampler2D textures[10];
-uniform sampler2D normalMaps[10];
-uniform sampler2D bumpMaps[10];
+uniform sampler2DArray textures[20];
 
 uniform sampler2D shadowMap;
 uniform sampler2D noise;
@@ -19,7 +17,7 @@ uniform float time;
 
 
 in vec2 teTextureCoord;
-in float teTextureWeights[10];
+in float teTextureWeights[20];
 in vec3 tePosition;
 in vec3 teNormal;
 in TextureProperties teProps;
@@ -28,7 +26,7 @@ in vec4 lightViewPosition;
 out vec4 color;    // Final fragment color
 
 
-vec2 parallaxMapping(vec2 uv, vec3 viewDir, float scale, float minLayers, float maxLayers) {
+vec2 parallaxMapping(vec2 uv, vec3 viewDir, float scale, float minLayers, float maxLayers, int approxCycles) {
     float numLayers = mix(maxLayers, minLayers, dot(vec3(0.0, 0.0, 1.0), -viewDir));  
 
 	float deltaDepth = 1.0 / float( numLayers );
@@ -50,17 +48,17 @@ vec2 parallaxMapping(vec2 uv, vec3 viewDir, float scale, float minLayers, float 
 
         currentUv -= deltaUv;
         currentDepth -= deltaDepth;
-        currentHeight = textureBlend(teTextureWeights, bumpMaps, currentUv).r;
+        currentHeight = textureBlend(teTextureWeights, textures, currentUv, 2).r;
 
         if(currentHeight > currentDepth) {
             break;
         }
     }
 
-    for (int i = 0; i < cycles; ++i) {
+    for (int i = 0; i < approxCycles; ++i) {
         vec2 midUv = 0.5 * (currentUv + prevUv);
         float midDepth = 0.5 * (currentDepth + prevDepth);
-        float midHeight = textureBlend(teTextureWeights, bumpMaps, midUv).r;
+        float midHeight = textureBlend(teTextureWeights, textures, midUv, 2).r;
         
         if (midHeight > midDepth) {
             currentUv = midUv;
@@ -106,7 +104,10 @@ vec3 visual(vec3 v) {
 
 void main() {
     float effectAmount = sin(time*3.14/4.0)*0.5 + 0.5;
-   
+    float distance = length(cameraPosition - tePosition);
+    float distanceFactor = clamp(32.0 / distance, 0.0, 1.0); // Adjust these numbers to fit your scene
+
+
     vec3 normal = normalize(teNormal);
     vec2 uv = teTextureCoord;
     vec3 viewDirection = normalize(tePosition - cameraPosition);
@@ -120,28 +121,27 @@ void main() {
     vec3 viewTangent = normalize(transpose(TBN) * viewDirection);
     
 
-    if(parallaxEnabled == 1 && teProps.parallaxScale > 0.0) {
-       uv = parallaxMapping(uv, viewTangent, teProps.parallaxScale , teProps.parallaxMinLayers, teProps.parallaxMaxLayers);
+    if(parallaxEnabled == 1 && distanceFactor * teProps.parallaxScale > 0.0) {
+       uv = parallaxMapping(uv, viewTangent, distanceFactor*teProps.parallaxScale , distanceFactor*teProps.parallaxMinLayers, distanceFactor*teProps.parallaxMaxLayers, int(ceil(distanceFactor*5.0)));
     }
   
-    vec4 mixedColor = textureBlend(teTextureWeights, textures, uv);
+    vec4 mixedColor = textureBlend(teTextureWeights, textures, uv, 0);
     if(mixedColor.a == 0.0) {
         discard;
     }
 
     if(debugEnabled == 1) {
         if(lightEnabled == 1) {
-            color = vec4(vec3( (1.0+ dot(teNormal, vec3(0.0,1.0,0.0)) )  * 0.5),1.0);
+            color = vec4(visual(teNormal), 1.0);
         }else {
             color = vec4(1.0,1.0,1.0,1.0);
         }
     } else if(lightEnabled == 0) {
         color = mixedColor; 
     } else {
-        float specularStrength = 0.4;
         vec3 specularColor = vec3(1.0,1.0,1.0);
 
-        vec3 normalMap = textureBlend(teTextureWeights, normalMaps, uv).xyz;
+        vec3 normalMap = textureBlend(teTextureWeights, textures, uv, 1).xyz;
         normalMap = normalize(normalMap * 2.0 - 1.0); // Convert to range [-1, 1]
 
         vec3 worldNormal = normalize(TBN * normalMap);
@@ -152,16 +152,16 @@ void main() {
 
         vec3 shadowPosition = lightViewPosition.xyz / lightViewPosition.w; 
         float bias = 0.002;
-        float shadow = texture(shadowMap, shadowPosition.xy).r < shadowPosition.z-bias ? 0.0 : 1.0;;
+        float shadow = texture(shadowMap, shadowPosition.xy).r < shadowPosition.z-bias ? 0.0 : 1.0;
         float texelSize = 1.0/4098.0;
 
-        vec2 noiseCoords = (tePosition.xy+ tePosition.z)* PI;
+        vec2 noiseCoords = (tePosition.xy)* PI;
         float sumShadow = shadow;
 
 
-        int blurRadius = 4;
+        int blurRadius = 20;
         int totalSamples = 1;
-        int maxSamples = 5;
+        int maxSamples = 8;
 
 
         for(int radius = blurRadius; radius > 0; --radius) {
@@ -192,7 +192,7 @@ void main() {
 
         float finalShadow = (1.0 - shadowAlpha) + lightPercentage*shadowAlpha;
 
-        color = vec4((mixedColor.rgb*diffuse + specularColor * specularStrength * phongSpec * lightPercentage)*finalShadow , mixedColor.a); 
+        color = vec4((mixedColor.rgb*diffuse + specularColor * teProps.specularStrength * phongSpec * lightPercentage)*finalShadow , mixedColor.a); 
     }
 
  }

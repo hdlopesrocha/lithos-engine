@@ -79,17 +79,19 @@ void LithosApplication::mainLoop() {
         if (!glfwWindowShouldClose(window)) {
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-   // Get current time
-    double currentTime = glfwGetTime();
-    // Calculate delta time (time since last frame)
-    double deltaTime = currentTime - lastFrameTime;
-    // Update last frame time to the current time
-    lastFrameTime = currentTime;
+            // Get current time
+            double currentTime = glfwGetTime();
+            // Calculate delta time (time since last frame)
+            double deltaTime = currentTime - lastFrameTime;
+            // Update last frame time to the current time
+            lastFrameTime = currentTime;
 
             update(deltaTime);
             draw();
             glfwSwapBuffers(window);
             glfwPollEvents();
+        }else {
+            alive = false;
         }
     }
 }
@@ -149,11 +151,8 @@ void LithosApplication::run() {
 }
 
 void LithosApplication::close() {
-    
 	alive = false;
 }
-
-
 
 RenderBuffer LithosApplication::createDepthFrameBuffer(int width, int height) {
     RenderBuffer buffer;
@@ -191,10 +190,79 @@ RenderBuffer LithosApplication::createDepthFrameBuffer(int width, int height) {
     return buffer;
 }
 
+GLenum channelsToFormat(int channels) {
+    if (channels == 1)
+        return GL_RED;
+    else if (channels == 3)
+        return GL_RGB;
+    else if (channels == 4)
+        return GL_RGBA;
+    return GL_DEPTH_COMPONENT;
+}
 
-Image LithosApplication::loadTextureImage(const std::string& filename) {
+TextureArray LithosApplication::loadTextureArray(const std::string& color, const std::string& normal, const std::string& bump) {
+
+    // Generate a texture object
+    TextureArray textureArray;
+    glGenTextures(1, &textureArray);
+    glActiveTexture(GL_TEXTURE0); // Activate texture unit 0
+    glBindTexture(GL_TEXTURE_2D_ARRAY, textureArray);
+
+    // Load the image
+    int width, height;
+
+
+    std::string filenames[3] = { color, normal, bump} ;
+    unsigned char* datas[3] = {NULL, NULL, NULL};
+    int channels[3];
+
+    for(int i = 0; i < 3 ; ++i) {
+        std::string filename = filenames[i];
+
+        if(filename.size()){
+            std::cout << "Loading " << filename << std::endl;
+            datas[i] = stbi_load(filename.c_str(), &width, &height, &channels[i], 0);
+            if (!datas[i]) {
+                std::cerr << "Failed to load texture: " << color << std::endl;
+                return textureArray;
+            }
+        }
+    }
+    int mipLevels = 1 + floor(log2(glm::max(width, height)));
+    glTexStorage3D(GL_TEXTURE_2D_ARRAY, mipLevels, GL_RGBA8, width, height, 3);
+
+    for(int i = 0; i < 3 ; ++i) {
+        if (datas[i]) {
+            glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, i, width, height, 1, channelsToFormat(channels[i]), GL_UNSIGNED_BYTE, datas[i]);
+        }
+    }
+
+    // Upload the texture to OpenGL
+    glGenerateMipmap(GL_TEXTURE_2D_ARRAY);
+
+    // Set texture parameters
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    // Free image data and unbind texture
+
+    for(int i = 0; i < 3 ; ++i) {
+        if (datas[i]) {
+            stbi_image_free(datas[i]);
+        }
+    }
+
+
+    glBindTexture(GL_TEXTURE_2D_ARRAY, 0);    
+	return textureArray;
+}
+
+
+TextureImage LithosApplication::loadTextureImage(const std::string& filename) {
     std::cout << "Loading " << filename << std::endl;
-	Image image;
+	TextureImage image;
 
 // Generate a texture object
     GLuint textureID;

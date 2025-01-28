@@ -9,10 +9,11 @@ layout(location = 4) in float parallaxScale;
 layout(location = 5) in float parallaxMinLayers;     
 layout(location = 6) in float parallaxMaxLayers;     
 layout(location = 7) in float shininess;     
+layout(location = 8) in float specularStrength;     
 
 #include<functions.glsl>
 
-out float vTextureWeights[10];
+out float vTextureWeights[20];
 out vec2 vTextureCoord;
 out vec3 vPosition;
 out vec3 vNormal;
@@ -25,7 +26,7 @@ void main() {
 
     vTextureCoord = textureCoord;
    
-    for (int i = 0; i < 10; ++i) {
+    for (int i = 0; i < 20; ++i) {
         vTextureWeights[i] = 0.0;
     }
 
@@ -36,5 +37,6 @@ void main() {
     vProps.parallaxMinLayers = parallaxMinLayers;
     vProps.parallaxMaxLayers = parallaxMaxLayers;
     vProps.shininess = shininess;
+    vProps.specularStrength = specularStrength;
     gl_Position = vec4(position, 1.0);
 }

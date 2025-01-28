@@ -3,13 +3,13 @@
 layout(vertices = 3) out;
 #include<functions.glsl>
 
-in float vTextureWeights[][10];
+in float vTextureWeights[][20];
 in vec2 vTextureCoord[];
 in vec3 vPosition[];
 in vec3 vNormal[];
 in TextureProperties vProps[];
 
-out float tcTextureWeights[][10];
+out float tcTextureWeights[][20];
 out vec2 tcTextureCoord[];
 out vec3 tcNormal[];
 out vec3 tcPosition[];
@@ -32,7 +32,7 @@ void main() {
     tcProps[gl_InvocationID] = vProps[gl_InvocationID];
 
     tcTextureCoord[gl_InvocationID] = vTextureCoord[gl_InvocationID];
-    for (int i = 0; i < 10; ++i) {
+    for (int i = 0; i < 20; ++i) {
         tcTextureWeights[gl_InvocationID][i] = vTextureWeights[gl_InvocationID][i];
     }
 
