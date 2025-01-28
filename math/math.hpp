@@ -372,6 +372,7 @@ public:
 	static int clamp(int val, int min, int max);
 	static float clamp(float val, float min, float max);
 	static int triplanarPlane(glm::vec3 position, glm::vec3 normal);
+	static int mod(int a, int b);
 	static glm::vec2 triplanarMapping(glm::vec3 position, int plane);
 	static glm::vec3 surfaceNormal(glm::vec3 point, BoundingBox box);
 

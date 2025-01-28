@@ -5,7 +5,7 @@ RAPID_JSON_PATH = dependencies/rapidjson
 TINYOBJ_INCLUDE_PATH = dependencies/tinyobjloader
 IMGUI_INCLUDE_PATH = dependencies/imgui
 
-SRC=*.cpp gl/*.cpp math/*.cpp $(IMGUI_INCLUDE_PATH)/*.cpp
+SRC=*.cpp gl/*.cpp math/*.cpp ui/*.cpp $(IMGUI_INCLUDE_PATH)/*.cpp
 
 CFLAGS = -pg -g -std=c++11 -lGLEW -lglfw -lGL -I$(STB_INCLUDE_PATH) -I$(RAPID_JSON_PATH)/include -I$(TINYOBJ_INCLUDE_PATH) 
 

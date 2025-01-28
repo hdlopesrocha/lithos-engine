@@ -12,6 +12,9 @@ float Math::clamp(float val, float min, float max) {
 	return val < min ? min : val > max ? max : val;
 }
 
+int Math::mod(int a, int b) {
+    return (a % b + b) % b;
+}
 
 int Math::triplanarPlane(glm::vec3 position, glm::vec3 normal) {
     glm::vec3 absNormal = glm::abs(normal);

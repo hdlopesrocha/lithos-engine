@@ -1,9 +1,10 @@
 #include "gl/gl.hpp"
 #include <math.h>
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/gtc/integer.hpp>
 #include "DebugTesselator.hpp"
 #include "math/math.hpp"
-
+#include "ui/ui.hpp"
 #include "HeightFunctions.hpp"
 
 //#define DEBUG_GEO 1
@@ -111,6 +112,12 @@ class MainApplication : public LithosApplication {
 	RenderBuffer textureBuffer;
 	float time = 0.0f;
 	glm::mat4 fillAreaProjection = glm::ortho(0.0f, 1.0f, 1.0f, 0.0f, -1.0f, 1.0f);
+
+	// UI
+	BrushEditor * brushEditor;
+	ShadowMapViewer * shadowMapViewer;
+
+
 
 public:
 	MainApplication() {
@@ -324,6 +331,9 @@ public:
 		ImGui::StyleColorsDark();
 		ImGui_ImplGlfw_InitForOpenGL(getWindow(), true);
 		ImGui_ImplOpenGL3_Init("#version 460");
+
+		brushEditor = new BrushEditor(&textures, programTexture, textureBuffer, fillAreaVao);
+		shadowMapViewer = new ShadowMapViewer(depthFrameBuffer.texture);
 	 }
 
     virtual void update(float deltaTime){
@@ -479,7 +489,7 @@ public:
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model2));
 		glUniform1ui(overrideTextureEnabledLoc, 1);
 		glUniform1ui(shadowEnabledLoc, 0);
-		glUniform1ui(overrideTextureLoc, 3);
+		glUniform1ui(overrideTextureLoc, brushEditor->getSelectedTexture());
 		sphere->draw(GL_PATCHES);
 		glUniform1ui(overrideTextureEnabledLoc, 0);
 
@@ -532,25 +542,57 @@ public:
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
-		//ImGui::ShowDemoWindow(); // Show demo window! :)
+		ImGui::ShowDemoWindow(); // Show demo window! :)
+
+		if (ImGui::BeginMainMenuBar()) {
+			// File Menu
+			if (ImGui::BeginMenu("File")) {
+				if (ImGui::MenuItem("New")) {
+					// Handle "New" action
+				}
+				if (ImGui::MenuItem("Open", "Ctrl+O")) {
+					// Handle "Open" action
+				}
+				if (ImGui::MenuItem("Save", "Ctrl+S")) {
+					// Handle "Save" action
+				}
+				if (ImGui::MenuItem("Exit")) {
+					// Handle "Exit" action
+				}
+				ImGui::EndMenu();
+			}
+
+			// Edit Menu
+			if (ImGui::BeginMenu("Tools")) {
+				if (ImGui::MenuItem("Brush", "Ctrl+B")) {
+					brushEditor->show();
+				}
+				if (ImGui::MenuItem("Shadow Map Viewer", "Ctrl+D")) {
+					shadowMapViewer->show();
+				}
+				ImGui::EndMenu();
+			}
+
+			// Help Menu
+			if (ImGui::BeginMenu("Help")) {
+				if (ImGui::MenuItem("About")) {
+					// Handle "About" action
+				}
+				ImGui::EndMenu();
+			}
+
+			// End the main menu bar
+			ImGui::EndMainMenuBar();
+		}
 
 
-		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, textureBuffer.frameBuffer);
-		glUseProgram(programTexture);
-		glActiveTexture(GL_TEXTURE0); 
-		int imageIndex =  ((int)(time/3.0f))%textures.size();
 
-		glBindTexture(GL_TEXTURE_2D_ARRAY, textures[imageIndex]->texture);
-		glUniform1i(glGetUniformLocation(programTexture, "textureSampler"), 0); // Set the sampler uniform
-		glUniform1i(glGetUniformLocation(programTexture, "textureLayer"), 0); // Set the sampler uniform
-		glBindVertexArray(fillAreaVao);
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-
-		ImGui::Begin("Menu", &bSettingsWindow, ImGuiWindowFlags_AlwaysAutoResize);
-		ImGui::Image((ImTextureID)(intptr_t)depthFrameBuffer.texture, ImVec2(200, 200));
-		ImGui::Image((ImTextureID)(intptr_t)textureBuffer.texture, ImVec2(200, 200));
-		ImGui::End();
-
+		if(brushEditor->isOpen()) {
+			brushEditor->render();
+		}
+		if(shadowMapViewer->isOpen()) {
+			shadowMapViewer->render();
+		}
 
 
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, originalFrameBuffer);
