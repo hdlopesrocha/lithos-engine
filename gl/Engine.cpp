@@ -87,7 +87,7 @@ void LithosApplication::mainLoop() {
     ImGui::DestroyContext();
 }
 
-RenderBuffer createRenderFrameBuffer(int width, int height) {
+RenderBuffer LithosApplication::createRenderFrameBuffer(int width, int height) {
     RenderBuffer buffer;
     buffer.width = width;
     buffer.height = height;

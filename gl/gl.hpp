@@ -127,7 +127,7 @@ public:
     GLuint compileShader(const std::string& shaderCode, GLenum shaderType);
     GLuint createShaderProgram(GLuint vertexShader, GLuint fragmentShader, GLuint tcs, GLuint tes);
     RenderBuffer createDepthFrameBuffer(int width, int height);
-
+    RenderBuffer createRenderFrameBuffer(int width, int height);
 };
 
 class DrawableGeometry {
@@ -168,7 +168,7 @@ class Texture {
 	float parallaxMaxLayers;
 	float shininess;
 	float specularStrength;
-    
+
 	Texture(TextureArray texture);
 	Texture(TextureArray texture, float parallaxScale, float parallaxMinLayers, float parallaxMaxLayers, float shininess,float specularStrength);
 };

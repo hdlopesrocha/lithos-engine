@@ -83,6 +83,7 @@ class MainApplication : public LithosApplication {
 	GLuint program2D;
 	GLuint program3D;
 	GLuint programShadow;
+	GLuint programTexture;
 	
 	GLuint modelViewProjectionLoc;
 	GLuint modelViewProjectionShadowLoc;
@@ -100,10 +101,11 @@ class MainApplication : public LithosApplication {
 
 	GLuint noiseTexture;
 	GLuint screen2dVao;
-	GLuint fullSreenVao;
+	GLuint fillAreaVao;
 	RenderBuffer depthFrameBuffer;
+	RenderBuffer textureBuffer;
 	float time = 0.0f;
-
+	glm::mat4 fillAreaProjection = glm::ortho(0.0f, 1.0f, 1.0f, 0.0f, -1.0f, 1.0f);
 
 public:
 	MainApplication() {
@@ -188,6 +190,7 @@ public:
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 		depthFrameBuffer = createDepthFrameBuffer(2048, 2048);
+		textureBuffer = createRenderFrameBuffer(1024,1024);
 
         textures.push_back(new Texture(loadTextureArray("textures/grid.png","","")));
         textures.push_back(new Texture(loadTextureArray("textures/lava_color.jpg", "textures/lava_normal.jpg","textures/lava_bump.jpg"), 0.1, 8, 32 ,256, 0.4));
@@ -200,40 +203,46 @@ public:
         textures.push_back(new Texture(loadTextureArray("textures/bricks_color.png", "textures/bricks_normal.png", "textures/bricks_bump.png"), 0.01, 8, 32, 256, 0.2 ));
 		noiseTexture = loadTextureImage("textures/noise.png");
 
-		std::string vertCodeShadow = readFile("shaders/shadow_vertex.glsl");
-		std::string fragCodeShadow = readFile("shaders/shadow_fragment.glsl");
-		GLuint vertexShaderShadow = compileShader(vertCodeShadow,GL_VERTEX_SHADER);
-		GLuint fragmentShaderShadow = compileShader(fragCodeShadow,GL_FRAGMENT_SHADER);
-		programShadow = createShaderProgram(vertexShaderShadow, fragmentShaderShadow, 0, 0);
-		glUseProgram(programShadow);
+		programShadow = createShaderProgram(
+			compileShader(readFile("shaders/shadow_vertex.glsl"),GL_VERTEX_SHADER), 
+			compileShader(readFile("shaders/shadow_fragment.glsl"),GL_FRAGMENT_SHADER), 
+			0, 
+			0
+		);
 
 
-		std::string vertCode2D = readFile("shaders/2d_vertex.glsl");
-		std::string fragCode2D = readFile("shaders/2d_fragment.glsl");
-		GLuint vertexShader2D = compileShader(vertCode2D,GL_VERTEX_SHADER);
-		GLuint fragmentShader2D = compileShader(fragCode2D,GL_FRAGMENT_SHADER);
-		program2D = createShaderProgram(vertexShader2D, fragmentShader2D, 0, 0);
-
-
+		program2D = createShaderProgram(
+			compileShader(readFile("shaders/2d_vertex.glsl"),GL_VERTEX_SHADER), 
+			compileShader(readFile("shaders/2d_fragment.glsl"),GL_FRAGMENT_SHADER), 
+			0, 
+			0
+		);
 		glUseProgram(program2D);
-		screen2dVao = create2DVAO(200,200);
-		fullSreenVao = create2DVAO(getWidth(), getHeight());
+		glUniformMatrix4fv(glGetUniformLocation(program2D, "projection"), 1, GL_FALSE, glm::value_ptr(fillAreaProjection));
+
+		programTexture = createShaderProgram(
+			compileShader(readFile("shaders/texture_vertex.glsl"),GL_VERTEX_SHADER), 
+			compileShader(readFile("shaders/texture_fragment.glsl"),GL_FRAGMENT_SHADER), 
+			0, 
+			0
+		);
+		glUseProgram(programTexture);
+		glUniformMatrix4fv(glGetUniformLocation(programTexture, "projection"), 1, GL_FALSE, glm::value_ptr(fillAreaProjection));
 
 		std::string functionsLine = "#include<functions.glsl>";
 		std::string functionsCode = readFile("shaders/functions.glsl");
-		std::string vertCode = replace(readFile("shaders/3d_vertex.glsl"), functionsLine, functionsCode);
-		std::string fragCode = replace(readFile("shaders/3d_fragment.glsl"), functionsLine, functionsCode);
-		std::string controlCode = replace(readFile("shaders/3d_tessControl.glsl"), functionsLine, functionsCode);
-		std::string evalCode = replace(readFile("shaders/3d_tessEvaluation.glsl"), functionsLine, functionsCode);
 
-		GLuint vertexShader = compileShader(vertCode,GL_VERTEX_SHADER);
-		GLuint fragmentShader = compileShader(fragCode,GL_FRAGMENT_SHADER);
-		GLuint tessControlShader = compileShader(controlCode,GL_TESS_CONTROL_SHADER);
-		GLuint tessEvaluationShader = compileShader(evalCode,GL_TESS_EVALUATION_SHADER);
-		program3D = createShaderProgram(vertexShader, fragmentShader, tessControlShader, tessEvaluationShader);
+		program3D = createShaderProgram(
+			compileShader(replace(readFile("shaders/3d_vertex.glsl"), functionsLine, functionsCode),GL_VERTEX_SHADER), 
+			compileShader(replace(readFile("shaders/3d_fragment.glsl"), functionsLine, functionsCode),GL_FRAGMENT_SHADER), 
+			compileShader(replace(readFile("shaders/3d_tessControl.glsl"), functionsLine, functionsCode),GL_TESS_CONTROL_SHADER), 
+			compileShader(replace(readFile("shaders/3d_tessEvaluation.glsl"), functionsLine, functionsCode),GL_TESS_EVALUATION_SHADER)
+		);
 		glUseProgram(program3D);
 
 		// Use the shader program
+		screen2dVao = create2DVAO(200,200);
+		fillAreaVao = create2DVAO(1,1);
 
 		modelViewProjectionShadowLoc = glGetUniformLocation(programShadow, "modelViewProjection");
 	
@@ -455,30 +464,26 @@ public:
 		glPolygonMode(GL_FRONT, GL_FILL);
 		#endif
 
-		// ============
-		// 2D component
-		// ============
-		glUseProgram(program2D);
-		glm::mat4 projection = glm::ortho(0.0f, (float)getWidth(), (float)getHeight(), 0.0f, -1.0f, 1.0f);
-		glUniformMatrix4fv(glGetUniformLocation(program2D, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
-		glDisable(GL_DEPTH_TEST);
-		glDisable(GL_CULL_FACE);
-
 		// ==========
 		// Final Pass
 		// ==========
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, originalFrameBuffer);
+
+		glUseProgram(program2D);
+		glDisable(GL_DEPTH_TEST);
+		glDisable(GL_CULL_FACE);
 		glActiveTexture(GL_TEXTURE0); 
 		glBindTexture(GL_TEXTURE_2D, renderBuffer.texture);
 		glUniform1i(glGetUniformLocation(program2D, "texture1"), 0); // Set the sampler uniform
 		
-		glBindVertexArray(fullSreenVao);
+		glBindVertexArray(fillAreaVao);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 		
 
 
     }
 
+    bool bSettingsWindow = true;
 
 	virtual void draw2d() {
 		// ...
@@ -488,10 +493,26 @@ public:
 		ImGui::NewFrame();
 		//ImGui::ShowDemoWindow(); // Show demo window! :)
 
-		ImGui::Begin("Menu");
+
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, textureBuffer.frameBuffer);
+		glUseProgram(programTexture);
+		glActiveTexture(GL_TEXTURE0); 
+		int imageIndex =  ((int)(time/3.0f))%textures.size();
+
+		glBindTexture(GL_TEXTURE_2D_ARRAY, textures[imageIndex]->texture);
+		glUniform1i(glGetUniformLocation(programTexture, "textureSampler"), 0); // Set the sampler uniform
+		glUniform1i(glGetUniformLocation(programTexture, "textureLayer"), 0); // Set the sampler uniform
+		glBindVertexArray(fillAreaVao);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+		ImGui::Begin("Menu", &bSettingsWindow, ImGuiWindowFlags_AlwaysAutoResize);
 		ImGui::Image((ImTextureID)(intptr_t)depthFrameBuffer.texture, ImVec2(200, 200));
+		ImGui::Image((ImTextureID)(intptr_t)textureBuffer.texture, ImVec2(200, 200));
 		ImGui::End();
 
+
+
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, originalFrameBuffer);
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 	}
