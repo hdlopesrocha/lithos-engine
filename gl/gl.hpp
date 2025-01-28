@@ -77,12 +77,21 @@ struct Camera {
     glm::mat4 view;
     glm::quat quaternion;
     glm::vec3 position;
+
+    glm::mat4 getMVP(glm::mat4 m) {
+		return projection * view * m;
+	}
+
 };
 
 struct DirectionalLight {
     glm::vec3 direction;
     glm::mat4 projection;
     glm::mat4 view;    
+ 
+    glm::mat4 getMVP(glm::mat4 m) {
+		return projection * view * m;
+	}
 };
 
 struct RenderBuffer {

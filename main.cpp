@@ -76,7 +76,6 @@ class MainApplication : public LithosApplication {
 	Octree * tree;
 	Tesselator * tesselator;
 	OctreeRenderer * renderer;
-	DrawableGeometry * sphere;
 	#ifdef DEBUG_GEO
 	DrawableGeometry * vaoDebug;
 	#endif
@@ -255,8 +254,7 @@ public:
 		// Use the shader program
 		screen2dVao = create2DVAO(200,200);
 		fillAreaVao = create2DVAO(1,1);
-		SphereGeometry sphereGeometry(20,40);
-		sphere = new DrawableGeometry(&sphereGeometry);
+
 
 		modelViewProjectionShadowLoc = glGetUniformLocation(programShadow, "modelViewProjection");
 
@@ -332,7 +330,7 @@ public:
 		ImGui_ImplGlfw_InitForOpenGL(getWindow(), true);
 		ImGui_ImplOpenGL3_Init("#version 460");
 
-		brushEditor = new BrushEditor(&textures, programTexture, textureBuffer, fillAreaVao);
+		brushEditor = new BrushEditor(&camera, &textures, program3D, programTexture, textureBuffer, fillAreaVao);
 		shadowMapViewer = new ShadowMapViewer(depthFrameBuffer.texture);
 	 }
 
@@ -403,14 +401,6 @@ public:
 		light.view = glm::lookAt(lookAtLightPosition - light.direction*dist, lookAtLightPosition, glm::vec3(0,1,0));
     }
 
-	glm::mat4 getCameraMVP(Camera cam, glm::mat4 m) {
-		return cam.projection * cam.view * m;
-	}
-
-	glm::mat4 getLightMVP(DirectionalLight cam, glm::mat4 m) {
-		return cam.projection * cam.view * m;
-	}
-
 	glm::mat4 getCanonicalMVP(glm::mat4 m) {
 		return glm::translate(glm::mat4(1.0f), glm::vec3(0.5)) 
 						* glm::scale(glm::mat4(1.0f), glm::vec3(0.5)) 
@@ -423,8 +413,8 @@ public:
 		glm::mat4 rotate = glm::mat4_cast(camera.quaternion);
 		glm::mat4 translate = glm::translate(glm::mat4(1.0f), -camera.position);
 	    camera.view = rotate * translate;
-		glm::mat4 mvp = getCameraMVP(camera, model);
-		glm::mat4 mlp = getLightMVP(light, model);
+		glm::mat4 mvp = camera.getMVP(model);
+		glm::mat4 mlp = light.getMVP(model);
 
 
 		// ================
@@ -482,16 +472,10 @@ public:
 		renderer->update(mvp);
 		tree->iterate(renderer);
 
+		if(brushEditor->isOpen()) {
+			brushEditor->draw3d();
+		}
 
-		glm::mat4 model2 = glm::scale(glm::translate(  glm::mat4(1.0f), glm::vec3(0,32,0)), glm::vec3(16,16,16));
-		glm::mat4 mvp2 = getCameraMVP(camera, model2);
-		glUniformMatrix4fv(modelViewProjectionLoc, 1, GL_FALSE, glm::value_ptr(mvp2));
-		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model2));
-		glUniform1ui(overrideTextureEnabledLoc, 1);
-		glUniform1ui(shadowEnabledLoc, 0);
-		glUniform1ui(overrideTextureLoc, brushEditor->getSelectedTexture());
-		sphere->draw(GL_PATCHES);
-		glUniform1ui(overrideTextureEnabledLoc, 0);
 
 		#ifdef DEBUG_GEO
 	
@@ -588,10 +572,10 @@ public:
 
 
 		if(brushEditor->isOpen()) {
-			brushEditor->render();
+			brushEditor->draw2d();
 		}
 		if(shadowMapViewer->isOpen()) {
-			shadowMapViewer->render();
+			shadowMapViewer->draw2d();
 		}
 
 

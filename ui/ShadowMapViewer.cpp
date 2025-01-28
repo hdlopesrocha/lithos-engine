@@ -12,12 +12,17 @@ void ShadowMapViewer::show() {
 void ShadowMapViewer::hide(){
     open = false;
 }
+
 bool ShadowMapViewer::isOpen(){
     return open;
 }
 
-void ShadowMapViewer::render(){
+void ShadowMapViewer::draw2d(){
     ImGui::Begin("Shadow Map Viewer", &open, ImGuiWindowFlags_AlwaysAutoResize);
 	ImGui::Image((ImTextureID)(intptr_t)shadowTexture, ImVec2(200, 200));
 	ImGui::End();
+}
+
+void ShadowMapViewer::draw3d(){
+
 }
