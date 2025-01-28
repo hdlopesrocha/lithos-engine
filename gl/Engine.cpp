@@ -1,11 +1,6 @@
 
 #define STB_IMAGE_IMPLEMENTATION
 
-
-#include "../dependencies/imgui/imgui.h"
-#include "../dependencies/imgui/imgui_impl_glfw.h"
-#include "../dependencies/imgui/imgui_impl_opengl3.h"
-
 #include <stb_image.h>
 
 #include "gl.hpp"
@@ -46,17 +41,6 @@ int LithosApplication::initWindow() {
 
 	glfwSetKeyCallback(window, keyCallback);
 
-
-    // ImGui
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO();
-    (void)io;
-    ImGui::StyleColorsDark();
-    ImGui_ImplGlfw_InitForOpenGL(window, true);
-    ImGui_ImplOpenGL3_Init("#version 460");
-
-
     // Print OpenGL version
     std::cout << "OpenGL Version: " << glGetString(GL_VERSION) << std::endl;
 
@@ -72,12 +56,15 @@ void LithosApplication::keyCallback(GLFWwindow* window, int key, int scancode, i
  	}
 }
 
+GLFWwindow * LithosApplication::getWindow() {
+    return window;
+}
 
 void LithosApplication::mainLoop() {
     while(alive) {
         // Main loop
         if (!glfwWindowShouldClose(window)) {
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            glfwPollEvents();
 
             // Get current time
             double currentTime = glfwGetTime();
@@ -85,15 +72,19 @@ void LithosApplication::mainLoop() {
             double deltaTime = currentTime - lastFrameTime;
             // Update last frame time to the current time
             lastFrameTime = currentTime;
-
             update(deltaTime);
-            draw();
+
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            draw3d();
+            draw2d();
             glfwSwapBuffers(window);
-            glfwPollEvents();
         }else {
             alive = false;
         }
     }
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
 }
 
 RenderBuffer createRenderFrameBuffer(int width, int height) {

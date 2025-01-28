@@ -13,6 +13,9 @@
 #define DEBUG 1
 #define NDEBUG 1
 
+#include "../dependencies/imgui/imgui.h"
+#include "../dependencies/imgui/imgui_impl_glfw.h"
+#include "../dependencies/imgui/imgui_impl_opengl3.h"
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
@@ -107,7 +110,8 @@ public:
     RenderBuffer renderBuffer;
 
     virtual void setup() = 0;
-    virtual void draw() = 0;
+    virtual void draw3d() = 0;
+    virtual void draw2d() = 0;
     virtual void update(float deltaTime) = 0;
     virtual void clean() = 0;
     void run();
@@ -117,9 +121,7 @@ public:
     int getKeyboardStatus(int key);
     int getWidth();
     int getHeight();
-
-
-
+    GLFWwindow* getWindow();
 
     std::string readFile(const std::string& filePath);
     GLuint compileShader(const std::string& shaderCode, GLenum shaderType);

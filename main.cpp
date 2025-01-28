@@ -139,7 +139,6 @@ public:
 			t->index = i;
 			glActiveTexture(GL_TEXTURE0 + activeTexture); 
 			glBindTexture(GL_TEXTURE_2D_ARRAY, t->texture);    // Bind the texture to the active unit
-			std::cout << "Binding ActiveTexture[" << activeTexture << "] = " << t->texture << std::endl;
 		    glUniform1i(glGetUniformLocation(program3D, ("textures[" + std::to_string(i) + "]").c_str()), activeTexture++);
 		}
 
@@ -293,6 +292,14 @@ public:
 	 	std::cout << "Setup complete!" << std::endl;
 		std::cout << "#triangles = " << tesselator->triangles << std::endl;
 		
+		// ImGui
+		IMGUI_CHECKVERSION();
+		ImGui::CreateContext();
+		ImGuiIO& io = ImGui::GetIO();
+		(void)io;
+		ImGui::StyleColorsDark();
+		ImGui_ImplGlfw_InitForOpenGL(getWindow(), true);
+		ImGui_ImplOpenGL3_Init("#version 460");
 	 }
 
     virtual void update(float deltaTime){
@@ -362,7 +369,7 @@ public:
 		light.view = glm::lookAt(lookAtLightPosition - light.direction*dist, lookAtLightPosition, glm::vec3(0,1,0));
     }
 
-    virtual void draw() {
+    virtual void draw3d() {
 		glm::mat4 model = glm::mat4(1.0f); // Identity matrix
 		renderer->loaded = 0;
 		glm::mat4 rotate = glm::mat4_cast(camera.quaternion);
@@ -468,25 +475,26 @@ public:
 		glBindVertexArray(fullSreenVao);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 		
-		// ==========
-		// 2D overlay
-		// ==========
-		glActiveTexture(GL_TEXTURE0); 
-		glBindTexture(GL_TEXTURE_2D, depthFrameBuffer.texture);
-		glUniform1i(glGetUniformLocation(program2D, "texture1"), 0); // Set the sampler uniform
-
-
-		glUniform1f(glGetUniformLocation(program2D, "near"), 0.1f); 
-		glUniform1f(glGetUniformLocation(program2D, "far"), 512.0f); 
-		glUniform1i(glGetUniformLocation(program2D, "depthEnabled"), false);
-
-		glBindVertexArray(screen2dVao);
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-
-		glUniform1i(glGetUniformLocation(program2D, "depthEnabled"), false); 
 
 
     }
+
+
+	virtual void draw2d() {
+		// ...
+		// Start the Dear ImGui frame
+		ImGui_ImplOpenGL3_NewFrame();
+		ImGui_ImplGlfw_NewFrame();
+		ImGui::NewFrame();
+		//ImGui::ShowDemoWindow(); // Show demo window! :)
+
+		ImGui::Begin("Menu");
+		ImGui::Image((ImTextureID)(intptr_t)depthFrameBuffer.texture, ImVec2(200, 200));
+		ImGui::End();
+
+		ImGui::Render();
+		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+	}
 
     virtual void clean(){
 
