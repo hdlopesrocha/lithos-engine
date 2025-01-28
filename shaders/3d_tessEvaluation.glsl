@@ -65,6 +65,6 @@ void main() {
 
 
     tePosition = mat3(model) * tePosition;    
-    // mat3 tr = mat3(transpose(inverse(model)));
-    // teNormal = normalize(tr * teNormal);
+    mat3 normalMatrix = transpose(inverse(mat3(model)));
+    teNormal = normalize(normalMatrix * teNormal);
 }
