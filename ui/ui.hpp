@@ -22,6 +22,7 @@ class BrushEditor {
 	GLuint overrideTextureEnabledLoc;
 	GLuint overrideTextureLoc;
     BrushMode mode;
+    Texture texture;
     glm::vec3 brushPosition;
     float brushRadius;
 

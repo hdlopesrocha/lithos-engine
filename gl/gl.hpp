@@ -178,6 +178,7 @@ class Texture {
 	float shininess;
 	float specularStrength;
 
+	Texture();
 	Texture(TextureArray texture);
 	Texture(TextureArray texture, float parallaxScale, float parallaxMinLayers, float parallaxMaxLayers, float shininess,float specularStrength);
 };

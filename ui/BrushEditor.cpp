@@ -8,7 +8,7 @@ BrushEditor::BrushEditor(Camera * camera, std::vector<Texture*> * t, GLuint prog
     this->previewProgram = previewProgram;
     this->previewBuffer = previewBuffer;
     this->previewVao = previewVao;
-    SphereGeometry sphereGeometry(20,40);
+    SphereGeometry sphereGeometry(10,20);
 	this->sphere = new DrawableGeometry(&sphereGeometry);
 
     this->modelLoc = glGetUniformLocation(program3d, "model");
@@ -21,6 +21,8 @@ BrushEditor::BrushEditor(Camera * camera, std::vector<Texture*> * t, GLuint prog
     this->brushRadius = 1.0f;
 
     this->mode = BrushMode::ADD;
+    this->selectedTexture = 0;
+    this->texture = *(*textures)[this->selectedTexture];
 }
 
 
@@ -43,7 +45,7 @@ int BrushEditor::getSelectedTexture() {
 
 void BrushEditor::resetPosition(){
 	glm::vec3 cameraDirection = glm::vec3(0.0f, 0.0f, -1.0f)*camera->quaternion;
-    brushPosition = camera->position + cameraDirection * 10.0f;
+    brushPosition = camera->position + cameraDirection * (10.0f + brushRadius*2);
 }
 
 
@@ -66,10 +68,12 @@ void BrushEditor::draw2d(){
 
     if (ImGui::ArrowButton("##arrow_left", ImGuiDir_Left)) {
         selectedTexture = Math::mod(selectedTexture - 1, textures->size());
+        this->texture = *(*textures)[this->selectedTexture];
     }
     ImGui::SameLine();
     if (ImGui::ArrowButton("##arrow_right", ImGuiDir_Right)) {
         selectedTexture = Math::mod(selectedTexture + 1, textures->size());
+        this->texture = *(*textures)[this->selectedTexture];
     }
 
     const char* buttonText = "Reset Position";
@@ -93,7 +97,7 @@ void BrushEditor::draw2d(){
 
     ImGui::Image((ImTextureID)(intptr_t)previewBuffer.texture, ImVec2(200, 200));
 
-    ImGui::Text("Brush mode: ");
+    ImGui::Text("Mode: ");
 
     for (int i = 0; i < BrushMode::COUNT; ++i) {
         BrushMode bm = BrushMode(i);
@@ -102,6 +106,27 @@ void BrushEditor::draw2d(){
             this->mode = bm;
         }
     }
+
+    ImGui::Text("Position: ");
+    ImGui::InputFloat3("m##brushPosition", &brushPosition.x);
+    
+    ImGui::Text("Radius: ");
+    ImGui::InputFloat("m##brushRadius", &brushRadius);
+
+    ImGui::Text("Parallax Scale: ");
+    ImGui::InputFloat("m##parallaxScale", &texture.parallaxScale);
+
+    ImGui::Text("Parallax Min Layers: ");
+    ImGui::InputFloat("# ##parallaxMinLayers", &texture.parallaxMinLayers);
+
+    ImGui::Text("Parallax Max Layers: ");
+    ImGui::InputFloat("# ##parallaxMaxLayers", &texture.parallaxMaxLayers);
+
+    ImGui::Text("Specular Strength: ");
+    ImGui::InputFloat("\%##specularStrength", &texture.specularStrength);
+
+    ImGui::Text("Shininess: ");
+    ImGui::InputFloat("\%##shininess", &texture.shininess);
 
     ImGui::End();
 }
