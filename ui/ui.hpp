@@ -21,6 +21,12 @@ class BrushEditor {
 	GLuint shadowEnabledLoc;
 	GLuint overrideTextureEnabledLoc;
 	GLuint overrideTextureLoc;
+    GLuint parallaxScaleLoc;
+    GLuint parallaxMinLayersLoc;
+    GLuint parallaxMaxLayersLoc;
+    GLuint shininessLoc;
+    GLuint specularStrengthLoc;
+
     BrushMode mode;
     Texture texture;
     glm::vec3 brushPosition;

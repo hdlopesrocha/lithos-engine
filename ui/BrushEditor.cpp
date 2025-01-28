@@ -17,6 +17,13 @@ BrushEditor::BrushEditor(Camera * camera, std::vector<Texture*> * t, GLuint prog
     this->overrideTextureLoc = glGetUniformLocation(program3d, "overrideTexture");
     this->overrideTextureEnabledLoc = glGetUniformLocation(program3d, "overrideTextureEnabled");
 
+    this->parallaxScaleLoc = glGetUniformLocation(program3d, "overrideProps.parallaxScale");
+    this->parallaxMinLayersLoc = glGetUniformLocation(program3d, "overrideProps.parallaxMinLayers");
+    this->parallaxMaxLayersLoc = glGetUniformLocation(program3d, "overrideProps.parallaxMaxLayers");
+    this->shininessLoc = glGetUniformLocation(program3d, "overrideProps.shininess");
+    this->specularStrengthLoc = glGetUniformLocation(program3d, "overrideProps.specularStrength");
+
+
     this->brushPosition = glm::vec3(0);
     this->brushRadius = 1.0f;
 
@@ -137,6 +144,13 @@ void BrushEditor::draw3d(){
     glUniformMatrix4fv(modelViewProjectionLoc, 1, GL_FALSE, glm::value_ptr(mvp2));
     glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model2));
     glUniform1ui(overrideTextureEnabledLoc, 1);
+
+    glUniform1f(parallaxScaleLoc, texture.parallaxScale);
+    glUniform1f(parallaxMinLayersLoc, texture.parallaxMinLayers  );
+    glUniform1f(parallaxMaxLayersLoc, texture.parallaxMaxLayers );
+    glUniform1f(shininessLoc, texture.shininess);
+    glUniform1f(specularStrengthLoc, texture.specularStrength);
+
     glUniform1ui(shadowEnabledLoc, 0);
     glUniform1ui(overrideTextureLoc, getSelectedTexture());
     sphere->draw(GL_PATCHES);

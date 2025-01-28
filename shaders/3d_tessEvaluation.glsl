@@ -20,7 +20,7 @@ out vec3 tePosition;
 out TextureProperties teProps;
 out vec4 lightViewPosition;
 
-
+uniform TextureProperties overrideProps;
 uniform mat4 modelViewProjection; 
 uniform mat4 matrixShadow; 
 uniform mat4 model; 
@@ -30,23 +30,27 @@ void main() {
 
     teNormal = tcNormal[0] * gl_TessCoord[0] + tcNormal[1] * gl_TessCoord[1] + tcNormal[2] * gl_TessCoord[2];
   
-    
-    teProps.parallaxScale = tcProps[0].parallaxScale * gl_TessCoord[0] + 
-                            tcProps[1].parallaxScale * gl_TessCoord[1] + 
-                            tcProps[2].parallaxScale * gl_TessCoord[2];
-    teProps.parallaxMinLayers = tcProps[0].parallaxMinLayers * gl_TessCoord[0] + 
-                                tcProps[1].parallaxMinLayers * gl_TessCoord[1] + 
-                                tcProps[2].parallaxMinLayers * gl_TessCoord[2];
-    teProps.parallaxMaxLayers = tcProps[0].parallaxMaxLayers * gl_TessCoord[0] + 
-                                tcProps[1].parallaxMaxLayers * gl_TessCoord[1] + 
-                                tcProps[2].parallaxMaxLayers * gl_TessCoord[2];
-    teProps.shininess = tcProps[0].shininess * gl_TessCoord[0] + 
-                                tcProps[1].shininess * gl_TessCoord[1] + 
-                                tcProps[2].shininess * gl_TessCoord[2];
-    teProps.specularStrength = tcProps[0].specularStrength * gl_TessCoord[0] + 
-                                tcProps[1].specularStrength * gl_TessCoord[1] + 
-                                tcProps[2].specularStrength * gl_TessCoord[2];
-    
+    if(overrideTextureEnabled) {
+        teProps = overrideProps;
+    } else {
+        teProps.parallaxScale = tcProps[0].parallaxScale * gl_TessCoord[0] + 
+                                tcProps[1].parallaxScale * gl_TessCoord[1] + 
+                                tcProps[2].parallaxScale * gl_TessCoord[2];
+        teProps.parallaxMinLayers = tcProps[0].parallaxMinLayers * gl_TessCoord[0] + 
+                                    tcProps[1].parallaxMinLayers * gl_TessCoord[1] + 
+                                    tcProps[2].parallaxMinLayers * gl_TessCoord[2];
+        teProps.parallaxMaxLayers = tcProps[0].parallaxMaxLayers * gl_TessCoord[0] + 
+                                    tcProps[1].parallaxMaxLayers * gl_TessCoord[1] + 
+                                    tcProps[2].parallaxMaxLayers * gl_TessCoord[2];
+        teProps.shininess = tcProps[0].shininess * gl_TessCoord[0] + 
+                                    tcProps[1].shininess * gl_TessCoord[1] + 
+                                    tcProps[2].shininess * gl_TessCoord[2];
+        teProps.specularStrength = tcProps[0].specularStrength * gl_TessCoord[0] + 
+                                    tcProps[1].specularStrength * gl_TessCoord[1] + 
+                                    tcProps[2].specularStrength * gl_TessCoord[2];
+    }
+
+
     for (int i = 0; i < 20; ++i) {
         teTextureWeights[i] = (gl_TessCoord[0] * tcTextureWeights[0][i] + gl_TessCoord[1] * tcTextureWeights[1][i] + gl_TessCoord[2] * tcTextureWeights[2][i]);
     }
