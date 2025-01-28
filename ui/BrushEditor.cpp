@@ -19,8 +19,11 @@ BrushEditor::BrushEditor(Camera * camera, std::vector<Texture*> * t, GLuint prog
 
     this->brushPosition = glm::vec3(0);
     this->brushRadius = 1.0f;
-    
+
+    this->mode = BrushMode::ADD;
 }
+
+
 
 void BrushEditor::show() {
     open = true;
@@ -41,6 +44,18 @@ int BrushEditor::getSelectedTexture() {
 void BrushEditor::resetPosition(){
 	glm::vec3 cameraDirection = glm::vec3(0.0f, 0.0f, -1.0f)*camera->quaternion;
     brushPosition = camera->position + cameraDirection * 10.0f;
+}
+
+
+const char* toString(BrushMode v)
+{
+    switch (v)
+    {
+        case ADD:     return "Add";
+        case REMOVE:  return "Remove";
+        case REPLACE: return "Replace";
+        default:      return "Unknown";
+    }
 }
 
 void BrushEditor::draw2d(){
@@ -77,6 +92,16 @@ void BrushEditor::draw2d(){
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
     ImGui::Image((ImTextureID)(intptr_t)previewBuffer.texture, ImVec2(200, 200));
+
+    ImGui::Text("Brush mode: ");
+
+    for (int i = 0; i < BrushMode::COUNT; ++i) {
+        BrushMode bm = BrushMode(i);
+        std::string label = std::string(toString(bm));
+        if(ImGui::RadioButton(label.c_str(), this->mode == bm)){
+            this->mode = bm;
+        }
+    }
 
     ImGui::End();
 }

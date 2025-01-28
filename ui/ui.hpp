@@ -1,6 +1,9 @@
 #include <vector>
 #include "../gl/gl.hpp"
 
+enum BrushMode {
+    ADD, REMOVE, REPLACE, COUNT
+};
 
 
 class BrushEditor {
@@ -18,6 +21,7 @@ class BrushEditor {
 	GLuint shadowEnabledLoc;
 	GLuint overrideTextureEnabledLoc;
 	GLuint overrideTextureLoc;
+    BrushMode mode;
     glm::vec3 brushPosition;
     float brushRadius;
 
