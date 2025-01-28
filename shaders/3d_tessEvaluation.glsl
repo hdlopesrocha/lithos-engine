@@ -28,7 +28,7 @@ uniform mat4 model;
 
 void main() {
 
-    teNormal = tcNormal[0] * gl_TessCoord[0] + tcNormal[1] * gl_TessCoord[1] + tcNormal[2] * gl_TessCoord[2];
+    teNormal = normalize(tcNormal[0] * gl_TessCoord[0] + tcNormal[1] * gl_TessCoord[1] + tcNormal[2] * gl_TessCoord[2]);
   
     if(overrideTextureEnabled) {
         teProps = overrideProps;
@@ -67,8 +67,4 @@ void main() {
     gl_Position = modelViewProjection * vec4(tePosition, 1.0);    
     lightViewPosition = matrixShadow * vec4(tePosition, 1.0);  
 
-
-    tePosition = mat3(model) * tePosition;    
-    mat3 normalMatrix = transpose(inverse(mat3(model)));
-    teNormal = normalize(normalMatrix * teNormal);
 }

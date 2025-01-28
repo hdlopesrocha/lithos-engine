@@ -26,6 +26,7 @@ in vec3 teNormal;
 in vec4 lightViewPosition;
 
 out vec4 color;    // Final fragment color
+uniform mat4 model; 
 
 
 vec2 parallaxMapping(vec2 uv, vec3 viewDir, float scale, float minLayers, float maxLayers, int approxCycles) {
@@ -105,21 +106,22 @@ vec3 visual(vec3 v) {
 
 
 void main() {
+    vec2 uv = teTextureCoord;
+    vec3 position = mat3(model) * tePosition;    
+    mat3 normalMatrix = transpose(inverse(mat3(model)));
+    vec3 normal = normalize(normalMatrix * teNormal);
+
     float effectAmount = sin(time*3.14/4.0)*0.5 + 0.5;
-    float distance = length(cameraPosition - tePosition);
+    float distance = length(cameraPosition - position);
     float distanceFactor = clamp(32.0 / distance, 0.0, 1.0); // Adjust these numbers to fit your scene
 
-
-    vec3 normal = normalize(teNormal);
-    vec2 uv = teTextureCoord;
-    vec3 viewDirection = normalize(tePosition - cameraPosition);
-
     if(triplanarEnabled) {
-        int plane = triplanarPlane(tePosition, normal);
-        uv = triplanarMapping(tePosition, plane) * 0.1;
+        int plane = triplanarPlane(position, normal);
+        uv = triplanarMapping(position, plane) * 0.1;
     }
 
-    mat3 TBN = getTBN(tePosition, normal, uv);
+    vec3 viewDirection = normalize(position - cameraPosition);
+    mat3 TBN = getTBN(position, normal, uv);
     vec3 viewTangent = normalize(transpose(TBN) * viewDirection);
     
 
@@ -134,7 +136,7 @@ void main() {
 
     if(debugEnabled) {
         if(lightEnabled) {
-            color = vec4(visual(teNormal), 1.0);
+            color = vec4(visual(normal), 1.0);
         }else {
             color = vec4(1.0,1.0,1.0,1.0);
         }
@@ -160,7 +162,7 @@ void main() {
             float shadow = texture(shadowMap, shadowPosition.xy).r < shadowPosition.z-bias ? 0.0 : 1.0;
             float texelSize = 1.0/4098.0;
 
-            vec2 noiseCoords = (tePosition.xy)* PI;
+            vec2 noiseCoords = (position.xy)* PI;
             float sumShadow = shadow;
 
 
