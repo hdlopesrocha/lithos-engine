@@ -172,6 +172,19 @@ class Texture {
 	public:
 	int index;
 	TextureArray texture;
+
+	Texture();
+	Texture(TextureArray texture);
+
+    static int bindTexture(GLuint program, GLuint type, int activeTexture, std::string objectName, GLuint texture);
+    static int bindTextures(GLuint program, GLuint type,int activeTexture, std::string arrayName, std::vector<Texture*> * ts);
+
+};
+
+
+class Brush {
+    public:
+    Texture * texture;
 	float parallaxScale;
 	float parallaxMinLayers;
 	float parallaxMaxLayers;
@@ -179,10 +192,13 @@ class Texture {
 	float specularStrength;
 	glm::vec2 textureScale;
 
-	Texture();
-	Texture(TextureArray texture);
-	Texture(TextureArray texture,glm::vec2 textureScale, float parallaxScale, float parallaxMinLayers, float parallaxMaxLayers, float shininess,float specularStrength);
-};
 
+    Brush(Texture * texture);
+    Brush(Texture * texture, glm::vec2 textureScale,float parallaxScale, float parallaxMinLayers, float parallaxMaxLayers, float shininess, float specularStrength);
+
+    static void bindBrushes(GLuint program, std::vector<Brush*> * brushes);
+    static void bindBrush(GLuint program, std::string objectName, Brush * brush);
+
+};
 
 #endif

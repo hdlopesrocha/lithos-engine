@@ -14,6 +14,7 @@ uniform bool parallaxEnabled;
 uniform vec3 lightDirection; 
 uniform vec3 cameraPosition; 
 uniform float time;
+uniform mat4 model; 
 
 #include<functions.glsl>
 
@@ -26,7 +27,6 @@ in vec3 teNormal;
 in vec4 lightViewPosition;
 
 out vec4 color;    // Final fragment color
-uniform mat4 model; 
 
 
 vec2 parallaxMapping(vec2 uv, vec3 viewDir, float scale, float minLayers, float maxLayers, int approxCycles) {

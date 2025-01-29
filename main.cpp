@@ -20,11 +20,6 @@ class SimpleBrush : public TextureBrush {
 
 	void paint(Vertex * vertex) {
 		vertex->texIndex = texture->index;
-		vertex->parallaxScale = texture->parallaxScale;
-		vertex->parallaxMinLayers = texture->parallaxMinLayers;
-		vertex->parallaxMaxLayers = texture->parallaxMaxLayers;	
-		vertex->shininess = texture->shininess;
-		vertex->specularStrength = texture->specularStrength;
 	}
 };
 
@@ -61,17 +56,13 @@ class LandBrush : public TextureBrush {
 		}
 
 		vertex->texIndex = texture->index;
-		vertex->parallaxScale = texture->parallaxScale;
-		vertex->parallaxMinLayers = texture->parallaxMinLayers;
-		vertex->parallaxMaxLayers = texture->parallaxMaxLayers;	
-		vertex->shininess = texture->shininess;
-		vertex->specularStrength = texture->specularStrength;
-		vertex->textureScale = texture->textureScale;
 	}
 };
 
 class MainApplication : public LithosApplication {
 	std::vector<Texture*> textures;
+	std::vector<Brush*> brushes;
+
   	Camera camera;
 	DirectionalLight light;
 	Octree * tree;
@@ -137,27 +128,7 @@ public:
 		return input;
 	}
 
-	void bindTextures(std::vector<Texture*> ts) {
-		int activeTexture = 1;
-		
-		glActiveTexture(GL_TEXTURE0 + activeTexture); 
-		glBindTexture(GL_TEXTURE_2D, depthFrameBuffer.texture);
-		glUniform1i(shadowMapLoc, activeTexture++);
 
-		glActiveTexture(GL_TEXTURE0 + activeTexture); 
-		glBindTexture(GL_TEXTURE_2D, noiseTexture);
-		glUniform1i(noiseLoc, activeTexture++);
-
-		for(int i=0 ; i < ts.size() ; ++i) {
-		    Texture * t = ts[i];
-			t->index = i;
-			glActiveTexture(GL_TEXTURE0 + activeTexture); 
-			glBindTexture(GL_TEXTURE_2D_ARRAY, t->texture);    // Bind the texture to the active unit
-		    glUniform1i(glGetUniformLocation(program3D, ("textures[" + std::to_string(i) + "]").c_str()), activeTexture++);
-		}
-
-
-	}
 
 	GLuint create2DVAO(float w, float h) {
 		float vertices[] = {
@@ -200,20 +171,6 @@ public:
 		glEnable(GL_DEPTH_TEST);
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-		depthFrameBuffer = createDepthFrameBuffer(2048, 2048);
-		textureBuffer = createRenderFrameBuffer(1024,1024);
-
-        textures.push_back(new Texture(loadTextureArray("textures/grid.png","","")));
-        textures.push_back(new Texture(loadTextureArray("textures/lava_color.jpg", "textures/lava_normal.jpg","textures/lava_bump.jpg"), glm::vec2(1.0f), 0.1, 8, 32 ,256, 0.4));
-        textures.push_back(new Texture(loadTextureArray("textures/grass_color.png", "textures/grass_normal.png", "textures/grass_bump.png"), glm::vec2(1.0f), 0.01, 8, 32 ,32, 0.03));
-        textures.push_back(new Texture(loadTextureArray("textures/sand_color.jpg", "textures/sand_normal.jpg", "textures/sand_bump.jpg"), glm::vec2(1.0f), 0.05, 8, 32 ,32,0.02));
-        textures.push_back(new Texture(loadTextureArray("textures/rock_color.png", "textures/rock_normal.png", "textures/rock_bump.png"), glm::vec2(1.0f), 0.1, 8, 32,128, 0.4));
-        textures.push_back(new Texture(loadTextureArray("textures/snow_color.png", "textures/snow_normal.png", "textures/snow_bump.png"), glm::vec2(1.0f), 0.1, 8, 32, 32 , 0.4));
-        textures.push_back(new Texture(loadTextureArray("textures/metal_color.png", "textures/metal_normal.png", "textures/metal_bump.png"), glm::vec2(1.0f), 0.1, 8, 64, 32, 0.6 ));
-        textures.push_back(new Texture(loadTextureArray("textures/dirt_color.png", "textures/dirt_normal.png", "textures/dirt_bump.png"), glm::vec2(1.0f), 0.1, 8, 32 , 256, 0.02));
-        textures.push_back(new Texture(loadTextureArray("textures/bricks_color.png", "textures/bricks_normal.png", "textures/bricks_bump.png"), glm::vec2(1.0f), 0.01, 8, 32, 256, 0.2 ));
-		noiseTexture = loadTextureImage("textures/noise.png");
 
 		programShadow = createShaderProgram(
 			compileShader(readFile("shaders/shadow_vertex.glsl"),GL_VERTEX_SHADER), 
@@ -276,14 +233,64 @@ public:
 		overrideTextureEnabledLoc = glGetUniformLocation(program3D, "overrideTextureEnabled");
 		
 
+		depthFrameBuffer = createDepthFrameBuffer(2048, 2048);
+		textureBuffer = createRenderFrameBuffer(1024,1024);
 
+		{
+			Texture * t = new Texture(loadTextureArray("textures/grid.png","",""));
+			textures.push_back(t);
+			brushes.push_back(new Brush(t));
+		}
+		{
+			Texture * t = new Texture(loadTextureArray("textures/lava_color.jpg", "textures/lava_normal.jpg","textures/lava_bump.jpg"));
+			textures.push_back(t);
+			brushes.push_back(new Brush(t, glm::vec2(1.0), 0.1, 8, 32 ,256, 0.4));
+		}
+		{
+			Texture * t = new Texture(loadTextureArray("textures/grass_color.png", "textures/grass_normal.png", "textures/grass_bump.png"));
+			textures.push_back(t);
+			brushes.push_back(new Brush(t, glm::vec2(1.0), 0.01, 8, 32 ,32, 0.03));
+        }
+		{
+			Texture * t = new Texture(loadTextureArray("textures/sand_color.jpg", "textures/sand_normal.jpg", "textures/sand_bump.jpg"));
+			textures.push_back(t);
+			brushes.push_back(new Brush(t, glm::vec2(1.0), 0.05, 8, 32 ,32,0.02));
+        }
+		{
+			Texture * t = new Texture(loadTextureArray("textures/rock_color.png", "textures/rock_normal.png", "textures/rock_bump.png"));
+			textures.push_back(t);
+			brushes.push_back(new Brush(t, glm::vec2(1.0), 0.1, 8, 32,128, 0.4));
+        }
+		{
+			Texture * t = new Texture(loadTextureArray("textures/snow_color.png", "textures/snow_normal.png", "textures/snow_bump.png"));
+			textures.push_back(t);
+			brushes.push_back(new Brush(t, glm::vec2(1.0), 0.1, 8, 32, 32 , 0.4));
+        }
+		{
+			Texture * t = new Texture(loadTextureArray("textures/metal_color.png", "textures/metal_normal.png", "textures/metal_bump.png"));
+			textures.push_back(t);
+			brushes.push_back(new Brush(t, glm::vec2(1.0), 0.1, 8, 64, 32, 0.6 ));
+        }
+		{
+			Texture * t = new Texture(loadTextureArray("textures/dirt_color.png", "textures/dirt_normal.png", "textures/dirt_bump.png"));
+			textures.push_back(t);
+			brushes.push_back(new Brush(t, glm::vec2(1.0), 0.1, 8, 32 , 256, 0.02));
+        }
+		{
+			Texture * t = new Texture(loadTextureArray("textures/bricks_color.png", "textures/bricks_normal.png", "textures/bricks_bump.png"));
+			textures.push_back(t);
+			brushes.push_back(new Brush(t, glm::vec2(1.0), 0.01, 8, 32, 256, 0.2 ));
+		}
+		noiseTexture = loadTextureImage("textures/noise.png");
 
+		int activeTexture = 1;
 
-		bindTextures(textures);
+		activeTexture = Texture::bindTexture(program3D, GL_TEXTURE_2D, activeTexture, "shadowMap", depthFrameBuffer.texture);
+		activeTexture = Texture::bindTexture(program3D, GL_TEXTURE_2D, activeTexture, "noise", noiseTexture);
 		
+		Texture::bindTextures(program3D, GL_TEXTURE_2D_ARRAY, activeTexture, "textures", &textures);
+		Brush::bindBrushes(program3D, &brushes);
 		
-
-
         camera.quaternion =   glm::angleAxis(glm::radians(180.0f), glm::vec3(0, 0, 1))
    	    					* glm::angleAxis(glm::radians(145.0f), glm::vec3(1, 0, 0))
    	    					* glm::angleAxis(glm::radians(135.0f), glm::vec3(0, 1, 0));  
@@ -331,7 +338,7 @@ public:
 		ImGui_ImplGlfw_InitForOpenGL(getWindow(), true);
 		ImGui_ImplOpenGL3_Init("#version 460");
 
-		brushEditor = new BrushEditor(&camera, &textures, program3D, programTexture, textureBuffer, fillAreaVao);
+		brushEditor = new BrushEditor(&camera, &brushes, program3D, programTexture, textureBuffer, fillAreaVao);
 		shadowMapViewer = new ShadowMapViewer(depthFrameBuffer.texture);
 	 }
 
@@ -542,7 +549,7 @@ public:
 					// Handle "Save" action
 				}
 				if (ImGui::MenuItem("Exit")) {
-					// Handle "Exit" action
+					this->close();
 				}
 				ImGui::EndMenu();
 			}

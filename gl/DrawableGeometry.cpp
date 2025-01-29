@@ -21,18 +21,6 @@ DrawableGeometry::DrawableGeometry(Geometry * t){
 	glVertexAttribIPointer(3, 1, GL_UNSIGNED_INT, sizeof(Vertex), (void*) offsetof(Vertex, texIndex) );
 	glEnableVertexAttribArray(3);
 		
-	glVertexAttribPointer(4, 1, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) offsetof(Vertex, parallaxScale));
-	glEnableVertexAttribArray(4);	
-	glVertexAttribPointer(5, 1, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) offsetof(Vertex, parallaxMinLayers));
-	glEnableVertexAttribArray(5);	
-	glVertexAttribPointer(6, 1, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) offsetof(Vertex, parallaxMaxLayers));
-	glEnableVertexAttribArray(6);	
-	glVertexAttribPointer(7, 1, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) offsetof(Vertex, shininess));
-	glEnableVertexAttribArray(7);		
-	glVertexAttribPointer(8, 1, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) offsetof(Vertex, specularStrength));
-	glEnableVertexAttribArray(8);	
-	glVertexAttribPointer(9, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) offsetof(Vertex, textureScale));
-	glEnableVertexAttribArray(9);	
 }
 
 void DrawableGeometry::draw(uint mode) {

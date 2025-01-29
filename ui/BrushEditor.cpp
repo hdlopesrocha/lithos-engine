@@ -2,13 +2,14 @@
 #include <glm/gtc/type_ptr.hpp>
 
 
-BrushEditor::BrushEditor(Camera * camera, std::vector<Texture*> * t, GLuint program3d, GLuint previewProgram, RenderBuffer previewBuffer, GLuint previewVao) {
+BrushEditor::BrushEditor(Camera * camera, std::vector<Brush*> * brushes, GLuint program3d, GLuint previewProgram, RenderBuffer previewBuffer, GLuint previewVao) {
+    this->program3d = program3d;
     this->camera = camera;
-    this->textures = t;
+    this->brushes = brushes;
     this->previewProgram = previewProgram;
     this->previewBuffer = previewBuffer;
     this->previewVao = previewVao;
-    SphereGeometry sphereGeometry(10,20);
+    SphereGeometry sphereGeometry(20,40);
 	this->sphere = new DrawableGeometry(&sphereGeometry);
 
     this->modelLoc = glGetUniformLocation(program3d, "model");
@@ -17,20 +18,12 @@ BrushEditor::BrushEditor(Camera * camera, std::vector<Texture*> * t, GLuint prog
     this->overrideTextureLoc = glGetUniformLocation(program3d, "overrideTexture");
     this->overrideTextureEnabledLoc = glGetUniformLocation(program3d, "overrideTextureEnabled");
 
-    this->parallaxScaleLoc = glGetUniformLocation(program3d, "overrideProps.parallaxScale");
-    this->parallaxMinLayersLoc = glGetUniformLocation(program3d, "overrideProps.parallaxMinLayers");
-    this->parallaxMaxLayersLoc = glGetUniformLocation(program3d, "overrideProps.parallaxMaxLayers");
-    this->shininessLoc = glGetUniformLocation(program3d, "overrideProps.shininess");
-    this->specularStrengthLoc = glGetUniformLocation(program3d, "overrideProps.specularStrength");
-    this->textureScaleLoc = glGetUniformLocation(program3d, "overrideProps.textureScale");
-    
-
     this->brushPosition = glm::vec3(0);
-    this->brushRadius = 10.0f;
+    this->brushRadius = 2.0f;
 
     this->mode = BrushMode::ADD;
-    this->selectedTexture = 6;
-    this->texture = *(*textures)[this->selectedTexture];
+    this->selectedBrush = 6;
+    this->brush = (*brushes)[this->selectedBrush];
 }
 
 void BrushEditor::show() {
@@ -45,13 +38,13 @@ bool BrushEditor::isOpen(){
     return open;
 }
 
-int BrushEditor::getSelectedTexture() {
-    return selectedTexture;
+int BrushEditor::getSelectedBrush() {
+    return selectedBrush;
 }
 
 void BrushEditor::resetPosition(){
 	glm::vec3 cameraDirection = glm::vec3(0.0f, 0.0f, -1.0f)*camera->quaternion;
-    brushPosition = camera->position + cameraDirection * (10.0f + brushRadius*2);
+    brushPosition = camera->position + cameraDirection * (4.0f + brushRadius*2);
 }
 
 
@@ -73,13 +66,13 @@ void BrushEditor::draw2d(){
     ImGui::SameLine();
 
     if (ImGui::ArrowButton("##arrow_left", ImGuiDir_Left)) {
-        selectedTexture = Math::mod(selectedTexture - 1, textures->size());
-        this->texture = *(*textures)[this->selectedTexture];
+        selectedBrush = Math::mod(selectedBrush - 1, brushes->size());
+        this->brush = (*brushes)[this->selectedBrush];
     }
     ImGui::SameLine();
     if (ImGui::ArrowButton("##arrow_right", ImGuiDir_Right)) {
-        selectedTexture = Math::mod(selectedTexture + 1, textures->size());
-        this->texture = *(*textures)[this->selectedTexture];
+        selectedBrush = Math::mod(selectedBrush + 1, brushes->size());
+        this->brush = (*brushes)[this->selectedBrush];
     }
 
     const char* buttonText = "Reset Position";
@@ -95,7 +88,7 @@ void BrushEditor::draw2d(){
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, previewBuffer.frameBuffer);
     glUseProgram(previewProgram);
     glActiveTexture(GL_TEXTURE0); 
-    glBindTexture(GL_TEXTURE_2D_ARRAY, (*textures)[selectedTexture]->texture);
+    glBindTexture(GL_TEXTURE_2D_ARRAY, (*brushes)[selectedBrush]->texture->texture);
     glUniform1i(glGetUniformLocation(previewProgram, "textureSampler"), 0); // Set the sampler uniform
     glUniform1i(glGetUniformLocation(previewProgram, "textureLayer"), 0); // Set the sampler uniform
     glBindVertexArray(previewVao);
@@ -120,42 +113,42 @@ void BrushEditor::draw2d(){
     ImGui::InputFloat("m##brushRadius", &brushRadius);
 
     ImGui::Text("Texture Scale: ");
-    ImGui::InputFloat2("\%##textureScale", &texture.textureScale[0]);
+    ImGui::InputFloat2("\%##textureScale", &brush->textureScale[0]);
 
     ImGui::Text("Parallax Scale: ");
-    ImGui::InputFloat("m##parallaxScale", &texture.parallaxScale);
+    ImGui::InputFloat("m##parallaxScale", &brush->parallaxScale);
 
     ImGui::Text("Parallax Min Layers: ");
-    ImGui::InputFloat("# ##parallaxMinLayers", &texture.parallaxMinLayers);
+    ImGui::InputFloat("# ##parallaxMinLayers", &brush->parallaxMinLayers);
 
     ImGui::Text("Parallax Max Layers: ");
-    ImGui::InputFloat("# ##parallaxMaxLayers", &texture.parallaxMaxLayers);
+    ImGui::InputFloat("# ##parallaxMaxLayers", &brush->parallaxMaxLayers);
 
     ImGui::Text("Specular Strength: ");
-    ImGui::InputFloat("\%##specularStrength", &texture.specularStrength);
+    ImGui::InputFloat("\%##specularStrength", &brush->specularStrength);
 
     ImGui::Text("Shininess: ");
-    ImGui::InputFloat("\%##shininess", &texture.shininess);
+    ImGui::InputFloat("\%##shininess", &brush->shininess);
 
     ImGui::End();
 }
-
 void BrushEditor::draw3d(){
-    glm::mat4 model2 = glm::scale(glm::translate(  glm::mat4(1.0f), brushPosition), glm::vec3(brushRadius));
+    glm::mat4 model2 = glm::scale(
+        glm::translate(  
+            glm::mat4(1.0f), 
+            brushPosition
+        ), 
+        glm::vec3(brushRadius)
+    );
     glm::mat4 mvp2 = camera->getMVP(model2);
     glUniformMatrix4fv(modelViewProjectionLoc, 1, GL_FALSE, glm::value_ptr(mvp2));
     glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model2));
-    glUniform1ui(overrideTextureEnabledLoc, 1);
-
-    glUniform1f(parallaxScaleLoc, texture.parallaxScale);
-    glUniform1f(parallaxMinLayersLoc, texture.parallaxMinLayers  );
-    glUniform1f(parallaxMaxLayersLoc, texture.parallaxMaxLayers );
-    glUniform1f(shininessLoc, texture.shininess);
-    glUniform1f(specularStrengthLoc, texture.specularStrength);
-    glUniform2fv(textureScaleLoc, 1, glm::value_ptr(texture.textureScale));
-
     glUniform1ui(shadowEnabledLoc, 0);
-    glUniform1ui(overrideTextureLoc, getSelectedTexture());
+    glUniform1ui(overrideTextureLoc, getSelectedBrush());
+    glUniform1ui(overrideTextureEnabledLoc, 1);
+    Brush::bindBrush(program3d, "overrideProps" , brush);
+    Brush::bindBrush(program3d, "brushes[" + std::to_string(selectedBrush) + "]" , brush);
+
     sphere->draw(GL_PATCHES);
     glUniform1ui(overrideTextureEnabledLoc, 0);
 }

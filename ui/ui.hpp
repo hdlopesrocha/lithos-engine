@@ -8,8 +8,7 @@ enum BrushMode {
 
 class BrushEditor {
     bool open = false;
-    std::vector<Texture*> * textures;
-	int selectedTexture = 0;
+    std::vector<Brush*> * brushes;
     GLuint previewProgram;
     GLuint program3d;
     RenderBuffer previewBuffer;
@@ -21,26 +20,21 @@ class BrushEditor {
 	GLuint shadowEnabledLoc;
 	GLuint overrideTextureEnabledLoc;
 	GLuint overrideTextureLoc;
-    GLuint parallaxScaleLoc;
-    GLuint parallaxMinLayersLoc;
-    GLuint parallaxMaxLayersLoc;
-    GLuint shininessLoc;
-    GLuint specularStrengthLoc;
-    GLuint textureScaleLoc;
 
     BrushMode mode;
-    Texture texture;
+  	int selectedBrush = 0;
+    Brush * brush;
     glm::vec3 brushPosition;
     float brushRadius;
 
     public:
-    BrushEditor(Camera * camera,std::vector<Texture*> * t, GLuint program3d, GLuint previewProgram, RenderBuffer previewBuffer, GLuint previewVao);
+    BrushEditor(Camera * camera,std::vector<Brush*> * brushes, GLuint program3d, GLuint previewProgram, RenderBuffer previewBuffer, GLuint previewVao);
     void show();
     void hide();
     bool isOpen();
     void draw2d();
     void draw3d();
-    int getSelectedTexture();
+    int getSelectedBrush();
     void resetPosition();
 };
 
