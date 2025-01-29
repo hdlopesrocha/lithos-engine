@@ -177,10 +177,11 @@ class Texture {
 	float parallaxMaxLayers;
 	float shininess;
 	float specularStrength;
+	glm::vec2 textureScale;
 
 	Texture();
 	Texture(TextureArray texture);
-	Texture(TextureArray texture, float parallaxScale, float parallaxMinLayers, float parallaxMaxLayers, float shininess,float specularStrength);
+	Texture(TextureArray texture,glm::vec2 textureScale, float parallaxScale, float parallaxMinLayers, float parallaxMaxLayers, float shininess,float specularStrength);
 };
 
 

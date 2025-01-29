@@ -30,6 +30,7 @@ struct Vertex {
 	float parallaxMaxLayers;
 	float shininess;
 	float specularStrength;
+	glm::vec2 textureScale;
 
 
     Vertex(){
@@ -42,6 +43,7 @@ struct Vertex {
 		this->parallaxMaxLayers = 32;
 		this->shininess = 32;
 		this->specularStrength = 0.4;
+		this->textureScale = glm::vec2(1.0);
     }
 
     Vertex(glm::vec3 pos) : Vertex(){

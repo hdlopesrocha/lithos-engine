@@ -10,6 +10,7 @@ layout(location = 5) in float parallaxMinLayers;
 layout(location = 6) in float parallaxMaxLayers;     
 layout(location = 7) in float shininess;     
 layout(location = 8) in float specularStrength;     
+layout(location = 9) in vec2 textureScale;     
 
 #include<functions.glsl>
 
@@ -38,5 +39,6 @@ void main() {
     vProps.parallaxMaxLayers = parallaxMaxLayers;
     vProps.shininess = shininess;
     vProps.specularStrength = specularStrength;
+    vProps.textureScale = textureScale;
     gl_Position = vec4(position, 1.0);
 }

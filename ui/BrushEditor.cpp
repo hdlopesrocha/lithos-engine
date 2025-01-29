@@ -22,7 +22,8 @@ BrushEditor::BrushEditor(Camera * camera, std::vector<Texture*> * t, GLuint prog
     this->parallaxMaxLayersLoc = glGetUniformLocation(program3d, "overrideProps.parallaxMaxLayers");
     this->shininessLoc = glGetUniformLocation(program3d, "overrideProps.shininess");
     this->specularStrengthLoc = glGetUniformLocation(program3d, "overrideProps.specularStrength");
-
+    this->textureScaleLoc = glGetUniformLocation(program3d, "overrideProps.textureScale");
+    
 
     this->brushPosition = glm::vec3(0);
     this->brushRadius = 10.0f;
@@ -31,8 +32,6 @@ BrushEditor::BrushEditor(Camera * camera, std::vector<Texture*> * t, GLuint prog
     this->selectedTexture = 6;
     this->texture = *(*textures)[this->selectedTexture];
 }
-
-
 
 void BrushEditor::show() {
     open = true;
@@ -115,10 +114,13 @@ void BrushEditor::draw2d(){
     }
 
     ImGui::Text("Position: ");
-    ImGui::InputFloat3("m##brushPosition", &brushPosition.x);
+    ImGui::InputFloat3("m##brushPosition", &brushPosition[0]);
     
     ImGui::Text("Radius: ");
     ImGui::InputFloat("m##brushRadius", &brushRadius);
+
+    ImGui::Text("Texture Scale: ");
+    ImGui::InputFloat2("\%##textureScale", &texture.textureScale[0]);
 
     ImGui::Text("Parallax Scale: ");
     ImGui::InputFloat("m##parallaxScale", &texture.parallaxScale);
@@ -150,6 +152,7 @@ void BrushEditor::draw3d(){
     glUniform1f(parallaxMaxLayersLoc, texture.parallaxMaxLayers );
     glUniform1f(shininessLoc, texture.shininess);
     glUniform1f(specularStrengthLoc, texture.specularStrength);
+    glUniform2fv(textureScaleLoc, 1, glm::value_ptr(texture.textureScale));
 
     glUniform1ui(shadowEnabledLoc, 0);
     glUniform1ui(overrideTextureLoc, getSelectedTexture());

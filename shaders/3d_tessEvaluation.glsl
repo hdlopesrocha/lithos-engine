@@ -48,6 +48,9 @@ void main() {
         teProps.specularStrength = tcProps[0].specularStrength * gl_TessCoord[0] + 
                                     tcProps[1].specularStrength * gl_TessCoord[1] + 
                                     tcProps[2].specularStrength * gl_TessCoord[2];
+        teProps.textureScale = tcProps[0].textureScale * gl_TessCoord[0] + 
+                            tcProps[1].textureScale * gl_TessCoord[1] + 
+                            tcProps[2].textureScale * gl_TessCoord[2];                            
     }
 
 

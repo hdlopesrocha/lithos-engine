@@ -31,6 +31,8 @@ DrawableGeometry::DrawableGeometry(Geometry * t){
 	glEnableVertexAttribArray(7);		
 	glVertexAttribPointer(8, 1, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) offsetof(Vertex, specularStrength));
 	glEnableVertexAttribArray(8);	
+	glVertexAttribPointer(9, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) offsetof(Vertex, textureScale));
+	glEnableVertexAttribArray(9);	
 }
 
 void DrawableGeometry::draw(uint mode) {

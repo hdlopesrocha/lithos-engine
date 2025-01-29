@@ -26,6 +26,7 @@ class BrushEditor {
     GLuint parallaxMaxLayersLoc;
     GLuint shininessLoc;
     GLuint specularStrengthLoc;
+    GLuint textureScaleLoc;
 
     BrushMode mode;
     Texture texture;

@@ -127,7 +127,7 @@ void main() {
 
     if(triplanarEnabled) {
         int plane = triplanarPlane(position, normal);
-        uv = triplanarMapping(position, plane) * 0.1;
+        uv = triplanarMapping(position, plane, teProps.textureScale) * 0.1;
     }
 
     vec3 viewDirection = normalize(position - cameraPosition);

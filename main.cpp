@@ -66,6 +66,7 @@ class LandBrush : public TextureBrush {
 		vertex->parallaxMaxLayers = texture->parallaxMaxLayers;	
 		vertex->shininess = texture->shininess;
 		vertex->specularStrength = texture->specularStrength;
+		vertex->textureScale = texture->textureScale;
 	}
 };
 
@@ -204,14 +205,14 @@ public:
 		textureBuffer = createRenderFrameBuffer(1024,1024);
 
         textures.push_back(new Texture(loadTextureArray("textures/grid.png","","")));
-        textures.push_back(new Texture(loadTextureArray("textures/lava_color.jpg", "textures/lava_normal.jpg","textures/lava_bump.jpg"), 0.1, 8, 32 ,256, 0.4));
-        textures.push_back(new Texture(loadTextureArray("textures/grass_color.png", "textures/grass_normal.png", "textures/grass_bump.png"), 0.01, 8, 32 ,32, 0.03));
-        textures.push_back(new Texture(loadTextureArray("textures/sand_color.jpg", "textures/sand_normal.jpg", "textures/sand_bump.jpg"), 0.05, 8, 32 ,32,0.02));
-        textures.push_back(new Texture(loadTextureArray("textures/rock_color.png", "textures/rock_normal.png", "textures/rock_bump.png"), 0.1, 8, 32,128, 0.4));
-        textures.push_back(new Texture(loadTextureArray("textures/snow_color.png", "textures/snow_normal.png", "textures/snow_bump.png"), 0.1, 8, 32, 32 , 0.4));
-        textures.push_back(new Texture(loadTextureArray("textures/metal_color.png", "textures/metal_normal.png", "textures/metal_bump.png"), 0.1, 8, 64, 32, 0.6 ));
-        textures.push_back(new Texture(loadTextureArray("textures/dirt_color.png", "textures/dirt_normal.png", "textures/dirt_bump.png"), 0.1, 8, 32 , 256, 0.02));
-        textures.push_back(new Texture(loadTextureArray("textures/bricks_color.png", "textures/bricks_normal.png", "textures/bricks_bump.png"), 0.01, 8, 32, 256, 0.2 ));
+        textures.push_back(new Texture(loadTextureArray("textures/lava_color.jpg", "textures/lava_normal.jpg","textures/lava_bump.jpg"), glm::vec2(1.0f), 0.1, 8, 32 ,256, 0.4));
+        textures.push_back(new Texture(loadTextureArray("textures/grass_color.png", "textures/grass_normal.png", "textures/grass_bump.png"), glm::vec2(1.0f), 0.01, 8, 32 ,32, 0.03));
+        textures.push_back(new Texture(loadTextureArray("textures/sand_color.jpg", "textures/sand_normal.jpg", "textures/sand_bump.jpg"), glm::vec2(1.0f), 0.05, 8, 32 ,32,0.02));
+        textures.push_back(new Texture(loadTextureArray("textures/rock_color.png", "textures/rock_normal.png", "textures/rock_bump.png"), glm::vec2(1.0f), 0.1, 8, 32,128, 0.4));
+        textures.push_back(new Texture(loadTextureArray("textures/snow_color.png", "textures/snow_normal.png", "textures/snow_bump.png"), glm::vec2(1.0f), 0.1, 8, 32, 32 , 0.4));
+        textures.push_back(new Texture(loadTextureArray("textures/metal_color.png", "textures/metal_normal.png", "textures/metal_bump.png"), glm::vec2(1.0f), 0.1, 8, 64, 32, 0.6 ));
+        textures.push_back(new Texture(loadTextureArray("textures/dirt_color.png", "textures/dirt_normal.png", "textures/dirt_bump.png"), glm::vec2(1.0f), 0.1, 8, 32 , 256, 0.02));
+        textures.push_back(new Texture(loadTextureArray("textures/bricks_color.png", "textures/bricks_normal.png", "textures/bricks_bump.png"), glm::vec2(1.0f), 0.01, 8, 32, 256, 0.2 ));
 		noiseTexture = loadTextureImage("textures/noise.png");
 
 		programShadow = createShaderProgram(

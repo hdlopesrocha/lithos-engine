@@ -13,8 +13,9 @@ Texture::Texture(TextureArray texture) : Texture() {
     this->texture = texture;
 }
 
-Texture::Texture(TextureArray texture, float parallaxScale, float parallaxMinLayers, float parallaxMaxLayers, float shininess, float specularStrength) {
+Texture::Texture(TextureArray texture, glm::vec2 textureScale, float parallaxScale, float parallaxMinLayers, float parallaxMaxLayers, float shininess, float specularStrength) {
     this->texture = texture;
+    this->textureScale = textureScale;
     this->parallaxScale = parallaxScale;
     this->parallaxMinLayers = parallaxMinLayers;
     this->parallaxMaxLayers = parallaxMaxLayers;
