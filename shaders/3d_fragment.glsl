@@ -33,7 +33,7 @@ vec2 parallaxMapping(vec2 uv, vec3 viewDir, float scale, float minLayers, float 
     float numLayers = mix(maxLayers, minLayers, dot(vec3(0.0, 0.0, 1.0), -viewDir));  
 
 	float deltaDepth = 1.0 / float( numLayers );
-	vec2 deltaUv = (viewDir.xy*scale/viewDir.z) * deltaDepth;
+	vec2 deltaUv = (viewDir.xy/viewDir.z) * deltaDepth * scale;
 	float currentDepth = 1.0;
     vec2 currentUv = uv;
     float currentHeight = 0.0;
@@ -73,28 +73,36 @@ vec2 parallaxMapping(vec2 uv, vec3 viewDir, float scale, float minLayers, float 
             prevHeight = midHeight;
         }
     }
+
     float delta1 = currentHeight - currentDepth; 
     float delta2 = ( currentDepth + deltaDepth ) - prevHeight; 
     float ratio = delta1/(delta1+delta2);
     return mix(currentUv, prevUv, ratio);
 }
 
+bool rotateTBN = false;
+
 mat3 getTBN(vec3 pos, vec3 normal, vec2 uv) {
     vec3 dpdx = dFdx(pos);
     vec3 dpdy = dFdy(pos);
-    vec2 dUVdx = dFdx(uv);
-    vec2 dUVdy = dFdy(uv);
+    vec2 dudx = dFdx(uv);
+    vec2 dudy = dFdy(uv);
 
     // Calculate the determinant for the tangent space matrix
-    float det = dUVdx.x * dUVdy.y - dUVdx.y * dUVdy.x;
+    float det = dudx.x * dudy.y - dudx.y * dudy.x;
     float invDet = 1.0 / det;
 
     // Compute tangent and bitangent vectors
-    vec3 tangent = normalize(invDet * (dpdx * dUVdy.y - dpdy * dUVdx.y));
-    vec3 bitangent = normalize(invDet * (dpdy * dUVdx.x - dpdx * dUVdy.x));
+    vec3 tangent = normalize(invDet * (dpdx * dudy.y - dpdy * dudx.y));
+    vec3 bitangent = normalize(invDet * (dpdy * dudx.x - dpdx * dudy.x));
 
-    tangent = normalize(tangent - dot(tangent, normal) * normal);
-    bitangent = normalize(cross(tangent, normal));
+    if(rotateTBN) {
+        mat3 world = mat3(model); // Extract 3x3 from 4x4
+        mat3 normal_matrix = transpose(inverse(world));
+        normal = normalize(normal_matrix * normal);
+        tangent = normalize(world * tangent);
+        bitangent = normalize(world * bitangent);
+    }
 
     // Transform normal map vector to world space
     return mat3(tangent, bitangent, normal);
@@ -107,7 +115,9 @@ vec3 visual(vec3 v) {
 
 void main() {
     vec2 uv = teTextureCoord;
-    vec3 position = mat3(model) * tePosition;    
+
+    vec4 positionWorld = model * vec4(tePosition, 1.0);
+    vec3 position = positionWorld.xyz;    
     mat3 normalMatrix = transpose(inverse(mat3(model)));
     vec3 normal = normalize(normalMatrix * teNormal);
 
@@ -121,9 +131,8 @@ void main() {
     }
 
     vec3 viewDirection = normalize(position - cameraPosition);
-    mat3 TBN = getTBN(position, normal, uv);
+    mat3 TBN = getTBN(tePosition, teNormal, uv);
     vec3 viewTangent = normalize(transpose(TBN) * viewDirection);
-    
 
     if(parallaxEnabled && distanceFactor * teProps.parallaxScale > 0.0) {
        uv = parallaxMapping(uv, viewTangent, distanceFactor*teProps.parallaxScale , distanceFactor*teProps.parallaxMinLayers, distanceFactor*teProps.parallaxMaxLayers, int(ceil(distanceFactor*5.0)));

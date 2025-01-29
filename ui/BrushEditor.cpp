@@ -25,10 +25,10 @@ BrushEditor::BrushEditor(Camera * camera, std::vector<Texture*> * t, GLuint prog
 
 
     this->brushPosition = glm::vec3(0);
-    this->brushRadius = 1.0f;
+    this->brushRadius = 10.0f;
 
     this->mode = BrushMode::ADD;
-    this->selectedTexture = 0;
+    this->selectedTexture = 6;
     this->texture = *(*textures)[this->selectedTexture];
 }
 
