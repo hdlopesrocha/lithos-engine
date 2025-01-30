@@ -81,6 +81,7 @@ class MainApplication : public LithosApplication {
 	GLuint program3D;
 	GLuint programShadow;
 	GLuint programTexture;
+	GLuint programMixTexture;
 	
 	GLuint modelLoc;
 	GLuint modelViewProjectionLoc;
@@ -104,13 +105,15 @@ class MainApplication : public LithosApplication {
 	GLuint screen2dVao;
 	GLuint fillAreaVao;
 	RenderBuffer depthFrameBuffer;
-	RenderBuffer textureBuffer;
+	TextureMixer * textureMixer;
+	int activeTexture = 1;
+
 	float time = 0.0f;
-	glm::mat4 fillAreaProjection = glm::ortho(0.0f, 1.0f, 1.0f, 0.0f, -1.0f, 1.0f);
 
 	// UI
 	BrushEditor * brushEditor;
 	ShadowMapViewer * shadowMapViewer;
+	TextureMixerEditor * textureMixerEditor;
 
 
 
@@ -134,47 +137,18 @@ public:
 
 
 
-	GLuint create2DVAO(float w, float h) {
-		float vertices[] = {
-			// positions   // tex coords
-			0.0f, 0.0f,    0.0f, 1.0f,
-			0.0f, h,    0.0f, 0.0f,
-			w, h,    1.0f, 0.0f,
-			w, 0.0f,    1.0f, 1.0f
 
-		};
-		unsigned int indices[] = {
-			0, 1, 2,
-			2, 3, 0
-		};
-
-		unsigned int VBO, VAO, EBO;
-		glGenVertexArrays(1, &VAO);
-		glGenBuffers(1, &VBO);
-		glGenBuffers(1, &EBO);
-
-		glBindVertexArray(VAO);
-
-		glBindBuffer(GL_ARRAY_BUFFER, VBO);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
-		// Vertex position
-		glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
-		glEnableVertexAttribArray(0);
-
-		// Texture coordinates
-		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
-		glEnableVertexAttribArray(1);
-		return VAO;
-	}
 
     virtual void setup() {
 		glEnable(GL_DEPTH_TEST);
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+
+		std::string functionsLine = "#include<functions.glsl>";
+		std::string perlinLine = "#include<perlin.glsl>";
+		std::string functionsCode = readFile("shaders/functions.glsl");
+		std::string perlinCode = readFile("shaders/perlin.glsl");
 
 		programShadow = createShaderProgram(
 			compileShader(readFile("shaders/shadow_vertex.glsl"),GL_VERTEX_SHADER), 
@@ -191,7 +165,6 @@ public:
 			0
 		);
 		glUseProgram(program2D);
-		glUniformMatrix4fv(glGetUniformLocation(program2D, "projection"), 1, GL_FALSE, glm::value_ptr(fillAreaProjection));
 
 		programTexture = createShaderProgram(
 			compileShader(readFile("shaders/texture_vertex.glsl"),GL_VERTEX_SHADER), 
@@ -200,10 +173,15 @@ public:
 			0
 		);
 		glUseProgram(programTexture);
-		glUniformMatrix4fv(glGetUniformLocation(programTexture, "projection"), 1, GL_FALSE, glm::value_ptr(fillAreaProjection));
 
-		std::string functionsLine = "#include<functions.glsl>";
-		std::string functionsCode = readFile("shaders/functions.glsl");
+		programMixTexture = createShaderProgram(
+			compileShader(readFile("shaders/mix_vertex.glsl"),GL_VERTEX_SHADER), 
+			compileShader(replace(readFile("shaders/mix_fragment.glsl"), perlinLine, perlinCode),GL_FRAGMENT_SHADER), 
+			compileShader(readFile("shaders/mix_geometry.glsl"),GL_GEOMETRY_SHADER), 
+			0
+		);
+		glUseProgram(programMixTexture);
+
 
 		program3D = createShaderProgram(
 			compileShader(replace(readFile("shaders/3d_vertex.glsl"), functionsLine, functionsCode),GL_VERTEX_SHADER), 
@@ -214,8 +192,8 @@ public:
 		glUseProgram(program3D);
 
 		// Use the shader program
-		screen2dVao = create2DVAO(200,200);
-		fillAreaVao = create2DVAO(1,1);
+		screen2dVao = DrawableGeometry::create2DVAO(0,0,200,200);
+		fillAreaVao = DrawableGeometry::create2DVAO(-1,1, 1,-1);
 
 
 		modelViewProjectionShadowLoc = glGetUniformLocation(programShadow, "modelViewProjection");
@@ -238,7 +216,8 @@ public:
 		
 
 		depthFrameBuffer = createDepthFrameBuffer(2048, 2048);
-		textureBuffer = createRenderFrameBuffer(1024,1024);
+
+		textureMixer = new TextureMixer(1024,1024, programMixTexture);
 
 		{
 			Texture * t = new Texture(loadTextureArray("textures/grid.png","",""));
@@ -286,13 +265,14 @@ public:
 			brushes.push_back(new Brush(t, glm::vec2(1.0), 0.01, 8, 32, 256, 0.2 ));
 		}
 		{
-			Texture * t = new Texture(loadTextureArray("textures/grassmix_color.jpg", "textures/grassmix_normal.jpg", "textures/grassmix_bump.jpg"));
+			Texture * t = new Texture(textureMixer->getTexture());
 			textures.push_back(t);
 			brushes.push_back(new Brush(t, glm::vec2(1.0), 0.01, 8, 32, 256, 0.2 ));
 		}
+
+
 		noiseTexture = loadTextureImage("textures/noise.png");
 
-		int activeTexture = 1;
 
 		activeTexture = Texture::bindTexture(program3D, GL_TEXTURE_2D, activeTexture, "shadowMap", depthFrameBuffer.texture);
 		activeTexture = Texture::bindTexture(program3D, GL_TEXTURE_2D, activeTexture, "noise", noiseTexture);
@@ -347,8 +327,11 @@ public:
 		ImGui_ImplGlfw_InitForOpenGL(getWindow(), true);
 		ImGui_ImplOpenGL3_Init("#version 460");
 
-		brushEditor = new BrushEditor(&camera, &brushes, program3D, programTexture, textureBuffer, fillAreaVao);
+		brushEditor = new BrushEditor(&camera, &brushes, program3D, programTexture);
 		shadowMapViewer = new ShadowMapViewer(depthFrameBuffer.texture);
+		textureMixerEditor = new TextureMixerEditor(textureMixer, &textures, programTexture);
+		textureMixer->mix(textures[2], textures[3]);
+
 	 }
 
     virtual void update(float deltaTime){
@@ -571,6 +554,9 @@ public:
 				if (ImGui::MenuItem("Shadow Map Viewer", "Ctrl+D")) {
 					shadowMapViewer->show();
 				}
+				if (ImGui::MenuItem("Texture Mixer", "Ctrl+M")) {
+					textureMixerEditor->show();
+				}
 				ImGui::EndMenu();
 			}
 
@@ -594,7 +580,9 @@ public:
 		if(shadowMapViewer->isOpen()) {
 			shadowMapViewer->draw2d();
 		}
-
+		if(textureMixerEditor->isOpen()) {
+			textureMixerEditor->draw2d();
+		}
 
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, originalFrameBuffer);
 		ImGui::Render();

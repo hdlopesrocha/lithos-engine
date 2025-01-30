@@ -87,7 +87,10 @@ void LithosApplication::mainLoop() {
     ImGui::DestroyContext();
 }
 
-RenderBuffer LithosApplication::createRenderFrameBuffer(int width, int height) {
+RenderBuffer createRenderFrameBuffer(int width, int height) {
+    GLint originalFrameBuffer;
+    glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &originalFrameBuffer);
+
     RenderBuffer buffer;
     buffer.width = width;
     buffer.height = height;
@@ -119,7 +122,7 @@ RenderBuffer LithosApplication::createRenderFrameBuffer(int width, int height) {
     if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE){
         std::cerr << "createRenderFrameBuffer error!" << std::endl;
     }
-
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, originalFrameBuffer);
     return buffer;
 }
 
@@ -145,7 +148,58 @@ void LithosApplication::close() {
 	alive = false;
 }
 
-RenderBuffer LithosApplication::createDepthFrameBuffer(int width, int height) {
+GLuint createTextureArray(int width, int height, int layers) {
+    GLuint texArray;
+    glGenTextures(1, &texArray);
+    glBindTexture(GL_TEXTURE_2D_ARRAY, texArray);
+
+    // Allocate storage for multiple layers
+    glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, GL_RGBA8, width, height, layers);
+
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+    glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
+    return texArray;
+}
+
+RenderBuffer createMultiLayerRenderFrameBuffer(int width, int height, int layers) {
+    GLint originalFrameBuffer;
+    glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &originalFrameBuffer);
+   
+    RenderBuffer buffer;
+    buffer.width = width;
+    buffer.height = height;
+    buffer.texture = createTextureArray(width, height, layers);
+
+    glGenFramebuffers(1, &buffer.frameBuffer);
+    glBindFramebuffer(GL_FRAMEBUFFER, buffer.frameBuffer);
+
+    // Attach the entire texture array (for layered rendering)
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, buffer.texture, 0);
+
+    // Depth buffer (optional)
+    GLuint depthTex;
+    glGenTextures(1, &depthTex);
+    glBindTexture(GL_TEXTURE_2D_ARRAY, depthTex);
+    glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, GL_DEPTH_COMPONENT24, width, height, layers);
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthTex, 0);
+
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+        std::cerr << "Framebuffer is not complete!" << std::endl;
+    }
+   
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, originalFrameBuffer);
+    return buffer;
+}
+
+
+RenderBuffer createDepthFrameBuffer(int width, int height) {
+    GLint originalFrameBuffer;
+    glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &originalFrameBuffer);
+    
     RenderBuffer buffer;
     buffer.width = width;
     buffer.height = height;
@@ -177,6 +231,7 @@ RenderBuffer LithosApplication::createDepthFrameBuffer(int width, int height) {
     
     //glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, buffer.depthBuffer);
     //glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, buffer.texture, 0);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, originalFrameBuffer);
 
     return buffer;
 }

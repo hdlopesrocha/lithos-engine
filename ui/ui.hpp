@@ -20,7 +20,8 @@ class BrushEditor {
 	GLuint shadowEnabledLoc;
 	GLuint overrideTextureEnabledLoc;
 	GLuint overrideTextureLoc;
-
+  
+    int selectedLayer;
     BrushMode mode;
   	int selectedBrush = 0;
     Brush * brush;
@@ -28,7 +29,7 @@ class BrushEditor {
     float brushRadius;
 
     public:
-    BrushEditor(Camera * camera,std::vector<Brush*> * brushes, GLuint program3d, GLuint previewProgram, RenderBuffer previewBuffer, GLuint previewVao);
+    BrushEditor(Camera * camera,std::vector<Brush*> * brushes, GLuint program3d, GLuint previewProgram);
     void show();
     void hide();
     bool isOpen();
@@ -50,3 +51,24 @@ class ShadowMapViewer {
     void draw2d();
     void draw3d();
 };
+
+class TextureMixerEditor {
+    bool open = false;
+    TextureMixer * textureMixer;
+    RenderBuffer previewBuffer;
+    std::vector<Texture*> * textures;
+    GLuint previewProgram;
+    GLuint previewVao;
+  	int selectedBaseTexture;
+  	int selectedOverlayTexture;
+    int selectedLayer;
+
+    public:
+    TextureMixerEditor(TextureMixer * textureMixer, std::vector<Texture*> * textures, GLuint previewProgram);
+    void show();
+    void hide();
+    bool isOpen();
+    void draw2d();
+    void draw3d();
+};
+

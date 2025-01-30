@@ -2,13 +2,13 @@
 #include <glm/gtc/type_ptr.hpp>
 
 
-BrushEditor::BrushEditor(Camera * camera, std::vector<Brush*> * brushes, GLuint program3d, GLuint previewProgram, RenderBuffer previewBuffer, GLuint previewVao) {
+BrushEditor::BrushEditor(Camera * camera, std::vector<Brush*> * brushes, GLuint program3d, GLuint previewProgram) {
     this->program3d = program3d;
     this->camera = camera;
     this->brushes = brushes;
     this->previewProgram = previewProgram;
-    this->previewBuffer = previewBuffer;
-    this->previewVao = previewVao;
+    this->previewBuffer = createRenderFrameBuffer(1024,1024);
+    this->previewVao = DrawableGeometry::create2DVAO(-1,-1, 1,1);
     SphereGeometry sphereGeometry(20,40);
 	this->sphere = new DrawableGeometry(&sphereGeometry);
 
@@ -20,6 +20,7 @@ BrushEditor::BrushEditor(Camera * camera, std::vector<Brush*> * brushes, GLuint 
 
     this->brushPosition = glm::vec3(0);
     this->brushRadius = 2.0f;
+    this->selectedLayer = 0;
 
     this->mode = BrushMode::ADD;
     this->selectedBrush = 6;
@@ -75,6 +76,17 @@ void BrushEditor::draw2d(){
         this->brush = (*brushes)[this->selectedBrush];
     }
 
+    ImGui::Text("Layer: %d", selectedLayer);
+    if (ImGui::ArrowButton("##layer2_arrow_left", ImGuiDir_Left)) {
+        selectedLayer = Math::mod(selectedLayer - 1, 3);
+    }
+    ImGui::SameLine();
+    if (ImGui::ArrowButton("##layer2_arrow_right", ImGuiDir_Right)) {
+        selectedLayer = Math::mod(selectedLayer + 1, 3);
+    }
+
+
+
     const char* buttonText = "Reset Position";
     ImVec2 textSize = ImGui::CalcTextSize(buttonText);
     float paddingX = ImGui::GetStyle().FramePadding.x;
@@ -86,11 +98,13 @@ void BrushEditor::draw2d(){
     }
 
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, previewBuffer.frameBuffer);
+    glViewport(0, 0, 1024, 1024); //TODO: from texture
+
     glUseProgram(previewProgram);
     glActiveTexture(GL_TEXTURE0); 
     glBindTexture(GL_TEXTURE_2D_ARRAY, (*brushes)[selectedBrush]->texture->texture);
     glUniform1i(glGetUniformLocation(previewProgram, "textureSampler"), 0); // Set the sampler uniform
-    glUniform1i(glGetUniformLocation(previewProgram, "textureLayer"), 0); // Set the sampler uniform
+    glUniform1i(glGetUniformLocation(previewProgram, "textureLayer"), selectedLayer); // Set the sampler uniform
     glBindVertexArray(previewVao);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
