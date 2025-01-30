@@ -54,17 +54,18 @@ class ShadowMapViewer {
 
 class TextureMixerEditor {
     bool open = false;
-    TextureMixer * textureMixer;
+    std::vector<TextureMixer*> * mixers;
     RenderBuffer previewBuffer;
     std::vector<Texture*> * textures;
     GLuint previewProgram;
     GLuint previewVao;
+  	int selectedMixer;
+    int selectedLayer;
   	int selectedBaseTexture;
   	int selectedOverlayTexture;
-    int selectedLayer;
-
+    
     public:
-    TextureMixerEditor(TextureMixer * textureMixer, std::vector<Texture*> * textures, GLuint previewProgram);
+    TextureMixerEditor(std::vector<TextureMixer*> * mixers, std::vector<Texture*> * textures, GLuint previewProgram);
     void show();
     void hide();
     bool isOpen();

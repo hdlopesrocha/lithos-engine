@@ -89,6 +89,7 @@ class LandBrush : public TextureBrush {
 class MainApplication : public LithosApplication {
 	std::vector<Texture*> textures;
 	std::vector<Brush*> brushes;
+	std::vector<TextureMixer*> mixers;
 
   	Camera camera;
 	DirectionalLight light;
@@ -128,7 +129,6 @@ class MainApplication : public LithosApplication {
 	GLuint screen2dVao;
 	GLuint fillAreaVao;
 	RenderBuffer depthFrameBuffer;
-	TextureMixer * textureMixer;
 	int activeTexture = 4; // To avoid rebinding other textures
 
 	float time = 0.0f;
@@ -287,40 +287,45 @@ public:
 			brushes.push_back(new Brush(t, glm::vec2(1.0), 0.01, 8, 32, 256, 0.2 ));
 		}
 		{
-			textureMixer = new TextureMixer(1024,1024, programMixTexture);
-			textureMixer->mix(textures[2], textures[3]);
-			Texture * t = new Texture(textureMixer->getTexture());
+			TextureMixer * tm = new TextureMixer(1024,1024, programMixTexture);
+			tm->mix(textures[2], textures[3]);
+			Texture * t = new Texture(tm->getTexture());
 			textures.push_back(t);
 			brushes.push_back(new Brush(t, glm::vec2(1.0), 0.01, 8, 32, 256, 0.2 ));
+			mixers.push_back(tm);
 		}
 		{
-			TextureMixer * textureMixer2 = new TextureMixer(1024,1024, programMixTexture);
-			textureMixer2->mix(textures[2], textures[5]);
-			Texture * t = new Texture(textureMixer2->getTexture());
+			TextureMixer * tm = new TextureMixer(1024,1024, programMixTexture);
+			tm->mix(textures[2], textures[5]);
+			Texture * t = new Texture(tm->getTexture());
 			textures.push_back(t);
 			brushes.push_back(new Brush(t, glm::vec2(1.0), 0.01, 8, 32, 256, 0.2 ));
+			mixers.push_back(tm);
 		}
 
 		{
-			TextureMixer * textureMixer2 = new TextureMixer(1024,1024, programMixTexture);
-			textureMixer2->mix(textures[4], textures[2]);
-			Texture * t = new Texture(textureMixer2->getTexture());
+			TextureMixer * tm = new TextureMixer(1024,1024, programMixTexture);
+			tm->mix(textures[4], textures[2]);
+			Texture * t = new Texture(tm->getTexture());
 			textures.push_back(t);
 			brushes.push_back(new Brush(t, glm::vec2(1.0), 0.01, 8, 32, 256, 0.2 ));
+			mixers.push_back(tm);
 		}
 		{
-			TextureMixer * textureMixer2 = new TextureMixer(1024,1024, programMixTexture);
-			textureMixer2->mix(textures[4], textures[5]);
-			Texture * t = new Texture(textureMixer2->getTexture());
+			TextureMixer * tm = new TextureMixer(1024,1024, programMixTexture);
+			tm->mix(textures[4], textures[5]);
+			Texture * t = new Texture(tm->getTexture());
 			textures.push_back(t);
 			brushes.push_back(new Brush(t, glm::vec2(1.0), 0.01, 8, 32, 256, 0.2 ));
+			mixers.push_back(tm);
 		}
 		{
-			TextureMixer * textureMixer2 = new TextureMixer(1024,1024, programMixTexture);
-			textureMixer2->mix(textures[4], textures[3]);
-			Texture * t = new Texture(textureMixer2->getTexture());
+			TextureMixer * tm = new TextureMixer(1024,1024, programMixTexture);
+			tm->mix(textures[4], textures[3]);
+			Texture * t = new Texture(tm->getTexture());
 			textures.push_back(t);
 			brushes.push_back(new Brush(t, glm::vec2(1.0), 0.01, 8, 32, 256, 0.2 ));
+			mixers.push_back(tm);
 		}
 
 
@@ -387,7 +392,7 @@ public:
 
 		brushEditor = new BrushEditor(&camera, &brushes, program3D, programTexture);
 		shadowMapViewer = new ShadowMapViewer(depthFrameBuffer.texture);
-		textureMixerEditor = new TextureMixerEditor(textureMixer, &textures, programTexture);
+		textureMixerEditor = new TextureMixerEditor(&mixers, &textures, programTexture);
 
 	 }
 

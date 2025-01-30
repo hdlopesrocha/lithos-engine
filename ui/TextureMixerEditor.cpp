@@ -1,14 +1,13 @@
 #include "ui.hpp"
 
 
-TextureMixerEditor::TextureMixerEditor(TextureMixer * textureMixer, std::vector<Texture*> * textures, GLuint previewProgram) {
-    this->textureMixer = textureMixer;
+TextureMixerEditor::TextureMixerEditor(std::vector<TextureMixer*> * mixers, std::vector<Texture*> * textures, GLuint previewProgram) {
+    this->mixers = mixers;
     this->textures = textures;
     this->previewProgram = previewProgram;
     this->previewBuffer = createRenderFrameBuffer(1024,1024);
     this->previewVao = DrawableGeometry::create2DVAO(-1,-1, 1,1);
-    this->selectedBaseTexture = 2;
-    this->selectedOverlayTexture = 3;
+    this->selectedMixer = 0;
     this->selectedLayer = 0;
 }
 
@@ -27,20 +26,33 @@ bool TextureMixerEditor::isOpen(){
 void TextureMixerEditor::draw2d(){
     ImGui::Begin("Texture Mixer", &open, ImGuiWindowFlags_AlwaysAutoResize);
 
-    Texture * baseTexture = (*textures)[selectedBaseTexture];
-    Texture * overlayTexture = (*textures)[selectedOverlayTexture];
-    textureMixer->mix(baseTexture, overlayTexture);
+    //Texture * baseTexture = (*textures)[selectedBaseTexture];
+    //Texture * overlayTexture = (*textures)[selectedOverlayTexture];
+
+    TextureMixer * mixer = (*mixers)[selectedMixer];
+    //textureMixer->mix(baseTexture, overlayTexture);
 
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, previewBuffer.frameBuffer);
     glViewport(0, 0, previewBuffer.width, previewBuffer.height); 
 
     glUseProgram(previewProgram);
     glActiveTexture(GL_TEXTURE0); 
-    glBindTexture(GL_TEXTURE_2D_ARRAY, textureMixer->getTexture());
+    glBindTexture(GL_TEXTURE_2D_ARRAY, mixer->getTexture());
     glUniform1i(glGetUniformLocation(previewProgram, "textureSampler"), 0); // Set the sampler uniform
     glUniform1i(glGetUniformLocation(previewProgram, "textureLayer"), selectedLayer); // Set the sampler uniform
     glBindVertexArray(previewVao);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+
+    ImGui::Text("Mixer: %d", selectedMixer);
+    if (ImGui::ArrowButton("##mixer_arrow_left", ImGuiDir_Left)) {
+        selectedMixer = Math::mod(selectedMixer - 1, mixers->size());
+    }
+    ImGui::SameLine();
+    if (ImGui::ArrowButton("##mixer_arrow_right", ImGuiDir_Right)) {
+        selectedMixer = Math::mod(selectedMixer + 1, mixers->size());
+    }
+
 
     ImGui::Text("Layer: %d", selectedLayer);
     if (ImGui::ArrowButton("##layer_arrow_left", ImGuiDir_Left)) {
@@ -82,23 +94,23 @@ float step = 0.1f;
 float stepFast = 1.0f; // Faster step when holding Shift
 
     ImGui::Text("Perlin scale: ");
-    ImGui::InputInt("\%##perlinScale", &textureMixer->perlinScale);
+    ImGui::InputInt("\%##perlinScale", &mixer->perlinScale);
 
     ImGui::Text("Perlin time: ");
-    ImGui::InputFloat("s##perlinTime", &textureMixer->perlinTime, step, stepFast, "%.10f");
+    ImGui::InputFloat("s##perlinTime", &mixer->perlinTime, step, stepFast, "%.10f");
 
     ImGui::Text("Perlin iterations: ");
-    ImGui::InputInt("###perlinIterations", &textureMixer->perlinIterations);
+    ImGui::InputInt("###perlinIterations", &mixer->perlinIterations);
 
     ImGui::Text("Perlin lacunarity: ");
-    ImGui::InputInt("###lacunarity", &textureMixer->perlinLacunarity);
+    ImGui::InputInt("###lacunarity", &mixer->perlinLacunarity);
 
 
     ImGui::Text("Brightness: ");
-    ImGui::InputFloat("##brightness", &textureMixer->brightness, step, stepFast, "%.2f");
+    ImGui::InputFloat("##brightness", &mixer->brightness, step, stepFast, "%.2f");
 
     ImGui::Text("Contrast: ");
-    ImGui::InputFloat("##contrast", &textureMixer->contrast, step, stepFast, "%.2f");
+    ImGui::InputFloat("##contrast", &mixer->contrast, step, stepFast, "%.2f");
 
 
 
