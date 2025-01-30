@@ -30,6 +30,7 @@ void TextureMixerEditor::draw2d(){
     //Texture * overlayTexture = (*textures)[selectedOverlayTexture];
 
     TextureMixer * mixer = (*mixers)[selectedMixer];
+    mixer->mix();
     //textureMixer->mix(baseTexture, overlayTexture);
 
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, previewBuffer.frameBuffer);
@@ -71,24 +72,23 @@ void TextureMixerEditor::draw2d(){
     ImGui::SameLine();
 
     if (ImGui::ArrowButton("##base_arrow_left", ImGuiDir_Left)) {
-        selectedBaseTexture = Math::mod(selectedBaseTexture - 1, textures->size());
+        mixer->baseTextureIndex = Math::mod(mixer->baseTextureIndex - 1, textures->size());
     }
     ImGui::SameLine();
     if (ImGui::ArrowButton("##base_arrow_right", ImGuiDir_Right)) {
-        selectedBaseTexture = Math::mod(selectedBaseTexture + 1, textures->size());
+        mixer->baseTextureIndex = Math::mod(mixer->baseTextureIndex + 1, textures->size());
     }
 
     ImGui::Text("Overlay texture: ");
     ImGui::SameLine();
 
     if (ImGui::ArrowButton("##overlay_arrow_left", ImGuiDir_Left)) {
-        selectedOverlayTexture = Math::mod(selectedOverlayTexture - 1, textures->size());
+        mixer->overlayTextureIndex = Math::mod(mixer->overlayTextureIndex - 1, textures->size());
     }
     ImGui::SameLine();
     if (ImGui::ArrowButton("##overlay_arrow_right", ImGuiDir_Right)) {
-        selectedOverlayTexture = Math::mod(selectedOverlayTexture + 1, textures->size());
+        mixer->overlayTextureIndex = Math::mod(mixer->overlayTextureIndex + 1, textures->size());
     }
-
 
 float step = 0.1f;
 float stepFast = 1.0f; // Faster step when holding Shift

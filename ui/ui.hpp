@@ -61,8 +61,6 @@ class TextureMixerEditor {
     GLuint previewVao;
   	int selectedMixer;
     int selectedLayer;
-  	int selectedBaseTexture;
-  	int selectedOverlayTexture;
     
     public:
     TextureMixerEditor(std::vector<TextureMixer*> * mixers, std::vector<Texture*> * textures, GLuint previewProgram);

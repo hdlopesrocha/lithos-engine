@@ -1,6 +1,6 @@
 #include "gl.hpp"
 
-TextureMixer::TextureMixer(int width, int height, GLuint program) {
+TextureMixer::TextureMixer(int width, int height, GLuint program, std::vector<Texture*> * textures) {
     this->textureMixerBuffer = createMultiLayerRenderFrameBuffer(width,height, 3);
     this->textures = textures;
     this->program = program;
@@ -18,7 +18,18 @@ TextureArray TextureMixer::getTexture(){
     return textureMixerBuffer.texture;
 }
 
-void TextureMixer::mix(Texture * baseTexture, Texture * overlayTexture ){
+void TextureMixer::mix(int baseTextureIndex, int overlayTextureIndex ){
+    this->baseTextureIndex = baseTextureIndex;
+    this->overlayTextureIndex = overlayTextureIndex;
+    mix();
+}
+
+void TextureMixer::mix(){
+
+
+    Texture * baseTexture = (*textures)[baseTextureIndex];
+    Texture * overlayTexture = (*textures)[overlayTextureIndex];
+
     GLint originalFrameBuffer;
     glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &originalFrameBuffer);
 

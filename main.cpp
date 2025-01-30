@@ -287,16 +287,16 @@ public:
 			brushes.push_back(new Brush(t, glm::vec2(1.0), 0.01, 8, 32, 256, 0.2 ));
 		}
 		{
-			TextureMixer * tm = new TextureMixer(1024,1024, programMixTexture);
-			tm->mix(textures[2], textures[3]);
+			TextureMixer * tm = new TextureMixer(1024,1024, programMixTexture, &textures);
+			tm->mix(2, 3);
 			Texture * t = new Texture(tm->getTexture());
 			textures.push_back(t);
 			brushes.push_back(new Brush(t, glm::vec2(1.0), 0.01, 8, 32, 256, 0.2 ));
 			mixers.push_back(tm);
 		}
 		{
-			TextureMixer * tm = new TextureMixer(1024,1024, programMixTexture);
-			tm->mix(textures[2], textures[5]);
+			TextureMixer * tm = new TextureMixer(1024,1024, programMixTexture, &textures);
+			tm->mix(2, 5);
 			Texture * t = new Texture(tm->getTexture());
 			textures.push_back(t);
 			brushes.push_back(new Brush(t, glm::vec2(1.0), 0.01, 8, 32, 256, 0.2 ));
@@ -304,24 +304,24 @@ public:
 		}
 
 		{
-			TextureMixer * tm = new TextureMixer(1024,1024, programMixTexture);
-			tm->mix(textures[4], textures[2]);
+			TextureMixer * tm = new TextureMixer(1024,1024, programMixTexture, &textures);
+			tm->mix(4, 2);
 			Texture * t = new Texture(tm->getTexture());
 			textures.push_back(t);
 			brushes.push_back(new Brush(t, glm::vec2(1.0), 0.01, 8, 32, 256, 0.2 ));
 			mixers.push_back(tm);
 		}
 		{
-			TextureMixer * tm = new TextureMixer(1024,1024, programMixTexture);
-			tm->mix(textures[4], textures[5]);
+			TextureMixer * tm = new TextureMixer(1024,1024, programMixTexture, &textures);
+			tm->mix(4, 5);
 			Texture * t = new Texture(tm->getTexture());
 			textures.push_back(t);
 			brushes.push_back(new Brush(t, glm::vec2(1.0), 0.01, 8, 32, 256, 0.2 ));
 			mixers.push_back(tm);
 		}
 		{
-			TextureMixer * tm = new TextureMixer(1024,1024, programMixTexture);
-			tm->mix(textures[4], textures[3]);
+			TextureMixer * tm = new TextureMixer(1024,1024, programMixTexture, &textures);
+			tm->mix(4, 3);
 			Texture * t = new Texture(tm->getTexture());
 			textures.push_back(t);
 			brushes.push_back(new Brush(t, glm::vec2(1.0), 0.01, 8, 32, 256, 0.2 ));

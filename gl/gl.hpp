@@ -217,9 +217,13 @@ class TextureMixer {
     int perlinIterations;
     float brightness;
     float contrast;
-    TextureMixer(int width, int height, GLuint program);
+    int baseTextureIndex;
+    int overlayTextureIndex;
+
+    TextureMixer(int width, int height, GLuint program, std::vector<Texture*> * textures);
     TextureArray getTexture();
-    void mix(Texture *baseTexture, Texture * overlayTexture);
+    void mix(int baseTexture, int overlayTexture);
+    void mix();
 };
 
 GLuint createTextureArray(int width, int height, int layers); 

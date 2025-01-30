@@ -132,10 +132,10 @@ void main() {
 
     vec3 viewDirection = normalize(position - cameraPosition);
     mat3 TBN = getTBN(tePosition, teNormal, uv);
-    vec3 viewTangent = normalize(transpose(TBN) * viewDirection);
+    vec3 viewDirectionTangent = normalize(transpose(TBN) * viewDirection);
 
     if(parallaxEnabled && distanceFactor * teProps.parallaxScale > 0.0) {
-       uv = parallaxMapping(uv, viewTangent, distanceFactor*teProps.parallaxScale , distanceFactor*teProps.parallaxMinLayers, distanceFactor*teProps.parallaxMaxLayers, int(ceil(distanceFactor*5.0)));
+       uv = parallaxMapping(uv, viewDirectionTangent, distanceFactor*teProps.parallaxScale , distanceFactor*teProps.parallaxMinLayers, distanceFactor*teProps.parallaxMaxLayers, int(ceil(distanceFactor*5.0)));
     }
   
     vec4 mixedColor = textureBlend(teTextureWeights, textures, uv, 0);
@@ -160,7 +160,7 @@ void main() {
         vec3 worldNormal = normalize(TBN * normalMap);
 
         vec3 reflection = reflect(-lightDirection, worldNormal);
-        float phongSpec = pow(max(dot(reflection, viewDirection), 0.0), teProps.shininess);
+        float phongSpec = pow(max(dot(reflection, viewDirectionTangent), 0.0), teProps.shininess);
         float diffuse = clamp(max(dot(worldNormal, -lightDirection), 0.0), 0.2, 1.0);
 
         float finalShadow = 1.0;
