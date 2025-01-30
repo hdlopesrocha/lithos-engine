@@ -30,14 +30,16 @@ class LandBrush : public TextureBrush {
 	Texture * sand;
 	Texture * rock;
 	Texture * snow;
+	Texture * grassMix;
 
 	public: 
-	LandBrush(Texture * underground, Texture * grass, Texture * sand, Texture * rock, Texture * snow){
-		this->underground = underground;
-		this->grass = grass;
-		this->sand = sand;
-		this->rock = rock;
-		this->snow = snow;
+	LandBrush(std::vector<Brush*> brushes){
+		this->underground = brushes[7]->texture;
+		this->grass = brushes[2]->texture;
+		this->sand = brushes[3]->texture;
+		this->rock = brushes[4]->texture;
+		this->snow = brushes[5]->texture;
+		this->grassMix = brushes[9]->texture;
 	}
 
 
@@ -49,6 +51,8 @@ class LandBrush : public TextureBrush {
 			texture = rock;
 		} else if(vertex->position.y < -45){
 			texture = sand;
+		} else if(vertex->position.y < -43){
+			texture = grassMix;
 		} else if(vertex->position.y < -25){
 			texture = grass;
 		} else {
@@ -281,6 +285,11 @@ public:
 			textures.push_back(t);
 			brushes.push_back(new Brush(t, glm::vec2(1.0), 0.01, 8, 32, 256, 0.2 ));
 		}
+		{
+			Texture * t = new Texture(loadTextureArray("textures/grassmix_color.jpg", "textures/grassmix_normal.jpg", "textures/grassmix_bump.jpg"));
+			textures.push_back(t);
+			brushes.push_back(new Brush(t, glm::vec2(1.0), 0.01, 8, 32, 256, 0.2 ));
+		}
 		noiseTexture = loadTextureImage("textures/noise.png");
 
 		int activeTexture = 1;
@@ -300,7 +309,7 @@ public:
 
 		HeightMap map(new GradientPerlinSurface(100, 1.0f/128.0f, -50), glm::vec3(-100,-100,-100),glm::vec3(100,0,100), tree->minSize);
 
-		tree->add(new HeightMapContainmentHandler(&map, new LandBrush(textures[7],textures[2],textures[3],textures[4],textures[5])));
+		tree->add(new HeightMapContainmentHandler(&map, new LandBrush(brushes)));
 		//tree->del(new SphereContainmentHandler(BoundingSphere(glm::vec3(00,-30,0),50), textures[7]));
 		tree->add(new SphereContainmentHandler(BoundingSphere(glm::vec3(0,0,0),20), new SimpleBrush(textures[6])));
 		tree->add(new SphereContainmentHandler(BoundingSphere(glm::vec3(-11,11,11),10), new SimpleBrush(textures[5])));
