@@ -15,6 +15,9 @@ Current features:
 * Shadow Mapping
 * Soft Shadows
 * Gradient Perlin Noise Land Generator
+* Texture mixing
+* Edit brushes
+* UI with Dear ImGui
 
 ## Screenshot
 ![Alt text](screenshot.png?raw=true "Screenshot")
