@@ -350,7 +350,10 @@ public:
 
 		tree = new Octree(3.0, 5);
 
-		HeightMap map(new GradientPerlinSurface(100, 1.0f/128.0f, -50), glm::vec3(-100,-100,-100),glm::vec3(100,0,100), tree->minSize);
+		BoundingBox mapBox(glm::vec3(-100,-100,-100), glm::vec3(100,0,100));
+		HeightFunction * function = new GradientPerlinSurface(100, 1.0f/128.0f, -50);
+		CachedHeightMapSurface * surface = new CachedHeightMapSurface(function, mapBox, tree->minSize);
+		HeightMap map(surface, mapBox.getMin(),mapBox.getMax(), tree->minSize);
 
 		tree->add(new HeightMapContainmentHandler(&map, new LandBrush(brushes)));
 		//tree->del(new SphereContainmentHandler(BoundingSphere(glm::vec3(00,-30,0),50), textures[7]));
