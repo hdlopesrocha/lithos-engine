@@ -5,7 +5,7 @@ TextureMixerEditor::TextureMixerEditor(std::vector<TextureMixer*> * mixers, std:
     this->mixers = mixers;
     this->textures = textures;
     this->previewProgram = previewProgram;
-    this->previewBuffer = createRenderFrameBuffer(1024,1024);
+    this->previewBuffer = createRenderFrameBuffer(512,512);
     this->previewVao = DrawableGeometry::create2DVAO(-1,-1, 1,1);
     this->selectedMixer = 0;
     this->selectedLayer = 0;

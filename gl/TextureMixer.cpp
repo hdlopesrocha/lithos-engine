@@ -37,7 +37,7 @@ void TextureMixer::mix(){
 
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, textureMixerBuffer.frameBuffer);
     glViewport(0, 0, textureMixerBuffer.width, textureMixerBuffer.height);
-
+    glClear(GL_COLOR_BUFFER_BIT);
     glActiveTexture(GL_TEXTURE0); 
     glBindTexture(GL_TEXTURE_2D_ARRAY, baseTexture->texture);
     glUniform1i(glGetUniformLocation(program, "baseTexture"), 0);
@@ -59,6 +59,10 @@ void TextureMixer::mix(){
         glBindVertexArray(previewVao);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     }
+
+    glActiveTexture(GL_TEXTURE0); 
+    glBindTexture(GL_TEXTURE_2D_ARRAY, textureMixerBuffer.texture);
+    glGenerateMipmap(GL_TEXTURE_2D_ARRAY);
 
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, originalFrameBuffer);
 

@@ -7,7 +7,7 @@ BrushEditor::BrushEditor(Camera * camera, std::vector<Brush*> * brushes, GLuint 
     this->camera = camera;
     this->brushes = brushes;
     this->previewProgram = previewProgram;
-    this->previewBuffer = createRenderFrameBuffer(1024,1024);
+    this->previewBuffer = createRenderFrameBuffer(256,256);
     this->previewVao = DrawableGeometry::create2DVAO(-1,-1, 1,1);
     SphereGeometry sphereGeometry(20,40);
 	this->sphere = new DrawableGeometry(&sphereGeometry);
@@ -108,7 +108,7 @@ void BrushEditor::draw2d(){
     glBindVertexArray(previewVao);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
-    ImGui::Image((ImTextureID)(intptr_t)previewBuffer.texture, ImVec2(200, 200));
+    ImGui::Image((ImTextureID)(intptr_t)previewBuffer.texture, ImVec2(256, 256));
 
     ImGui::Text("Mode: ");
 

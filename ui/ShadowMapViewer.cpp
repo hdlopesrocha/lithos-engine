@@ -19,7 +19,7 @@ bool ShadowMapViewer::isOpen(){
 
 void ShadowMapViewer::draw2d(){
     ImGui::Begin("Shadow Map Viewer", &open, ImGuiWindowFlags_AlwaysAutoResize);
-	ImGui::Image((ImTextureID)(intptr_t)shadowTexture, ImVec2(200, 200));
+	ImGui::Image((ImTextureID)(intptr_t)shadowTexture, ImVec2(512, 512));
 	ImGui::End();
 }
 
