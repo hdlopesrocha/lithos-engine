@@ -39,6 +39,7 @@ void Brush::bindBrush(GLuint program, std::string objectName, Brush * brush){
 }
 
 void Brush::bindBrushes(GLuint program, std::vector<Brush*> * brushes) {
+    glUseProgram(program);
 
     for(int i = 0; i < brushes->size() ; ++i) {
         Brush * brush = (*brushes)[i];

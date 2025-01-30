@@ -98,7 +98,7 @@ void BrushEditor::draw2d(){
     }
 
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, previewBuffer.frameBuffer);
-    glViewport(0, 0, 1024, 1024); //TODO: from texture
+    glViewport(0, 0, previewBuffer.width, previewBuffer.height); 
 
     glUseProgram(previewProgram);
     glActiveTexture(GL_TEXTURE0); 

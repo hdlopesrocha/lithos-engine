@@ -212,7 +212,8 @@ class TextureMixer {
     public:
 
     float perlinTime;
-    float perlinScale;
+    int perlinScale;
+    int perlinLacunarity;
     int perlinIterations;
     float brightness;
     float contrast;

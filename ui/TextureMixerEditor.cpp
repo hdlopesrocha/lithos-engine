@@ -7,8 +7,8 @@ TextureMixerEditor::TextureMixerEditor(TextureMixer * textureMixer, std::vector<
     this->previewProgram = previewProgram;
     this->previewBuffer = createRenderFrameBuffer(1024,1024);
     this->previewVao = DrawableGeometry::create2DVAO(-1,-1, 1,1);
-    this->selectedBaseTexture = 1;
-    this->selectedOverlayTexture = 2;
+    this->selectedBaseTexture = 2;
+    this->selectedOverlayTexture = 3;
     this->selectedLayer = 0;
 }
 
@@ -32,7 +32,7 @@ void TextureMixerEditor::draw2d(){
     textureMixer->mix(baseTexture, overlayTexture);
 
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, previewBuffer.frameBuffer);
-    glViewport(0, 0, 1024, 1024); //TODO: from texture
+    glViewport(0, 0, previewBuffer.width, previewBuffer.height); 
 
     glUseProgram(previewProgram);
     glActiveTexture(GL_TEXTURE0); 
@@ -77,17 +77,22 @@ void TextureMixerEditor::draw2d(){
         selectedOverlayTexture = Math::mod(selectedOverlayTexture + 1, textures->size());
     }
 
+
+float step = 0.1f;
+float stepFast = 1.0f; // Faster step when holding Shift
+
     ImGui::Text("Perlin scale: ");
-    ImGui::InputFloat("\%##perlinScale", &textureMixer->perlinScale);
+    ImGui::InputInt("\%##perlinScale", &textureMixer->perlinScale);
 
     ImGui::Text("Perlin time: ");
-    ImGui::InputFloat("s##perlinTime", &textureMixer->perlinTime);
+    ImGui::InputFloat("s##perlinTime", &textureMixer->perlinTime, step, stepFast, "%.10f");
 
     ImGui::Text("Perlin iterations: ");
     ImGui::InputInt("###perlinIterations", &textureMixer->perlinIterations);
 
-float step = 0.1f;
-float stepFast = 1.0f; // Faster step when holding Shift
+    ImGui::Text("Perlin lacunarity: ");
+    ImGui::InputInt("###lacunarity", &textureMixer->perlinLacunarity);
+
 
     ImGui::Text("Brightness: ");
     ImGui::InputFloat("##brightness", &textureMixer->brightness, step, stepFast, "%.2f");

@@ -9,7 +9,7 @@ Texture::Texture(TextureArray texture) : Texture() {
 }
 // type = GL_TEXTURE_2D_ARRAY || GL_TEXTURE_2D
 int Texture::bindTexture(GLuint program, GLuint type, int activeTexture, std::string objectName, GLuint texture) {
-    //glUseProgram(program);
+    glUseProgram(program);
 
     glActiveTexture(GL_TEXTURE0 + activeTexture); 
     std::cout << "glActiveTexture: " <<  activeTexture << std::endl;

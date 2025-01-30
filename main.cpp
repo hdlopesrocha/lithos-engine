@@ -30,8 +30,11 @@ class LandBrush : public TextureBrush {
 	Texture * sand;
 	Texture * rock;
 	Texture * snow;
-	Texture * grassMix;
-
+	Texture * grassMixSand;
+	Texture * grassMixSnow;
+	Texture * rockMixGrass;
+	Texture * rockMixSnow;
+	Texture * rockMixSand;
 	public: 
 	LandBrush(std::vector<Brush*> brushes){
 		this->underground = brushes[7]->texture;
@@ -39,22 +42,42 @@ class LandBrush : public TextureBrush {
 		this->sand = brushes[3]->texture;
 		this->rock = brushes[4]->texture;
 		this->snow = brushes[5]->texture;
-		this->grassMix = brushes[9]->texture;
+		this->grassMixSand = brushes[9]->texture;
+		this->grassMixSnow = brushes[10]->texture;
+	
+		this->rockMixGrass = brushes[11]->texture;
+		this->rockMixSnow = brushes[12]->texture;
+		this->rockMixSand = brushes[13]->texture;
 	}
 
 
 	void paint(Vertex * vertex) {
+		float steepness =glm::dot(glm::vec3(0.0f,1.0f,0.0f), vertex->normal );
+		int grassLevel = -25;
+		int sandLevel = -45;
+
+
 		Texture * texture;
 		if (glm::dot(glm::vec3(0.0f,1.0f,0.0f), vertex->normal ) <=0 ){
 			texture= underground;
-		} else if(glm::dot(glm::vec3(0.0f,1.0f,0.0f), vertex->normal ) < 0.8 ){
+		} else if(steepness < 0.8 ){
 			texture = rock;
-		} else if(vertex->position.y < -45){
+		} else if(steepness < 0.9 ){
+		    if(vertex->position.y < sandLevel){
+				texture = rockMixSand;
+			} else if(vertex->position.y < grassLevel){
+				texture = rockMixGrass;
+			} else {
+				texture = rockMixSnow;
+			}
+		} else if(vertex->position.y < sandLevel){
 			texture = sand;
-		} else if(vertex->position.y < -43){
-			texture = grassMix;
-		} else if(vertex->position.y < -25){
+		} else if(vertex->position.y < sandLevel+1){
+			texture = grassMixSand;
+		} else if(vertex->position.y < grassLevel){
 			texture = grass;
+		} else if(vertex->position.y < grassLevel+1){
+			texture = grassMixSnow;
 		} else {
 			texture = snow;
 		}
@@ -106,7 +129,7 @@ class MainApplication : public LithosApplication {
 	GLuint fillAreaVao;
 	RenderBuffer depthFrameBuffer;
 	TextureMixer * textureMixer;
-	int activeTexture = 1;
+	int activeTexture = 4; // To avoid rebinding other textures
 
 	float time = 0.0f;
 
@@ -217,7 +240,6 @@ public:
 
 		depthFrameBuffer = createDepthFrameBuffer(2048, 2048);
 
-		textureMixer = new TextureMixer(1024,1024, programMixTexture);
 
 		{
 			Texture * t = new Texture(loadTextureArray("textures/grid.png","",""));
@@ -265,10 +287,43 @@ public:
 			brushes.push_back(new Brush(t, glm::vec2(1.0), 0.01, 8, 32, 256, 0.2 ));
 		}
 		{
+			textureMixer = new TextureMixer(1024,1024, programMixTexture);
+			textureMixer->mix(textures[2], textures[3]);
 			Texture * t = new Texture(textureMixer->getTexture());
 			textures.push_back(t);
 			brushes.push_back(new Brush(t, glm::vec2(1.0), 0.01, 8, 32, 256, 0.2 ));
 		}
+		{
+			TextureMixer * textureMixer2 = new TextureMixer(1024,1024, programMixTexture);
+			textureMixer2->mix(textures[2], textures[5]);
+			Texture * t = new Texture(textureMixer2->getTexture());
+			textures.push_back(t);
+			brushes.push_back(new Brush(t, glm::vec2(1.0), 0.01, 8, 32, 256, 0.2 ));
+		}
+
+		{
+			TextureMixer * textureMixer2 = new TextureMixer(1024,1024, programMixTexture);
+			textureMixer2->mix(textures[4], textures[2]);
+			Texture * t = new Texture(textureMixer2->getTexture());
+			textures.push_back(t);
+			brushes.push_back(new Brush(t, glm::vec2(1.0), 0.01, 8, 32, 256, 0.2 ));
+		}
+		{
+			TextureMixer * textureMixer2 = new TextureMixer(1024,1024, programMixTexture);
+			textureMixer2->mix(textures[4], textures[5]);
+			Texture * t = new Texture(textureMixer2->getTexture());
+			textures.push_back(t);
+			brushes.push_back(new Brush(t, glm::vec2(1.0), 0.01, 8, 32, 256, 0.2 ));
+		}
+		{
+			TextureMixer * textureMixer2 = new TextureMixer(1024,1024, programMixTexture);
+			textureMixer2->mix(textures[4], textures[3]);
+			Texture * t = new Texture(textureMixer2->getTexture());
+			textures.push_back(t);
+			brushes.push_back(new Brush(t, glm::vec2(1.0), 0.01, 8, 32, 256, 0.2 ));
+		}
+
+
 
 
 		noiseTexture = loadTextureImage("textures/noise.png");
@@ -276,10 +331,13 @@ public:
 
 		activeTexture = Texture::bindTexture(program3D, GL_TEXTURE_2D, activeTexture, "shadowMap", depthFrameBuffer.texture);
 		activeTexture = Texture::bindTexture(program3D, GL_TEXTURE_2D, activeTexture, "noise", noiseTexture);
-		
+
+
 		Texture::bindTextures(program3D, GL_TEXTURE_2D_ARRAY, activeTexture, "textures", &textures);
 		Brush::bindBrushes(program3D, &brushes);
-		
+
+
+
         camera.quaternion =   glm::angleAxis(glm::radians(180.0f), glm::vec3(0, 0, 1))
    	    					* glm::angleAxis(glm::radians(145.0f), glm::vec3(1, 0, 0))
    	    					* glm::angleAxis(glm::radians(135.0f), glm::vec3(0, 1, 0));  
@@ -330,7 +388,6 @@ public:
 		brushEditor = new BrushEditor(&camera, &brushes, program3D, programTexture);
 		shadowMapViewer = new ShadowMapViewer(depthFrameBuffer.texture);
 		textureMixerEditor = new TextureMixerEditor(textureMixer, &textures, programTexture);
-		textureMixer->mix(textures[2], textures[3]);
 
 	 }
 
@@ -393,7 +450,7 @@ public:
 	   	glm::vec3 lookAtLightPosition = glm::round(camera.position/16.0f)*16.0f; // + cameraDirection*far*0.5f;
 
 
-		light.direction = glm::normalize(glm::vec3(glm::sin(time),-1.0,glm::cos(time)));
+		//light.direction = glm::normalize(glm::vec3(glm::sin(time),-1.0,glm::cos(time)));
 
 		float orthoSize = 512.0f;  // Size of the orthographic box
 
