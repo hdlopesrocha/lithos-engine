@@ -12,12 +12,9 @@ int Texture::bindTexture(GLuint program, GLuint type, int activeTexture, std::st
     glUseProgram(program);
 
     glActiveTexture(GL_TEXTURE0 + activeTexture); 
-    std::cout << "glActiveTexture: " <<  activeTexture << std::endl;
-
     glBindTexture(type, texture);    // Bind the texture to the active unit
     glUniform1i(glGetUniformLocation(program, objectName.c_str()), activeTexture++);
 
-    std::cout << "Binding: " <<  objectName << " -> " << texture << std::endl;
     return activeTexture;
 }
 

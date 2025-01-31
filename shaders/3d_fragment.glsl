@@ -143,15 +143,7 @@ void main() {
         discard;
     }
 
-    if(debugEnabled) {
-        if(lightEnabled) {
-            color = vec4(visual(normal), 1.0);
-        }else {
-            color = vec4(1.0,1.0,1.0,1.0);
-        }
-    } else if(!lightEnabled) {
-        color = mixedColor; 
-    } else {
+    if(lightEnabled) {
         vec3 specularColor = vec3(1.0,1.0,1.0);
 
         vec3 normalMap = textureBlend(teTextureWeights, textures, uv, 1).xyz;
@@ -207,8 +199,17 @@ void main() {
             lightPercentage = sumShadow/totalSamples;
             finalShadow = (1.0 - shadowAlpha) + lightPercentage*shadowAlpha;
         }
-
-        color = vec4((mixedColor.rgb*diffuse + specularColor * teProps.specularStrength * phongSpec * lightPercentage)*finalShadow , mixedColor.a); 
+        if(debugEnabled) {
+            color = vec4(visual(worldNormal), 1.0);
+        }else {
+            color = vec4((mixedColor.rgb*diffuse + specularColor * teProps.specularStrength * phongSpec * lightPercentage)*finalShadow , mixedColor.a); 
+        }
+    }else {
+        if(debugEnabled) {
+            color = vec4(visual(normal), 1.0);
+        }else {
+            color = vec4(1.0,1.0,1.0,1.0);
+        }
     }
 
  }

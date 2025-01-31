@@ -53,8 +53,8 @@ class LandBrush : public TextureBrush {
 
 	void paint(Vertex * vertex) {
 		float steepness =glm::dot(glm::vec3(0.0f,1.0f,0.0f), vertex->normal );
-		int grassLevel = -25;
-		int sandLevel = -45;
+		int grassLevel = 25;
+		int sandLevel = 5;
 
 
 		Texture * texture;
@@ -86,6 +86,47 @@ class LandBrush : public TextureBrush {
 	}
 };
 
+
+
+class OctreeContainmentHandler : public ContainmentHandler {
+	public:
+	Octree * octree;
+    TextureBrush * brush;
+	BoundingBox box;
+
+	OctreeContainmentHandler(Octree * octree, BoundingBox box, TextureBrush * b) {
+		this->brush = b;
+		this->octree = octree;
+		this->box = box;
+	}
+	glm::vec3 getCenter() {
+		return box.getCenter();
+	}
+
+	bool contains(glm::vec3 p) {
+		return box.contains(p);
+	}
+
+	bool isContained(BoundingCube p) {
+		return p.contains(box);
+	}
+
+	glm::vec3 getNormal(glm::vec3 pos) {
+		return Math::surfaceNormal(pos, box);
+	}
+
+	ContainmentType check(BoundingCube cube) {
+		return box.test(cube);
+	}
+
+
+	Vertex getVertex(BoundingCube cube, ContainmentType solid) {
+		Vertex vtx;
+		vtx.position = cube.getCenter();
+		return vtx;
+	}
+};
+
 class MainApplication : public LithosApplication {
 	std::vector<Texture*> textures;
 	std::vector<Brush*> brushes;
@@ -93,9 +134,12 @@ class MainApplication : public LithosApplication {
 
   	Camera camera;
 	DirectionalLight light;
-	Octree * tree;
-	Tesselator * tesselator;
-	OctreeRenderer * renderer;
+	Octree * solidSpace;
+	Octree * liquidSpace;
+	Tesselator * solidTesselator;
+	Tesselator * liquidTesselator;
+	OctreeRenderer * solidRenderer;
+	OctreeRenderer * liquidRenderer;
 	#ifdef DEBUG_GEO
 	DrawableGeometry * vaoDebug;
 	#endif
@@ -327,7 +371,11 @@ public:
 			brushes.push_back(new Brush(t, glm::vec2(1.0), 0.01, 8, 32, 256, 0.2 ));
 			mixers.push_back(tm);
 		}
-
+		{
+			Texture * t = new Texture(loadTextureArray("textures/ice_color.jpg", "textures/ice_normal.jpg", "textures/ice_bump.jpg"));
+			textures.push_back(t);
+			brushes.push_back(new Brush(t, glm::vec2(1.0), 0.01, 8, 32, 256, 0.2 ));
+		}
 
 
 
@@ -348,26 +396,37 @@ public:
    	    					* glm::angleAxis(glm::radians(135.0f), glm::vec3(0, 1, 0));  
 		camera.position = glm::vec3(48,48,48);
 
-		tree = new Octree(3.0, 5);
+		solidSpace = new Octree(2.0, 5);
+		liquidSpace = new Octree(2.0, 5);
 
-		BoundingBox mapBox(glm::vec3(-100,-100,-100), glm::vec3(100,0,100));
-		HeightFunction * function = new GradientPerlinSurface(100, 1.0f/128.0f, -50);
-		CachedHeightMapSurface * surface = new CachedHeightMapSurface(function, mapBox, tree->minSize);
-		HeightMap map(surface, mapBox.getMin(),mapBox.getMax(), tree->minSize);
+		BoundingBox mapBox(glm::vec3(-100,-50,-100), glm::vec3(100,50,100));
+		HeightFunction * function = new GradientPerlinSurface(100, 1.0f/128.0f, 0);
+		CachedHeightMapSurface * surface = new CachedHeightMapSurface(function, mapBox, solidSpace->minSize);
+		HeightMap map(surface, mapBox.getMin(),mapBox.getMax(), solidSpace->minSize);
 
-		tree->add(new HeightMapContainmentHandler(&map, new LandBrush(brushes)));
+		solidSpace->add(new HeightMapContainmentHandler(&map, new LandBrush(brushes)));
 		//tree->del(new SphereContainmentHandler(BoundingSphere(glm::vec3(00,-30,0),50), textures[7]));
-		tree->add(new SphereContainmentHandler(BoundingSphere(glm::vec3(0,0,0),20), new SimpleBrush(textures[6])));
-		tree->add(new SphereContainmentHandler(BoundingSphere(glm::vec3(-11,11,11),10), new SimpleBrush(textures[5])));
-		tree->del(new SphereContainmentHandler(BoundingSphere(glm::vec3(11,11,-11),10), new SimpleBrush(textures[4])));
-		tree->add(new BoxContainmentHandler(BoundingBox(glm::vec3(0,-24,0),glm::vec3(24,0,24)),new SimpleBrush(textures[8])));
-		tree->del(new SphereContainmentHandler(BoundingSphere(glm::vec3(4,4,-4),8), new SimpleBrush(textures[1])));
-		tree->add(new SphereContainmentHandler(BoundingSphere(glm::vec3(11,11,-11),4), new SimpleBrush(textures[3])));
+		solidSpace->add(new SphereContainmentHandler(BoundingSphere(glm::vec3(0,50,0),20), new SimpleBrush(textures[6])));
+		solidSpace->add(new SphereContainmentHandler(BoundingSphere(glm::vec3(-11,61,11),10), new SimpleBrush(textures[5])));
+		solidSpace->del(new SphereContainmentHandler(BoundingSphere(glm::vec3(11,61,-11),10), new SimpleBrush(textures[4])));
+		solidSpace->add(new BoxContainmentHandler(BoundingBox(glm::vec3(0,26,0),glm::vec3(24,50,24)),new SimpleBrush(textures[8])));
+		solidSpace->del(new SphereContainmentHandler(BoundingSphere(glm::vec3(4,54,-4),8), new SimpleBrush(textures[1])));
+		solidSpace->add(new SphereContainmentHandler(BoundingSphere(glm::vec3(11,61,-11),4), new SimpleBrush(textures[3])));
 
-		tesselator = new Tesselator(tree);
-		tree->iterate(tesselator);
 
-		renderer = new OctreeRenderer(tree);
+		BoundingBox waterBox(glm::vec3(-100,-50,-100), glm::vec3(100,3,100));
+		//liquidSpace->add(new OctreeContainmentHandler(solidSpace, waterBox, new SimpleBrush(textures[6])));
+		//BoundingBox waterBox(glm::vec3(50,50,0), glm::vec3(70,70,20));
+		liquidSpace->add(new BoxContainmentHandler(waterBox, new SimpleBrush(textures[14])));
+
+		solidTesselator = new Tesselator(solidSpace);
+		solidSpace->iterate(solidTesselator);
+
+		liquidTesselator = new Tesselator(liquidSpace);
+		liquidSpace->iterate(liquidTesselator);
+
+		solidRenderer = new OctreeRenderer(solidSpace);
+		liquidRenderer = new OctreeRenderer(liquidSpace);
 		//tesselator->normalize();
 
 		#ifdef DEBUG_GEO
@@ -382,7 +441,7 @@ public:
         light.direction = glm::normalize(glm::vec3(-1.0,-1.0,-1.0));
 	 
 	 	std::cout << "Setup complete!" << std::endl;
-		std::cout << "#triangles = " << tesselator->triangles << std::endl;
+		std::cout << "#triangles = " << solidTesselator->triangles << std::endl;
 		
 		// ImGui
 		IMGUI_CHECKVERSION();
@@ -474,7 +533,8 @@ public:
 
     virtual void draw3d() {
 		glm::mat4 model = glm::mat4(1.0f); // Identity matrix
-		renderer->loaded = 0;
+		solidRenderer->loaded = 0;
+		liquidRenderer->loaded = 0;
 		glm::mat4 rotate = glm::mat4_cast(camera.quaternion);
 		glm::mat4 translate = glm::translate(glm::mat4(1.0f), -camera.position);
 	    camera.view = rotate * translate;
@@ -492,10 +552,9 @@ public:
 		glUseProgram(programShadow);
 		glUniformMatrix4fv(modelViewProjectionShadowLoc, 1, GL_FALSE, glm::value_ptr(mlp));
 
-		renderer->mode = GL_TRIANGLES;
-		renderer->update(mlp);
-		
-		tree->iterate(renderer);
+		solidRenderer->mode = GL_TRIANGLES;
+		solidRenderer->update(mlp);
+		solidSpace->iterate(solidRenderer);
 
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, renderBuffer.frameBuffer);
 		glViewport(0, 0, getWidth(), getHeight());
@@ -522,7 +581,7 @@ public:
 		glUniform1ui(lightEnabledLoc, 1);
 		glUniform1ui(triplanarEnabledLoc, 1);
 		glUniform1ui(parallaxEnabledLoc, 1);
-		glUniform1ui(debugEnabledLoc, 0);
+		glUniform1ui(debugEnabledLoc, 1);
 		glUniform1ui(shadowEnabledLoc, 1);
 
 		glPatchParameteri(GL_PATCH_VERTICES, 3); // Define the number of control points per patch
@@ -533,9 +592,13 @@ public:
 		glEnable(GL_DEPTH_TEST);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glPolygonMode(GL_FRONT, GL_FILL);
-		renderer->mode = GL_PATCHES;
-		renderer->update(mvp);
-		tree->iterate(renderer);
+		solidRenderer->mode = GL_PATCHES;
+		solidRenderer->update(mvp);
+		solidSpace->iterate(solidRenderer);
+
+		liquidRenderer->mode = GL_PATCHES;
+		liquidRenderer->update(mvp);
+		liquidSpace->iterate(liquidRenderer);
 
 		if(brushEditor->isOpen()) {
 			brushEditor->draw3d();
