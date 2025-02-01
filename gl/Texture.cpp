@@ -19,6 +19,7 @@ int Texture::bindTexture(GLuint program, GLuint type, int activeTexture, std::st
 }
 
 int Texture::bindTextures(GLuint program, GLuint type,int activeTexture, std::string arrayName, std::vector<Texture*> * ts) {
+
     for(int i=0 ; i < ts->size() ; ++i) {
         std::string objectName = arrayName + "[" + std::to_string(i) + "]";
         Texture * t = (*ts)[i];

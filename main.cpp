@@ -159,6 +159,7 @@ std::string replaceIncludes(std::vector<GlslInclude> includes, std::string code)
 
 class ProgramLocations {
 	public:
+	GLuint program;
 	GLuint modelLoc;
 	GLuint modelViewProjectionLoc;
 	GLuint matrixShadowLoc;
@@ -176,21 +177,36 @@ class ProgramLocations {
 	GLuint timeLoc;
 
 	ProgramLocations(GLuint program) {
-		modelLoc = glGetUniformLocation(program, "model");
-		modelViewProjectionLoc = glGetUniformLocation(program, "modelViewProjection");
-		matrixShadowLoc = glGetUniformLocation(program, "matrixShadow");
-		lightDirectionLoc = glGetUniformLocation(program, "lightDirection");
-		lightEnabledLoc = glGetUniformLocation(program, "lightEnabled");
-		debugEnabledLoc = glGetUniformLocation(program, "debugEnabled");
-		triplanarEnabledLoc = glGetUniformLocation(program, "triplanarEnabled");
-		shadowEnabledLoc = glGetUniformLocation(program, "shadowEnabled");
-		parallaxEnabledLoc = glGetUniformLocation(program, "parallaxEnabled");
-		cameraPositionLoc = glGetUniformLocation(program, "cameraPosition");
-		timeLoc = glGetUniformLocation(program, "time");
-		shadowMapLoc = glGetUniformLocation(program, "shadowMap");
-		noiseLoc = glGetUniformLocation(program, "noise");
-		overrideTextureLoc = glGetUniformLocation(program, "overrideTexture");
-		overrideTextureEnabledLoc = glGetUniformLocation(program, "overrideTextureEnabled");
+		this->program = program;
+		this->modelLoc = glGetUniformLocation(program, "model");
+		this->modelViewProjectionLoc = glGetUniformLocation(program, "modelViewProjection");
+		this->matrixShadowLoc = glGetUniformLocation(program, "matrixShadow");
+		this->lightDirectionLoc = glGetUniformLocation(program, "lightDirection");
+		this->lightEnabledLoc = glGetUniformLocation(program, "lightEnabled");
+		this->debugEnabledLoc = glGetUniformLocation(program, "debugEnabled");
+		this->triplanarEnabledLoc = glGetUniformLocation(program, "triplanarEnabled");
+		this->shadowEnabledLoc = glGetUniformLocation(program, "shadowEnabled");
+		this->parallaxEnabledLoc = glGetUniformLocation(program, "parallaxEnabled");
+		this->cameraPositionLoc = glGetUniformLocation(program, "cameraPosition");
+		this->timeLoc = glGetUniformLocation(program, "time");
+		this->shadowMapLoc = glGetUniformLocation(program, "shadowMap");
+		this->noiseLoc = glGetUniformLocation(program, "noise");
+		this->overrideTextureLoc = glGetUniformLocation(program, "overrideTexture");
+		this->overrideTextureEnabledLoc = glGetUniformLocation(program, "overrideTextureEnabled");
+	}
+
+	void update(glm::mat4 modelViewProjection,glm::mat4 model, glm::mat4 matrixShadow, glm::vec3 lightDirection, glm::vec3 cameraPosition, float time) {
+		glUniformMatrix4fv(modelViewProjectionLoc, 1, GL_FALSE, glm::value_ptr(modelViewProjection));
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		glUniformMatrix4fv(matrixShadowLoc, 1, GL_FALSE, glm::value_ptr(matrixShadow  ));
+		glUniform3fv(lightDirectionLoc, 1, glm::value_ptr(lightDirection));
+		glUniform3fv(cameraPositionLoc, 1, glm::value_ptr(cameraPosition));
+		glUniform1f(timeLoc, time);
+		glUniform1ui(lightEnabledLoc, 1);
+		glUniform1ui(triplanarEnabledLoc, 1);
+		glUniform1ui(parallaxEnabledLoc, 1);
+		glUniform1ui(debugEnabledLoc, 0);
+		glUniform1ui(shadowEnabledLoc, 1);
 	}
 
 };
@@ -220,13 +236,11 @@ class MainApplication : public LithosApplication {
 	GLuint programTexture;
 	GLuint programMixTexture;
 	GLuint programWaterTexture;
-	GLuint programWater3d;
 	
 
 
 	GLuint modelViewProjectionShadowLoc;
 	ProgramLocations * program3dLocs;
-	ProgramLocations * programWater3dLocs;
 	GLuint noiseTexture;
 	GLuint screen2dVao;
 	GLuint fillAreaVao;
@@ -313,16 +327,6 @@ public:
 			0
 		);
 		glUseProgram(programWaterTexture);
-
-		programWater3d = createShaderProgram(
-			compileShader(replaceIncludes(includes,readFile("shaders/water_vertex.glsl")),GL_VERTEX_SHADER), 
-			compileShader(replaceIncludes(includes,readFile("shaders/water_fragment.glsl")),GL_FRAGMENT_SHADER), 
-			0,
-			0
-		);
-		programWater3dLocs = new ProgramLocations(programWater3d);
-		glUseProgram(programWater3d);
-
 
 		program3d = createShaderProgram(
 			compileShader(replaceIncludes(includes,readFile("shaders/3d_vertex.glsl")),GL_VERTEX_SHADER), 
@@ -449,11 +453,9 @@ public:
 
 		noiseTexture = loadTextureImage("textures/noise.png");
 
-
 		activeTexture = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, "shadowMap", shadowFrameBuffer.depthTexture);
 		activeTexture = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, "noise", noiseTexture);
-
-
+		
 		Texture::bindTextures(program3d, GL_TEXTURE_2D_ARRAY, activeTexture, "textures", &textures);
 		Brush::bindBrushes(program3d, &brushes);
 
@@ -616,6 +618,7 @@ public:
 	    camera.view = rotate * translate;
 		glm::mat4 mvp = camera.getMVP(model);
 		glm::mat4 mlp = light.getMVP(model);
+		glm::mat4 ms =  getCanonicalMVP(mlp);
 
 
 		// ================
@@ -632,36 +635,15 @@ public:
 		solidRenderer->update(mlp);
 		solidSpace->iterate(solidRenderer);
 
-		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, renderBuffer.frameBuffer);
-		glViewport(0, 0, getWidth(), getHeight());
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		// ============
 		// 3D component
 		// ============
-		glUseProgram(program3d);
-
-	    float bias = 0.003;
-		glm::mat4 biasMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f,0.0f,-bias));
-
-
-		glm::mat4 ms =  getCanonicalMVP(mlp);
-
-		// Send matrices to the shader
-		glUniformMatrix4fv(program3dLocs->modelViewProjectionLoc, 1, GL_FALSE, glm::value_ptr(mvp));
-		glUniformMatrix4fv(program3dLocs->modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-		glUniformMatrix4fv(program3dLocs->matrixShadowLoc, 1, GL_FALSE, glm::value_ptr(ms  ));
-		glUniform3fv(program3dLocs->lightDirectionLoc, 1, glm::value_ptr(light.direction));
-		glUniform3fv(program3dLocs->cameraPositionLoc, 1, glm::value_ptr(camera.position));
-		glUniform1f(program3dLocs->timeLoc, time);
-		glUniform1ui(program3dLocs->lightEnabledLoc, 1);
-		glUniform1ui(program3dLocs->triplanarEnabledLoc, 1);
-		glUniform1ui(program3dLocs->parallaxEnabledLoc, 1);
-		glUniform1ui(program3dLocs->debugEnabledLoc, 0);
-		glUniform1ui(program3dLocs->shadowEnabledLoc, 1);
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, renderBuffer.frameBuffer);
+		glViewport(0, 0, getWidth(), getHeight());
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		glPatchParameteri(GL_PATCH_VERTICES, 3); // Define the number of control points per patch
-
 		glEnable(GL_CULL_FACE); // Enable face culling
 		glCullFace(GL_BACK); // Or GL_FRONT
 		glFrontFace(GL_CCW); // Ensure this matches your vertex data
@@ -670,8 +652,10 @@ public:
 		glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
 		glPolygonMode(GL_FRONT, GL_FILL);
+
+		glUseProgram(program3d);
+		program3dLocs->update(mvp, model,ms,light.direction, camera.position, time);
 		solidRenderer->mode = GL_PATCHES;
 		solidRenderer->update(mvp);
 		solidSpace->iterate(solidRenderer);
