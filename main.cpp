@@ -581,7 +581,7 @@ public:
 		glUniform1ui(lightEnabledLoc, 1);
 		glUniform1ui(triplanarEnabledLoc, 1);
 		glUniform1ui(parallaxEnabledLoc, 1);
-		glUniform1ui(debugEnabledLoc, 1);
+		glUniform1ui(debugEnabledLoc, 0);
 		glUniform1ui(shadowEnabledLoc, 1);
 
 		glPatchParameteri(GL_PATCH_VERTICES, 3); // Define the number of control points per patch
