@@ -20,11 +20,11 @@ uniform mat4 model;
 
 #include<functions.glsl>
 
-in vec2 teTextureCoord;
-in float teTextureWeights[20];
-in TextureProperties teProps;
-in vec3 tePosition;
-in vec3 teNormal;
+in vec2 vTextureCoord;
+in float vTextureWeights[20];
+in TextureProperties vProps;
+in vec3 vPosition;
+in vec3 vNormal;
 in vec4 lightViewPosition;
 
 out vec4 color;    // Final fragment color
@@ -38,12 +38,12 @@ vec3 visual(vec3 v) {
 
 
 void main() {
-    vec2 uv = teTextureCoord;
+    vec2 uv = vTextureCoord;
 
-    vec4 positionWorld = model * vec4(tePosition, 1.0);
+    vec4 positionWorld = model * vec4(vPosition, 1.0);
     vec3 position = positionWorld.xyz;    
     mat3 normalMatrix = transpose(inverse(mat3(model)));
-    vec3 normal = normalize(normalMatrix * teNormal);
+    vec3 normal = normalize(normalMatrix * vNormal);
 
     float effectAmount = sin(time*3.14/4.0)*0.5 + 0.5;
     float distance = length(cameraPosition - position);
@@ -51,18 +51,18 @@ void main() {
 
     if(triplanarEnabled) {
         int plane = triplanarPlane(position, normal);
-        uv = triplanarMapping(position, plane, teProps.textureScale) * 0.1;
+        uv = triplanarMapping(position, plane, vProps.textureScale) * 0.1;
     }
 
     vec3 viewDirection = normalize(position - cameraPosition);
-    mat3 TBN = getTBN(tePosition, teNormal, uv, model, false);
+    mat3 TBN = getTBN(vPosition, vNormal, uv, model, false);
     vec3 viewDirectionTangent = normalize(transpose(TBN) * viewDirection);
 
-    if(parallaxEnabled && distanceFactor * teProps.parallaxScale > 0.0) {
-       uv = parallaxMapping(teTextureWeights, uv, viewDirectionTangent, distanceFactor*teProps.parallaxScale , distanceFactor*teProps.parallaxMinLayers, distanceFactor*teProps.parallaxMaxLayers, int(ceil(distanceFactor*5.0)));
+    if(parallaxEnabled && distanceFactor * vProps.parallaxScale > 0.0) {
+       uv = parallaxMapping(vTextureWeights,uv, viewDirectionTangent, distanceFactor*vProps.parallaxScale , distanceFactor*vProps.parallaxMinLayers, distanceFactor*vProps.parallaxMaxLayers, int(ceil(distanceFactor*5.0)));
     }
   
-    vec4 mixedColor = textureBlend(teTextureWeights, textures, uv, 0);
+    vec4 mixedColor = textureBlend(vTextureWeights, textures, uv, 0);
     if(mixedColor.a == 0.0) {
         discard;
     }
@@ -70,13 +70,13 @@ void main() {
     if(lightEnabled) {
         vec3 specularColor = vec3(1.0,1.0,1.0);
 
-        vec3 normalMap = textureBlend(teTextureWeights, textures, uv, 1).xyz;
+        vec3 normalMap = textureBlend(vTextureWeights, textures, uv, 1).xyz;
         normalMap = normalize(normalMap * 2.0 - 1.0); // Convert to range [-1, 1]
 
         vec3 worldNormal = normalize(TBN * normalMap);
 
         vec3 reflection = reflect(-lightDirection, worldNormal);
-        float phongSpec = pow(max(dot(reflection, viewDirectionTangent), 0.0), teProps.shininess);
+        float phongSpec = pow(max(dot(reflection, viewDirectionTangent), 0.0), vProps.shininess);
         float diffuse = clamp(max(dot(worldNormal, -lightDirection), 0.0), 0.2, 1.0);
 
         float finalShadow = 1.0;
@@ -126,7 +126,7 @@ void main() {
         if(debugEnabled) {
             color = vec4(visual(worldNormal), 1.0);
         }else {
-            color = vec4((mixedColor.rgb*diffuse + specularColor * teProps.specularStrength * phongSpec * lightPercentage)*finalShadow , mixedColor.a+teProps.specularStrength * phongSpec * lightPercentage); 
+            color = vec4((mixedColor.rgb*diffuse + specularColor * vProps.specularStrength * phongSpec * lightPercentage)*finalShadow , mixedColor.a+vProps.specularStrength * phongSpec * lightPercentage); 
         }
     }else {
         if(debugEnabled) {

@@ -127,6 +127,36 @@ class OctreeContainmentHandler : public ContainmentHandler {
 	}
 };
 
+class GlslInclude {
+	public:
+	std::string line;
+	std::string code;
+	GlslInclude(std::string line, std::string code){
+		this->line = line;
+		this->code = code;
+	}
+
+
+};
+
+std::string replace(std::string input,  std::string replace_word, std::string replace_by ) {
+	size_t pos = input.find(replace_word);
+	while (pos != std::string::npos) {
+		input.replace(pos, replace_word.size(), replace_by);
+		pos = input.find(replace_word, pos + replace_by.size());
+	}
+	return input;
+}
+
+
+std::string replaceIncludes(std::vector<GlslInclude> includes, std::string code){
+	for(int i=0; i< includes.size() ;++i) {
+		GlslInclude include = includes[i];
+		code = replace(code, include.line, include.code);
+	}
+	return code;
+}
+
 class MainApplication : public LithosApplication {
 	std::vector<Texture*> textures;
 	std::vector<Brush*> brushes;
@@ -147,11 +177,12 @@ class MainApplication : public LithosApplication {
 
 
 	GLuint programSwap;
-	GLuint program3D;
+	GLuint program3d;
 	GLuint programShadow;
 	GLuint programTexture;
 	GLuint programMixTexture;
-	GLuint programWater;
+	GLuint programWaterTexture;
+	GLuint programWater3d;
 	
 	GLuint modelLoc;
 	GLuint modelViewProjectionLoc;
@@ -197,14 +228,6 @@ public:
 
 	}
 
-	std::string replace(std::string input,  std::string replace_word, std::string replace_by ) {
-		size_t pos = input.find(replace_word);
-		while (pos != std::string::npos) {
-			input.replace(pos, replace_word.size(), replace_by);
-			pos = input.find(replace_word, pos + replace_by.size());
-		}
-		return input;
-	}
 
 
 
@@ -216,62 +239,71 @@ public:
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 
-		std::string functionsLine = "#include<functions.glsl>";
-		std::string perlinLine = "#include<perlin.glsl>";
-		std::string functionsFragmentLine = "#include<functions_fragment.glsl>";
+		std::vector<GlslInclude> includes;
+		includes.push_back(GlslInclude("#include<functions.glsl>" , readFile("shaders/util/functions.glsl")));
+		includes.push_back(GlslInclude("#include<perlin.glsl>" , readFile("shaders/util/perlin.glsl")));
+		includes.push_back(GlslInclude("#include<functions_fragment.glsl>" , readFile("shaders/util/functions_fragment.glsl")));
+		includes.push_back(GlslInclude("#include<structs.glsl>" , readFile("shaders/util/structs.glsl")));
 
-		std::string functionsCode = readFile("shaders/util/functions.glsl");
-		std::string perlinCode = readFile("shaders/util/perlin.glsl");
-		std::string functionsFragmentCode = readFile("shaders/util/functions_fragment.glsl");
-
+	
 		programShadow = createShaderProgram(
-			compileShader(readFile("shaders/shadow_vertex.glsl"),GL_VERTEX_SHADER), 
-			compileShader(readFile("shaders/shadow_fragment.glsl"),GL_FRAGMENT_SHADER), 
+			compileShader(replaceIncludes(includes, readFile("shaders/shadow_vertex.glsl")),GL_VERTEX_SHADER), 
+			compileShader(replaceIncludes(includes,readFile("shaders/shadow_fragment.glsl")),GL_FRAGMENT_SHADER), 
 			0, 
 			0
 		);
+		glUseProgram(programShadow);
 
 
 		programSwap = createShaderProgram(
-			compileShader(readFile("shaders/texture/swap_vertex.glsl"),GL_VERTEX_SHADER), 
-			compileShader(readFile("shaders/texture/swap_fragment.glsl"),GL_FRAGMENT_SHADER), 
+			compileShader(replaceIncludes(includes,readFile("shaders/texture/swap_vertex.glsl")),GL_VERTEX_SHADER), 
+			compileShader(replaceIncludes(includes,readFile("shaders/texture/swap_fragment.glsl")),GL_FRAGMENT_SHADER), 
 			0, 
 			0
 		);
 		glUseProgram(programSwap);
 
 		programTexture = createShaderProgram(
-			compileShader(readFile("shaders/texture/texture_array_vertex.glsl"),GL_VERTEX_SHADER), 
-			compileShader(readFile("shaders/texture/texture_array_fragment.glsl"),GL_FRAGMENT_SHADER), 
+			compileShader(replaceIncludes(includes,readFile("shaders/texture/texture_array_vertex.glsl")),GL_VERTEX_SHADER), 
+			compileShader(replaceIncludes(includes,readFile("shaders/texture/texture_array_fragment.glsl")),GL_FRAGMENT_SHADER), 
 			0, 
 			0
 		);
 		glUseProgram(programTexture);
 
 		programMixTexture = createShaderProgram(
-			compileShader(readFile("shaders/texture/mix_vertex.glsl"),GL_VERTEX_SHADER), 
-			compileShader(replace(readFile("shaders/texture/mix_fragment.glsl"), perlinLine, perlinCode),GL_FRAGMENT_SHADER), 
-			compileShader(readFile("shaders/texture/mix_geometry.glsl"),GL_GEOMETRY_SHADER), 
+			compileShader(replaceIncludes(includes,readFile("shaders/texture/mix_vertex.glsl")),GL_VERTEX_SHADER), 
+			compileShader(replaceIncludes(includes,readFile("shaders/texture/mix_fragment.glsl")),GL_FRAGMENT_SHADER), 
+			compileShader(replaceIncludes(includes,readFile("shaders/texture/mix_geometry.glsl")),GL_GEOMETRY_SHADER), 
 			0
 		);
 		glUseProgram(programMixTexture);
 
 
-		programWater = createShaderProgram(
-			compileShader(readFile("shaders/texture/water_vertex.glsl"),GL_VERTEX_SHADER), 
-			compileShader(replace(readFile("shaders/texture/water_fragment.glsl"), perlinLine, perlinCode),GL_FRAGMENT_SHADER), 
-			compileShader(readFile("shaders/texture/water_geometry.glsl"),GL_GEOMETRY_SHADER), 
+		programWaterTexture = createShaderProgram(
+			compileShader(replaceIncludes(includes,readFile("shaders/texture/water_vertex.glsl")),GL_VERTEX_SHADER), 
+			compileShader(replaceIncludes(includes,readFile("shaders/texture/water_fragment.glsl")),GL_FRAGMENT_SHADER), 
+			compileShader(replaceIncludes(includes,readFile("shaders/texture/water_geometry.glsl")),GL_GEOMETRY_SHADER), 
 			0
 		);
-		glUseProgram(programWater);
+		glUseProgram(programWaterTexture);
 
-		program3D = createShaderProgram(
-			compileShader(replace(readFile("shaders/3d_vertex.glsl"), functionsLine, functionsCode),GL_VERTEX_SHADER), 
-			compileShader(replace(replace(readFile("shaders/3d_fragment.glsl"), functionsLine, functionsCode), functionsFragmentLine, functionsFragmentCode),GL_FRAGMENT_SHADER), 
-			compileShader(replace(readFile("shaders/3d_tessControl.glsl"), functionsLine, functionsCode),GL_TESS_CONTROL_SHADER), 
-			compileShader(replace(readFile("shaders/3d_tessEvaluation.glsl"), functionsLine, functionsCode),GL_TESS_EVALUATION_SHADER)
+		programWater3d = createShaderProgram(
+			compileShader(replaceIncludes(includes,readFile("shaders/water_vertex.glsl")),GL_VERTEX_SHADER), 
+			compileShader(replaceIncludes(includes,readFile("shaders/water_fragment.glsl")),GL_FRAGMENT_SHADER), 
+			0,
+			0
 		);
-		glUseProgram(program3D);
+		glUseProgram(programWater3d);
+
+
+		program3d = createShaderProgram(
+			compileShader(replaceIncludes(includes,readFile("shaders/3d_vertex.glsl")),GL_VERTEX_SHADER), 
+			compileShader(replaceIncludes(includes,readFile("shaders/3d_fragment.glsl")),GL_FRAGMENT_SHADER), 
+			compileShader(replaceIncludes(includes,readFile("shaders/3d_tessControl.glsl")),GL_TESS_CONTROL_SHADER), 
+			compileShader(replaceIncludes(includes,readFile("shaders/3d_tessEvaluation.glsl")),GL_TESS_EVALUATION_SHADER)
+		);
+		glUseProgram(program3d);
 
 		// Use the shader program
 		screen2dVao = DrawableGeometry::create2DVAO(0,0,200,200);
@@ -280,21 +312,21 @@ public:
 
 		modelViewProjectionShadowLoc = glGetUniformLocation(programShadow, "modelViewProjection");
 
-		modelLoc = glGetUniformLocation(program3D, "model");
-		modelViewProjectionLoc = glGetUniformLocation(program3D, "modelViewProjection");
-		matrixShadowLoc = glGetUniformLocation(program3D, "matrixShadow");
-		lightDirectionLoc = glGetUniformLocation(program3D, "lightDirection");
-		lightEnabledLoc = glGetUniformLocation(program3D, "lightEnabled");
-		debugEnabledLoc = glGetUniformLocation(program3D, "debugEnabled");
-		triplanarEnabledLoc = glGetUniformLocation(program3D, "triplanarEnabled");
-		shadowEnabledLoc = glGetUniformLocation(program3D, "shadowEnabled");
-		parallaxEnabledLoc = glGetUniformLocation(program3D, "parallaxEnabled");
-		cameraPositionLoc = glGetUniformLocation(program3D, "cameraPosition");
-		timeLoc = glGetUniformLocation(program3D, "time");
-		shadowMapLoc = glGetUniformLocation(program3D, "shadowMap");
-		noiseLoc = glGetUniformLocation(program3D, "noise");
-		overrideTextureLoc = glGetUniformLocation(program3D, "overrideTexture");
-		overrideTextureEnabledLoc = glGetUniformLocation(program3D, "overrideTextureEnabled");
+		modelLoc = glGetUniformLocation(program3d, "model");
+		modelViewProjectionLoc = glGetUniformLocation(program3d, "modelViewProjection");
+		matrixShadowLoc = glGetUniformLocation(program3d, "matrixShadow");
+		lightDirectionLoc = glGetUniformLocation(program3d, "lightDirection");
+		lightEnabledLoc = glGetUniformLocation(program3d, "lightEnabled");
+		debugEnabledLoc = glGetUniformLocation(program3d, "debugEnabled");
+		triplanarEnabledLoc = glGetUniformLocation(program3d, "triplanarEnabled");
+		shadowEnabledLoc = glGetUniformLocation(program3d, "shadowEnabled");
+		parallaxEnabledLoc = glGetUniformLocation(program3d, "parallaxEnabled");
+		cameraPositionLoc = glGetUniformLocation(program3d, "cameraPosition");
+		timeLoc = glGetUniformLocation(program3d, "time");
+		shadowMapLoc = glGetUniformLocation(program3d, "shadowMap");
+		noiseLoc = glGetUniformLocation(program3d, "noise");
+		overrideTextureLoc = glGetUniformLocation(program3d, "overrideTexture");
+		overrideTextureEnabledLoc = glGetUniformLocation(program3d, "overrideTextureEnabled");
 		
 
 		shadowFrameBuffer = createDepthFrameBuffer(2048, 2048);
@@ -392,7 +424,7 @@ public:
 			brushes.push_back(new Brush(t, glm::vec2(1.0), 0.01, 8, 32, 256, 0.2 ));
 		}
 		{
-			AnimatedTexture * tm = new AnimatedTexture(1024,1024, programWater, &textures);
+			AnimatedTexture * tm = new AnimatedTexture(1024,1024, programWaterTexture, &textures);
 			tm->animate(0);
 			Texture * t = new Texture(tm->getTexture());
 			textures.push_back(t);
@@ -404,12 +436,12 @@ public:
 		noiseTexture = loadTextureImage("textures/noise.png");
 
 
-		activeTexture = Texture::bindTexture(program3D, GL_TEXTURE_2D, activeTexture, "shadowMap", shadowFrameBuffer.depthTexture);
-		activeTexture = Texture::bindTexture(program3D, GL_TEXTURE_2D, activeTexture, "noise", noiseTexture);
+		activeTexture = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, "shadowMap", shadowFrameBuffer.depthTexture);
+		activeTexture = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, "noise", noiseTexture);
 
 
-		Texture::bindTextures(program3D, GL_TEXTURE_2D_ARRAY, activeTexture, "textures", &textures);
-		Brush::bindBrushes(program3D, &brushes);
+		Texture::bindTextures(program3d, GL_TEXTURE_2D_ARRAY, activeTexture, "textures", &textures);
+		Brush::bindBrushes(program3d, &brushes);
 
 
 
@@ -473,7 +505,7 @@ public:
 		ImGui_ImplGlfw_InitForOpenGL(getWindow(), true);
 		ImGui_ImplOpenGL3_Init("#version 460");
 
-		brushEditor = new BrushEditor(&camera, &brushes, program3D, programTexture);
+		brushEditor = new BrushEditor(&camera, &brushes, program3d, programTexture);
 		shadowMapViewer = new ShadowMapViewer(shadowFrameBuffer.depthTexture);
 		textureMixerEditor = new TextureMixerEditor(&mixers, &textures, programTexture);
 		animatedTextureEditor = new AnimatedTextureEditor(&animatedTextures, &textures, programTexture);
@@ -593,7 +625,7 @@ public:
 		// ============
 		// 3D component
 		// ============
-		glUseProgram(program3D);
+		glUseProgram(program3d);
 
 	    float bias = 0.003;
 		glm::mat4 biasMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f,0.0f,-bias));
@@ -770,7 +802,7 @@ public:
     virtual void clean(){
 
 		// Cleanup and exit
-		glDeleteProgram(program3D);
+		glDeleteProgram(program3d);
     }
 
 };

@@ -1,6 +1,8 @@
 #version 460 core
 
 layout(vertices = 3) out;
+
+#include<structs.glsl>
 #include<functions.glsl>
 
 in float vTextureWeights[][20];

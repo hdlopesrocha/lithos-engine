@@ -25,7 +25,7 @@ mat3 getTBN(vec3 pos, vec3 normal, vec2 uv, mat4 model, bool rotateTBN) {
     return mat3(tangent, bitangent, normal);
 }
 
-vec2 parallaxMapping(vec2 uv, vec3 viewDir, float scale, float minLayers, float maxLayers, int approxCycles) {
+vec2 parallaxMapping(in float ws[20], vec2 uv, vec3 viewDir, float scale, float minLayers, float maxLayers, int approxCycles) {
     float numLayers = mix(maxLayers, minLayers, dot(vec3(0.0, 0.0, 1.0), -viewDir));  
 
 	float deltaDepth = 1.0 / float( numLayers );
@@ -47,7 +47,7 @@ vec2 parallaxMapping(vec2 uv, vec3 viewDir, float scale, float minLayers, float 
 
         currentUv -= deltaUv;
         currentDepth -= deltaDepth;
-        currentHeight = textureBlend(teTextureWeights, textures, currentUv, 2).r;
+        currentHeight = textureBlend(ws, textures, currentUv, 2).r;
 
         if(currentHeight > currentDepth) {
             break;
@@ -57,7 +57,7 @@ vec2 parallaxMapping(vec2 uv, vec3 viewDir, float scale, float minLayers, float 
     for (int i = 0; i < approxCycles; ++i) {
         vec2 midUv = 0.5 * (currentUv + prevUv);
         float midDepth = 0.5 * (currentDepth + prevDepth);
-        float midHeight = textureBlend(teTextureWeights, textures, midUv, 2).r;
+        float midHeight = textureBlend(ws, textures, midUv, 2).r;
         
         if (midHeight > midDepth) {
             currentUv = midUv;

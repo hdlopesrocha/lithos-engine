@@ -1,6 +1,7 @@
 #version 460 core
 
 layout(triangles, equal_spacing, ccw) in; // Define primitive type and tessellation spacing
+#include<structs.glsl>
 #include<functions.glsl>
 
 uniform bool debugEnabled;

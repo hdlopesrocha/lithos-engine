@@ -51,11 +51,3 @@ float floatBlend(in float ws[20], float ts[20]) {
     return res;
 }
 
-struct TextureProperties {
-    float parallaxScale;
-    float parallaxMinLayers;
-    float parallaxMaxLayers;
-    float shininess;
-    float specularStrength;
-    vec2 textureScale;
-};
