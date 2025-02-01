@@ -1,4 +1,5 @@
 #include "gl.hpp"
+#include <glm/gtc/type_ptr.hpp>
 
 AnimatedTexture::AnimatedTexture(int width, int height, GLuint program, std::vector<Texture*> * textures) {
     this->textureMixerBuffer = createMultiLayerRenderFrameBuffer(width,height, 3);
@@ -10,7 +11,7 @@ AnimatedTexture::AnimatedTexture(int width, int height, GLuint program, std::vec
     this->perlinLacunarity = 2;
     this->brightness = 0;
     this->contrast = 1;
-    
+    this->color = glm::vec4(99/255.0f, 127/255.0f, 149/255.0f, 0.4);
 }
 
 TextureArray AnimatedTexture::getTexture(){
@@ -27,14 +28,16 @@ void AnimatedTexture::animate(float time){
 
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, textureMixerBuffer.frameBuffer);
     glViewport(0, 0, textureMixerBuffer.width, textureMixerBuffer.height);
+	glClearColor (0.0,0.0,0.0,0.0);    
     glClear(GL_COLOR_BUFFER_BIT);
-
+    
     glUniform1i(glGetUniformLocation(program, "perlinScale"), perlinScale); // Set the sampler uniform
     glUniform1f(glGetUniformLocation(program, "perlinTime"), time); // Set the sampler uniform
     glUniform1i(glGetUniformLocation(program, "perlinIterations"), perlinIterations); // Set the sampler uniform
     glUniform1i(glGetUniformLocation(program, "perlinLacunarity"), perlinLacunarity); // Set the sampler uniform
     glUniform1f(glGetUniformLocation(program, "brightness"), brightness); // Set the sampler uniform
     glUniform1f(glGetUniformLocation(program, "contrast"), contrast); // Set the sampler uniform
+    glUniform4fv(glGetUniformLocation(program, "color"), 1, glm::value_ptr(color)); // Set the sampler uniform
 
     for (int layer = 0; layer < 3; ++layer) {
         glUniform1i(glGetUniformLocation(program, "layerIndex"), layer);

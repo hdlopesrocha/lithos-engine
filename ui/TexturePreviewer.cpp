@@ -13,6 +13,8 @@ TexturePreviewer::TexturePreviewer(GLuint previewProgram, int width, int height)
 void TexturePreviewer::draw2d(TextureArray texture){
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, previewBuffer.frameBuffer);
     glViewport(0, 0, previewBuffer.width, previewBuffer.height); 
+	glClearColor (0.0,0.0,0.0,0.0);    
+    glClear(GL_COLOR_BUFFER_BIT);
 
     glUseProgram(previewProgram);
     glActiveTexture(GL_TEXTURE0); 

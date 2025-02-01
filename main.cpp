@@ -392,7 +392,7 @@ public:
 			tm->animate(0);
 			Texture * t = new Texture(tm->getTexture());
 			textures.push_back(t);
-			brushes.push_back(new Brush(t, glm::vec2(1.0), 0.01, 8, 32, 256, 0.2 ));
+			brushes.push_back(new Brush(t, glm::vec2(1.0), 0.06, 8, 32, 1.0, 0.8 ));
 			animatedTextures.push_back(tm);
 		}
 
@@ -435,7 +435,7 @@ public:
 		BoundingBox waterBox(glm::vec3(-100,-50,-100), glm::vec3(100,3,100));
 		//liquidSpace->add(new OctreeContainmentHandler(solidSpace, waterBox, new SimpleBrush(textures[6])));
 		//BoundingBox waterBox(glm::vec3(50,50,0), glm::vec3(70,70,20));
-		liquidSpace->add(new BoxContainmentHandler(waterBox, new SimpleBrush(textures[14])));
+		liquidSpace->add(new BoxContainmentHandler(waterBox, new SimpleBrush(textures[15])));
 
 		solidTesselator = new Tesselator(solidSpace);
 		solidSpace->iterate(solidTesselator);
@@ -455,7 +455,6 @@ public:
 		}
 		#endif
 
-		glClearColor (0.1,0.1,0.1,1.0);
         light.direction = glm::normalize(glm::vec3(-1.0,-1.0,-1.0));
 	 
 	 	std::cout << "Setup complete!" << std::endl;
@@ -555,6 +554,9 @@ public:
 	}
 
     virtual void draw3d() {
+
+		glClearColor (0.1,0.1,0.1,1.0);
+
 		glm::mat4 model = glm::mat4(1.0f); // Identity matrix
 		solidRenderer->loaded = 0;
 		liquidRenderer->loaded = 0;
@@ -614,6 +616,10 @@ public:
 		glFrontFace(GL_CCW); // Ensure this matches your vertex data
 		glEnable(GL_DEPTH_TEST);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
 		glPolygonMode(GL_FRONT, GL_FILL);
 		solidRenderer->mode = GL_PATCHES;
 		solidRenderer->update(mvp);

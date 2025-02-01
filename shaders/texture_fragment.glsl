@@ -8,5 +8,5 @@ uniform int textureLayer;
 
 void main() {
     vec4 color = texture(textureSampler, vec3(TexCoord, textureLayer));
-    FragColor = vec4(color.rgb, 1.0);
+    FragColor = color;
 }

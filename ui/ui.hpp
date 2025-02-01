@@ -83,7 +83,6 @@ class AnimatedTextureEditor {
     std::vector<Texture*> * textures;
   	int selectedAnimatedTexture;
     TexturePreviewer * previewer;
-
     public:
     AnimatedTextureEditor(std::vector<AnimatedTexture*> * animatedTextures, std::vector<Texture*> * textures, GLuint previewProgram);
     void show();

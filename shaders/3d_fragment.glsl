@@ -202,7 +202,7 @@ void main() {
         if(debugEnabled) {
             color = vec4(visual(worldNormal), 1.0);
         }else {
-            color = vec4((mixedColor.rgb*diffuse + specularColor * teProps.specularStrength * phongSpec * lightPercentage)*finalShadow , mixedColor.a); 
+            color = vec4((mixedColor.rgb*diffuse + specularColor * teProps.specularStrength * phongSpec * lightPercentage)*finalShadow , mixedColor.a+teProps.specularStrength * phongSpec * lightPercentage); 
         }
     }else {
         if(debugEnabled) {

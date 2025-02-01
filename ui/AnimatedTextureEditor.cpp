@@ -43,6 +43,11 @@ void AnimatedTextureEditor::draw2d(){
     }
 
 
+
+    if (ImGui::ColorEdit4("Pick a Color", (float*)&animatedTexture->color, ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreview)) {
+        // Do something with the selected color
+    }
+
 float step = 0.1f;
 float stepFast = 1.0f; // Faster step when holding Shift
 

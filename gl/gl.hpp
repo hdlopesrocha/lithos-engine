@@ -240,7 +240,7 @@ class AnimatedTexture {
     int perlinIterations;
     float brightness;
     float contrast;
-
+    glm::vec4 color;
     AnimatedTexture(int width, int height, GLuint program, std::vector<Texture*> * textures);
     TextureArray getTexture();
     void animate(float time);
