@@ -220,9 +220,9 @@ public:
 		std::string perlinLine = "#include<perlin.glsl>";
 		std::string functionsFragmentLine = "#include<functions_fragment.glsl>";
 
-		std::string functionsCode = readFile("shaders/functions.glsl");
-		std::string perlinCode = readFile("shaders/perlin.glsl");
-		std::string functionsFragmentCode = readFile("shaders/functions_fragment.glsl");
+		std::string functionsCode = readFile("shaders/util/functions.glsl");
+		std::string perlinCode = readFile("shaders/util/perlin.glsl");
+		std::string functionsFragmentCode = readFile("shaders/util/functions_fragment.glsl");
 
 		programShadow = createShaderProgram(
 			compileShader(readFile("shaders/shadow_vertex.glsl"),GL_VERTEX_SHADER), 
@@ -233,34 +233,34 @@ public:
 
 
 		program2D = createShaderProgram(
-			compileShader(readFile("shaders/2d_vertex.glsl"),GL_VERTEX_SHADER), 
-			compileShader(readFile("shaders/2d_fragment.glsl"),GL_FRAGMENT_SHADER), 
+			compileShader(readFile("shaders/texture/2d_vertex.glsl"),GL_VERTEX_SHADER), 
+			compileShader(readFile("shaders/texture/2d_fragment.glsl"),GL_FRAGMENT_SHADER), 
 			0, 
 			0
 		);
 		glUseProgram(program2D);
 
 		programTexture = createShaderProgram(
-			compileShader(readFile("shaders/texture_vertex.glsl"),GL_VERTEX_SHADER), 
-			compileShader(readFile("shaders/texture_fragment.glsl"),GL_FRAGMENT_SHADER), 
+			compileShader(readFile("shaders/texture/texture_vertex.glsl"),GL_VERTEX_SHADER), 
+			compileShader(readFile("shaders/texture/texture_fragment.glsl"),GL_FRAGMENT_SHADER), 
 			0, 
 			0
 		);
 		glUseProgram(programTexture);
 
 		programMixTexture = createShaderProgram(
-			compileShader(readFile("shaders/mix_vertex.glsl"),GL_VERTEX_SHADER), 
-			compileShader(replace(readFile("shaders/mix_fragment.glsl"), perlinLine, perlinCode),GL_FRAGMENT_SHADER), 
-			compileShader(readFile("shaders/mix_geometry.glsl"),GL_GEOMETRY_SHADER), 
+			compileShader(readFile("shaders/texture/mix_vertex.glsl"),GL_VERTEX_SHADER), 
+			compileShader(replace(readFile("shaders/texture/mix_fragment.glsl"), perlinLine, perlinCode),GL_FRAGMENT_SHADER), 
+			compileShader(readFile("shaders/texture/mix_geometry.glsl"),GL_GEOMETRY_SHADER), 
 			0
 		);
 		glUseProgram(programMixTexture);
 
 
 		programWater = createShaderProgram(
-			compileShader(readFile("shaders/water_vertex.glsl"),GL_VERTEX_SHADER), 
-			compileShader(replace(readFile("shaders/water_fragment.glsl"), perlinLine, perlinCode),GL_FRAGMENT_SHADER), 
-			compileShader(readFile("shaders/water_geometry.glsl"),GL_GEOMETRY_SHADER), 
+			compileShader(readFile("shaders/texture/water_vertex.glsl"),GL_VERTEX_SHADER), 
+			compileShader(replace(readFile("shaders/texture/water_fragment.glsl"), perlinLine, perlinCode),GL_FRAGMENT_SHADER), 
+			compileShader(readFile("shaders/texture/water_geometry.glsl"),GL_GEOMETRY_SHADER), 
 			0
 		);
 		glUseProgram(programWater);
