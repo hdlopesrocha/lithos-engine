@@ -131,6 +131,7 @@ class MainApplication : public LithosApplication {
 	std::vector<Texture*> textures;
 	std::vector<Brush*> brushes;
 	std::vector<TextureMixer*> mixers;
+	std::vector<AnimatedTexture*> animatedTextures;
 
   	Camera camera;
 	DirectionalLight light;
@@ -150,6 +151,7 @@ class MainApplication : public LithosApplication {
 	GLuint programShadow;
 	GLuint programTexture;
 	GLuint programMixTexture;
+	GLuint programWater;
 	
 	GLuint modelLoc;
 	GLuint modelViewProjectionLoc;
@@ -181,6 +183,7 @@ class MainApplication : public LithosApplication {
 	BrushEditor * brushEditor;
 	ShadowMapViewer * shadowMapViewer;
 	TextureMixerEditor * textureMixerEditor;
+	AnimatedTextureEditor * animatedTextureEditor;
 
 
 
@@ -249,6 +252,14 @@ public:
 		);
 		glUseProgram(programMixTexture);
 
+
+		programWater = createShaderProgram(
+			compileShader(readFile("shaders/water_vertex.glsl"),GL_VERTEX_SHADER), 
+			compileShader(replace(readFile("shaders/water_fragment.glsl"), perlinLine, perlinCode),GL_FRAGMENT_SHADER), 
+			compileShader(readFile("shaders/water_geometry.glsl"),GL_GEOMETRY_SHADER), 
+			0
+		);
+		glUseProgram(programWater);
 
 		program3D = createShaderProgram(
 			compileShader(replace(readFile("shaders/3d_vertex.glsl"), functionsLine, functionsCode),GL_VERTEX_SHADER), 
@@ -376,7 +387,14 @@ public:
 			textures.push_back(t);
 			brushes.push_back(new Brush(t, glm::vec2(1.0), 0.01, 8, 32, 256, 0.2 ));
 		}
-
+		{
+			AnimatedTexture * tm = new AnimatedTexture(1024,1024, programWater, &textures);
+			tm->animate(0);
+			Texture * t = new Texture(tm->getTexture());
+			textures.push_back(t);
+			brushes.push_back(new Brush(t, glm::vec2(1.0), 0.01, 8, 32, 256, 0.2 ));
+			animatedTextures.push_back(tm);
+		}
 
 
 		noiseTexture = loadTextureImage("textures/noise.png");
@@ -455,7 +473,7 @@ public:
 		brushEditor = new BrushEditor(&camera, &brushes, program3D, programTexture);
 		shadowMapViewer = new ShadowMapViewer(depthFrameBuffer.texture);
 		textureMixerEditor = new TextureMixerEditor(&mixers, &textures, programTexture);
-
+		animatedTextureEditor = new AnimatedTextureEditor(&animatedTextures, &textures, programTexture);
 	 }
 
     virtual void update(float deltaTime){
@@ -523,6 +541,11 @@ public:
 
 		light.projection = glm::ortho(-orthoSize, orthoSize, -orthoSize, orthoSize, 0.1f, far);
 		light.view = glm::lookAt(lookAtLightPosition - light.direction*dist, lookAtLightPosition, glm::vec3(0,1,0));
+
+		for(int i=0; i<animatedTextures.size() ; ++i) {
+			AnimatedTexture * texture = animatedTextures[i];
+			texture->animate(time);
+		}
     }
 
 	glm::mat4 getCanonicalMVP(glm::mat4 m) {
@@ -676,6 +699,9 @@ public:
 
 			// Edit Menu
 			if (ImGui::BeginMenu("Tools")) {
+				if (ImGui::MenuItem("Animated Textures", "Ctrl+A")) {
+					animatedTextureEditor->show();
+				}
 				if (ImGui::MenuItem("Brush", "Ctrl+B")) {
 					brushEditor->show();
 				}
@@ -701,7 +727,9 @@ public:
 		}
 
 
-
+		if(animatedTextureEditor->isOpen()) {
+			animatedTextureEditor->draw2d();
+		}
 		if(brushEditor->isOpen()) {
 			brushEditor->draw2d();
 		}

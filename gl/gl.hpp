@@ -226,6 +226,27 @@ class TextureMixer {
     void mix();
 };
 
+class AnimatedTexture {
+    bool open = false;
+    RenderBuffer textureMixerBuffer;
+    std::vector<Texture*> * textures;
+    GLuint program;
+    GLuint previewVao;
+
+    public:
+
+    int perlinScale;
+    int perlinLacunarity;
+    int perlinIterations;
+    float brightness;
+    float contrast;
+
+    AnimatedTexture(int width, int height, GLuint program, std::vector<Texture*> * textures);
+    TextureArray getTexture();
+    void animate(float time);
+};
+
+
 GLuint createTextureArray(int width, int height, int layers); 
 RenderBuffer createMultiLayerRenderFrameBuffer(int width, int height, int layers);
 RenderBuffer createDepthFrameBuffer(int width, int height);

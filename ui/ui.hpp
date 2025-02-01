@@ -71,3 +71,22 @@ class TextureMixerEditor {
     void draw3d();
 };
 
+class AnimatedTextureEditor {
+    bool open = false;
+    std::vector<AnimatedTexture*> * animatedTextures;
+    RenderBuffer previewBuffer;
+    std::vector<Texture*> * textures;
+    GLuint previewProgram;
+    GLuint previewVao;
+  	int selectedAnimatedTexture;
+    int selectedLayer;
+    
+    public:
+    AnimatedTextureEditor(std::vector<AnimatedTexture*> * animatedTextures, std::vector<Texture*> * textures, GLuint previewProgram);
+    void show();
+    void hide();
+    bool isOpen();
+    void draw2d();
+    void draw3d();
+};
+
