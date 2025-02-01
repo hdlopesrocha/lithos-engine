@@ -30,6 +30,10 @@ void main() {
 
     vec4 color = baseColor*(factor)  + overlayColor*(1.0-factor);
 
-    FragColor = color;
+    if(Layer == 2) {
+        FragColor = vec4(color.r,color.r,color.r,1.0);
+    }else {
+        FragColor = color;
+    }
     //FragColor = vec4(vec3(factor), 1.0);
 }

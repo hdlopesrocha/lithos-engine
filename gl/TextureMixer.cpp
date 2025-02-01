@@ -15,7 +15,7 @@ TextureMixer::TextureMixer(int width, int height, GLuint program, std::vector<Te
 }
 
 TextureArray TextureMixer::getTexture(){
-    return textureMixerBuffer.texture;
+    return textureMixerBuffer.colorTexture;
 }
 
 void TextureMixer::mix(int baseTextureIndex, int overlayTextureIndex ){
@@ -61,7 +61,7 @@ void TextureMixer::mix(){
     }
 
     glActiveTexture(GL_TEXTURE0); 
-    glBindTexture(GL_TEXTURE_2D_ARRAY, textureMixerBuffer.texture);
+    glBindTexture(GL_TEXTURE_2D_ARRAY, textureMixerBuffer.colorTexture);
     glGenerateMipmap(GL_TEXTURE_2D_ARRAY);
 
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, originalFrameBuffer);

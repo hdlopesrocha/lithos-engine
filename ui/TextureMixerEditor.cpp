@@ -8,17 +8,6 @@ TextureMixerEditor::TextureMixerEditor(std::vector<TextureMixer*> * mixers, std:
     this->selectedMixer = 0;
 }
 
-void TextureMixerEditor::show() {
-    open = true;
-}
-
-void TextureMixerEditor::hide(){
-    open = false;
-}
-
-bool TextureMixerEditor::isOpen(){
-    return open;
-}
 
 void TextureMixerEditor::draw2d(){
     ImGui::Begin("Texture Mixer", &open, ImGuiWindowFlags_AlwaysAutoResize);

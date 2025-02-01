@@ -8,18 +8,6 @@ AnimatedTextureEditor::AnimatedTextureEditor(std::vector<AnimatedTexture*> * ani
     this->previewer = new TexturePreviewer(previewProgram, 512, 512);
 }
 
-void AnimatedTextureEditor::show() {
-    open = true;
-}
-
-void AnimatedTextureEditor::hide(){
-    open = false;
-}
-
-bool AnimatedTextureEditor::isOpen(){
-    return open;
-}
-
 void AnimatedTextureEditor::draw2d(){
     ImGui::Begin("Animated Textures", &open, ImGuiWindowFlags_AlwaysAutoResize);
 

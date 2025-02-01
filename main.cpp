@@ -174,7 +174,7 @@ class MainApplication : public LithosApplication {
 	GLuint noiseTexture;
 	GLuint screen2dVao;
 	GLuint fillAreaVao;
-	RenderBuffer depthFrameBuffer;
+	RenderBuffer shadowFrameBuffer;
 	int activeTexture = 4; // To avoid rebinding other textures
 
 	float time = 0.0f;
@@ -184,6 +184,7 @@ class MainApplication : public LithosApplication {
 	ShadowMapViewer * shadowMapViewer;
 	TextureMixerEditor * textureMixerEditor;
 	AnimatedTextureEditor * animatedTextureEditor;
+	DepthBufferViewer * depthBufferViewer;
 
 
 
@@ -217,8 +218,11 @@ public:
 
 		std::string functionsLine = "#include<functions.glsl>";
 		std::string perlinLine = "#include<perlin.glsl>";
+		std::string functionsFragmentLine = "#include<functions_fragment.glsl>";
+
 		std::string functionsCode = readFile("shaders/functions.glsl");
 		std::string perlinCode = readFile("shaders/perlin.glsl");
+		std::string functionsFragmentCode = readFile("shaders/functions_fragment.glsl");
 
 		programShadow = createShaderProgram(
 			compileShader(readFile("shaders/shadow_vertex.glsl"),GL_VERTEX_SHADER), 
@@ -263,7 +267,7 @@ public:
 
 		program3D = createShaderProgram(
 			compileShader(replace(readFile("shaders/3d_vertex.glsl"), functionsLine, functionsCode),GL_VERTEX_SHADER), 
-			compileShader(replace(readFile("shaders/3d_fragment.glsl"), functionsLine, functionsCode),GL_FRAGMENT_SHADER), 
+			compileShader(replace(replace(readFile("shaders/3d_fragment.glsl"), functionsLine, functionsCode), functionsFragmentLine, functionsFragmentCode),GL_FRAGMENT_SHADER), 
 			compileShader(replace(readFile("shaders/3d_tessControl.glsl"), functionsLine, functionsCode),GL_TESS_CONTROL_SHADER), 
 			compileShader(replace(readFile("shaders/3d_tessEvaluation.glsl"), functionsLine, functionsCode),GL_TESS_EVALUATION_SHADER)
 		);
@@ -293,7 +297,7 @@ public:
 		overrideTextureEnabledLoc = glGetUniformLocation(program3D, "overrideTextureEnabled");
 		
 
-		depthFrameBuffer = createDepthFrameBuffer(2048, 2048);
+		shadowFrameBuffer = createDepthFrameBuffer(2048, 2048);
 
 
 		{
@@ -400,7 +404,7 @@ public:
 		noiseTexture = loadTextureImage("textures/noise.png");
 
 
-		activeTexture = Texture::bindTexture(program3D, GL_TEXTURE_2D, activeTexture, "shadowMap", depthFrameBuffer.texture);
+		activeTexture = Texture::bindTexture(program3D, GL_TEXTURE_2D, activeTexture, "shadowMap", shadowFrameBuffer.depthTexture);
 		activeTexture = Texture::bindTexture(program3D, GL_TEXTURE_2D, activeTexture, "noise", noiseTexture);
 
 
@@ -470,9 +474,10 @@ public:
 		ImGui_ImplOpenGL3_Init("#version 460");
 
 		brushEditor = new BrushEditor(&camera, &brushes, program3D, programTexture);
-		shadowMapViewer = new ShadowMapViewer(depthFrameBuffer.texture);
+		shadowMapViewer = new ShadowMapViewer(shadowFrameBuffer.depthTexture);
 		textureMixerEditor = new TextureMixerEditor(&mixers, &textures, programTexture);
 		animatedTextureEditor = new AnimatedTextureEditor(&animatedTextures, &textures, programTexture);
+		depthBufferViewer = new DepthBufferViewer(renderBuffer.depthTexture);
 	 }
 
     virtual void update(float deltaTime){
@@ -570,8 +575,8 @@ public:
 		// ================
 		// Shadow component
 		// ================
-		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, depthFrameBuffer.frameBuffer);
-		glViewport(0, 0, depthFrameBuffer.width, depthFrameBuffer.height);
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, shadowFrameBuffer.frameBuffer);
+		glViewport(0, 0, shadowFrameBuffer.width, shadowFrameBuffer.height);
 		glEnable(GL_DEPTH_TEST);
 		glClear(GL_DEPTH_BUFFER_BIT);
 		glUseProgram(programShadow);
@@ -665,7 +670,7 @@ public:
 		glDisable(GL_DEPTH_TEST);
 		glDisable(GL_CULL_FACE);
 		glActiveTexture(GL_TEXTURE0); 
-		glBindTexture(GL_TEXTURE_2D, renderBuffer.texture);
+		glBindTexture(GL_TEXTURE_2D, renderBuffer.colorTexture);
 		glUniform1i(glGetUniformLocation(program2D, "texture1"), 0); // Set the sampler uniform
 		
 		glBindVertexArray(fillAreaVao);
@@ -710,6 +715,9 @@ public:
 				if (ImGui::MenuItem("Brush", "Ctrl+B")) {
 					brushEditor->show();
 				}
+				if (ImGui::MenuItem("Depth Buffer Viewer", "Ctrl+B")) {
+					depthBufferViewer->show();
+				}
 				if (ImGui::MenuItem("Shadow Map Viewer", "Ctrl+D")) {
 					shadowMapViewer->show();
 				}
@@ -746,6 +754,9 @@ public:
 		}
 		if(textureMixerEditor->isOpen()) {
 			textureMixerEditor->draw2d();
+		}
+		if(depthBufferViewer->isOpen()) {
+			depthBufferViewer->draw2d();
 		}
 		if(demo) {
 			ImGui::ShowDemoWindow(&demo);

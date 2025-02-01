@@ -24,17 +24,6 @@ BrushEditor::BrushEditor(Camera * camera, std::vector<Brush*> * brushes, GLuint 
     this->brush = (*brushes)[this->selectedBrush];
 }
 
-void BrushEditor::show() {
-    open = true;
-    resetPosition();
-}
-
-void BrushEditor::hide(){
-    open = false;
-}
-bool BrushEditor::isOpen(){
-    return open;
-}
 
 int BrushEditor::getSelectedBrush() {
     return selectedBrush;

@@ -5,6 +5,8 @@ enum BrushMode {
     ADD, REMOVE, REPLACE, COUNT
 };
 
+
+
 class TexturePreviewer {
     RenderBuffer previewBuffer;
     GLuint previewProgram;
@@ -18,8 +20,15 @@ public:
 
 };
 
-class BrushEditor {
+class Closable {
+    public:
     bool open = false;
+    void show();
+    void hide();
+    bool isOpen();
+};
+
+class BrushEditor: public Closable {
     std::vector<Brush*> * brushes;
     GLuint program3d;
 	DrawableGeometry * sphere;
@@ -39,30 +48,34 @@ class BrushEditor {
 
     public:
     BrushEditor(Camera * camera,std::vector<Brush*> * brushes, GLuint program3d, GLuint previewProgram);
-    void show();
-    void hide();
-    bool isOpen();
     void draw2d();
     void draw3d();
     int getSelectedBrush();
     void resetPosition();
 };
 
-class ShadowMapViewer {
-    bool open = false;
+class ShadowMapViewer : public Closable{
     GLuint shadowTexture;
 
     public:
     ShadowMapViewer(GLuint shadowTexture);
-    void show();
-    void hide();
-    bool isOpen();
+
     void draw2d();
     void draw3d();
 };
 
-class TextureMixerEditor {
-    bool open = false;
+
+class DepthBufferViewer : public Closable{
+    GLuint depthTexture;
+
+    public:
+    DepthBufferViewer(GLuint depthTexture);
+
+    void draw2d();
+    void draw3d();
+};
+
+class TextureMixerEditor : public Closable{
     std::vector<TextureMixer*> * mixers;
     TexturePreviewer * previewer;
     std::vector<Texture*> * textures;
@@ -70,24 +83,18 @@ class TextureMixerEditor {
     
     public:
     TextureMixerEditor(std::vector<TextureMixer*> * mixers, std::vector<Texture*> * textures, GLuint previewProgram);
-    void show();
-    void hide();
-    bool isOpen();
     void draw2d();
     void draw3d();
 };
 
-class AnimatedTextureEditor {
-    bool open = false;
+class AnimatedTextureEditor : public Closable{
     std::vector<AnimatedTexture*> * animatedTextures;
     std::vector<Texture*> * textures;
   	int selectedAnimatedTexture;
     TexturePreviewer * previewer;
     public:
     AnimatedTextureEditor(std::vector<AnimatedTexture*> * animatedTextures, std::vector<Texture*> * textures, GLuint previewProgram);
-    void show();
-    void hide();
-    bool isOpen();
+
     void draw2d();
     void draw3d();
 };

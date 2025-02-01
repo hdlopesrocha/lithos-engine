@@ -15,7 +15,7 @@ AnimatedTexture::AnimatedTexture(int width, int height, GLuint program, std::vec
 }
 
 TextureArray AnimatedTexture::getTexture(){
-    return textureMixerBuffer.texture;
+    return textureMixerBuffer.colorTexture;
 }
 
 void AnimatedTexture::animate(float time){
@@ -46,7 +46,7 @@ void AnimatedTexture::animate(float time){
     }
 
     glActiveTexture(GL_TEXTURE0); 
-    glBindTexture(GL_TEXTURE_2D_ARRAY, textureMixerBuffer.texture);
+    glBindTexture(GL_TEXTURE_2D_ARRAY, textureMixerBuffer.colorTexture);
     glGenerateMipmap(GL_TEXTURE_2D_ARRAY);
 
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, originalFrameBuffer);

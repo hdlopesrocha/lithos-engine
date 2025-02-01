@@ -45,7 +45,7 @@ void TexturePreviewer::draw2d(TextureArray texture){
     }
 
 
-	ImGui::Image((ImTextureID)(intptr_t)previewBuffer.texture, ImVec2(width, height));
+	ImGui::Image((ImTextureID)(intptr_t)previewBuffer.colorTexture, ImVec2(width, height));
 
 
 }
