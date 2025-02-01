@@ -3,7 +3,7 @@ out vec4 FragColor;
 
 in vec2 TexCoord;
 
-uniform sampler2D texture1;
+uniform sampler2D textureSampler;
 uniform float near;
 uniform float far;
 
@@ -13,6 +13,6 @@ float linearizeDepth(float depth) {
 }
 
 void main() {
-    vec4 color = texture(texture1, TexCoord);
+    vec4 color = texture(textureSampler, TexCoord);
     FragColor = color;
 }

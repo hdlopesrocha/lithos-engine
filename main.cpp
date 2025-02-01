@@ -146,7 +146,7 @@ class MainApplication : public LithosApplication {
 	#endif
 
 
-	GLuint program2D;
+	GLuint programSwap;
 	GLuint program3D;
 	GLuint programShadow;
 	GLuint programTexture;
@@ -232,17 +232,17 @@ public:
 		);
 
 
-		program2D = createShaderProgram(
-			compileShader(readFile("shaders/texture/2d_vertex.glsl"),GL_VERTEX_SHADER), 
-			compileShader(readFile("shaders/texture/2d_fragment.glsl"),GL_FRAGMENT_SHADER), 
+		programSwap = createShaderProgram(
+			compileShader(readFile("shaders/texture/swap_vertex.glsl"),GL_VERTEX_SHADER), 
+			compileShader(readFile("shaders/texture/swap_fragment.glsl"),GL_FRAGMENT_SHADER), 
 			0, 
 			0
 		);
-		glUseProgram(program2D);
+		glUseProgram(programSwap);
 
 		programTexture = createShaderProgram(
-			compileShader(readFile("shaders/texture/texture_vertex.glsl"),GL_VERTEX_SHADER), 
-			compileShader(readFile("shaders/texture/texture_fragment.glsl"),GL_FRAGMENT_SHADER), 
+			compileShader(readFile("shaders/texture/texture_array_vertex.glsl"),GL_VERTEX_SHADER), 
+			compileShader(readFile("shaders/texture/texture_array_fragment.glsl"),GL_FRAGMENT_SHADER), 
 			0, 
 			0
 		);
@@ -666,12 +666,12 @@ public:
 		// ==========
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, originalFrameBuffer);
 
-		glUseProgram(program2D);
+		glUseProgram(programSwap);
 		glDisable(GL_DEPTH_TEST);
 		glDisable(GL_CULL_FACE);
 		glActiveTexture(GL_TEXTURE0); 
 		glBindTexture(GL_TEXTURE_2D, renderBuffer.colorTexture);
-		glUniform1i(glGetUniformLocation(program2D, "texture1"), 0); // Set the sampler uniform
+		glUniform1i(glGetUniformLocation(programSwap, "textureSampler"), 0); // Set the sampler uniform
 		
 		glBindVertexArray(fillAreaVao);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
