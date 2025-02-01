@@ -6,3 +6,8 @@ struct TextureProperties {
     float specularStrength;
     vec2 textureScale;
 };
+
+struct ShadowProperties {
+    float lightAmount;
+    float shadowAmount;
+};

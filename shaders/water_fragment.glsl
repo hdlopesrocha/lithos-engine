@@ -79,54 +79,16 @@ void main() {
         float phongSpec = pow(max(dot(reflection, viewDirectionTangent), 0.0), vProps.shininess);
         float diffuse = clamp(max(dot(worldNormal, -lightDirection), 0.0), 0.2, 1.0);
 
-        float finalShadow = 1.0;
-        float lightPercentage = 1.0;
+        ShadowProperties shadow; 
+        shadow.shadowAmount = 1.0;
+        shadow.lightAmount = 1.0;
         if(shadowEnabled) {
-            vec3 shadowPosition = lightViewPosition.xyz / lightViewPosition.w; 
-            float bias = 0.002;
-            float shadow = texture(shadowMap, shadowPosition.xy).r < shadowPosition.z-bias ? 0.0 : 1.0;
-            float texelSize = 1.0/4098.0;
-
-            vec2 noiseCoords = (position.xy)* PI;
-            float sumShadow = shadow;
-
-
-            int blurRadius = 20;
-            int totalSamples = 1;
-            int maxSamples = 8;
-
-
-            for(int radius = blurRadius; radius > 0; --radius) {
-                for(int samples=0; samples < maxSamples ; ++samples) {
-
-                    vec4 noiseSample = texture(noise, noiseCoords);
-                    float sAngle = noiseSample.r * 2.0 * PI;
-                    float sRadius = radius;
-                    float sX = sRadius * cos(sAngle);
-                    float sY = sRadius * sin(sAngle);
-                    
-                    vec2 shadowUV = shadowPosition.xy+vec2(sX,sY)*texelSize;
-                    float shadowValue = texture(shadowMap, shadowUV).r;
-                    
-                    sumShadow += shadowValue < shadowPosition.z-bias ? 0.0 : 1.0;
-                    ++totalSamples;
-                    
-                    noiseCoords += noiseSample.xy;
-                }
-                if(sumShadow == totalSamples || sumShadow == 0) {
-                    break;
-                }
-            }
-
-
-            float shadowAlpha = 0.6;
-            lightPercentage = sumShadow/totalSamples;
-            finalShadow = (1.0 - shadowAlpha) + lightPercentage*shadowAlpha;
+            shadow = getShadow(shadowMap, lightViewPosition, position);
         }
         if(debugEnabled) {
             color = vec4(visual(worldNormal), 1.0);
         }else {
-            color = vec4((mixedColor.rgb*diffuse + specularColor * vProps.specularStrength * phongSpec * lightPercentage)*finalShadow , mixedColor.a+vProps.specularStrength * phongSpec * lightPercentage); 
+            color = vec4((mixedColor.rgb*diffuse + specularColor * vProps.specularStrength * phongSpec *  shadow.lightAmount)*shadow.shadowAmount , mixedColor.a+vProps.specularStrength * phongSpec *  shadow.lightAmount); 
         }
     }else {
         if(debugEnabled) {
