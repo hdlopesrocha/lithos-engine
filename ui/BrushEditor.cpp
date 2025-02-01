@@ -6,9 +6,7 @@ BrushEditor::BrushEditor(Camera * camera, std::vector<Brush*> * brushes, GLuint 
     this->program3d = program3d;
     this->camera = camera;
     this->brushes = brushes;
-    this->previewProgram = previewProgram;
-    this->previewBuffer = createRenderFrameBuffer(256,256);
-    this->previewVao = DrawableGeometry::create2DVAO(-1,-1, 1,1);
+    this->previewer = new TexturePreviewer(previewProgram, 256, 256);
     SphereGeometry sphereGeometry(20,40);
 	this->sphere = new DrawableGeometry(&sphereGeometry);
 
@@ -20,7 +18,6 @@ BrushEditor::BrushEditor(Camera * camera, std::vector<Brush*> * brushes, GLuint 
 
     this->brushPosition = glm::vec3(0);
     this->brushRadius = 2.0f;
-    this->selectedLayer = 0;
 
     this->mode = BrushMode::ADD;
     this->selectedBrush = 6;
@@ -63,6 +60,8 @@ const char* toString(BrushMode v)
 void BrushEditor::draw2d(){
     ImGui::Begin("Brush Editor", &open, ImGuiWindowFlags_AlwaysAutoResize);
 
+    previewer->draw2d((*brushes)[selectedBrush]->texture->texture);
+
     ImGui::Text("Selected texture: ");
     ImGui::SameLine();
 
@@ -76,15 +75,6 @@ void BrushEditor::draw2d(){
         this->brush = (*brushes)[this->selectedBrush];
     }
 
-    ImGui::Text("Layer: %d", selectedLayer);
-    if (ImGui::ArrowButton("##layer2_arrow_left", ImGuiDir_Left)) {
-        selectedLayer = Math::mod(selectedLayer - 1, 3);
-    }
-    ImGui::SameLine();
-    if (ImGui::ArrowButton("##layer2_arrow_right", ImGuiDir_Right)) {
-        selectedLayer = Math::mod(selectedLayer + 1, 3);
-    }
-
 
 
     const char* buttonText = "Reset Position";
@@ -96,19 +86,6 @@ void BrushEditor::draw2d(){
     if (ImGui::Button(buttonText, buttonSize)) {
         resetPosition();
     }
-
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, previewBuffer.frameBuffer);
-    glViewport(0, 0, previewBuffer.width, previewBuffer.height); 
-
-    glUseProgram(previewProgram);
-    glActiveTexture(GL_TEXTURE0); 
-    glBindTexture(GL_TEXTURE_2D_ARRAY, (*brushes)[selectedBrush]->texture->texture);
-    glUniform1i(glGetUniformLocation(previewProgram, "textureSampler"), 0); // Set the sampler uniform
-    glUniform1i(glGetUniformLocation(previewProgram, "textureLayer"), selectedLayer); // Set the sampler uniform
-    glBindVertexArray(previewVao);
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-
-    ImGui::Image((ImTextureID)(intptr_t)previewBuffer.texture, ImVec2(256, 256));
 
     ImGui::Text("Mode: ");
 

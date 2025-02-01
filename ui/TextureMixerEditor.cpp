@@ -4,11 +4,8 @@
 TextureMixerEditor::TextureMixerEditor(std::vector<TextureMixer*> * mixers, std::vector<Texture*> * textures, GLuint previewProgram) {
     this->mixers = mixers;
     this->textures = textures;
-    this->previewProgram = previewProgram;
-    this->previewBuffer = createRenderFrameBuffer(512,512);
-    this->previewVao = DrawableGeometry::create2DVAO(-1,-1, 1,1);
+    this->previewer = new TexturePreviewer(previewProgram, 512, 512);
     this->selectedMixer = 0;
-    this->selectedLayer = 0;
 }
 
 void TextureMixerEditor::show() {
@@ -33,19 +30,10 @@ void TextureMixerEditor::draw2d(){
     mixer->mix();
     //textureMixer->mix(baseTexture, overlayTexture);
 
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, previewBuffer.frameBuffer);
-    glViewport(0, 0, previewBuffer.width, previewBuffer.height); 
+    previewer->draw2d(mixer->getTexture());
 
-    glUseProgram(previewProgram);
-    glActiveTexture(GL_TEXTURE0); 
-    glBindTexture(GL_TEXTURE_2D_ARRAY, mixer->getTexture());
-    glUniform1i(glGetUniformLocation(previewProgram, "textureSampler"), 0); // Set the sampler uniform
-    glUniform1i(glGetUniformLocation(previewProgram, "textureLayer"), selectedLayer); // Set the sampler uniform
-    glBindVertexArray(previewVao);
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-
-
-    ImGui::Text("Mixer: %d", selectedMixer);
+    ImGui::Text("Mixer: ");
+    ImGui::SameLine();
     if (ImGui::ArrowButton("##mixer_arrow_left", ImGuiDir_Left)) {
         selectedMixer = Math::mod(selectedMixer - 1, mixers->size());
     }
@@ -55,18 +43,6 @@ void TextureMixerEditor::draw2d(){
     }
 
 
-    ImGui::Text("Layer: %d", selectedLayer);
-    if (ImGui::ArrowButton("##layer_arrow_left", ImGuiDir_Left)) {
-        selectedLayer = Math::mod(selectedLayer - 1, 3);
-    }
-    ImGui::SameLine();
-    if (ImGui::ArrowButton("##layer_arrow_right", ImGuiDir_Right)) {
-        selectedLayer = Math::mod(selectedLayer + 1, 3);
-    }
-
-
-    ImGui::Text("Result: ");
-	ImGui::Image((ImTextureID)(intptr_t)previewBuffer.texture, ImVec2(512, 512));
 
     ImGui::Text("Base texture: ");
     ImGui::SameLine();

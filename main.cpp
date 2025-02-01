@@ -668,7 +668,7 @@ public:
 
 
     }
-
+	bool demo = false;
     bool bSettingsWindow = true;
 
 	virtual void draw2d() {
@@ -677,8 +677,7 @@ public:
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
-		//ImGui::ShowDemoWindow(); // Show demo window! :)
-
+		
 		if (ImGui::BeginMainMenuBar()) {
 			// File Menu
 			if (ImGui::BeginMenu("File")) {
@@ -711,6 +710,9 @@ public:
 				if (ImGui::MenuItem("Texture Mixer", "Ctrl+M")) {
 					textureMixerEditor->show();
 				}
+				if (ImGui::MenuItem("ImGui Demo", "Ctrl+I")) {
+					demo = true;
+				}
 				ImGui::EndMenu();
 			}
 
@@ -738,6 +740,9 @@ public:
 		}
 		if(textureMixerEditor->isOpen()) {
 			textureMixerEditor->draw2d();
+		}
+		if(demo) {
+			ImGui::ShowDemoWindow(&demo);
 		}
 
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, originalFrameBuffer);

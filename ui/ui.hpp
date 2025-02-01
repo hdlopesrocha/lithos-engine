@@ -5,14 +5,23 @@ enum BrushMode {
     ADD, REMOVE, REPLACE, COUNT
 };
 
+class TexturePreviewer {
+    RenderBuffer previewBuffer;
+    GLuint previewProgram;
+    GLuint previewVao;
+    int selectedLayer;
+    int width;
+    int height;
+public:
+    TexturePreviewer(GLuint previewProgram, int width, int height);
+    void draw2d(TextureArray texture);
+
+};
 
 class BrushEditor {
     bool open = false;
     std::vector<Brush*> * brushes;
-    GLuint previewProgram;
     GLuint program3d;
-    RenderBuffer previewBuffer;
-    GLuint previewVao;
 	DrawableGeometry * sphere;
     Camera * camera;
 	GLuint modelLoc;
@@ -21,7 +30,7 @@ class BrushEditor {
 	GLuint overrideTextureEnabledLoc;
 	GLuint overrideTextureLoc;
   
-    int selectedLayer;
+    TexturePreviewer * previewer;
     BrushMode mode;
   	int selectedBrush = 0;
     Brush * brush;
@@ -55,12 +64,9 @@ class ShadowMapViewer {
 class TextureMixerEditor {
     bool open = false;
     std::vector<TextureMixer*> * mixers;
-    RenderBuffer previewBuffer;
+    TexturePreviewer * previewer;
     std::vector<Texture*> * textures;
-    GLuint previewProgram;
-    GLuint previewVao;
   	int selectedMixer;
-    int selectedLayer;
     
     public:
     TextureMixerEditor(std::vector<TextureMixer*> * mixers, std::vector<Texture*> * textures, GLuint previewProgram);
@@ -74,13 +80,10 @@ class TextureMixerEditor {
 class AnimatedTextureEditor {
     bool open = false;
     std::vector<AnimatedTexture*> * animatedTextures;
-    RenderBuffer previewBuffer;
     std::vector<Texture*> * textures;
-    GLuint previewProgram;
-    GLuint previewVao;
   	int selectedAnimatedTexture;
-    int selectedLayer;
-    
+    TexturePreviewer * previewer;
+
     public:
     AnimatedTextureEditor(std::vector<AnimatedTexture*> * animatedTextures, std::vector<Texture*> * textures, GLuint previewProgram);
     void show();
