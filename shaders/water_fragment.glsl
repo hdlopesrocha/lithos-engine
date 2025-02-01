@@ -6,6 +6,9 @@ uniform sampler2DArray textures[20];
 uniform sampler2D shadowMap;
 uniform sampler2D noise;
 
+uniform sampler2D solidDepth;
+uniform sampler2D solidColor;
+
 uniform bool debugEnabled;
 uniform bool lightEnabled;
 uniform bool shadowEnabled;
