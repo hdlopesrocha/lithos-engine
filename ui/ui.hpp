@@ -67,9 +67,13 @@ class ShadowMapViewer : public Closable{
 
 class DepthBufferViewer : public Closable{
     GLuint depthTexture;
-
+    RenderBuffer previewBuffer;
+    GLuint previewProgram;
+    GLuint previewVao;
+    int width;
+    int height;
     public:
-    DepthBufferViewer(GLuint depthTexture);
+    DepthBufferViewer(GLuint previewProgram, GLuint depthTexture, int width, int height);
 
     void draw2d();
     void draw3d();
@@ -99,3 +103,14 @@ class AnimatedTextureEditor : public Closable{
     void draw3d();
 };
 
+class ImageViewer : public Closable{
+    GLuint texture;
+    int width;
+    int height;
+    
+    public:
+    ImageViewer(GLuint texture, int width, int height);
+
+    void draw2d();
+    void draw3d();
+};

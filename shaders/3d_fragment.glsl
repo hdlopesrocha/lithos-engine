@@ -5,12 +5,14 @@
 uniform sampler2DArray textures[20];
 uniform sampler2D shadowMap;
 uniform sampler2D noise;
+uniform sampler2D depthTexture;
 
 uniform bool debugEnabled;
 uniform bool lightEnabled;
 uniform bool shadowEnabled;
 uniform bool triplanarEnabled;
 uniform bool parallaxEnabled;
+uniform bool depthTestEnabled;
 
 uniform vec3 lightDirection; 
 uniform vec3 cameraPosition; 
@@ -32,7 +34,19 @@ out vec4 color;    // Final fragment color
 #include<parallax.glsl>
 
 
+
+
 void main() {
+    if(depthTestEnabled) {
+        float d1 = texture(depthTexture, gl_FragCoord.xy).r;
+        float d2 = gl_FragCoord.z;
+        if(d1>d2) {
+         //   discard;
+        }
+
+    }
+
+
     vec2 uv = teTextureCoord;
 
     vec4 positionWorld = model * vec4(tePosition, 1.0);
@@ -81,7 +95,12 @@ void main() {
             shadow = getShadow(shadowMap, noise, lightViewPosition, position);
         }
         if(debugEnabled) {
+
+            float d = gl_FragCoord.z;
+
+
             color = vec4(visual(worldNormal), 1.0);
+            color = vec4(d,d,d,1.0);
         }else {
             color = vec4((mixedColor.rgb*diffuse + specularColor * teProps.specularStrength * phongSpec *  shadow.lightAmount)*shadow.shadowAmount , mixedColor.a+teProps.specularStrength * phongSpec *  shadow.lightAmount); 
         }

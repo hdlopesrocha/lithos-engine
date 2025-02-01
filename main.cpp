@@ -169,6 +169,8 @@ class ProgramLocations {
 	GLuint triplanarEnabledLoc;
 	GLuint parallaxEnabledLoc;
 	GLuint shadowEnabledLoc;
+	GLuint depthTestEnabledLoc;
+	GLuint depthTextureLoc;
 	GLuint cameraPositionLoc;
 	GLuint overrideTextureEnabledLoc;
 	GLuint overrideTextureLoc;
@@ -193,6 +195,8 @@ class ProgramLocations {
 		this->noiseLoc = glGetUniformLocation(program, "noise");
 		this->overrideTextureLoc = glGetUniformLocation(program, "overrideTexture");
 		this->overrideTextureEnabledLoc = glGetUniformLocation(program, "overrideTextureEnabled");
+		this->depthTestEnabledLoc = glGetUniformLocation(program, "depthTestEnabled");
+		this->depthTextureLoc = glGetUniformLocation(program, "depthTexture");
 	}
 
 	void update(glm::mat4 modelViewProjection,glm::mat4 model, glm::mat4 matrixShadow, glm::vec3 lightDirection, glm::vec3 cameraPosition, float time) {
@@ -205,8 +209,9 @@ class ProgramLocations {
 		glUniform1ui(lightEnabledLoc, 1);
 		glUniform1ui(triplanarEnabledLoc, 1);
 		glUniform1ui(parallaxEnabledLoc, 1);
-		glUniform1ui(debugEnabledLoc, 0);
+		glUniform1ui(debugEnabledLoc,0);
 		glUniform1ui(shadowEnabledLoc, 1);
+		glUniform1ui(depthTestEnabledLoc, 0);
 	}
 
 };
@@ -234,6 +239,7 @@ class MainApplication : public LithosApplication {
 	GLuint program3d;
 	GLuint programShadow;
 	GLuint programTexture;
+	GLuint programDepth;
 	GLuint programMixTexture;
 	GLuint programWaterTexture;
 	
@@ -245,6 +251,8 @@ class MainApplication : public LithosApplication {
 	GLuint screen2dVao;
 	GLuint fillAreaVao;
 	RenderBuffer shadowFrameBuffer;
+	RenderBuffer liquidFrameBuffer;
+
 	int activeTexture = 4; // To avoid rebinding other textures
 
 	float time = 0.0f;
@@ -255,7 +263,7 @@ class MainApplication : public LithosApplication {
 	TextureMixerEditor * textureMixerEditor;
 	AnimatedTextureEditor * animatedTextureEditor;
 	DepthBufferViewer * depthBufferViewer;
-
+	ImageViewer * imageViewer;
 
 
 public:
@@ -311,6 +319,14 @@ public:
 		);
 		glUseProgram(programTexture);
 
+		programDepth = createShaderProgram(
+			compileShader(replaceIncludes(includes,readFile("shaders/texture/depth_vertex.glsl")),GL_VERTEX_SHADER), 
+			compileShader(replaceIncludes(includes,readFile("shaders/texture/depth_fragment.glsl")),GL_FRAGMENT_SHADER), 
+			0, 
+			0
+		);
+		glUseProgram(programDepth);
+
 		programMixTexture = createShaderProgram(
 			compileShader(replaceIncludes(includes,readFile("shaders/texture/mix_vertex.glsl")),GL_VERTEX_SHADER), 
 			compileShader(replaceIncludes(includes,readFile("shaders/texture/mix_fragment.glsl")),GL_FRAGMENT_SHADER), 
@@ -348,6 +364,7 @@ public:
 
 
 		shadowFrameBuffer = createDepthFrameBuffer(2048, 2048);
+		liquidFrameBuffer = createRenderFrameBuffer(getWidth(), getHeight());
 
 
 		{
@@ -525,7 +542,8 @@ public:
 		shadowMapViewer = new ShadowMapViewer(shadowFrameBuffer.depthTexture);
 		textureMixerEditor = new TextureMixerEditor(&mixers, &textures, programTexture);
 		animatedTextureEditor = new AnimatedTextureEditor(&animatedTextures, &textures, programTexture);
-		depthBufferViewer = new DepthBufferViewer(renderBuffer.depthTexture);
+		depthBufferViewer = new DepthBufferViewer(programDepth,renderBuffer.depthTexture,512,512);
+		imageViewer = new ImageViewer(liquidFrameBuffer.colorTexture, 512,512);
 	 }
 
     virtual void update(float deltaTime){
@@ -648,6 +666,7 @@ public:
 		glCullFace(GL_BACK); // Or GL_FRONT
 		glFrontFace(GL_CCW); // Ensure this matches your vertex data
 		glEnable(GL_DEPTH_TEST);
+		//glDepthFunc(GL_LESS);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 		glEnable(GL_BLEND);
@@ -659,6 +678,19 @@ public:
 		solidRenderer->mode = GL_PATCHES;
 		solidRenderer->update(mvp);
 		solidSpace->iterate(solidRenderer);
+
+
+
+
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, liquidFrameBuffer.frameBuffer);
+		glViewport(0, 0, getWidth(), getHeight());
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glActiveTexture(GL_TEXTURE0+60); 
+		glUniform1ui(program3dLocs->depthTestEnabledLoc, 1); // Set the sampler uniform
+		glBindTexture(GL_TEXTURE_2D, renderBuffer.depthTexture);		
+		glUniform1i(program3dLocs->depthTextureLoc, 60); // Set the sampler uniform
+
+
 
 		liquidRenderer->mode = GL_PATCHES;
 		liquidRenderer->update(mvp);
@@ -700,13 +732,14 @@ public:
 		glDisable(GL_DEPTH_TEST);
 		glDisable(GL_CULL_FACE);
 		glActiveTexture(GL_TEXTURE0); 
-		glBindTexture(GL_TEXTURE_2D, renderBuffer.colorTexture);
 		glUniform1i(glGetUniformLocation(programSwap, "textureSampler"), 0); // Set the sampler uniform
-		
 		glBindVertexArray(fillAreaVao);
+
+		glBindTexture(GL_TEXTURE_2D, renderBuffer.colorTexture);		
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 		
-
+		//glBindTexture(GL_TEXTURE_2D, liquidFrameBuffer.colorTexture);		
+		//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
     }
 	bool demo = false;
@@ -748,6 +781,9 @@ public:
 				if (ImGui::MenuItem("Depth Buffer Viewer", "Ctrl+B")) {
 					depthBufferViewer->show();
 				}
+				if (ImGui::MenuItem("Image Viewer", "Ctrl+B")) {
+					imageViewer->show();
+				}
 				if (ImGui::MenuItem("Shadow Map Viewer", "Ctrl+D")) {
 					shadowMapViewer->show();
 				}
@@ -787,6 +823,9 @@ public:
 		}
 		if(depthBufferViewer->isOpen()) {
 			depthBufferViewer->draw2d();
+		}
+		if(imageViewer->isOpen()) {
+			imageViewer->draw2d();
 		}
 		if(demo) {
 			ImGui::ShowDemoWindow(&demo);
