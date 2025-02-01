@@ -1,5 +1,4 @@
 #version 460 core
-#define PI 3.1415926535897932384626433832795
 
 #include<structs.glsl>
 
@@ -30,11 +29,8 @@ in vec4 lightViewPosition;
 out vec4 color;    // Final fragment color
 
 #include<functions_fragment.glsl>
+#include<parallax.glsl>
 
-
-vec3 visual(vec3 v) {
-    return v*0.5 + vec3(0.5);
-}
 
 
 void main() {
@@ -83,7 +79,7 @@ void main() {
         shadow.shadowAmount = 1.0;
         shadow.lightAmount = 1.0;
         if(shadowEnabled) {
-            shadow = getShadow(shadowMap, lightViewPosition, position);
+            shadow = getShadow(shadowMap, noise, lightViewPosition, position);
         }
         if(debugEnabled) {
             color = vec4(visual(worldNormal), 1.0);
