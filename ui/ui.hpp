@@ -97,7 +97,7 @@ class AnimatedTextureEditor : public Closable{
   	int selectedAnimatedTexture;
     TexturePreviewer * previewer;
     public:
-    AnimatedTextureEditor(std::vector<AnimatedTexture*> * animatedTextures, std::vector<Texture*> * textures, GLuint previewProgram);
+    AnimatedTextureEditor(std::vector<AnimatedTexture*> * animatedTextures, std::vector<Texture*> * textures, GLuint previewProgram, int width, int height);
 
     void draw2d();
     void draw3d();
@@ -107,9 +107,19 @@ class ImageViewer : public Closable{
     GLuint texture;
     int width;
     int height;
-    
+
     public:
     ImageViewer(GLuint texture, int width, int height);
+
+    void draw2d();
+    void draw3d();
+};
+
+class SettingsEditor : public Closable {
+    Settings * settings;
+
+    public:
+    SettingsEditor(Settings * settings);
 
     void draw2d();
     void draw3d();

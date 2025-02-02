@@ -201,19 +201,20 @@ class ProgramLocations {
 		this->underTextureLoc = glGetUniformLocation(program, "underTexture");
 	}
 
-	void update(glm::mat4 modelViewProjection,glm::mat4 model, glm::mat4 matrixShadow, glm::vec3 lightDirection, glm::vec3 cameraPosition, float time) {
+	void update(glm::mat4 modelViewProjection,glm::mat4 model, glm::mat4 matrixShadow, glm::vec3 lightDirection, glm::vec3 cameraPosition, float time, Settings * settings) {
 		glUniformMatrix4fv(modelViewProjectionLoc, 1, GL_FALSE, glm::value_ptr(modelViewProjection));
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 		glUniformMatrix4fv(matrixShadowLoc, 1, GL_FALSE, glm::value_ptr(matrixShadow  ));
 		glUniform3fv(lightDirectionLoc, 1, glm::value_ptr(lightDirection));
 		glUniform3fv(cameraPositionLoc, 1, glm::value_ptr(cameraPosition));
 		glUniform1f(timeLoc, time);
-		glUniform1ui(lightEnabledLoc, 1);
+		glUniform1ui(lightEnabledLoc, settings->lightEnabled);
 		glUniform1ui(triplanarEnabledLoc, 1);
-		glUniform1ui(parallaxEnabledLoc, 1);
-		glUniform1ui(debugEnabledLoc,0);
-		glUniform1ui(shadowEnabledLoc, 1);
+		glUniform1ui(parallaxEnabledLoc, settings->parallaxEnabled);
+		glUniform1ui(debugEnabledLoc,settings->debugEnabled);
+		glUniform1ui(shadowEnabledLoc, settings->shadowEnabled);
 		glUniform1ui(depthTestEnabledLoc, 0);
+
 	}
 
 };
@@ -232,6 +233,7 @@ class MainApplication : public LithosApplication {
 	Tesselator * liquidTesselator;
 	OctreeRenderer * solidRenderer;
 	OctreeRenderer * liquidRenderer;
+	Settings * settings = new Settings();
 	#ifdef DEBUG_GEO
 	DrawableGeometry * vaoDebug;
 	#endif
@@ -244,7 +246,7 @@ class MainApplication : public LithosApplication {
 	GLuint programDepth;
 	GLuint programMixTexture;
 	GLuint programWaterTexture;
-	
+
 
 
 	GLuint modelViewProjectionShadowLoc;
@@ -266,7 +268,7 @@ class MainApplication : public LithosApplication {
 	AnimatedTextureEditor * animatedTextureEditor;
 	DepthBufferViewer * depthBufferViewer;
 	ImageViewer * imageViewer;
-
+	SettingsEditor * settingsEditor;
 
 public:
 	MainApplication() {
@@ -500,7 +502,7 @@ public:
 		solidSpace->del(new SphereContainmentHandler(BoundingSphere(glm::vec3(11,61,-11),10), new SimpleBrush(textures[4])));
 		solidSpace->add(new BoxContainmentHandler(BoundingBox(glm::vec3(0,26,0),glm::vec3(24,50,24)),new SimpleBrush(textures[8])));
 		solidSpace->del(new SphereContainmentHandler(BoundingSphere(glm::vec3(4,54,-4),8), new SimpleBrush(textures[1])));
-		solidSpace->add(new SphereContainmentHandler(BoundingSphere(glm::vec3(11,61,-11),4), new SimpleBrush(textures[3])));
+		solidSpace->add(new SphereContainmentHandler(BoundingSphere(glm::vec3(11,61,-11),4), new SimpleBrush(textures[15])));
 
 
 		BoundingBox waterBox(glm::vec3(-100,-50,-100), glm::vec3(100,3,100));
@@ -543,9 +545,10 @@ public:
 		brushEditor = new BrushEditor(&camera, &brushes, program3d, programTexture);
 		shadowMapViewer = new ShadowMapViewer(shadowFrameBuffer.depthTexture);
 		textureMixerEditor = new TextureMixerEditor(&mixers, &textures, programTexture);
-		animatedTextureEditor = new AnimatedTextureEditor(&animatedTextures, &textures, programTexture);
-		depthBufferViewer = new DepthBufferViewer(programDepth,renderBuffer.depthTexture,512,512);
-		imageViewer = new ImageViewer(liquidFrameBuffer.colorTexture, 512,512);
+		animatedTextureEditor = new AnimatedTextureEditor(&animatedTextures, &textures, programTexture, 256,256);
+		depthBufferViewer = new DepthBufferViewer(programDepth,renderBuffer.depthTexture,256,256);
+		imageViewer = new ImageViewer(liquidFrameBuffer.colorTexture, 256,256);
+		settingsEditor = new SettingsEditor(settings);
 	 }
 
     virtual void update(float deltaTime){
@@ -607,7 +610,7 @@ public:
 	   	glm::vec3 lookAtLightPosition = glm::round(camera.position/16.0f)*16.0f; // + cameraDirection*far*0.5f;
 
 
-		//light.direction = glm::normalize(glm::vec3(glm::sin(time),-1.0,glm::cos(time)));
+		light.direction = glm::normalize(glm::vec3(glm::sin(time/10),-1.0,glm::cos(time/10)));
 
 		float orthoSize = 512.0f;  // Size of the orthographic box
 
@@ -644,17 +647,18 @@ public:
 		// ================
 		// Shadow component
 		// ================
-		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, shadowFrameBuffer.frameBuffer);
-		glViewport(0, 0, shadowFrameBuffer.width, shadowFrameBuffer.height);
-		glEnable(GL_DEPTH_TEST);
-		glClear(GL_DEPTH_BUFFER_BIT);
-		glUseProgram(programShadow);
-		glUniformMatrix4fv(modelViewProjectionShadowLoc, 1, GL_FALSE, glm::value_ptr(mlp));
+		if(settings->shadowEnabled) {
+			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, shadowFrameBuffer.frameBuffer);
+			glViewport(0, 0, shadowFrameBuffer.width, shadowFrameBuffer.height);
+			glEnable(GL_DEPTH_TEST);
+			glClear(GL_DEPTH_BUFFER_BIT);
+			glUseProgram(programShadow);
+			glUniformMatrix4fv(modelViewProjectionShadowLoc, 1, GL_FALSE, glm::value_ptr(mlp));
 
-		solidRenderer->mode = GL_TRIANGLES;
-		solidRenderer->update(mlp);
-		solidSpace->iterate(solidRenderer);
-
+			solidRenderer->mode = GL_TRIANGLES;
+			solidRenderer->update(mlp);
+			solidSpace->iterate(solidRenderer);
+		}
 
 		// ============
 		// 3D component
@@ -676,15 +680,10 @@ public:
 		glPolygonMode(GL_FRONT, GL_FILL);
 
 		glUseProgram(program3d);
-		program3dLocs->update(mvp, model,ms,light.direction, camera.position, time);
+		program3dLocs->update(mvp, model,ms,light.direction, camera.position, time, settings);
 		solidRenderer->mode = GL_PATCHES;
 		solidRenderer->update(mvp);
 		solidSpace->iterate(solidRenderer);
-
-
-		if(brushEditor->isOpen()) {
-			brushEditor->draw3d();
-		}
 
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, liquidFrameBuffer.frameBuffer);
 		glViewport(0, 0, liquidFrameBuffer.width, liquidFrameBuffer.height);
@@ -704,6 +703,9 @@ public:
 		liquidRenderer->update(mvp);
 		liquidSpace->iterate(liquidRenderer);
 
+		if(brushEditor->isOpen()) {
+			brushEditor->draw3d();
+		}
 
 
 		#ifdef DEBUG_GEO
@@ -728,6 +730,7 @@ public:
 		#endif
 
 
+
 		// ==========
 		// Final Pass
 		// ==========
@@ -748,6 +751,8 @@ public:
 		
 		glBindTexture(GL_TEXTURE_2D, liquidFrameBuffer.colorTexture);		
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+	
 
     }
 	bool demo = false;
@@ -798,6 +803,9 @@ public:
 				if (ImGui::MenuItem("Texture Mixer", "Ctrl+M")) {
 					textureMixerEditor->show();
 				}
+				if (ImGui::MenuItem("Settings", "Ctrl+S")) {
+					settingsEditor->show();
+				}
 				if (ImGui::MenuItem("ImGui Demo", "Ctrl+I")) {
 					demo = true;
 				}
@@ -837,6 +845,10 @@ public:
 		if(imageViewer->isOpen()) {
 			imageViewer->draw2d();
 		}
+		if(settingsEditor->isOpen()) {
+			settingsEditor->draw2d();
+		}
+
 		if(demo) {
 			ImGui::ShowDemoWindow(&demo);
 		}

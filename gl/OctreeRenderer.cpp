@@ -43,7 +43,9 @@ void OctreeRenderer::after(int level, OctreeNode * node, BoundingCube cube, void
 }
 
 bool OctreeRenderer::test(int level, OctreeNode * node, BoundingCube cube, void * context) {	
-	BoundingBox box = BoundingBox(cube.getMin(), cube.getMax());
+	// -cube.length because surface nets is creating geometry outside the chunk
+	// TODO: prevent surface nets from doing this, currently just a quickfix
+	BoundingBox box = BoundingBox(cube.getMin()-cube.getLength(), cube.getMax());
 	return frustum.isBoxVisible(box);
 }
 

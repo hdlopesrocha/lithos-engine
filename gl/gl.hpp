@@ -113,7 +113,6 @@ private:
     GLFWwindow* window;
     bool alive = true;
 	int keyboard[KEYBOARD_SIZE];
-    int frameCount = 0;
 public:
     GLint originalFrameBuffer;
     RenderBuffer renderBuffer;
@@ -248,6 +247,16 @@ class AnimatedTexture {
     void animate(float time);
 };
 
+class Settings {
+    public:
+        bool parallaxEnabled;
+        bool shadowEnabled;
+        bool debugEnabled;
+        bool lightEnabled;
+
+        Settings();
+
+};
 
 GLuint createTextureArray(int width, int height, int layers); 
 RenderBuffer createMultiLayerRenderFrameBuffer(int width, int height, int layers);

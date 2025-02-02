@@ -7,7 +7,7 @@ BrushEditor::BrushEditor(Camera * camera, std::vector<Brush*> * brushes, GLuint 
     this->camera = camera;
     this->brushes = brushes;
     this->previewer = new TexturePreviewer(previewProgram, 256, 256);
-    SphereGeometry sphereGeometry(20,40);
+    SphereGeometry sphereGeometry(40,80);
 	this->sphere = new DrawableGeometry(&sphereGeometry);
 
     this->modelLoc = glGetUniformLocation(program3d, "model");
