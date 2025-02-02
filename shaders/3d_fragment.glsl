@@ -34,16 +34,26 @@ out vec4 color;    // Final fragment color
 #include<parallax.glsl>
 
 
+float linearizeDepth(float depth) {
+    float near = 0.1;
+    float far = 512.0;
+
+    float z = depth * 2.0 - 1.0;  // Convert to NDC (-1 to 1)
+    float d = (2.0 * near * far) / (far + near - z * (far - near));
+    return d;
+}
 
 
 void main() {
     if(depthTestEnabled) {
-        float d1 = texture(depthTexture, gl_FragCoord.xy).r;
-        float d2 = gl_FragCoord.z;
-        if(d1>d2) {
-         //   discard;
-        }
+        vec2 screenUV = gl_FragCoord.xy / textureSize(depthTexture, 0);
 
+
+        float d1 = linearizeDepth(texture(depthTexture, screenUV).r);
+        float d2 = linearizeDepth(gl_FragCoord.z);
+        if(d1<d2) {
+            discard;
+        }
     }
 
 
@@ -111,7 +121,6 @@ void main() {
             color = vec4(1.0,1.0,1.0,1.0);
         }
     }
-
  }
 
 

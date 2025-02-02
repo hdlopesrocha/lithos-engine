@@ -10,7 +10,10 @@ float linearizeDepth(float depth) {
     float near = 0.1;
     float far = 512.0;
 
-    return (2.0 * near * far) / (far + near - (depth * 2.0 - 1.0) * (far - near));
+    float z = depth * 2.0 - 1.0;  // Convert to NDC (-1 to 1)
+    float d = (2.0 * near * far) / (far + near - z * (far - near));
+    return d/far;
+
 
 }
 

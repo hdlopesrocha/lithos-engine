@@ -626,7 +626,7 @@ public:
 
     virtual void draw3d() {
 
-		glClearColor (0.1,0.1,0.1,1.0);
+		glClearColor (0.0,0.0,0.0,0.0);
 
 		glm::mat4 model = glm::mat4(1.0f); // Identity matrix
 		solidRenderer->loaded = 0;
@@ -658,7 +658,7 @@ public:
 		// 3D component
 		// ============
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, renderBuffer.frameBuffer);
-		glViewport(0, 0, getWidth(), getHeight());
+		glViewport(0, 0, renderBuffer.width, renderBuffer.height);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		glPatchParameteri(GL_PATCH_VERTICES, 3); // Define the number of control points per patch
@@ -683,12 +683,12 @@ public:
 
 
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, liquidFrameBuffer.frameBuffer);
-		glViewport(0, 0, getWidth(), getHeight());
+		glViewport(0, 0, liquidFrameBuffer.width, liquidFrameBuffer.height);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		glActiveTexture(GL_TEXTURE0+60); 
+		glActiveTexture(GL_TEXTURE0+30); 
 		glUniform1ui(program3dLocs->depthTestEnabledLoc, 1); // Set the sampler uniform
 		glBindTexture(GL_TEXTURE_2D, renderBuffer.depthTexture);		
-		glUniform1i(program3dLocs->depthTextureLoc, 60); // Set the sampler uniform
+		glUniform1i(program3dLocs->depthTextureLoc, 30); // Set the sampler uniform
 
 
 
@@ -727,6 +727,9 @@ public:
 		// Final Pass
 		// ==========
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, originalFrameBuffer);
+		glViewport(0, 0, getWidth(), getHeight());
+		glClearColor (0.1,0.1,0.1,1.0);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		glUseProgram(programSwap);
 		glDisable(GL_DEPTH_TEST);
@@ -738,8 +741,8 @@ public:
 		glBindTexture(GL_TEXTURE_2D, renderBuffer.colorTexture);		
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 		
-		//glBindTexture(GL_TEXTURE_2D, liquidFrameBuffer.colorTexture);		
-		//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		glBindTexture(GL_TEXTURE_2D, liquidFrameBuffer.colorTexture);		
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
     }
 	bool demo = false;
