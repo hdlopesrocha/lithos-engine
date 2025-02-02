@@ -446,7 +446,7 @@ public:
 			tm->animate(0);
 			Texture * t = new Texture(tm->getTexture());
 			textures.push_back(t);
-			brushes.push_back(new Brush(t, glm::vec2(1.0), 0.06, 8, 32, 1.0, 0.8 ));
+			brushes.push_back(new Brush(t, glm::vec2(0.2), 0.02, 8, 32, 1.0, 0.8 ));
 			animatedTextures.push_back(tm);
 		}
 

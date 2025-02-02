@@ -6,7 +6,7 @@ AnimatedTexture::AnimatedTexture(int width, int height, GLuint program, std::vec
     this->textures = textures;
     this->program = program;
     this->previewVao = DrawableGeometry::create2DVAO(-1,-1, 1,1);
-    this->perlinScale = 16;
+    this->perlinScale = 80;
     this->perlinIterations = 5;
     this->perlinLacunarity = 2;
     this->brightness = 0;
