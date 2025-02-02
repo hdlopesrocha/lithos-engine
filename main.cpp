@@ -811,6 +811,8 @@ public:
 				}
 				ImGui::EndMenu();
 			}
+			std::string fps = std::to_string(framesPerSecond) + " FPS";
+			ImGui::BeginMenu(fps.c_str());
 
 			// End the main menu bar
 			ImGui::EndMainMenuBar();

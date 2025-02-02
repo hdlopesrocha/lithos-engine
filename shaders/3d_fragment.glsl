@@ -49,7 +49,7 @@ float linearizeDepth(float depth) {
 void main() {
     vec2 pixelUV = gl_FragCoord.xy / textureSize(underTexture, 0);
 
-    if(teProps.refractiveIndex > 0.0) {
+    if(depthTestEnabled) {
         float d1 = linearizeDepth(texture(depthTexture, pixelUV).r);
         float d2 = linearizeDepth(gl_FragCoord.z);
         if(d1<d2) {

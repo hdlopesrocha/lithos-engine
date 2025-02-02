@@ -61,18 +61,30 @@ GLFWwindow * LithosApplication::getWindow() {
 }
 
 void LithosApplication::mainLoop() {
-    while(alive) {
+    int frameCount = 0;
+    float lastTime = 0.0f;
+   while(alive) {
         // Main loop
+
         if (!glfwWindowShouldClose(window)) {
+            // Get current time
+            double currentTime = glfwGetTime(); // Get elapsed time in seconds
+            ++frameCount;
+            if (currentTime - lastTime > 1.0f)
+            {
+                lastTime = currentTime;
+                framesPerSecond = (int)frameCount;
+                frameCount = 0;
+            }
+
             glfwPollEvents();
 
-            // Get current time
-            double currentTime = glfwGetTime();
             // Calculate delta time (time since last frame)
             double deltaTime = currentTime - lastFrameTime;
             // Update last frame time to the current time
             lastFrameTime = currentTime;
             update(deltaTime);
+
 
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             draw3d();

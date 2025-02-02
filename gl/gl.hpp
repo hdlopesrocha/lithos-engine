@@ -113,10 +113,11 @@ private:
     GLFWwindow* window;
     bool alive = true;
 	int keyboard[KEYBOARD_SIZE];
-
+    int frameCount = 0;
 public:
     GLint originalFrameBuffer;
     RenderBuffer renderBuffer;
+    int framesPerSecond = 0;
 
     virtual void setup() = 0;
     virtual void draw3d() = 0;
