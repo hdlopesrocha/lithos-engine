@@ -28,6 +28,7 @@ class LandBrush : public TextureBrush {
 	Texture * underground;
 	Texture * grass;
 	Texture * sand;
+	Texture * softSand;
 	Texture * rock;
 	Texture * snow;
 	Texture * grassMixSand;
@@ -40,6 +41,7 @@ class LandBrush : public TextureBrush {
 		this->underground = brushes[7]->texture;
 		this->grass = brushes[2]->texture;
 		this->sand = brushes[3]->texture;
+		this->softSand = brushes[15]->texture;
 		this->rock = brushes[4]->texture;
 		this->snow = brushes[5]->texture;
 		this->grassMixSand = brushes[9]->texture;
@@ -63,13 +65,17 @@ class LandBrush : public TextureBrush {
 		} else if(steepness < 0.8 ){
 			texture = rock;
 		} else if(steepness < 0.9 ){
-		    if(vertex->position.y < sandLevel){
+		    if(vertex->position.y < sandLevel -1){
+				texture = rock;
+			} else if(vertex->position.y < sandLevel){
 				texture = rockMixSand;
 			} else if(vertex->position.y < grassLevel){
 				texture = rockMixGrass;
 			} else {
 				texture = rockMixSnow;
 			}
+		} else if(vertex->position.y < sandLevel-1){
+			texture = softSand;
 		} else if(vertex->position.y < sandLevel){
 			texture = sand;
 		} else if(vertex->position.y < sandLevel+1){
@@ -463,6 +469,11 @@ public:
 			brushes.push_back(new Brush(t, glm::vec2(1.0), 0.01, 8, 32, 256, 0.2 , 0.0));
 		}
 		{
+			Texture * t = new Texture(loadTextureArray("textures/soft_sand_color.jpg", "textures/soft_sand_normal.jpg", "textures/soft_sand_bump.jpg"));
+			textures.push_back(t);
+			brushes.push_back(new Brush(t, glm::vec2(1.0), 0.01, 8, 32, 256, 0.2 , 0.0));
+		}
+		{
 			AnimatedTexture * tm = new AnimatedTexture(1024,1024, programWaterTexture, &textures);
 			tm->animate(0);
 			Texture * t = new Texture(tm->getTexture());
@@ -502,13 +513,13 @@ public:
 		solidSpace->del(new SphereContainmentHandler(BoundingSphere(glm::vec3(11,61,-11),10), new SimpleBrush(textures[4])));
 		solidSpace->add(new BoxContainmentHandler(BoundingBox(glm::vec3(0,26,0),glm::vec3(24,50,24)),new SimpleBrush(textures[8])));
 		solidSpace->del(new SphereContainmentHandler(BoundingSphere(glm::vec3(4,54,-4),8), new SimpleBrush(textures[1])));
-		solidSpace->add(new SphereContainmentHandler(BoundingSphere(glm::vec3(11,61,-11),4), new SimpleBrush(textures[15])));
+		solidSpace->add(new SphereContainmentHandler(BoundingSphere(glm::vec3(11,61,-11),4), new SimpleBrush(textures[16])));
 
 
 		BoundingBox waterBox(glm::vec3(-100,-50,-100), glm::vec3(100,3,100));
 		//liquidSpace->add(new OctreeContainmentHandler(solidSpace, waterBox, new SimpleBrush(textures[6])));
 		//BoundingBox waterBox(glm::vec3(50,50,0), glm::vec3(70,70,20));
-		liquidSpace->add(new BoxContainmentHandler(waterBox, new SimpleBrush(textures[15])));
+		liquidSpace->add(new BoxContainmentHandler(waterBox, new SimpleBrush(textures[16])));
 
 		solidTesselator = new Tesselator(solidSpace);
 		solidSpace->iterate(solidTesselator);
