@@ -50,7 +50,11 @@ void main() {
                                     tcProps[2].specularStrength * gl_TessCoord[2];
         teProps.textureScale = tcProps[0].textureScale * gl_TessCoord[0] + 
                             tcProps[1].textureScale * gl_TessCoord[1] + 
-                            tcProps[2].textureScale * gl_TessCoord[2];                            
+                            tcProps[2].textureScale * gl_TessCoord[2];    
+
+        teProps.refractiveIndex = tcProps[0].refractiveIndex * gl_TessCoord[0] + 
+                            tcProps[1].refractiveIndex * gl_TessCoord[1] + 
+                            tcProps[2].refractiveIndex * gl_TessCoord[2];                                                
     }
 
 

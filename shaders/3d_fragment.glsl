@@ -14,6 +14,7 @@ uniform bool shadowEnabled;
 uniform bool triplanarEnabled;
 uniform bool parallaxEnabled;
 uniform bool depthTestEnabled;
+uniform float waterRefractiveIndex; // Usually 1.33
 
 uniform vec3 lightDirection; 
 uniform vec3 cameraPosition; 
@@ -46,10 +47,10 @@ float linearizeDepth(float depth) {
 
 
 void main() {
-    vec2 screenUV = gl_FragCoord.xy / textureSize(underTexture, 0);
+    vec2 pixelUV = gl_FragCoord.xy / textureSize(underTexture, 0);
 
-    if(depthTestEnabled) {
-        float d1 = linearizeDepth(texture(depthTexture, screenUV).r);
+    if(teProps.refractiveIndex > 0.0) {
+        float d1 = linearizeDepth(texture(depthTexture, pixelUV).r);
         float d2 = linearizeDepth(gl_FragCoord.z);
         if(d1<d2) {
             discard;
@@ -89,8 +90,8 @@ void main() {
     if(lightEnabled) {
         vec3 specularColor = vec3(1.0,1.0,1.0);
 
-        vec3 normalMap = textureBlend(teTextureWeights, textures, uv, 1).xyz;
-        normalMap = normalize(normalMap * 2.0 - 1.0); // Convert to range [-1, 1]
+        vec3 normalMap = textureBlend(teTextureWeights, textures, uv, 1).rgb * 2.0 - 1.0;
+        normalMap = normalize(normalMap); // Convert to range [-1, 1]
 
         vec3 worldNormal = normalize(TBN * normalMap);
 
@@ -106,20 +107,19 @@ void main() {
             shadow = getShadow(shadowMap, noise, lightViewPosition, position);
         }
         if(debugEnabled) {
-
-            float d = gl_FragCoord.z;
-
-
-            color = vec4(visual(worldNormal), 1.0);
-            color = vec4(d,d,d,1.0);
+            color = vec4(worldNormal,1.0);
         }else {
-            vec4 c = vec4(0.0,0.0,0.0,0.0);
+            vec4 refractedColor = vec4(0.0,0.0,0.0,0.0);
 
-            if(depthTestEnabled) {
-                c = texture(underTexture, screenUV+normalMap.xy*0.04);
+            if(teProps.refractiveIndex > 0.0) {
+                // Compute refraction
+                float eta = 1.0 / teProps.refractiveIndex; // Air to water
+                vec3 refractedDir = refract(-viewDirectionTangent, normalMap, eta);
+                vec2 refractedUV = pixelUV + refractedDir.xy * 0.1; // UV distortion
+                refractedColor = texture(underTexture, refractedUV);
             }
 
-            color = c + vec4(((mixedColor).rgb*diffuse + specularColor * teProps.specularStrength * phongSpec *  shadow.lightAmount)*shadow.shadowAmount , mixedColor.a+teProps.specularStrength * phongSpec *  shadow.lightAmount); 
+            color = refractedColor + vec4(((mixedColor).rgb*diffuse + specularColor * teProps.specularStrength * phongSpec *  shadow.lightAmount)*shadow.shadowAmount , mixedColor.a+teProps.specularStrength * phongSpec *  shadow.lightAmount); 
         }
     }else {
         if(debugEnabled) {

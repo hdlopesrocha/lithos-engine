@@ -4,6 +4,7 @@ struct TextureProperties {
     float parallaxMaxLayers;
     float shininess;
     float specularStrength;
+    float refractiveIndex;
     vec2 textureScale;
 };
 

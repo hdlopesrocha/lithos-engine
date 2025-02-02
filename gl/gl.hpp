@@ -191,11 +191,12 @@ class Brush {
 	float parallaxMaxLayers;
 	float shininess;
 	float specularStrength;
+    float refractiveIndex;
 	glm::vec2 textureScale;
 
 
     Brush(Texture * texture);
-    Brush(Texture * texture, glm::vec2 textureScale,float parallaxScale, float parallaxMinLayers, float parallaxMaxLayers, float shininess, float specularStrength);
+    Brush(Texture * texture, glm::vec2 textureScale,float parallaxScale, float parallaxMinLayers, float parallaxMaxLayers, float shininess, float specularStrength, float refractiveIndex);
 
     static void bindBrushes(GLuint program, std::vector<Brush*> * brushes);
     static void bindBrush(GLuint program, std::string objectName, Brush * brush);
