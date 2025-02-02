@@ -171,6 +171,7 @@ class ProgramLocations {
 	GLuint shadowEnabledLoc;
 	GLuint depthTestEnabledLoc;
 	GLuint depthTextureLoc;
+	GLuint underTextureLoc;
 	GLuint cameraPositionLoc;
 	GLuint overrideTextureEnabledLoc;
 	GLuint overrideTextureLoc;
@@ -197,6 +198,7 @@ class ProgramLocations {
 		this->overrideTextureEnabledLoc = glGetUniformLocation(program, "overrideTextureEnabled");
 		this->depthTestEnabledLoc = glGetUniformLocation(program, "depthTestEnabled");
 		this->depthTextureLoc = glGetUniformLocation(program, "depthTexture");
+		this->underTextureLoc = glGetUniformLocation(program, "underTexture");
 	}
 
 	void update(glm::mat4 modelViewProjection,glm::mat4 model, glm::mat4 matrixShadow, glm::vec3 lightDirection, glm::vec3 cameraPosition, float time) {
@@ -463,7 +465,7 @@ public:
 			tm->animate(0);
 			Texture * t = new Texture(tm->getTexture());
 			textures.push_back(t);
-			brushes.push_back(new Brush(t, glm::vec2(0.2), 0.02, 8, 32, 1.0, 0.8 ));
+			brushes.push_back(new Brush(t, glm::vec2(0.2), 0.02, 8, 32, 10.0, 0.5 ));
 			animatedTextures.push_back(tm);
 		}
 
@@ -685,11 +687,15 @@ public:
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, liquidFrameBuffer.frameBuffer);
 		glViewport(0, 0, liquidFrameBuffer.width, liquidFrameBuffer.height);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		glActiveTexture(GL_TEXTURE0+30); 
 		glUniform1ui(program3dLocs->depthTestEnabledLoc, 1); // Set the sampler uniform
+		
+		glActiveTexture(GL_TEXTURE0+30); 
 		glBindTexture(GL_TEXTURE_2D, renderBuffer.depthTexture);		
 		glUniform1i(program3dLocs->depthTextureLoc, 30); // Set the sampler uniform
 
+		glActiveTexture(GL_TEXTURE0+31); 
+		glBindTexture(GL_TEXTURE_2D, renderBuffer.colorTexture);		
+		glUniform1i(program3dLocs->underTextureLoc, 31); // Set the sampler uniform
 
 
 		liquidRenderer->mode = GL_PATCHES;

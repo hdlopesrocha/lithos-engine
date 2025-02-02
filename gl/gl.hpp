@@ -96,7 +96,6 @@ struct DirectionalLight {
 
 struct RenderBuffer {
     GLuint frameBuffer;
-    GLuint depthBuffer;
     GLuint colorTexture;
     GLuint depthTexture;
     int width;

@@ -6,6 +6,7 @@ uniform sampler2DArray textures[20];
 uniform sampler2D shadowMap;
 uniform sampler2D noise;
 uniform sampler2D depthTexture;
+uniform sampler2D underTexture;
 
 uniform bool debugEnabled;
 uniform bool lightEnabled;
@@ -45,10 +46,9 @@ float linearizeDepth(float depth) {
 
 
 void main() {
+    vec2 screenUV = gl_FragCoord.xy / textureSize(underTexture, 0);
+
     if(depthTestEnabled) {
-        vec2 screenUV = gl_FragCoord.xy / textureSize(depthTexture, 0);
-
-
         float d1 = linearizeDepth(texture(depthTexture, screenUV).r);
         float d2 = linearizeDepth(gl_FragCoord.z);
         if(d1<d2) {
@@ -73,12 +73,12 @@ void main() {
         uv = triplanarMapping(position, plane, teProps.textureScale) * 0.1;
     }
 
-    vec3 viewDirection = normalize(position - cameraPosition);
+    vec3 viewDirection = normalize(cameraPosition - position);
     mat3 TBN = getTBN(tePosition, teNormal, uv, model, false);
     vec3 viewDirectionTangent = normalize(transpose(TBN) * viewDirection);
 
     if(parallaxEnabled && distanceFactor * teProps.parallaxScale > 0.0) {
-       uv = parallaxMapping(teTextureWeights, uv, viewDirectionTangent, distanceFactor*teProps.parallaxScale , distanceFactor*teProps.parallaxMinLayers, distanceFactor*teProps.parallaxMaxLayers, int(ceil(distanceFactor*5.0)));
+       uv = parallaxMapping(teTextureWeights, uv, -viewDirectionTangent, distanceFactor*teProps.parallaxScale , distanceFactor*teProps.parallaxMinLayers, distanceFactor*teProps.parallaxMaxLayers, int(ceil(distanceFactor*5.0)));
     }
   
     vec4 mixedColor = textureBlend(teTextureWeights, textures, uv, 0);
@@ -95,7 +95,8 @@ void main() {
         vec3 worldNormal = normalize(TBN * normalMap);
 
         vec3 reflection = reflect(-lightDirection, worldNormal);
-        float phongSpec = pow(max(dot(reflection, viewDirectionTangent), 0.0), teProps.shininess);
+
+        float phongSpec = pow(max(dot(reflection, viewDirection), 0.0), teProps.shininess);
         float diffuse = clamp(max(dot(worldNormal, -lightDirection), 0.0), 0.2, 1.0);
 
         ShadowProperties shadow; 
@@ -112,7 +113,13 @@ void main() {
             color = vec4(visual(worldNormal), 1.0);
             color = vec4(d,d,d,1.0);
         }else {
-            color = vec4((mixedColor.rgb*diffuse + specularColor * teProps.specularStrength * phongSpec *  shadow.lightAmount)*shadow.shadowAmount , mixedColor.a+teProps.specularStrength * phongSpec *  shadow.lightAmount); 
+            vec4 c = vec4(0.0,0.0,0.0,0.0);
+
+            if(depthTestEnabled) {
+                c = texture(underTexture, screenUV+normalMap.xy*0.04);
+            }
+
+            color = c + vec4(((mixedColor).rgb*diffuse + specularColor * teProps.specularStrength * phongSpec *  shadow.lightAmount)*shadow.shadowAmount , mixedColor.a+teProps.specularStrength * phongSpec *  shadow.lightAmount); 
         }
     }else {
         if(debugEnabled) {

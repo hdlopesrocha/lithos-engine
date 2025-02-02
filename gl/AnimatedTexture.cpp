@@ -11,7 +11,7 @@ AnimatedTexture::AnimatedTexture(int width, int height, GLuint program, std::vec
     this->perlinLacunarity = 2;
     this->brightness = 0;
     this->contrast = 1;
-    this->color = glm::vec4(255/255.0f, 255/255.0f, 255/255.0f, 0.8);
+    this->color = glm::vec4(64/255.0f, 64/255.0f, 64/255.0f, 1.0);
 }
 
 TextureArray AnimatedTexture::getTexture(){
