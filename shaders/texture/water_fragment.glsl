@@ -27,13 +27,16 @@ void main() {
     if(Layer == 0) {
         FragColor = color;
     }
-    else if(Layer == 1) {
-        vec3 normal = fbmd(TexCoord, vec2(perlinScale), perlinIterations, vec2(0.0), perlinTime, 0.5, vec2(perlinLacunarity, perlinLacunarity), 0.5, 0.0, 0.0);
-        normal = visual(normal);
-        FragColor = vec4(normal, 1.0);
-    } else if(Layer == 2) {
-        float factor = fbm(TexCoord, vec2(perlinScale), perlinIterations, 0, perlinTime, 0.5, perlinLacunarity, 0.0, 0.0);
-        factor = applyBrightnessContrast(factor);
-        FragColor = vec4(vec3(factor), 1.0);
+    else {
+        vec3 n = fbmd(TexCoord, vec2(perlinScale), perlinIterations, 0, perlinTime, 0.5, perlinLacunarity, 0.5, 0.0, 0.0);
+       if(Layer == 1) {
+            vec3 normal = normalize(vec3(n.z,n.y, 1.0));
+            normal = visual(normal);
+            FragColor = vec4(normal, 1.0);
+       } else {
+            float factor = n.x;
+            factor = applyBrightnessContrast(factor);
+            FragColor = vec4(vec3(factor), 1.0);
+       }
     }
 }
