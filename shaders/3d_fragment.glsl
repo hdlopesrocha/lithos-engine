@@ -74,12 +74,12 @@ void main() {
         uv = triplanarMapping(position, plane, teProps.textureScale) * 0.1;
     }
 
-    vec3 viewDirection = normalize(cameraPosition - position);
+    vec3 viewDirection = normalize(position-cameraPosition);
     mat3 TBN = getTBN(tePosition, teNormal, uv, model, false);
     vec3 viewDirectionTangent = normalize(transpose(TBN) * viewDirection);
 
     if(parallaxEnabled && distanceFactor * teProps.parallaxScale > 0.0) {
-       uv = parallaxMapping(teTextureWeights, uv, -viewDirectionTangent, distanceFactor*teProps.parallaxScale , distanceFactor*teProps.parallaxMinLayers, distanceFactor*teProps.parallaxMaxLayers, int(ceil(distanceFactor*5.0)));
+       uv = parallaxMapping(teTextureWeights, uv, viewDirectionTangent, distanceFactor*teProps.parallaxScale , distanceFactor*teProps.parallaxMinLayers, distanceFactor*teProps.parallaxMaxLayers, int(ceil(distanceFactor*5.0)));
     }
   
     vec4 mixedColor = textureBlend(teTextureWeights, textures, uv, 0);
@@ -114,7 +114,7 @@ void main() {
             if(teProps.refractiveIndex > 0.0) {
                 // Compute refraction
                 float eta = 1.0 / teProps.refractiveIndex; // Air to water
-                vec3 refractedDir = refract(-viewDirectionTangent, normalMap, eta);
+                vec3 refractedDir = refract(viewDirectionTangent, normalMap, eta);
                 vec2 refractedUV = pixelUV + refractedDir.xy * 0.1; // UV distortion
                 refractedColor = texture(underTexture, refractedUV);
             }
