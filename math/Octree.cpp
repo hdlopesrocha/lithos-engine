@@ -116,7 +116,7 @@ void simplify(Octree * tree, OctreeNode * node, BoundingCube cube, BoundingCube 
 	for(int i=0; i <8 ; ++i) {
 		OctreeNode * c = node->children[i];
 		if(c!=NULL && c->solid == ContainmentType::Intersects) {
-		    if(glm::dot(vertex.normal, c->vertex.normal)< 0.99 || vertex.texIndex != c->vertex.texIndex){
+		    if(glm::dot(vertex.normal, c->vertex.normal)< 0.999 || vertex.texIndex != c->vertex.texIndex){
 				canSimplify = false;
 				break;
 			}

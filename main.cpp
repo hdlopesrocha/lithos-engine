@@ -7,7 +7,7 @@
 #include "ui/ui.hpp"
 #include "HeightFunctions.hpp"
 
-//#define DEBUG_GEO 1
+#define DEBUG_GEO 1
 
 class SimpleBrush : public TextureBrush {
 
