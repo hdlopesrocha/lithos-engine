@@ -533,8 +533,8 @@ public:
 
 		#ifdef DEBUG_GEO
 		if(DEBUG_GEO == 0) {
-			DebugTesselator * debugTesselator = new DebugTesselator(tree);
-			tree->iterate(debugTesselator);
+			DebugTesselator * debugTesselator = new DebugTesselator(solidSpace);
+			solidSpace->iterate(debugTesselator);
 			vaoDebug = new DrawableGeometry(&debugTesselator->chunk);
 		}
 		#endif
@@ -721,16 +721,16 @@ public:
 
 		#ifdef DEBUG_GEO
 	
-		glUniform1ui(lightEnabledLoc, 0);
-		glUniform1ui(parallaxEnabledLoc, 0);
-    	glUniform1ui(triplanarEnabledLoc, 0);
+		glUniform1ui(program3dLocs->lightEnabledLoc, 0);
+		glUniform1ui(program3dLocs->parallaxEnabledLoc, 0);
+    	glUniform1ui(program3dLocs->triplanarEnabledLoc, 0);
 	
 		if(DEBUG_GEO == 1) {
-			glUniform1ui(debugEnabledLoc, 1);
+			glUniform1ui(program3dLocs->debugEnabledLoc, 1);
 			glPolygonMode(GL_FRONT, GL_LINE);
 			glLineWidth(2.0);
 			glPointSize(4.0);	
-			tree->iterate(renderer);
+			solidSpace->iterate(solidRenderer);
 		} else {
 			glDisable(GL_CULL_FACE); // Enable face culling
 			vaoDebug->draw(GL_PATCHES);
@@ -844,7 +844,6 @@ public:
 										ImGuiWindowFlags_NoNav);
 			ImGui::Text("%d FPS", framesPerSecond);
 			ImGui::End();
-
 
 		}
 

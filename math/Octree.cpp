@@ -99,7 +99,13 @@ std::vector<OctreeNode*> Octree::getQuadNodes(std::vector<OctreeNode*> corners, 
 	return result;
 }
 
-void simplify(OctreeNode * node) {
+void simplify(Octree * tree, OctreeNode * node, BoundingCube cube, BoundingCube * chunkCube) {
+
+	BoundingCube outerCube(cube.getMin() -cube.getLength(), cube.getLength());
+	if(chunkCube == NULL || !chunkCube->contains(outerCube)) {
+		return;
+	}
+
 	bool canSimplify = true;
 	uint mask = node->mask;
 	Vertex vertex = node->vertex;
@@ -110,7 +116,7 @@ void simplify(OctreeNode * node) {
 	for(int i=0; i <8 ; ++i) {
 		OctreeNode * c = node->children[i];
 		if(c!=NULL && c->solid == ContainmentType::Intersects) {
-		    if(glm::dot(vertex.normal, c->vertex.normal)< 0.999 || vertex.texIndex != c->vertex.texIndex){
+		    if(glm::dot(vertex.normal, c->vertex.normal)< 0.99 || vertex.texIndex != c->vertex.texIndex){
 				canSimplify = false;
 				break;
 			}
@@ -119,6 +125,7 @@ void simplify(OctreeNode * node) {
 			++nodeCount;
 		}
 	}
+
 	if(canSimplify && nodeCount > 2) {
 		//node->clear();
 		vertex.position = sumP / (float)nodeCount;
@@ -141,7 +148,7 @@ uint buildMask(ContainmentHandler * handler, BoundingCube cube) {
 	return mask;
 }
 
-OctreeNode * addAux(Octree * tree, ContainmentHandler * handler, OctreeNode * node, BoundingCube cube) {
+OctreeNode * addAux(Octree * tree, ContainmentHandler * handler, OctreeNode * node, BoundingCube cube, BoundingCube * chunkCube) {
 	int height = tree->getHeight(cube);
 	ContainmentType check = handler->check(cube);
 
@@ -170,14 +177,10 @@ OctreeNode * addAux(Octree * tree, ContainmentHandler * handler, OctreeNode * no
 		node->simplified = false;
 		for(int i=0; i <8 ; ++i) {
 			BoundingCube subCube = getChildCube(cube,i);
-			node->children[i] = addAux(tree, handler, node->children[i], subCube);
+			node->children[i] = addAux(tree, handler, node->children[i], subCube, height == tree->geometryLevel ? &cube : chunkCube);
 		}
 
-		// Avoid simplifying outside the chunk
-		// TODO: adjacent triangles still visit one neighbor, simplifications should be fully contained by a chunk boundary
-		if(tree->getHeight(cube) < tree->geometryLevel ) {
-			simplify(node);
-	    }
+		simplify(tree, node, cube, chunkCube);   
 	}
 	return node;
 }
@@ -191,7 +194,7 @@ void split(OctreeNode * node, BoundingCube cube) {
 	}	
 }
 
-OctreeNode * delAux(Octree * tree,  ContainmentHandler * handler, OctreeNode * node, BoundingCube cube) {
+OctreeNode * delAux(Octree * tree,  ContainmentHandler * handler, OctreeNode * node, BoundingCube cube, BoundingCube * chunkCube) {
 	ContainmentType check = handler->check(cube);
 
 	if(check != ContainmentType::Disjoint) {
@@ -225,11 +228,9 @@ OctreeNode * delAux(Octree * tree,  ContainmentHandler * handler, OctreeNode * n
 				node->simplified = false;
 				for(int i=0; i <8 ; ++i) {
 					BoundingCube subCube = getChildCube(cube,i);
-					node->children[i] = delAux(tree, handler, node->children[i], subCube);
+					node->children[i] = delAux(tree, handler, node->children[i], subCube, height == tree->geometryLevel ? &cube : chunkCube);
 				}	
-				if(tree->getHeight(cube) < tree->geometryLevel ) {
-					simplify(node);
-	    		}
+				simplify(tree, node, cube, chunkCube);
 			}
 		} 
 	}
@@ -238,11 +239,11 @@ OctreeNode * delAux(Octree * tree,  ContainmentHandler * handler, OctreeNode * n
 
 void Octree::add(ContainmentHandler * handler) {
 	expand(handler);	
-	root = addAux(this, handler, root, *this);
+	root = addAux(this, handler, root, *this, NULL);
 }
 
 void Octree::del(ContainmentHandler * handler) {
-	root = delAux(this, handler, root, *this);
+	root = delAux(this, handler, root, *this, NULL);
 }
 
 void iterateAux(IteratorHandler * handler, int level, OctreeNode * node, BoundingCube cube, void * context) {
