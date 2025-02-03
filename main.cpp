@@ -621,7 +621,7 @@ public:
 	   	glm::vec3 lookAtLightPosition = glm::round(camera.position/16.0f)*16.0f; // + cameraDirection*far*0.5f;
 
 
-		light.direction = glm::normalize(glm::vec3(glm::sin(time/10),-1.0,glm::cos(time/10)));
+		light.direction = glm::normalize(glm::vec3(glm::sin(time),-1.0,glm::cos(time)));
 
 		float orthoSize = 512.0f;  // Size of the orthographic box
 
@@ -830,11 +830,22 @@ public:
 				}
 				ImGui::EndMenu();
 			}
-			std::string fps = std::to_string(framesPerSecond) + " FPS";
-			ImGui::BeginMenu(fps.c_str());
+
 
 			// End the main menu bar
 			ImGui::EndMainMenuBar();
+
+			ImGui::SetNextWindowPos(ImVec2(0, 20), ImGuiCond_Always);
+			ImGui::SetNextWindowBgAlpha(0.35f); // Set background transparency
+
+			ImGui::Begin("Overlay", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | 
+										ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | 
+										ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | 
+										ImGuiWindowFlags_NoNav);
+			ImGui::Text("%d FPS", framesPerSecond);
+			ImGui::End();
+
+
 		}
 
 
