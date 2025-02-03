@@ -11,8 +11,6 @@
 
 static std::vector<glm::ivec4> tessOrder;
 static std::vector<glm::ivec2> tessEdge;
-static std::vector<glm::vec2> tessTex;
-static std::vector<glm::ivec4> texIndex;
 
 static bool initialized = false;
 
@@ -20,24 +18,19 @@ Tesselator::Tesselator(Octree * tree) {
 	this->tree = tree;
 
 	if(!initialized) {
-		tessOrder.push_back(glm::ivec4(0,1,3,2));tessEdge.push_back(glm::ivec2(0,4));texIndex.push_back(glm::ivec4(0,1,2,3));
-		tessOrder.push_back(glm::ivec4(0,2,6,4));tessEdge.push_back(glm::ivec2(0,1));texIndex.push_back(glm::ivec4(0,1,2,3));
-		tessOrder.push_back(glm::ivec4(0,4,5,1));tessEdge.push_back(glm::ivec2(0,2));texIndex.push_back(glm::ivec4(0,1,2,3));
-
-		tessTex.push_back(glm::vec2(0,0));
-		tessTex.push_back(glm::vec2(0,1));
-		tessTex.push_back(glm::vec2(1,1));
-		tessTex.push_back(glm::vec2(1,0));
+		tessOrder.push_back(glm::ivec4(0,1,3,2));tessEdge.push_back(glm::ivec2(0,4));
+		tessOrder.push_back(glm::ivec4(0,2,6,4));tessEdge.push_back(glm::ivec2(0,1));
+		tessOrder.push_back(glm::ivec4(0,4,5,1));tessEdge.push_back(glm::ivec2(0,2));
 
 		initialized = true;
 	}
 }
 
-int addQuad(glm::ivec4 quad, std::vector<OctreeNode*> corners, Geometry * chunk, bool reverse) {
-	OctreeNode* c0 = corners[quad[reverse ? 3:0]];
-	OctreeNode* c1 = corners[quad[reverse ? 2:1]];
-	OctreeNode* c2 = corners[quad[reverse ? 1:2]];
-	OctreeNode* c3 = corners[quad[reverse ? 0:3]];
+int addQuad(std::vector<OctreeNode*> quad, Geometry * chunk, bool reverse) {
+	OctreeNode* c0 = quad[reverse ? 3:0];
+	OctreeNode* c1 = quad[reverse ? 2:1];
+	OctreeNode* c2 = quad[reverse ? 1:2];
+	OctreeNode* c3 = quad[reverse ? 0:3];
 
 
 	Vertex v0 = c0->vertex;
@@ -54,19 +47,21 @@ int addQuad(glm::ivec4 quad, std::vector<OctreeNode*> corners, Geometry * chunk,
 
 	int count = 0;
 
-	if(c0!= c1 && c1 != c2){
+
+	if(c0!= c1 && c1 != c2 && c0!=c2){
 		chunk->addVertex(v0, true);
 		chunk->addVertex(v2, true);
 		chunk->addVertex(v1, true);
 		++count;
 	}
 
-	if(c0!= c3 && c3 != c2){
+	if(c0!= c3 && c3 != c2 && c0!=c2){
 		chunk->addVertex(v0, true);
 		chunk->addVertex(v3, true);
 		chunk->addVertex(v2, true);
 		++count;
 	}
+	//std::cout << "One" << std::endl;
 	return count;
 }
 
@@ -81,19 +76,10 @@ void * Tesselator::before(int level, OctreeNode * node, BoundingCube cube, void 
 		return chunk;
 	} else if(tree->getHeight(cube)==0){
 		Geometry * chunk = (Geometry*) context;
-		std::vector<OctreeNode*> corners;
-		// Get corners
-		//corners.push_back(node);
-		for(int i=0; i < 8; ++i) {
-			glm::vec3 pos = cube.getCenter() - cube.getLength() * Octree::getShift(i);
-			OctreeNode * n = tree->getNodeAt(pos,level);
-			corners.push_back(n);
-		}
-	
+		std::vector<OctreeNode*> corners = tree->getNodeCorners(cube, level);
 		// Tesselate
 		for(int k=0; k<tessOrder.size(); ++k){
 			glm::ivec4 quad = tessOrder[k];
-			glm::ivec3 texOrder = texIndex[k];
 			glm::ivec2 edge = tessEdge[k];
 		
 			uint mask = node->mask;
@@ -101,19 +87,9 @@ void * Tesselator::before(int level, OctreeNode * node, BoundingCube cube, void 
 			bool sign1 = (mask & (1 << edge[1])) != 0;
 
 			if(sign0 != sign1) {
-				bool canDraw = true;
-	
-				for(int j=0; j<4 ; ++j) {
-					OctreeNode * n = corners[quad[j]];
-					if(n == NULL || n->solid != ContainmentType::Intersects) {
-						canDraw = false;
-						break;
-					}
-				}
-
-
-				if(canDraw) {
-					triangles += addQuad(quad, corners, chunk,  sign1);
+				std::vector<OctreeNode*> quadNodes = tree->getQuadNodes(corners, quad);	
+				if(quadNodes.size() == 4) {
+					triangles += addQuad(quadNodes, chunk,  sign1);
 				}
 			}
 		}

@@ -226,9 +226,13 @@ class Octree: public BoundingCube {
 		void del(ContainmentHandler * handler);
 		void iterate(IteratorHandler * handler);
 		OctreeNode * getNodeAt(glm::vec3 pos, int level);
+		std::vector<OctreeNode*> getNodeCorners(BoundingCube cube, int level);
+		std::vector<OctreeNode*> getQuadNodes(std::vector<OctreeNode*> corners, glm::ivec4 quad);
+
 		void save(std::string filename);
 		static glm::vec3 getShift(int i);
 		int getHeight(BoundingCube cube);
+
 };
 
 class Tesselator : public IteratorHandler{

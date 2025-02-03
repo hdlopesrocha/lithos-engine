@@ -74,6 +74,31 @@ int Octree::getHeight(BoundingCube cube){
 	return r >= 0  ? (int) glm::floor(r) : -1;
 }
 
+std::vector<OctreeNode*> Octree::getNodeCorners(BoundingCube cube, int level) {
+	std::vector<OctreeNode*> corners;
+	// Get corners
+	//corners.push_back(node);
+	for(int i=0; i < 8; ++i) {
+		glm::vec3 pos = cube.getCenter() - cube.getLength() * Octree::getShift(i);
+		OctreeNode * n = getNodeAt(pos,level);
+		corners.push_back(n);
+	}
+	return corners;
+}
+
+std::vector<OctreeNode*> Octree::getQuadNodes(std::vector<OctreeNode*> corners, glm::ivec4 quad) {
+	std::vector<OctreeNode*> result;
+	for(int i =0; i<4 ; ++i){
+		OctreeNode * n = corners[quad[i]];
+		if(n != NULL && n->solid == ContainmentType::Intersects) {
+			result.push_back(n);
+		} else {
+			break;
+		}
+	}
+	return result;
+}
+
 void simplify(OctreeNode * node) {
 	bool canSimplify = true;
 	uint mask = node->mask;
