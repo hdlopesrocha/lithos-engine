@@ -7,7 +7,7 @@
 #include "ui/ui.hpp"
 #include "HeightFunctions.hpp"
 
-#define DEBUG_GEO 1
+//#define DEBUG_GEO 1
 
 class SimpleBrush : public TextureBrush {
 
@@ -692,31 +692,58 @@ public:
 
 		glUseProgram(program3d);
 		program3dLocs->update(mvp, model,ms,light.direction, camera.position, time, settings);
-		solidRenderer->mode = GL_PATCHES;
 		solidRenderer->update(mvp);
-		solidSpace->iterate(solidRenderer);
+		solidRenderer->mode = GL_PATCHES;
 
-		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, liquidFrameBuffer.frameBuffer);
-		glViewport(0, 0, liquidFrameBuffer.width, liquidFrameBuffer.height);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		glUniform1ui(program3dLocs->depthTestEnabledLoc, 1); // Set the sampler uniform
-		
-		glActiveTexture(GL_TEXTURE0+30); 
-		glBindTexture(GL_TEXTURE_2D, renderBuffer.depthTexture);		
-		glUniform1i(program3dLocs->depthTextureLoc, 30); // Set the sampler uniform
-
-		glActiveTexture(GL_TEXTURE0+31); 
-		glBindTexture(GL_TEXTURE_2D, renderBuffer.colorTexture);		
-		glUniform1i(program3dLocs->underTextureLoc, 31); // Set the sampler uniform
-
-
-		liquidRenderer->mode = GL_PATCHES;
 		liquidRenderer->update(mvp);
-		liquidSpace->iterate(liquidRenderer);
+		liquidRenderer->mode = GL_PATCHES;
+
+
+
+		if(settings->wireFrameEnabled) {
+			glUniform1ui(program3dLocs->lightEnabledLoc, 0);
+			glUniform1ui(program3dLocs->parallaxEnabledLoc, 0);
+			glUniform1ui(program3dLocs->triplanarEnabledLoc, 0);
+			glUniform1ui(program3dLocs->debugEnabledLoc, 1);
+			glUniform1ui(program3dLocs->depthTestEnabledLoc, 0); // Set the sampler uniform
+
+			glPolygonMode(GL_FRONT, GL_LINE);
+			glLineWidth(2.0);
+			glPointSize(4.0);	
+
+			solidSpace->iterate(solidRenderer);
+			liquidSpace->iterate(liquidRenderer);
+
+		} else {
+			glPolygonMode(GL_FRONT, GL_FILL);
+			glUniform1ui(program3dLocs->depthTestEnabledLoc, 0); // Set the sampler uniform
+			glUniform1ui(program3dLocs->debugEnabledLoc, 0);
+
+			solidSpace->iterate(solidRenderer);
+
+			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, liquidFrameBuffer.frameBuffer);
+			glViewport(0, 0, liquidFrameBuffer.width, liquidFrameBuffer.height);
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			glUniform1ui(program3dLocs->depthTestEnabledLoc, 1); // Set the sampler uniform
+			
+			glActiveTexture(GL_TEXTURE0+30); 
+			glBindTexture(GL_TEXTURE_2D, renderBuffer.depthTexture);		
+			glUniform1i(program3dLocs->depthTextureLoc, 30); // Set the sampler uniform
+
+			glActiveTexture(GL_TEXTURE0+31); 
+			glBindTexture(GL_TEXTURE_2D, renderBuffer.colorTexture);		
+			glUniform1i(program3dLocs->underTextureLoc, 31); // Set the sampler uniform
+			
+			liquidSpace->iterate(liquidRenderer);
+		}
 
 		if(brushEditor->isOpen()) {
 			brushEditor->draw3d();
 		}
+		glPolygonMode(GL_FRONT, GL_FILL);
+
+
+
 
 
 		#ifdef DEBUG_GEO
@@ -725,16 +752,9 @@ public:
 		glUniform1ui(program3dLocs->parallaxEnabledLoc, 0);
     	glUniform1ui(program3dLocs->triplanarEnabledLoc, 0);
 	
-		if(DEBUG_GEO == 1) {
-			glUniform1ui(program3dLocs->debugEnabledLoc, 1);
-			glPolygonMode(GL_FRONT, GL_LINE);
-			glLineWidth(2.0);
-			glPointSize(4.0);	
-			solidSpace->iterate(solidRenderer);
-		} else {
-			glDisable(GL_CULL_FACE); // Enable face culling
-			vaoDebug->draw(GL_PATCHES);
-		}
+
+		glDisable(GL_CULL_FACE); // Enable face culling
+		vaoDebug->draw(GL_PATCHES);
 		
 		
 		glPolygonMode(GL_FRONT, GL_FILL);
@@ -759,10 +779,10 @@ public:
 
 		glBindTexture(GL_TEXTURE_2D, renderBuffer.colorTexture);		
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-		
-		glBindTexture(GL_TEXTURE_2D, liquidFrameBuffer.colorTexture);		
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-
+		if(!settings->wireFrameEnabled) {
+			glBindTexture(GL_TEXTURE_2D, liquidFrameBuffer.colorTexture);		
+			glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		}
 	
 
     }

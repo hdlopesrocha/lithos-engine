@@ -12,6 +12,7 @@ void SettingsEditor::draw2d(){
     ImGui::Checkbox("Light", &settings->lightEnabled);
     ImGui::Checkbox("Shadow", &settings->shadowEnabled);
     ImGui::Checkbox("Debug", &settings->debugEnabled);
+    ImGui::Checkbox("WireFrame", &settings->wireFrameEnabled);
 
 
 	ImGui::End();

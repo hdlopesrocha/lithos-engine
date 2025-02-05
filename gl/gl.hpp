@@ -253,6 +253,7 @@ class Settings {
         bool shadowEnabled;
         bool debugEnabled;
         bool lightEnabled;
+        bool wireFrameEnabled;
 
         Settings();
 

@@ -6,4 +6,5 @@ Settings::Settings() {
     this->shadowEnabled = true;
     this->lightEnabled = true;
     this->debugEnabled = false;
+    this->wireFrameEnabled = false;
 }
