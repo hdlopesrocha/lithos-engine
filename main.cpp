@@ -511,7 +511,7 @@ public:
 		solidSpace->add(new SphereContainmentHandler(BoundingSphere(glm::vec3(0,50,0),20), new SimpleBrush(textures[6])));
 		solidSpace->add(new SphereContainmentHandler(BoundingSphere(glm::vec3(-11,61,11),10), new SimpleBrush(textures[5])));
 		solidSpace->del(new SphereContainmentHandler(BoundingSphere(glm::vec3(11,61,-11),10), new SimpleBrush(textures[4])));
-		solidSpace->add(new BoxContainmentHandler(BoundingBox(glm::vec3(0,26,0),glm::vec3(24,50,24)),new SimpleBrush(textures[8])));
+		solidSpace->add(new BoxContainmentHandler(BoundingBox(glm::vec3(-10,6,-10),glm::vec3(34,50,34)),new SimpleBrush(textures[8])));
 		solidSpace->del(new SphereContainmentHandler(BoundingSphere(glm::vec3(4,54,-4),8), new SimpleBrush(textures[1])));
 		solidSpace->add(new SphereContainmentHandler(BoundingSphere(glm::vec3(11,61,-11),4), new SimpleBrush(textures[16])));
 
@@ -712,7 +712,7 @@ public:
 			glPointSize(4.0);	
 
 			solidSpace->iterate(solidRenderer);
-			liquidSpace->iterate(liquidRenderer);
+			//liquidSpace->iterate(liquidRenderer);
 
 		} else {
 			glPolygonMode(GL_FRONT, GL_FILL);
@@ -734,7 +734,7 @@ public:
 			glBindTexture(GL_TEXTURE_2D, renderBuffer.colorTexture);		
 			glUniform1i(program3dLocs->underTextureLoc, 31); // Set the sampler uniform
 			
-			liquidSpace->iterate(liquidRenderer);
+			//liquidSpace->iterate(liquidRenderer);
 		}
 
 		if(brushEditor->isOpen()) {

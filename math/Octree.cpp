@@ -23,21 +23,22 @@ int getNodeIndex(glm::vec3 vec, BoundingCube cube, bool checkBounds) {
 	return px * 4 + py * 2 + pz;
 }
 
-OctreeNode * Octree::getNodeAt(glm::vec3 pos, int level) {
+OctreeNode * Octree::getNodeAt(glm::vec3 pos, int level, bool simplify) {
 	OctreeNode * node = root;
 	BoundingCube cube = *this;
 
 	while(node!= NULL && level>0){
-	    unsigned int i = getNodeIndex(pos, cube, true);
+		if(simplify && node->simplified) {
+			return node;
+		}
+		unsigned int i = getNodeIndex(pos, cube, true);
 	  	if(i == -1) {
 	  		return NULL;
 	  	}
 	    
 	    cube = getChildCube(cube, i);
 		OctreeNode * candidate = node->children[i];
-		if(candidate == NULL || node->simplified) {
-			return node;
-		}
+	
 		node = candidate;
 		--level;
 	}
@@ -74,13 +75,27 @@ int Octree::getHeight(BoundingCube cube){
 	return r >= 0  ? (int) glm::floor(r) : -1;
 }
 
+std::vector<OctreeNode*> Octree::getNeighbors(BoundingCube cube, int level) {
+	std::vector<OctreeNode*> corners;
+	// Get corners
+	//corners.push_back(node);
+	for(int i=0; i < 27; ++i) {
+		glm::vec3 s = Octree::getShift3(i);
+		//std::cout << s.x << "," << s.y << "," << s.z << std::endl;
+		glm::vec3 pos = cube.getCenter() + cube.getLength() * s;
+		OctreeNode * n = getNodeAt(pos,level, false);
+		corners.push_back(n);
+	}
+	return corners;
+}
+
 std::vector<OctreeNode*> Octree::getNodeCorners(BoundingCube cube, int level) {
 	std::vector<OctreeNode*> corners;
 	// Get corners
 	//corners.push_back(node);
 	for(int i=0; i < 8; ++i) {
 		glm::vec3 pos = cube.getCenter() - cube.getLength() * Octree::getShift(i);
-		OctreeNode * n = getNodeAt(pos,level);
+		OctreeNode * n = getNodeAt(pos,level, true);
 		corners.push_back(n);
 	}
 	return corners;
@@ -99,7 +114,7 @@ std::vector<OctreeNode*> Octree::getQuadNodes(std::vector<OctreeNode*> corners, 
 	return result;
 }
 
-void simplify(Octree * tree, OctreeNode * node, BoundingCube cube, BoundingCube * chunkCube) {
+void simplify(Octree * tree, OctreeNode * node, BoundingCube cube, BoundingCube * chunkCube, int level) {
 
 	BoundingCube outerCube(cube.getMin() -cube.getLength(), cube.getLength());
 	if(chunkCube == NULL || !chunkCube->contains(outerCube)) {
@@ -113,10 +128,21 @@ void simplify(Octree * tree, OctreeNode * node, BoundingCube cube, BoundingCube 
 	glm::vec3 sumP = glm::vec3(0);
 	glm::vec3 sumN = glm::vec3(0);
 	int nodeCount=0;
-	for(int i=0; i <8 ; ++i) {
-		OctreeNode * c = node->children[i];
+	Plane plane(node->vertex.normal, node->vertex.position); 
+	//std::vector<OctreeNode*> nodes = tree->getNeighbors(cube, level);
+	//std::vector<OctreeNode*> nodes = tree->getNodeCorners(cube, level);
+	std::vector<OctreeNode*> nodes;
+	for (int i=0 ; i < 8 ; ++i) {
+		nodes.push_back(node->children[i]);
+	}
+
+
+	for(int i=0; i <nodes.size() ; ++i) {
+		OctreeNode * c = nodes[i];
 		if(c!=NULL && c->solid == ContainmentType::Intersects) {
-		    if(glm::dot(vertex.normal, c->vertex.normal)< 0.999 || vertex.texIndex != c->vertex.texIndex){
+		    float d = plane.distance(c->vertex.position);
+			float a = glm::dot(vertex.normal, c->vertex.normal);
+			if(a< 0.99 || d > 0.001 || vertex.texIndex != c->vertex.texIndex){
 				canSimplify = false;
 				break;
 			}
@@ -126,7 +152,7 @@ void simplify(Octree * tree, OctreeNode * node, BoundingCube cube, BoundingCube 
 		}
 	}
 
-	if(canSimplify && nodeCount > 2) {
+	if(canSimplify && nodeCount > 1) {
 		//node->clear();
 		vertex.position = sumP / (float)nodeCount;
 		//vertex.normal = sumN / (float)nodeCount;
@@ -148,7 +174,7 @@ uint buildMask(ContainmentHandler * handler, BoundingCube cube) {
 	return mask;
 }
 
-OctreeNode * addAux(Octree * tree, ContainmentHandler * handler, OctreeNode * node, BoundingCube cube, BoundingCube * chunkCube) {
+OctreeNode * addAux(Octree * tree, ContainmentHandler * handler, OctreeNode * node, BoundingCube cube, BoundingCube * chunkCube, int level) {
 	int height = tree->getHeight(cube);
 	ContainmentType check = handler->check(cube);
 
@@ -177,10 +203,10 @@ OctreeNode * addAux(Octree * tree, ContainmentHandler * handler, OctreeNode * no
 		node->simplified = false;
 		for(int i=0; i <8 ; ++i) {
 			BoundingCube subCube = getChildCube(cube,i);
-			node->children[i] = addAux(tree, handler, node->children[i], subCube, height == tree->geometryLevel ? &cube : chunkCube);
+			node->children[i] = addAux(tree, handler, node->children[i], subCube, height == tree->geometryLevel ? &cube : chunkCube, level +1);
 		}
 
-		simplify(tree, node, cube, chunkCube);   
+		simplify(tree, node, cube, chunkCube, level);   
 	}
 	return node;
 }
@@ -194,7 +220,7 @@ void split(OctreeNode * node, BoundingCube cube) {
 	}	
 }
 
-OctreeNode * delAux(Octree * tree,  ContainmentHandler * handler, OctreeNode * node, BoundingCube cube, BoundingCube * chunkCube) {
+OctreeNode * delAux(Octree * tree,  ContainmentHandler * handler, OctreeNode * node, BoundingCube cube, BoundingCube * chunkCube, int level) {
 	ContainmentType check = handler->check(cube);
 
 	if(check != ContainmentType::Disjoint) {
@@ -228,9 +254,9 @@ OctreeNode * delAux(Octree * tree,  ContainmentHandler * handler, OctreeNode * n
 				node->simplified = false;
 				for(int i=0; i <8 ; ++i) {
 					BoundingCube subCube = getChildCube(cube,i);
-					node->children[i] = delAux(tree, handler, node->children[i], subCube, height == tree->geometryLevel ? &cube : chunkCube);
+					node->children[i] = delAux(tree, handler, node->children[i], subCube, height == tree->geometryLevel ? &cube : chunkCube, level +1);
 				}	
-				simplify(tree, node, cube, chunkCube);
+				simplify(tree, node, cube, chunkCube, level);
 			}
 		} 
 	}
@@ -239,11 +265,11 @@ OctreeNode * delAux(Octree * tree,  ContainmentHandler * handler, OctreeNode * n
 
 void Octree::add(ContainmentHandler * handler) {
 	expand(handler);	
-	root = addAux(this, handler, root, *this, NULL);
+	root = addAux(this, handler, root, *this, NULL, 0);
 }
 
 void Octree::del(ContainmentHandler * handler) {
-	root = delAux(this, handler, root, *this, NULL);
+	root = delAux(this, handler, root, *this, NULL, 0);
 }
 
 void iterateAux(IteratorHandler * handler, int level, OctreeNode * node, BoundingCube cube, void * context) {
@@ -303,4 +329,8 @@ void Octree::save(std::string filename) {
 
 glm::vec3 Octree::getShift(int i) {
 	return glm::vec3( ((i >> 2) % 2) , ((i >> 1) % 2) , ((i >> 0) % 2));
+}
+
+glm::vec3 Octree::getShift3(int i) {
+	return glm::vec3( ((i / 9) % 3)-1 , ((i /3) % 3)-1 , ((i) % 3)-1);
 }

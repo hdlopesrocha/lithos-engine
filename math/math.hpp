@@ -19,6 +19,13 @@ enum ContainmentType {
 	Disjoint
 };
 
+struct Plane {
+	glm::vec3 normal;
+	float d;
+	public:
+	Plane(glm::vec3 normal, glm::vec3 point);
+	float distance(glm::vec3 point);
+};
 
 struct Vertex {
     glm::vec3 position;
@@ -225,12 +232,15 @@ class Octree: public BoundingCube {
 		void add(ContainmentHandler * handler);
 		void del(ContainmentHandler * handler);
 		void iterate(IteratorHandler * handler);
-		OctreeNode * getNodeAt(glm::vec3 pos, int level);
+		OctreeNode * getNodeAt(glm::vec3 pos, int level, bool simplify);
 		std::vector<OctreeNode*> getNodeCorners(BoundingCube cube, int level);
 		std::vector<OctreeNode*> getQuadNodes(std::vector<OctreeNode*> corners, glm::ivec4 quad);
+		std::vector<OctreeNode*> getNeighbors(BoundingCube cube, int level);
 
 		void save(std::string filename);
 		static glm::vec3 getShift(int i);
+		static glm::vec3 getShift3(int i);
+
 		int getHeight(BoundingCube cube);
 
 };
