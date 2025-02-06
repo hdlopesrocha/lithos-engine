@@ -195,6 +195,11 @@ class ContainmentHandler {
 		virtual bool isContained(BoundingCube cube) = 0;
 };
 
+struct NodeInfo {
+	public:
+	void * data;
+	int type;
+};
 
 class OctreeNode {
 	public: 
@@ -203,8 +208,7 @@ class OctreeNode {
 		bool simplified;
 		uint mask;
 		ContainmentType solid;
-		void * info;
-		int infoType;
+		NodeInfo nodeInfo;
 		OctreeNode(Vertex vertex);
 		~OctreeNode();
 		void clear();

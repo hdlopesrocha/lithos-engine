@@ -100,8 +100,10 @@ void * Tesselator::before(int level, OctreeNode * node, BoundingCube cube, void 
 void Tesselator::after(int level, OctreeNode * node, BoundingCube cube, void * context) {
 	if(tree->getHeight(cube)==tree->geometryLevel){
 		Geometry * chunk = (Geometry*) context;
-		node->info = chunk;
-		node->infoType = 0;
+		NodeInfo nodeInfo;
+		nodeInfo.data = chunk;
+		nodeInfo.type = 0;
+		node->nodeInfo = nodeInfo;		
 	}		
 	return;
 }

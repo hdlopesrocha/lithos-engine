@@ -84,7 +84,7 @@ class DebugTesselator : public IteratorHandler{
 					}
 				}
 			}
-			return node->info; 			 			
+			return node->nodeInfo.data; 			 			
 		}
 
 		void after(int level, OctreeNode * node, BoundingCube cube, void * context) {			

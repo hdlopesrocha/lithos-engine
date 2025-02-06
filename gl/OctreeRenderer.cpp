@@ -17,21 +17,24 @@ OctreeNode * OctreeRenderer::getChild(OctreeNode * node, int index){
 	return node->children[index];
 }
 
-void * OctreeRenderer::before(int level, OctreeNode * node, BoundingCube cube, void * context) {			
-	if(node->info != NULL){
+void * OctreeRenderer::before(int level, OctreeNode * node, BoundingCube cube, void * context) {		
+	NodeInfo info = node->nodeInfo;
+
+	if(info.data != NULL){
 		// just geometry not drawable
-		if(node->infoType == 0 && loaded == 0) {
-			Geometry * info = (Geometry*) node->info;
-			node->info = new DrawableGeometry(info);
-			node->infoType = 1;
+		if(info.type == 0 && loaded == 0) {
+			Geometry * i = (Geometry*) info.data;
+			info.data = new DrawableGeometry(i);
+			info.type = 1;
+			node->nodeInfo = info;
 			++loaded;
-			delete info;
+			delete i;
 		}
 
 		// drawable geometry
-		if(node->infoType == 1) {
-			DrawableGeometry * info = (DrawableGeometry*) node->info;
-			info->draw(mode);
+		if(info.type == 1) {
+			DrawableGeometry * i = (DrawableGeometry*) info.data;
+			i->draw(mode);
 		}	
 		
 	}
