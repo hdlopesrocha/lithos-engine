@@ -149,7 +149,7 @@ void simplify(Octree * tree, OctreeNode * node, BoundingCube cube, BoundingCube 
 		if(c!=NULL && c->solid == ContainmentType::Intersects) {
 		    float d = parentPlane.distance(c->vertex.position);
 			float a = glm::dot(parentVertex.normal, c->vertex.normal);
-			if(!c->simplified ||  a< 0.99 || d > 0.001 || parentVertex.texIndex != c->vertex.texIndex){
+			if(!c->simplified ||  a< 0.98 || d > 0.02 || parentVertex.texIndex != c->vertex.texIndex){
 				canSimplify = false;
 				break;
 			}
