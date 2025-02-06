@@ -18,9 +18,9 @@ Tesselator::Tesselator(Octree * tree) {
 	this->tree = tree;
 
 	if(!initialized) {
-		tessOrder.push_back(glm::ivec4(0,1,3,2));tessEdge.push_back(glm::ivec2(0,4));
-		tessOrder.push_back(glm::ivec4(0,2,6,4));tessEdge.push_back(glm::ivec2(0,1));
-		tessOrder.push_back(glm::ivec4(0,4,5,1));tessEdge.push_back(glm::ivec2(0,2));
+		tessOrder.push_back(glm::ivec4(0,1,3,2));tessEdge.push_back(glm::ivec2(3,7));
+		tessOrder.push_back(glm::ivec4(0,2,6,4));tessEdge.push_back(glm::ivec2(6,7));
+		tessOrder.push_back(glm::ivec4(0,4,5,1));tessEdge.push_back(glm::ivec2(5,7));
 
 		initialized = true;
 	}
@@ -76,7 +76,7 @@ void * Tesselator::before(int level, OctreeNode * node, BoundingCube cube, void 
 		return chunk;
 	} else if(tree->getHeight(cube)==0){
 		Geometry * chunk = (Geometry*) context;
-		std::vector<OctreeNode*> corners = tree->getNodeCorners(cube, level);
+		std::vector<OctreeNode*> corners = tree->getNodeCorners(cube, level, true, 1);
 		// Tesselate
 		for(int k=0; k<tessOrder.size(); ++k){
 			glm::ivec4 quad = tessOrder[k];
