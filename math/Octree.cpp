@@ -7,7 +7,7 @@ Octree::Octree(float minSize, int geometryLevel) : BoundingCube(glm::vec3(0,0,0)
 	this->geometryLevel = geometryLevel;
 }
 
-BoundingCube getChildCube(BoundingCube cube, int i) {
+BoundingCube Octree::getChildCube(BoundingCube cube, int i) {
 	float newLength = 0.5*cube.getLength();
     return BoundingCube(cube.getMin() + newLength * Octree::getShift(i), newLength);
 }
@@ -114,62 +114,6 @@ std::vector<OctreeNode*> Octree::getQuadNodes(std::vector<OctreeNode*> corners, 
 	return result;
 }
 
-void simplify(Octree * tree, OctreeNode * node, BoundingCube cube, BoundingCube * chunkCube, int level) {
-
-	BoundingCube outerCube(cube.getMin() -cube.getLength(), cube.getLength());
-	if(chunkCube == NULL || !chunkCube->contains(outerCube)) {
-		return;
-	}
-
-	bool canSimplify = true;
-	uint mask = node->mask;
-
-	glm::vec3 sumP = glm::vec3(0);
-	glm::vec3 sumN = glm::vec3(0);
-	int nodeCount=0;
-
-
-	// The parentNode plane
-	Plane parentPlane(node->vertex.normal, node->vertex.position); 
-	Vertex parentVertex = node->vertex;
-	
-
-	//std::vector<OctreeNode*> nodes = tree->getNeighbors(cube, level);
-
-	BoundingCube childCube = getChildCube(cube, 0);
-	//std::vector<OctreeNode*> nodes = tree->getNodeCorners(childCube, level+1, false, 1);
-	std::vector<OctreeNode*> nodes;
-	for (int i=0 ; i < 8 ; ++i) {
-		nodes.push_back(node->children[i]);
-	}
-
-	// for leaf nodes shouldn't loop
-	for(int i=0; i <nodes.size() ; ++i) {
-		OctreeNode * c = nodes[i];
-		if(c!=NULL && c->solid == ContainmentType::Intersects) {
-		    float d = parentPlane.distance(c->vertex.position);
-			float a = glm::dot(parentVertex.normal, c->vertex.normal);
-			if(!c->simplified ||  a< 0.98 || d > 0.02 || parentVertex.texIndex != c->vertex.texIndex){
-				canSimplify = false;
-				break;
-			}
-			sumP += c->vertex.position;
-			sumN += c->vertex.normal;
-			++nodeCount;
-		}
-	}
-
-	if(canSimplify && nodeCount > 0)  {
-		//node->clear();
-		parentVertex.position = sumP / (float)nodeCount;
-		node->vertex = parentVertex;
-		//vertex.normal = sumN / (float)nodeCount;
-		//node->mask = mask;
-	} 
-
-	node->simplified = canSimplify;
-
-}
 
 uint buildMask(ContainmentHandler * handler, BoundingCube cube) {
 	float d[8];
@@ -210,17 +154,16 @@ OctreeNode * addAux(Octree * tree, ContainmentHandler * handler, OctreeNode * no
 	else if(height != 0) {
 		node->simplified = false;
 		for(int i=0; i <8 ; ++i) {
-			BoundingCube subCube = getChildCube(cube,i);
+			BoundingCube subCube = Octree::getChildCube(cube,i);
 			node->children[i] = addAux(tree, handler, node->children[i], subCube, height == tree->geometryLevel ? &cube : chunkCube, level +1);
 		}
 	}
-	simplify(tree, node, cube, chunkCube, level);   
 	return node;
 }
 
 void split(OctreeNode * node, BoundingCube cube) {
 	for(int i=0; i <8 ; ++i) {
-		BoundingCube subCube = getChildCube(cube,i);
+		BoundingCube subCube = Octree::getChildCube(cube,i);
 		node->children[i] = new OctreeNode(subCube.getCenter());
 		node->children[i]->solid = node->solid;
 		node->children[i]->mask = node->mask;
@@ -260,11 +203,10 @@ OctreeNode * delAux(Octree * tree,  ContainmentHandler * handler, OctreeNode * n
 			if(height != 0) {
 				node->simplified = false;
 				for(int i=0; i <8 ; ++i) {
-					BoundingCube subCube = getChildCube(cube,i);
+					BoundingCube subCube = Octree::getChildCube(cube,i);
 					node->children[i] = delAux(tree, handler, node->children[i], subCube, height == tree->geometryLevel ? &cube : chunkCube, level +1);
 				}	
 			}
-			simplify(tree, node, cube, chunkCube, level);
 		} 
 	}
 	return node;
@@ -286,7 +228,7 @@ void iterateAux(IteratorHandler * handler, int level, OctreeNode * node, Boundin
 			for(int i=0; i <8 ; ++i) {
 				OctreeNode * child = handler->getChild(node, i);
 				if(child != NULL) {
-					iterateAux(handler, level+1, child, getChildCube(cube,i), context);
+					iterateAux(handler, level+1, child, Octree::getChildCube(cube,i), context);
 				}
 			}
 			handler->after(level,node, cube, context);

@@ -18,8 +18,8 @@ OctreeNode::~OctreeNode() {
 	this->clear();
 }
 
-void OctreeNode::clear(){
-	for(int i=0; i < 8 ; ++i){
+void OctreeNode::clear() {
+	for(int i=0; i < 8 ; ++i) {
 		OctreeNode * child = children[i];
 		if(child != NULL) {
 			delete child;
@@ -28,7 +28,7 @@ void OctreeNode::clear(){
 	}
 }
 
-bool OctreeNode::isEmpty(){
+bool OctreeNode::isEmpty() {
 	for(int i=0; i < 8 ; ++i){
 		OctreeNode * child = children[i];
 		if(child != NULL) {

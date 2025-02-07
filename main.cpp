@@ -527,6 +527,12 @@ public:
 		//BoundingBox waterBox(glm::vec3(50,50,0), glm::vec3(70,70,20));
 		liquidSpace->add(new BoxContainmentHandler(waterBox, new SimpleBrush(textures[16])));
 
+		Simplifier * solidSimplifier = new Simplifier(solidSpace); 
+		solidSpace->iterate(solidSimplifier);
+
+		Simplifier * liquidSimplifier = new Simplifier(liquidSpace); 
+		liquidSpace->iterate(liquidSimplifier);
+
 		solidTesselator = new Tesselator(solidSpace, TYPE_SOLID_GEOMETRY);
 		solidSpace->iterate(solidTesselator);
 

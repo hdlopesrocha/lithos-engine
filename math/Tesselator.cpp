@@ -75,7 +75,12 @@ void * Tesselator::before(int level, OctreeNode * node, BoundingCube cube, void 
 	if(tree->getHeight(cube)==tree->geometryLevel){
 		Geometry * chunk = new Geometry();
 		return chunk;
-	} else if(tree->getHeight(cube)==0){
+	} 
+	return context; 			 			
+}
+
+void Tesselator::after(int level, OctreeNode * node, BoundingCube cube, void * context) {
+	if(tree->getHeight(cube)==0){
 		Geometry * chunk = (Geometry*) context;
 		std::vector<OctreeNode*> corners = tree->getNodeCorners(cube, level, true, 1);
 		// Tesselate
@@ -94,12 +99,7 @@ void * Tesselator::before(int level, OctreeNode * node, BoundingCube cube, void 
 				}
 			}
 		}
-	}
-	return context; 			 			
-}
-
-void Tesselator::after(int level, OctreeNode * node, BoundingCube cube, void * context) {
-	if(tree->getHeight(cube)==tree->geometryLevel){
+	} else if(tree->getHeight(cube)==tree->geometryLevel){
 		Geometry * chunk = (Geometry*) context;
 		NodeInfo nodeInfo;
 		nodeInfo.data = chunk;
@@ -113,3 +113,10 @@ bool Tesselator::test(int level, OctreeNode * node, BoundingCube cube, void * co
 	return node->solid != ContainmentType::Contains && tree->getHeight(cube) >= 0;
 }
 
+std::vector<int> Tesselator::getOrder(OctreeNode * node){
+	std::vector<int> nodes;
+	for(int i = 0 ; i < 8 ; ++i) {
+		nodes.push_back(i);
+	}
+	return nodes;
+}

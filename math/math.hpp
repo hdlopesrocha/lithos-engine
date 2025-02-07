@@ -222,6 +222,7 @@ class IteratorHandler {
 		virtual void * before(int level, OctreeNode * node, BoundingCube cube, void * context) = 0;
 		virtual void after(int level, OctreeNode * node, BoundingCube cube, void * context) = 0;
 		virtual OctreeNode * getChild(OctreeNode * node, int index) =0;
+		virtual std::vector<int> getOrder(OctreeNode * node) = 0;
 };
 
 
@@ -244,6 +245,7 @@ class Octree: public BoundingCube {
 		void save(std::string filename);
 		static glm::vec3 getShift(int i);
 		static glm::vec3 getShift3(int i);
+		static BoundingCube getChildCube(BoundingCube cube, int i);
 
 		int getHeight(BoundingCube cube);
 
@@ -260,7 +262,21 @@ class Tesselator : public IteratorHandler{
 		void after(int level, OctreeNode * node, BoundingCube cube, void * context);
 		bool test(int level, OctreeNode * node, BoundingCube cube, void * context);
 		OctreeNode * getChild(OctreeNode * node, int index);
+		std::vector<int> getOrder(OctreeNode * node);
 };
+
+class Simplifier : public IteratorHandler{
+	public:
+		Octree * tree;
+		
+		Simplifier(Octree * tree);
+		void * before(int level, OctreeNode * node, BoundingCube cube, void * context);
+		void after(int level, OctreeNode * node, BoundingCube cube, void * context);
+		bool test(int level, OctreeNode * node, BoundingCube cube, void * context);
+		OctreeNode * getChild(OctreeNode * node, int index);
+		std::vector<int> getOrder(OctreeNode * node);
+};
+
 
 class Geometry
 {

@@ -94,5 +94,13 @@ class DebugTesselator : public IteratorHandler{
 		bool test(int level, OctreeNode * node, BoundingCube cube, void * context) {			
 			return true;
 		}
+
+		std::vector<int> getOrder(OctreeNode * node){
+			std::vector<int> nodes;
+			for(int i = 0 ; i < 8 ; ++i) {
+				nodes.push_back(i);
+			}
+			return nodes;
+		}
 };
 
