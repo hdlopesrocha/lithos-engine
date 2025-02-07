@@ -3,9 +3,8 @@
 #include "gl.hpp"
 
 
-OctreeRenderer::OctreeRenderer(Octree * tree, int geometryType,  int drawableType) {
+OctreeRenderer::OctreeRenderer(Octree * tree,  int drawableType) {
 	this->tree = tree;
-	this->geometryType = geometryType;
 	this->drawableType = drawableType;
 }
 
@@ -19,18 +18,24 @@ OctreeNode * OctreeRenderer::getChild(OctreeNode * node, int index){
 }
 
 void * OctreeRenderer::before(int level, OctreeNode * node, BoundingCube cube, void * context) {		
+	if(tree->getHeight(cube)==tree->geometryLevel && node->info.size()==0 && loaded == 0){
+		Simplifier simplifier(tree); 
+		simplifier.iterate(level, node, cube, &cube);
+		
+		Tesselator tesselator(tree);
+		Geometry * chunk = new Geometry();
+		tesselator.iterate(level, node, cube, chunk);
+		NodeInfo info;
+		info.data = new DrawableGeometry(chunk);
+		info.type = drawableType;
+		node->info.push_back(info);
+		delete chunk;
+		++loaded;
+
+	}
 
 	for(int i=0; i < node->info.size(); ++i){
 		NodeInfo info = node->info[i];
-
-		// just geometry not drawable
-		if(info.type == geometryType && loaded == 0) {
-			Geometry * i = (Geometry*) info.data;
-			info.data = new DrawableGeometry(i);
-			info.type = drawableType;
-			++loaded;
-			delete i;
-		}
 
 		// drawable geometry
 		if(info.type == drawableType) {

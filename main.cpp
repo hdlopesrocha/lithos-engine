@@ -6,12 +6,9 @@
 #include "math/math.hpp"
 #include "ui/ui.hpp"
 #include "HeightFunctions.hpp"
-#define TYPE_SOLID_GEOMETRY 1
-#define TYPE_SOLID_DRAWABLE 2
-#define TYPE_SHADOW_GEOMETRY 3
-#define TYPE_SHADOW_DRAWABLE 4
-#define TYPE_LIQUID_GEOMETRY 5
-#define TYPE_LIQUID_DRAWABLE 6
+#define TYPE_SOLID_DRAWABLE 1
+#define TYPE_SHADOW_DRAWABLE 2
+#define TYPE_LIQUID_DRAWABLE 3
 
 //#define DEBUG_GEO 1
 
@@ -241,8 +238,6 @@ class MainApplication : public LithosApplication {
 	DirectionalLight light;
 	Octree * solidSpace;
 	Octree * liquidSpace;
-	Tesselator * solidTesselator;
-	Tesselator * liquidTesselator;
 	OctreeRenderer * solidRenderer;
 	OctreeRenderer * liquidRenderer;
 	Settings * settings = new Settings();
@@ -527,20 +522,8 @@ public:
 		//BoundingBox waterBox(glm::vec3(50,50,0), glm::vec3(70,70,20));
 		liquidSpace->add(new BoxContainmentHandler(waterBox, new SimpleBrush(textures[16])));
 
-		Simplifier * solidSimplifier = new Simplifier(solidSpace); 
-		solidSpace->iterate(solidSimplifier);
-
-		Simplifier * liquidSimplifier = new Simplifier(liquidSpace); 
-		liquidSpace->iterate(liquidSimplifier);
-
-		solidTesselator = new Tesselator(solidSpace, TYPE_SOLID_GEOMETRY);
-		solidSpace->iterate(solidTesselator);
-
-		liquidTesselator = new Tesselator(liquidSpace, TYPE_LIQUID_GEOMETRY);
-		liquidSpace->iterate(liquidTesselator);
-
-		solidRenderer = new OctreeRenderer(solidSpace, TYPE_SOLID_GEOMETRY, TYPE_SOLID_DRAWABLE);
-		liquidRenderer = new OctreeRenderer(liquidSpace, TYPE_LIQUID_GEOMETRY, TYPE_LIQUID_DRAWABLE);
+		solidRenderer = new OctreeRenderer(solidSpace, TYPE_SOLID_DRAWABLE);
+		liquidRenderer = new OctreeRenderer(liquidSpace, TYPE_LIQUID_DRAWABLE);
 		//tesselator->normalize();
 
 		#ifdef DEBUG_GEO
@@ -554,7 +537,7 @@ public:
         light.direction = glm::normalize(glm::vec3(-1.0,-1.0,-1.0));
 	 
 	 	std::cout << "Setup complete!" << std::endl;
-		std::cout << "#triangles = " << solidTesselator->triangles << std::endl;
+		//std::cout << "#triangles = " << Tesselator::triangles << std::endl;
 		
 		// ImGui
 		IMGUI_CHECKVERSION();

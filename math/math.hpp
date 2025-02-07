@@ -223,6 +223,7 @@ class IteratorHandler {
 		virtual void after(int level, OctreeNode * node, BoundingCube cube, void * context) = 0;
 		virtual OctreeNode * getChild(OctreeNode * node, int index) =0;
 		virtual std::vector<int> getOrder(OctreeNode * node) = 0;
+		void iterate(int level, OctreeNode * node, BoundingCube cube, void * context);
 };
 
 
@@ -254,10 +255,8 @@ class Octree: public BoundingCube {
 class Tesselator : public IteratorHandler{
 	public:
 		Octree * tree;
-		long triangles = 0;
-		int geometryType;
 		
-		Tesselator(Octree * tree, int geometryType);
+		Tesselator(Octree * tree);
 		void * before(int level, OctreeNode * node, BoundingCube cube, void * context);
 		void after(int level, OctreeNode * node, BoundingCube cube, void * context);
 		bool test(int level, OctreeNode * node, BoundingCube cube, void * context);

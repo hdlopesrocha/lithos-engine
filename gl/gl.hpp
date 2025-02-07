@@ -161,7 +161,7 @@ class OctreeRenderer : public IteratorHandler{
 		int loaded = 0;
         uint mode;
 
-		OctreeRenderer(Octree * tree, int geometryType,  int drawableType);
+		OctreeRenderer(Octree * tree,  int drawableType);
 
 		void update(glm::mat4 m);
 		void * before(int level, OctreeNode * node, BoundingCube cube, void * context);
