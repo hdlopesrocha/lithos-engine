@@ -3,9 +3,10 @@
 #include "gl.hpp"
 
 
-OctreeRenderer::OctreeRenderer(Octree * tree,  int drawableType) {
+OctreeRenderer::OctreeRenderer(Octree * tree,  int drawableType, int geometryLevel) {
 	this->tree = tree;
 	this->drawableType = drawableType;
+	this->geometryLevel = geometryLevel;
 }
 
 void OctreeRenderer::update(glm::mat4 m) {
@@ -18,7 +19,7 @@ OctreeNode * OctreeRenderer::getChild(OctreeNode * node, int index){
 }
 
 void * OctreeRenderer::before(int level, OctreeNode * node, BoundingCube cube, void * context) {		
-	if(tree->getHeight(cube)==tree->geometryLevel && node->info.size()==0 && loaded == 0){
+	if(tree->getHeight(cube)==geometryLevel && node->info.size()==0 && loaded == 0){
 		Simplifier simplifier(tree); 
 		simplifier.iterate(level, node, cube, &cube);
 		

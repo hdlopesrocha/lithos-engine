@@ -1,10 +1,9 @@
 #include "math.hpp"
 
 
-Octree::Octree(float minSize, int geometryLevel) : BoundingCube(glm::vec3(0,0,0), minSize){
+Octree::Octree(float minSize) : BoundingCube(glm::vec3(0,0,0), minSize){
 	this->root = new OctreeNode(glm::vec3(minSize*0.5));
 	this->minSize = minSize;
-	this->geometryLevel = geometryLevel;
 }
 
 BoundingCube Octree::getChildCube(BoundingCube cube, int i) {
@@ -126,7 +125,7 @@ uint buildMask(ContainmentHandler * handler, BoundingCube cube) {
 	return mask;
 }
 
-OctreeNode * addAux(Octree * tree, ContainmentHandler * handler, OctreeNode * node, BoundingCube cube, BoundingCube * chunkCube, int level) {
+OctreeNode * addAux(Octree * tree, ContainmentHandler * handler, OctreeNode * node, BoundingCube cube, int level) {
 	int height = tree->getHeight(cube);
 	ContainmentType check = handler->check(cube);
 
@@ -155,7 +154,7 @@ OctreeNode * addAux(Octree * tree, ContainmentHandler * handler, OctreeNode * no
 		node->simplified = false;
 		for(int i=0; i <8 ; ++i) {
 			BoundingCube subCube = Octree::getChildCube(cube,i);
-			node->children[i] = addAux(tree, handler, node->children[i], subCube, height == tree->geometryLevel ? &cube : chunkCube, level +1);
+			node->children[i] = addAux(tree, handler, node->children[i], subCube, level +1);
 		}
 	}
 	return node;
@@ -170,7 +169,7 @@ void split(OctreeNode * node, BoundingCube cube) {
 	}	
 }
 
-OctreeNode * delAux(Octree * tree,  ContainmentHandler * handler, OctreeNode * node, BoundingCube cube, BoundingCube * chunkCube, int level) {
+OctreeNode * delAux(Octree * tree,  ContainmentHandler * handler, OctreeNode * node, BoundingCube cube, int level) {
 	ContainmentType check = handler->check(cube);
 
 	if(check != ContainmentType::Disjoint) {
@@ -204,7 +203,7 @@ OctreeNode * delAux(Octree * tree,  ContainmentHandler * handler, OctreeNode * n
 				node->simplified = false;
 				for(int i=0; i <8 ; ++i) {
 					BoundingCube subCube = Octree::getChildCube(cube,i);
-					node->children[i] = delAux(tree, handler, node->children[i], subCube, height == tree->geometryLevel ? &cube : chunkCube, level +1);
+					node->children[i] = delAux(tree, handler, node->children[i], subCube, level +1);
 				}	
 			}
 		} 
@@ -214,11 +213,11 @@ OctreeNode * delAux(Octree * tree,  ContainmentHandler * handler, OctreeNode * n
 
 void Octree::add(ContainmentHandler * handler) {
 	expand(handler);	
-	root = addAux(this, handler, root, *this, NULL, 0);
+	root = addAux(this, handler, root, *this, 0);
 }
 
 void Octree::del(ContainmentHandler * handler) {
-	root = delAux(this, handler, root, *this, NULL, 0);
+	root = delAux(this, handler, root, *this, 0);
 }
 
 void iterateAux(IteratorHandler * handler, int level, OctreeNode * node, BoundingCube cube, void * context) {

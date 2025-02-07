@@ -499,8 +499,8 @@ public:
    	    					* glm::angleAxis(glm::radians(135.0f), glm::vec3(0, 1, 0));  
 		camera.position = glm::vec3(48,48,48);
 
-		solidSpace = new Octree(2.0, 5);
-		liquidSpace = new Octree(2.0, 5);
+		solidSpace = new Octree(2.0);
+		liquidSpace = new Octree(2.0);
 
 		BoundingBox mapBox(glm::vec3(-100,-50,-100), glm::vec3(100,50,100));
 		HeightFunction * function = new GradientPerlinSurface(100, 1.0f/128.0f, 0);
@@ -522,8 +522,8 @@ public:
 		//BoundingBox waterBox(glm::vec3(50,50,0), glm::vec3(70,70,20));
 		liquidSpace->add(new BoxContainmentHandler(waterBox, new SimpleBrush(textures[16])));
 
-		solidRenderer = new OctreeRenderer(solidSpace, TYPE_SOLID_DRAWABLE);
-		liquidRenderer = new OctreeRenderer(liquidSpace, TYPE_LIQUID_DRAWABLE);
+		solidRenderer = new OctreeRenderer(solidSpace, TYPE_SOLID_DRAWABLE, 5);
+		liquidRenderer = new OctreeRenderer(liquidSpace, TYPE_LIQUID_DRAWABLE, 5);
 		//tesselator->normalize();
 
 		#ifdef DEBUG_GEO

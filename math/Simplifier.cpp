@@ -67,19 +67,14 @@ OctreeNode * Simplifier::getChild(OctreeNode * node, int index){
 }
 
 void * Simplifier::before(int level, OctreeNode * node, BoundingCube cube, void * context) {		
-	int height = tree->getHeight(cube);
-	BoundingCube * chunkCube = height == tree->geometryLevel ? new BoundingCube(cube) : (BoundingCube*) context;
-	return chunkCube; 			 			
+	return context; 			 			
 }
 
 void Simplifier::after(int level, OctreeNode * node, BoundingCube cube, void * context) {
 	int height = tree->getHeight(cube);
 	BoundingCube * chunkCube = (BoundingCube*) context;
 	if(chunkCube != NULL) {
-		simplify(tree, node, cube, height == tree->geometryLevel ? &cube : chunkCube, level);	
-	}
-	if(height == tree->geometryLevel) {
-		delete chunkCube;
+		simplify(tree, node, cube, chunkCube, level);	
 	}
 	return;
 }

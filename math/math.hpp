@@ -230,10 +230,9 @@ class IteratorHandler {
 class Octree: public BoundingCube {
 	public: 
 		float minSize;
-		int geometryLevel;
 		OctreeNode * root;
 
-		Octree(float minSize, int geometryLevel);
+		Octree(float minSize);
 		void expand(ContainmentHandler * handler);
 		void add(ContainmentHandler * handler);
 		void del(ContainmentHandler * handler);
