@@ -164,6 +164,7 @@ class OctreeRenderer : public IteratorHandler{
 		int loaded = 0;
         uint mode;
 		int geometryLevel;
+        glm::vec3 cameraPosition;
         int * triangles;
 		OctreeRenderer(Octree * tree, int * triangles, int drawableType, int geometryLevel, float simplificationAngle, float simplificationDistance, bool simplificationTexturing);
 
@@ -172,7 +173,7 @@ class OctreeRenderer : public IteratorHandler{
 		void after(int level, OctreeNode * node, BoundingCube cube, void * context);
 		bool test(int level, OctreeNode * node, BoundingCube cube, void * context);
         OctreeNode * getChild(OctreeNode * node, int index);
-		void getOrder(OctreeNode * node, int * order);
+		void getOrder(OctreeNode * node, BoundingCube cube, int * order);
 
 };
 

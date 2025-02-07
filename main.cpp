@@ -647,6 +647,11 @@ public:
 		solidRenderer->loaded = 0;
 		liquidRenderer->loaded = 0;
 		shadowRenderer->loaded = 0;
+
+		solidRenderer->cameraPosition = camera.position;
+		liquidRenderer->cameraPosition = camera.position;
+		shadowRenderer->cameraPosition = camera.position -light.direction*512.0f;
+
 		glm::mat4 rotate = glm::mat4_cast(camera.quaternion);
 		glm::mat4 translate = glm::translate(glm::mat4(1.0f), -camera.position);
 	    camera.view = rotate * translate;
@@ -731,7 +736,7 @@ public:
 			glBindTexture(GL_TEXTURE_2D, renderBuffer.colorTexture);		
 			glUniform1i(program3dLocs->underTextureLoc, 31); // Set the sampler uniform
 			
-			//liquidSpace->iterate(liquidRenderer);
+			liquidSpace->iterate(liquidRenderer);
 		}
 
 		if(brushEditor->isOpen()) {

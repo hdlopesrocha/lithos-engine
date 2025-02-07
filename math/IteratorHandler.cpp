@@ -1,12 +1,12 @@
 #include "math.hpp"
-static int internalOrder[8];
 
 void IteratorHandler::iterate(int level, OctreeNode * node, BoundingCube cube, void * context) {
     if(node != NULL) {
         if(test(level, node, cube, context)) {
             context = before(level,node, cube, context);
+            int internalOrder[8];
 
-            getOrder(node, internalOrder);
+            getOrder(node, cube, internalOrder);
             for(int i=0; i <8 ; ++i) {
                 int j = internalOrder[i];
                 OctreeNode * child = getChild(node, j);
