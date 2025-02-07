@@ -3,10 +3,11 @@
 #include "gl.hpp"
 
 
-OctreeRenderer::OctreeRenderer(Octree * tree, int * triangles,  int drawableType, int geometryLevel, float simplificationAngle, float simplificationDistance) {
+OctreeRenderer::OctreeRenderer(Octree * tree, int * triangles,  int drawableType, int geometryLevel, float simplificationAngle, float simplificationDistance, bool simplificationTexturing) {
 	this->tree = tree;
 	this->simplificationAngle = simplificationAngle;
 	this->simplificationDistance = simplificationDistance;
+	this->simplificationTexturing = simplificationTexturing;
 	this->drawableType = drawableType;
 	this->geometryLevel = geometryLevel;
 	this->triangles = triangles;
@@ -32,7 +33,7 @@ void * OctreeRenderer::before(int level, OctreeNode * node, BoundingCube cube, v
 	
 	if(tree->getHeight(cube)==geometryLevel && canGenerate && loaded == 0){
 		// Simplify
-		Simplifier simplifier(tree, simplificationAngle, simplificationDistance); 
+		Simplifier simplifier(tree, simplificationAngle, simplificationDistance, simplificationTexturing); 
 		simplifier.iterate(level, node, cube, &cube);
 		
 		// Tesselate

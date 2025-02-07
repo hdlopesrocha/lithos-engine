@@ -239,6 +239,7 @@ class MainApplication : public LithosApplication {
 	Octree * solidSpace;
 	Octree * liquidSpace;
 	OctreeRenderer * solidRenderer;
+	OctreeRenderer * shadowRenderer;
 	OctreeRenderer * liquidRenderer;
 	Settings * settings = new Settings();
 	#ifdef DEBUG_GEO
@@ -254,7 +255,9 @@ class MainApplication : public LithosApplication {
 	GLuint programMixTexture;
 	GLuint programWaterTexture;
 
-	int trianglesCount = 0;
+	int solidTrianglesCount = 0;
+	int liquidTrianglesCount = 0;
+	int shadowTrianglesCount = 0;
 
 	GLuint modelViewProjectionShadowLoc;
 	ProgramLocations * program3dLocs;
@@ -522,8 +525,9 @@ public:
 		//BoundingBox waterBox(glm::vec3(50,50,0), glm::vec3(70,70,20));
 		liquidSpace->add(new BoxContainmentHandler(waterBox, new SimpleBrush(textures[16])));
 
-		solidRenderer = new OctreeRenderer(solidSpace, &trianglesCount, TYPE_SOLID_DRAWABLE, 5, 0.98, 0.02);
-		liquidRenderer = new OctreeRenderer(liquidSpace, &trianglesCount, TYPE_LIQUID_DRAWABLE, 5, 0.98, 0.02);
+		solidRenderer = new OctreeRenderer(solidSpace, &solidTrianglesCount, TYPE_SOLID_DRAWABLE, 5, 0.98, 0.2, true);
+		liquidRenderer = new OctreeRenderer(liquidSpace, &liquidTrianglesCount, TYPE_LIQUID_DRAWABLE, 5, 0.98, 0.02, true);
+		shadowRenderer = new OctreeRenderer(solidSpace, &shadowTrianglesCount, TYPE_SHADOW_DRAWABLE, 6, 0.7, 1.0, false);
 		//tesselator->normalize();
 
 		#ifdef DEBUG_GEO
@@ -642,6 +646,7 @@ public:
 		glm::mat4 model = glm::mat4(1.0f); // Identity matrix
 		solidRenderer->loaded = 0;
 		liquidRenderer->loaded = 0;
+		shadowRenderer->loaded = 0;
 		glm::mat4 rotate = glm::mat4_cast(camera.quaternion);
 		glm::mat4 translate = glm::translate(glm::mat4(1.0f), -camera.position);
 	    camera.view = rotate * translate;
@@ -661,9 +666,9 @@ public:
 			glUseProgram(programShadow);
 			glUniformMatrix4fv(modelViewProjectionShadowLoc, 1, GL_FALSE, glm::value_ptr(mlp));
 
-			solidRenderer->mode = GL_TRIANGLES;
-			solidRenderer->update(mlp);
-			solidSpace->iterate(solidRenderer);
+			shadowRenderer->mode = GL_TRIANGLES;
+			shadowRenderer->update(mlp);
+			solidSpace->iterate(shadowRenderer);
 		}
 
 		// ============
@@ -858,7 +863,9 @@ public:
 										ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | 
 										ImGuiWindowFlags_NoNav);
 			ImGui::Text("%d FPS", framesPerSecond);
-			ImGui::Text("%d triangles", trianglesCount);
+			ImGui::Text("%d solid triangles", solidTrianglesCount);
+			ImGui::Text("%d liquid triangles", liquidTrianglesCount);
+			ImGui::Text("%d shadow triangles", shadowTrianglesCount);
 			ImGui::End();
 
 		}

@@ -156,15 +156,16 @@ class OctreeRenderer : public IteratorHandler{
 	Frustum frustum;
 	int geometryType;
     int drawableType;
+	float simplificationAngle;
+    float simplificationDistance;
+    bool simplificationTexturing;
 
-	public: 
+    public: 
 		int loaded = 0;
         uint mode;
 		int geometryLevel;
-        float simplificationAngle;
-        float simplificationDistance;
         int * triangles;
-		OctreeRenderer(Octree * tree, int * triangles, int drawableType, int geometryLevel, float simplificationAngle, float simplificationDistance);
+		OctreeRenderer(Octree * tree, int * triangles, int drawableType, int geometryLevel, float simplificationAngle, float simplificationDistance, bool simplificationTexturing);
 
 		void update(glm::mat4 m);
 		void * before(int level, OctreeNode * node, BoundingCube cube, void * context);

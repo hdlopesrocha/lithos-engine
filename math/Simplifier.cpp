@@ -2,13 +2,14 @@
 #include "math.hpp"
 #include <bits/stdc++.h>
 
-Simplifier::Simplifier(Octree * tree, float angle, float distance) {
+Simplifier::Simplifier(Octree * tree, float angle, float distance, bool texturing) {
 	this->tree = tree;
 	this->angle = angle;
 	this->distance = distance;
+	this->texturing = texturing;
 }
 
-void simplify(Octree * tree, OctreeNode * node, BoundingCube cube, BoundingCube * chunkCube, int level, float distance, float angle) {
+void simplify(Octree * tree, OctreeNode * node, BoundingCube cube, BoundingCube * chunkCube, int level, float distance, float angle, bool texturing) {
 	BoundingCube outerCube(cube.getMin() -cube.getLength(), cube.getLength());
 	if(chunkCube == NULL || !chunkCube->contains(outerCube)) {
 		return;
@@ -42,7 +43,7 @@ void simplify(Octree * tree, OctreeNode * node, BoundingCube cube, BoundingCube 
 		if(c!=NULL && c->solid == ContainmentType::Intersects) {
 		    float d = parentPlane.distance(c->vertex.position);
 			float a = glm::dot(parentVertex.normal, c->vertex.normal);
-			if(!c->simplified || a < angle || d > distance || parentVertex.texIndex != c->vertex.texIndex){
+			if(!c->simplified || a < angle || d > distance || (parentVertex.texIndex != c->vertex.texIndex && texturing)){
 				canSimplify = false;
 				break;
 			}
@@ -76,7 +77,7 @@ void Simplifier::after(int level, OctreeNode * node, BoundingCube cube, void * c
 	int height = tree->getHeight(cube);
 	BoundingCube * chunkCube = (BoundingCube*) context;
 	if(chunkCube != NULL) {
-		simplify(tree, node, cube, chunkCube, level, distance, angle);	
+		simplify(tree, node, cube, chunkCube, level, distance, angle, texturing);	
 	}
 	return;
 }
