@@ -3,8 +3,10 @@
 #include "gl.hpp"
 
 
-OctreeRenderer::OctreeRenderer(Octree * tree,  int drawableType, int geometryLevel) {
+OctreeRenderer::OctreeRenderer(Octree * tree,  int drawableType, int geometryLevel, float simplificationAngle, float simplificationDistance) {
 	this->tree = tree;
+	this->simplificationAngle = simplificationAngle;
+	this->simplificationDistance = simplificationDistance;
 	this->drawableType = drawableType;
 	this->geometryLevel = geometryLevel;
 }
@@ -20,19 +22,22 @@ OctreeNode * OctreeRenderer::getChild(OctreeNode * node, int index){
 
 void * OctreeRenderer::before(int level, OctreeNode * node, BoundingCube cube, void * context) {		
 	if(tree->getHeight(cube)==geometryLevel && node->info.size()==0 && loaded == 0){
-		Simplifier simplifier(tree); 
+		// Simplify
+		Simplifier simplifier(tree, simplificationAngle, simplificationDistance); 
 		simplifier.iterate(level, node, cube, &cube);
 		
+		// Tesselate
 		Tesselator tesselator(tree);
 		Geometry * chunk = new Geometry();
 		tesselator.iterate(level, node, cube, chunk);
+
+		// Send to GPU
 		NodeInfo info;
 		info.data = new DrawableGeometry(chunk);
 		info.type = drawableType;
 		node->info.push_back(info);
 		delete chunk;
 		++loaded;
-
 	}
 
 	for(int i=0; i < node->info.size(); ++i){

@@ -266,8 +266,10 @@ class Tesselator : public IteratorHandler{
 class Simplifier : public IteratorHandler{
 	public:
 		Octree * tree;
+		float angle;
+		float distance;
 		
-		Simplifier(Octree * tree);
+		Simplifier(Octree * tree, float angle, float distance);
 		void * before(int level, OctreeNode * node, BoundingCube cube, void * context);
 		void after(int level, OctreeNode * node, BoundingCube cube, void * context);
 		bool test(int level, OctreeNode * node, BoundingCube cube, void * context);

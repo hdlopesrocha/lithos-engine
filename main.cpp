@@ -522,8 +522,8 @@ public:
 		//BoundingBox waterBox(glm::vec3(50,50,0), glm::vec3(70,70,20));
 		liquidSpace->add(new BoxContainmentHandler(waterBox, new SimpleBrush(textures[16])));
 
-		solidRenderer = new OctreeRenderer(solidSpace, TYPE_SOLID_DRAWABLE, 5);
-		liquidRenderer = new OctreeRenderer(liquidSpace, TYPE_LIQUID_DRAWABLE, 5);
+		solidRenderer = new OctreeRenderer(solidSpace, TYPE_SOLID_DRAWABLE, 5, 0.98, 0.02);
+		liquidRenderer = new OctreeRenderer(liquidSpace, TYPE_LIQUID_DRAWABLE, 5, 0.98, 0.02);
 		//tesselator->normalize();
 
 		#ifdef DEBUG_GEO
