@@ -206,7 +206,6 @@ class OctreeNode {
 		Vertex vertex;
 		OctreeNode *children[8];
 		bool simplified;
-		int iteration;
 		uint mask;
 		ContainmentType solid;
 		std::vector<NodeInfo> info;

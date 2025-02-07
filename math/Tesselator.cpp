@@ -90,7 +90,6 @@ void * Tesselator::before(int level, OctreeNode * node, BoundingCube cube, void 
 				}
 			}
 		}
-		return node;
 	}
 	return context;
 }
