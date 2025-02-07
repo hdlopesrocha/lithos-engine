@@ -14,8 +14,9 @@ static std::vector<glm::ivec2> tessEdge;
 
 static bool initialized = false;
 
-Tesselator::Tesselator(Octree * tree) {
+Tesselator::Tesselator(Octree * tree, int geometryType) {
 	this->tree = tree;
+	this->geometryType = geometryType;
 
 	if(!initialized) {
 		tessOrder.push_back(glm::ivec4(0,1,3,2));tessEdge.push_back(glm::ivec2(3,7));
@@ -102,8 +103,8 @@ void Tesselator::after(int level, OctreeNode * node, BoundingCube cube, void * c
 		Geometry * chunk = (Geometry*) context;
 		NodeInfo nodeInfo;
 		nodeInfo.data = chunk;
-		nodeInfo.type = 0;
-		node->nodeInfo = nodeInfo;		
+		nodeInfo.type = geometryType;
+		node->info.push_back(nodeInfo);		
 	}		
 	return;
 }

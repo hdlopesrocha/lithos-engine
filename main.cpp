@@ -6,6 +6,12 @@
 #include "math/math.hpp"
 #include "ui/ui.hpp"
 #include "HeightFunctions.hpp"
+#define TYPE_SOLID_GEOMETRY 1
+#define TYPE_SOLID_DRAWABLE 2
+#define TYPE_SHADOW_GEOMETRY 3
+#define TYPE_SHADOW_DRAWABLE 4
+#define TYPE_LIQUID_GEOMETRY 5
+#define TYPE_LIQUID_DRAWABLE 6
 
 //#define DEBUG_GEO 1
 
@@ -521,14 +527,14 @@ public:
 		//BoundingBox waterBox(glm::vec3(50,50,0), glm::vec3(70,70,20));
 		liquidSpace->add(new BoxContainmentHandler(waterBox, new SimpleBrush(textures[16])));
 
-		solidTesselator = new Tesselator(solidSpace);
+		solidTesselator = new Tesselator(solidSpace, TYPE_SOLID_GEOMETRY);
 		solidSpace->iterate(solidTesselator);
 
-		liquidTesselator = new Tesselator(liquidSpace);
+		liquidTesselator = new Tesselator(liquidSpace, TYPE_LIQUID_GEOMETRY);
 		liquidSpace->iterate(liquidTesselator);
 
-		solidRenderer = new OctreeRenderer(solidSpace);
-		liquidRenderer = new OctreeRenderer(liquidSpace);
+		solidRenderer = new OctreeRenderer(solidSpace, TYPE_SOLID_GEOMETRY, TYPE_SOLID_DRAWABLE);
+		liquidRenderer = new OctreeRenderer(liquidSpace, TYPE_LIQUID_GEOMETRY, TYPE_LIQUID_DRAWABLE);
 		//tesselator->normalize();
 
 		#ifdef DEBUG_GEO

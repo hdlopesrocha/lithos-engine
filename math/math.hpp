@@ -208,7 +208,7 @@ class OctreeNode {
 		bool simplified;
 		uint mask;
 		ContainmentType solid;
-		NodeInfo nodeInfo;
+		std::vector<NodeInfo> info;
 		OctreeNode(Vertex vertex);
 		~OctreeNode();
 		void clear();
@@ -253,8 +253,9 @@ class Tesselator : public IteratorHandler{
 	public:
 		Octree * tree;
 		long triangles = 0;
-
-		Tesselator(Octree * tree);
+		int geometryType;
+		
+		Tesselator(Octree * tree, int geometryType);
 		void * before(int level, OctreeNode * node, BoundingCube cube, void * context);
 		void after(int level, OctreeNode * node, BoundingCube cube, void * context);
 		bool test(int level, OctreeNode * node, BoundingCube cube, void * context);
