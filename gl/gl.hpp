@@ -172,7 +172,7 @@ class OctreeRenderer : public IteratorHandler{
 		void after(int level, OctreeNode * node, BoundingCube cube, void * context);
 		bool test(int level, OctreeNode * node, BoundingCube cube, void * context);
         OctreeNode * getChild(OctreeNode * node, int index);
-		std::vector<int> getOrder(OctreeNode * node);
+		void getOrder(OctreeNode * node, int * order);
 
 };
 

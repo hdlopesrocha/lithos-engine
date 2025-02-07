@@ -72,10 +72,8 @@ bool OctreeRenderer::test(int level, OctreeNode * node, BoundingCube cube, void 
 	return frustum.isBoxVisible(box);
 }
 
-std::vector<int> OctreeRenderer::getOrder(OctreeNode * node){
-	std::vector<int> nodes;
-	for(int i = 0 ; i < 8 ; ++i) {
-		nodes.push_back(i);
+void OctreeRenderer::getOrder(OctreeNode * node, int * order){
+	for(int i = 7 ; i >= 0 ; --i) {
+		order[i] = i;
 	}
-	return nodes;
 }

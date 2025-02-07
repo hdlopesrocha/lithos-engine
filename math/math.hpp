@@ -222,7 +222,7 @@ class IteratorHandler {
 		virtual void * before(int level, OctreeNode * node, BoundingCube cube, void * context) = 0;
 		virtual void after(int level, OctreeNode * node, BoundingCube cube, void * context) = 0;
 		virtual OctreeNode * getChild(OctreeNode * node, int index) =0;
-		virtual std::vector<int> getOrder(OctreeNode * node) = 0;
+		virtual void getOrder(OctreeNode * node, int * order) = 0;
 		void iterate(int level, OctreeNode * node, BoundingCube cube, void * context);
 };
 
@@ -282,7 +282,7 @@ class Tesselator : public IteratorHandler{
 		void after(int level, OctreeNode * node, BoundingCube cube, void * context);
 		bool test(int level, OctreeNode * node, BoundingCube cube, void * context);
 		OctreeNode * getChild(OctreeNode * node, int index);
-		std::vector<int> getOrder(OctreeNode * node);
+		void getOrder(OctreeNode * node, int * order);
 };
 
 class Simplifier : public IteratorHandler{
@@ -296,7 +296,7 @@ class Simplifier : public IteratorHandler{
 		void after(int level, OctreeNode * node, BoundingCube cube, void * context);
 		bool test(int level, OctreeNode * node, BoundingCube cube, void * context);
 		OctreeNode * getChild(OctreeNode * node, int index);
-		std::vector<int> getOrder(OctreeNode * node);
+		void getOrder(OctreeNode * node, int * order);
 };
 
 

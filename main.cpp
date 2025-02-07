@@ -525,7 +525,7 @@ public:
 		//BoundingBox waterBox(glm::vec3(50,50,0), glm::vec3(70,70,20));
 		liquidSpace->add(new BoxContainmentHandler(waterBox, new SimpleBrush(textures[16])));
 
-		solidRenderer = new OctreeRenderer(solidSpace, &solidTrianglesCount, TYPE_SOLID_DRAWABLE, 5, 0.98, 0.2, true);
+		solidRenderer = new OctreeRenderer(solidSpace, &solidTrianglesCount, TYPE_SOLID_DRAWABLE, 5, 0.98, 0.02, true);
 		liquidRenderer = new OctreeRenderer(liquidSpace, &liquidTrianglesCount, TYPE_LIQUID_DRAWABLE, 5, 0.98, 0.02, true);
 		shadowRenderer = new OctreeRenderer(solidSpace, &shadowTrianglesCount, TYPE_SHADOW_DRAWABLE, 6, 0.7, 1.0, false);
 		//tesselator->normalize();
@@ -620,7 +620,7 @@ public:
 	   	glm::vec3 lookAtLightPosition = glm::round(camera.position/16.0f)*16.0f; // + cameraDirection*far*0.5f;
 
 
-		light.direction = glm::normalize(glm::vec3(glm::sin(time),-1.0,glm::cos(time)));
+		//light.direction = glm::normalize(glm::vec3(glm::sin(time),-1.0,glm::cos(time)));
 
 		float orthoSize = 512.0f;  // Size of the orthographic box
 
@@ -698,8 +698,6 @@ public:
 		liquidRenderer->update(mvp);
 		liquidRenderer->mode = GL_PATCHES;
 
-
-
 		if(settings->wireFrameEnabled) {
 			glUniform1ui(program3dLocs->lightEnabledLoc, 0);
 			glUniform1ui(program3dLocs->parallaxEnabledLoc, 0);
@@ -712,8 +710,7 @@ public:
 			glPointSize(4.0);	
 
 			solidSpace->iterate(solidRenderer);
-			//liquidSpace->iterate(liquidRenderer);
-
+			liquidSpace->iterate(liquidRenderer);
 		} else {
 			glPolygonMode(GL_FRONT, GL_FILL);
 			glUniform1ui(program3dLocs->depthTestEnabledLoc, 0); // Set the sampler uniform

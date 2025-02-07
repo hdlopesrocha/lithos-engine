@@ -86,10 +86,8 @@ bool Simplifier::test(int level, OctreeNode * node, BoundingCube cube, void * co
 	return node->solid != ContainmentType::Contains && tree->getHeight(cube) >= 0;
 }
 
-std::vector<int> Simplifier::getOrder(OctreeNode * node){
-	std::vector<int> nodes;
+void Simplifier::getOrder(OctreeNode * node, int * order){
 	for(int i = 7 ; i >= 0 ; --i) {
-		nodes.push_back(i);
+		order[i] = i;
 	}
-	return nodes;
 }

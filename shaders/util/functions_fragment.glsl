@@ -39,10 +39,10 @@ ShadowProperties getShadow(sampler2D shadowMap, sampler2D noise, vec4 lightViewP
 
     int blurRadius = 20;
     int totalSamples = 1;
-    int maxSamples = 8;
+    int maxSamples = 6;
+    int stepSize = 1;
 
-
-    for(int radius = blurRadius; radius > 0; --radius) {
+    for(int radius = blurRadius; radius > 0; radius-=stepSize) {
         for(int samples=0; samples < maxSamples ; ++samples) {
 
             vec4 noiseSample = texture(noise, noiseCoords);

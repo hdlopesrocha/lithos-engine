@@ -95,12 +95,10 @@ class DebugTesselator : public IteratorHandler{
 			return true;
 		}
 
-		std::vector<int> getOrder(OctreeNode * node){
-			std::vector<int> nodes;
-			for(int i = 0 ; i < 8 ; ++i) {
-				nodes.push_back(i);
+		void getOrder(OctreeNode * node, int * order){
+			for(int i = 7 ; i >= 0 ; --i) {
+				order[i] = i;
 			}
-			return nodes;
 		}
 };
 
