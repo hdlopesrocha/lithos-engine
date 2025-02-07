@@ -14,9 +14,10 @@ static std::vector<glm::ivec2> tessEdge;
 
 static bool initialized = false;
 
-Tesselator::Tesselator(Octree * tree) {
+Tesselator::Tesselator(Octree * tree, int * triangles, Geometry * chunk) {
 	this->tree = tree;
-
+	this->chunk = chunk;
+	this->triangles = triangles;
 	if(!initialized) {
 		tessOrder.push_back(glm::ivec4(0,1,3,2));tessEdge.push_back(glm::ivec2(3,7));
 		tessOrder.push_back(glm::ivec4(0,2,6,4));tessEdge.push_back(glm::ivec2(6,7));
@@ -65,18 +66,13 @@ int addQuad(std::vector<OctreeNode*> quad, Geometry * chunk, bool reverse) {
 	return count;
 }
 
-OctreeNode * Tesselator::getChild(OctreeNode * node, int index){
+OctreeNode * Tesselator::getChild(OctreeNode * node, int index) {
 	OctreeNode * child = node->children[index];
 	return child != NULL ? child : NULL;
 }
 
 void * Tesselator::before(int level, OctreeNode * node, BoundingCube cube, void * context) {		
-	return context; 			 			
-}
-
-void Tesselator::after(int level, OctreeNode * node, BoundingCube cube, void * context) {
 	if(tree->getHeight(cube)==0){
-		Geometry * chunk = (Geometry*) context;
 		std::vector<OctreeNode*> corners = tree->getNodeCorners(cube, level, true, 1);
 		// Tesselate
 		for(int k=0; k<tessOrder.size(); ++k){
@@ -90,11 +86,16 @@ void Tesselator::after(int level, OctreeNode * node, BoundingCube cube, void * c
 			if(sign0 != sign1) {
 				std::vector<OctreeNode*> quadNodes = tree->getQuadNodes(corners, quad);	
 				if(quadNodes.size() == 4) {
-					int triangles = addQuad(quadNodes, chunk,  sign1);
+					*triangles += addQuad(quadNodes, chunk,  sign1);
 				}
 			}
 		}
-	} 		
+		return node;
+	}
+	return context;
+}
+
+void Tesselator::after(int level, OctreeNode * node, BoundingCube cube, void * context) {
 	return;
 }
 
@@ -102,7 +103,7 @@ bool Tesselator::test(int level, OctreeNode * node, BoundingCube cube, void * co
 	return node->solid != ContainmentType::Contains && tree->getHeight(cube) >= 0;
 }
 
-std::vector<int> Tesselator::getOrder(OctreeNode * node){
+std::vector<int> Tesselator::getOrder(OctreeNode * node) {
 	std::vector<int> nodes;
 	for(int i = 0 ; i < 8 ; ++i) {
 		nodes.push_back(i);

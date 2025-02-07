@@ -5,6 +5,7 @@ OctreeNode::OctreeNode(Vertex vertex) {
 	this->vertex = vertex;
 	this->mask = 0x0;
 	this->simplified = false;
+	this->iteration = 0;
 	for(int i=0; i < 8 ; ++i) {
 		setChild(i, NULL);
 	}

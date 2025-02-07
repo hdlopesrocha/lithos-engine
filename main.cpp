@@ -254,7 +254,7 @@ class MainApplication : public LithosApplication {
 	GLuint programMixTexture;
 	GLuint programWaterTexture;
 
-
+	int trianglesCount = 0;
 
 	GLuint modelViewProjectionShadowLoc;
 	ProgramLocations * program3dLocs;
@@ -522,8 +522,8 @@ public:
 		//BoundingBox waterBox(glm::vec3(50,50,0), glm::vec3(70,70,20));
 		liquidSpace->add(new BoxContainmentHandler(waterBox, new SimpleBrush(textures[16])));
 
-		solidRenderer = new OctreeRenderer(solidSpace, TYPE_SOLID_DRAWABLE, 5, 0.98, 0.02);
-		liquidRenderer = new OctreeRenderer(liquidSpace, TYPE_LIQUID_DRAWABLE, 5, 0.98, 0.02);
+		solidRenderer = new OctreeRenderer(solidSpace, &trianglesCount, TYPE_SOLID_DRAWABLE, 5, 0.98, 0.02);
+		liquidRenderer = new OctreeRenderer(liquidSpace, &trianglesCount, TYPE_LIQUID_DRAWABLE, 5, 0.98, 0.02);
 		//tesselator->normalize();
 
 		#ifdef DEBUG_GEO
@@ -858,6 +858,7 @@ public:
 										ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | 
 										ImGuiWindowFlags_NoNav);
 			ImGui::Text("%d FPS", framesPerSecond);
+			ImGui::Text("%d triangles", trianglesCount);
 			ImGui::End();
 
 		}

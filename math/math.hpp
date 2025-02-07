@@ -206,6 +206,7 @@ class OctreeNode {
 		Vertex vertex;
 		OctreeNode *children[8];
 		bool simplified;
+		int iteration;
 		uint mask;
 		ContainmentType solid;
 		std::vector<NodeInfo> info;
@@ -251,11 +252,33 @@ class Octree: public BoundingCube {
 
 };
 
+class Geometry
+{
+public:
+	std::vector<Vertex> vertices;
+	std::vector<uint> indices;
+	std::map <std::string, int> compactMap;
+
+	Geometry(/* args */);
+	~Geometry();
+
+	Vertex * addVertex(Vertex vertex, bool textureUnique);
+};
+
+class SphereGeometry : public Geometry{
+    int lats;
+    int longs;
+public:
+	SphereGeometry(int lats, int longs);
+
+};
+
 class Tesselator : public IteratorHandler{
 	public:
 		Octree * tree;
-		
-		Tesselator(Octree * tree);
+		int * triangles;
+		Geometry * chunk;
+		Tesselator(Octree * tree, int * triangles, Geometry * chunk);
 		void * before(int level, OctreeNode * node, BoundingCube cube, void * context);
 		void after(int level, OctreeNode * node, BoundingCube cube, void * context);
 		bool test(int level, OctreeNode * node, BoundingCube cube, void * context);
@@ -275,30 +298,6 @@ class Simplifier : public IteratorHandler{
 		bool test(int level, OctreeNode * node, BoundingCube cube, void * context);
 		OctreeNode * getChild(OctreeNode * node, int index);
 		std::vector<int> getOrder(OctreeNode * node);
-};
-
-
-class Geometry
-{
-private:
-	/* data */
-public:
-	std::vector<Vertex> vertices;
-	std::vector<uint> indices;
-	std::map <std::string, int> compactMap;
-
-	Geometry(/* args */);
-	~Geometry();
-
-	Vertex * addVertex(Vertex vertex, bool textureUnique);
-};
-
-class SphereGeometry : public Geometry{
-    int lats;
-    int longs;
-public:
-	SphereGeometry(int lats, int longs);
-
 };
 
 
