@@ -21,7 +21,15 @@ OctreeNode * OctreeRenderer::getChild(OctreeNode * node, int index){
 }
 
 void * OctreeRenderer::before(int level, OctreeNode * node, BoundingCube cube, void * context) {		
-	if(tree->getHeight(cube)==geometryLevel && node->info.size()==0 && loaded == 0){
+	bool canGenerate = true;
+	for(int i=0; i < node->info.size(); ++i){
+		NodeInfo info = node->info[i];
+		if(info.type == drawableType) {
+			canGenerate = false;
+		}
+	}
+	
+	if(tree->getHeight(cube)==geometryLevel && canGenerate && loaded == 0){
 		// Simplify
 		Simplifier simplifier(tree, simplificationAngle, simplificationDistance); 
 		simplifier.iterate(level, node, cube, &cube);
