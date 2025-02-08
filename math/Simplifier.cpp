@@ -26,8 +26,7 @@ void Simplifier::simplify(Octree * tree, OctreeNode * node, BoundingCube cube, B
 	Plane parentPlane(node->vertex.normal, node->vertex.position); 
 	Vertex parentVertex = node->vertex;
 	
-	//std::vector<OctreeNode*> nodes = tree->getNodeCorners(childCube, level+1, false, 1);
-	for(int i=0; i < 8 ; ++i) {
+	for(int i=1; i < 7 ; ++i) {
 		BoundingCube cc(cube.getMin() - cube.getLength()*Octree::getShift(i), cube.getLength());
 		OctreeNode * c = tree->getNodeAt(cc.getCenter(), level, 0);
 		if(c!=NULL && c->solid == ContainmentType::Intersects) {
@@ -35,49 +34,54 @@ void Simplifier::simplify(Octree * tree, OctreeNode * node, BoundingCube cube, B
 				canSimplify = false;
 				break;
 			}
+
+			if(parentVertex.texIndex != c->vertex.texIndex && texturing) {
+				canSimplify = false;
+				break;		
+			}
+			
+			float d = parentPlane.distance(c->vertex.position);
+			if( d > distance ) {
+				canSimplify = false;
+				break;
+			}
+
+			float a = glm::dot(parentVertex.normal, c->vertex.normal);
+			if(a < angle){
+				canSimplify = false;
+				break;
+			}
 		}
 	}
 	
 	if(canSimplify) {
-		OctreeNode* nodes[8];
-		for (int i=0 ; i < 8 ; ++i) {
-			nodes[i] =node->children[i];
-		}
-
 		// for leaf nodes shouldn't loop
 		for(int i=0; i < 8 ; ++i) {
-			OctreeNode * c = nodes[i];
+			OctreeNode * c = node->children[i];
 			if(c!=NULL && c->solid == ContainmentType::Intersects) {
-				if(parentVertex.texIndex != c->vertex.texIndex && texturing) {
+				if(c->simplification != simplification) {
 					canSimplify = false;
 					break;		
 				}
-				
-				float d = parentPlane.distance(c->vertex.position);
-				if( d > distance ) {
-					canSimplify = false;
-					break;
-				}
-
-				float a = glm::dot(parentVertex.normal, c->vertex.normal);
-				if(a < angle){
-					canSimplify = false;
-					break;
-				}
+					
 				sumP += c->vertex.position;
 				sumN += c->vertex.normal;
 				++nodeCount;
 			}
 		}
 	}
-	if(canSimplify && nodeCount > 0)  {
-		//node->clear();
-		parentVertex.position = sumP / (float)nodeCount;
-		node->vertex = parentVertex;
+	if(canSimplify)  {
+			//node->clear();
+		if(nodeCount > 0) {	
+			parentVertex.position = sumP / (float)nodeCount;
+			node->vertex = parentVertex;
+		}
 		//vertex.normal = sumN / (float)nodeCount;
 		//node->mask = mask;
 		node->simplification = simplification;
 	} 
+	
+
 
 }
 

@@ -525,9 +525,9 @@ public:
 		//BoundingBox waterBox(glm::vec3(50,50,0), glm::vec3(70,70,20));
 		liquidSpace->add(new BoxContainmentHandler(waterBox, new SimpleBrush(textures[16])));
 
-		solidRenderer = new OctreeRenderer(solidSpace, &solidTrianglesCount, TYPE_SOLID_DRAWABLE, 5, 0.99, 0.01, true);
-		liquidRenderer = new OctreeRenderer(liquidSpace, &liquidTrianglesCount, TYPE_LIQUID_DRAWABLE, 5, 0.99, 0.01, true);
-		shadowRenderer = new OctreeRenderer(solidSpace, &shadowTrianglesCount, TYPE_SHADOW_DRAWABLE, 6, 0.7, 1.0, false);
+		solidRenderer = new OctreeRenderer(solidSpace, &solidTrianglesCount, TYPE_SOLID_DRAWABLE, 5, 0.9, 0.2, true);
+		liquidRenderer = new OctreeRenderer(liquidSpace, &liquidTrianglesCount, TYPE_LIQUID_DRAWABLE, 5, 0.9, 0.2, true);
+		shadowRenderer = new OctreeRenderer(solidSpace, &shadowTrianglesCount, TYPE_SHADOW_DRAWABLE, 6, 0.1, 4.0, false);
 		//tesselator->normalize();
 
 		#ifdef DEBUG_GEO
@@ -712,8 +712,8 @@ public:
 			glLineWidth(2.0);
 			glPointSize(4.0);	
 
-			//solidSpace->iterate(solidRenderer);
-			liquidSpace->iterate(liquidRenderer);
+			solidSpace->iterate(solidRenderer);
+			//liquidSpace->iterate(liquidRenderer);
 		} else {
 			glPolygonMode(GL_FRONT, GL_FILL);
 			glUniform1ui(program3dLocs->depthTestEnabledLoc, 0); // Set the sampler uniform
