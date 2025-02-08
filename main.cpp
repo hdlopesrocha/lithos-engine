@@ -10,7 +10,7 @@
 #define TYPE_SHADOW_DRAWABLE 2
 #define TYPE_LIQUID_DRAWABLE 3
 
-//#define DEBUG_GEO 1
+//#define DEBUG_GEO 0
 
 class SimpleBrush : public TextureBrush {
 
@@ -502,8 +502,8 @@ public:
    	    					* glm::angleAxis(glm::radians(135.0f), glm::vec3(0, 1, 0));  
 		camera.position = glm::vec3(48,48,48);
 
-		solidSpace = new Octree(2.0);
-		liquidSpace = new Octree(2.0);
+		solidSpace = new Octree(BoundingCube(glm::vec3(0,0,0), 2.0));
+		liquidSpace = new Octree(BoundingCube(glm::vec3(0,20,0), 2.0));
 
 		BoundingBox mapBox(glm::vec3(-100,-50,-100), glm::vec3(100,50,100));
 		HeightFunction * function = new GradientPerlinSurface(100, 1.0f/128.0f, 0);
@@ -520,7 +520,7 @@ public:
 		solidSpace->add(new SphereContainmentHandler(BoundingSphere(glm::vec3(11,61,-11),4), new SimpleBrush(textures[16])));
 
 
-		BoundingBox waterBox(glm::vec3(-100,-50,-100), glm::vec3(100,3,100));
+		BoundingBox waterBox(glm::vec3(-100,-20,-100), glm::vec3(100,3,100));
 		//liquidSpace->add(new OctreeContainmentHandler(solidSpace, waterBox, new SimpleBrush(textures[6])));
 		//BoundingBox waterBox(glm::vec3(50,50,0), glm::vec3(70,70,20));
 		liquidSpace->add(new BoxContainmentHandler(waterBox, new SimpleBrush(textures[16])));
@@ -531,11 +531,9 @@ public:
 		//tesselator->normalize();
 
 		#ifdef DEBUG_GEO
-		if(DEBUG_GEO == 0) {
-			DebugTesselator * debugTesselator = new DebugTesselator(solidSpace);
-			solidSpace->iterate(debugTesselator);
-			vaoDebug = new DrawableGeometry(&debugTesselator->chunk);
-		}
+		DebugTesselator * debugTesselator = new DebugTesselator(liquidSpace);
+		liquidSpace->iterate(debugTesselator);
+		vaoDebug = new DrawableGeometry(&debugTesselator->chunk);
 		#endif
 
         light.direction = glm::normalize(glm::vec3(-1.0,-1.0,-1.0));

@@ -232,7 +232,7 @@ class Octree: public BoundingCube {
 		float minSize;
 		OctreeNode * root;
 
-		Octree(float minSize);
+		Octree(BoundingCube minCube);
 		void expand(ContainmentHandler * handler);
 		void add(ContainmentHandler * handler);
 		void del(ContainmentHandler * handler);

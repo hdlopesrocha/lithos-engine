@@ -22,16 +22,13 @@ void simplify(Octree * tree, OctreeNode * node, BoundingCube cube, BoundingCube 
 	glm::vec3 sumN = glm::vec3(0);
 	int nodeCount=0;
 
-
 	// The parentNode plane
 	Plane parentPlane(node->vertex.normal, node->vertex.position); 
 	Vertex parentVertex = node->vertex;
 	
-
-	//std::vector<OctreeNode*> nodes = tree->getNeighbors(cube, level);
-
 	BoundingCube childCube = Octree::getChildCube(cube, 0);
 	//std::vector<OctreeNode*> nodes = tree->getNodeCorners(childCube, level+1, false, 1);
+	//std::vector<OctreeNode*> nodes = tree->getNeighbors(cube, level);
 	OctreeNode* nodes[8];
 	for (int i=0 ; i < 8 ; ++i) {
 		nodes[i] =node->children[i];

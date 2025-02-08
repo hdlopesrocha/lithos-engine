@@ -59,8 +59,8 @@ class DebugTesselator : public IteratorHandler{
 					}
 				}
 			}
-
-			if(isLeaf){
+int h = tree->getHeight(cube);
+			if(h == 5){
 				std::vector<glm::vec3> corners;
 				// Get corners
 				for(int i=0; i < 8; ++i) {
