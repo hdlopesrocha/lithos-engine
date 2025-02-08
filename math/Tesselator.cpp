@@ -27,7 +27,7 @@ Tesselator::Tesselator(Octree * tree, int * triangles, Geometry * chunk) {
 	}
 }
 
-int addQuad(std::vector<OctreeNode*> quad, Geometry * chunk, bool reverse) {
+int addQuad(OctreeNode** quad, Geometry * chunk, bool reverse) {
 	OctreeNode* c0 = quad[reverse ? 3:0];
 	OctreeNode* c1 = quad[reverse ? 2:1];
 	OctreeNode* c2 = quad[reverse ? 1:2];
@@ -85,8 +85,9 @@ void * Tesselator::before(int level, OctreeNode * node, BoundingCube cube, void 
 			bool sign1 = (mask & (1 << edge[1])) != 0;
 
 			if(sign0 != sign1) {
-				std::vector<OctreeNode*> quadNodes = tree->getQuadNodes(corners, quad);	
-				if(quadNodes.size() == 4) {
+				OctreeNode * quadNodes[4];
+				int size = tree->getQuadNodes(corners, quad, quadNodes);	
+				if(size == 4) {
 					*triangles += addQuad(quadNodes, chunk,  sign1);
 				}
 			}

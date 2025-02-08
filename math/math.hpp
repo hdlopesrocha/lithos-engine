@@ -239,7 +239,7 @@ class Octree: public BoundingCube {
 		void iterate(IteratorHandler * handler);
 		OctreeNode * getNodeAt(glm::vec3 pos, int level, bool simplify);
 		void getNodeCorners(BoundingCube cube, int level, bool simplify, int direction, OctreeNode ** out);
-		std::vector<OctreeNode*> getQuadNodes(OctreeNode** corners, glm::ivec4 quad);
+		int getQuadNodes(OctreeNode** corners, glm::ivec4 quad, OctreeNode ** out);
 		std::vector<OctreeNode*> getNeighbors(BoundingCube cube, int level);
 
 		void save(std::string filename);

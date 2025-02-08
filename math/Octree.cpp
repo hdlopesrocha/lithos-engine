@@ -98,17 +98,18 @@ void Octree::getNodeCorners(BoundingCube cube, int level, bool simplify, int dir
 	}
 }
 
-std::vector<OctreeNode*> Octree::getQuadNodes(OctreeNode** corners, glm::ivec4 quad) {
-	std::vector<OctreeNode*> result;
+int Octree::getQuadNodes(OctreeNode** corners, glm::ivec4 quad, OctreeNode ** out) {
+	int size = 0;
 	for(int i =0; i<4 ; ++i){
 		OctreeNode * n = corners[quad[i]];
 		if(n != NULL && n->solid == ContainmentType::Intersects) {
-			result.push_back(n);
+			out[i] = n;
+			++size;
 		} else {
 			break;
 		}
 	}
-	return result;
+	return size;
 }
 
 
