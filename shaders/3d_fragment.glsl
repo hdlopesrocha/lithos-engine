@@ -67,7 +67,7 @@ void main() {
 
     float effectAmount = sin(time*3.14/4.0)*0.5 + 0.5;
     float distance = length(cameraPosition - position);
-    float distanceFactor = clamp(32.0 / distance, 0.0, 1.0); // Adjust these numbers to fit your scene
+    float distanceFactor = clamp(teProps.parallaxFade / distance, 0.0, 1.0); // Adjust these numbers to fit your scene
 
     if(triplanarEnabled) {
         int plane = triplanarPlane(position, normal);
@@ -79,7 +79,7 @@ void main() {
     vec3 viewDirectionTangent = normalize(transpose(TBN) * viewDirection);
 
     if(parallaxEnabled && distanceFactor * teProps.parallaxScale > 0.0) {
-       uv = parallaxMapping(teTextureWeights, uv, viewDirectionTangent, distanceFactor*teProps.parallaxScale , distanceFactor*teProps.parallaxMinLayers, distanceFactor*teProps.parallaxMaxLayers, int(ceil(distanceFactor*5.0)));
+       uv = parallaxMapping(teTextureWeights, uv, viewDirectionTangent, distanceFactor*teProps.parallaxScale , distanceFactor*teProps.parallaxMinLayers, distanceFactor*teProps.parallaxMaxLayers, int(ceil(distanceFactor*teProps.parallaxRefine)));
     }
   
     vec4 mixedColor = textureBlend(teTextureWeights, textures, uv, 0);

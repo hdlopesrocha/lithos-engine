@@ -104,6 +104,12 @@ void BrushEditor::draw2d(){
     ImGui::Text("Parallax Max Layers: ");
     ImGui::InputFloat("# ##parallaxMaxLayers", &brush->parallaxMaxLayers);
 
+    ImGui::Text("Parallax Fade: ");
+    ImGui::InputFloat("# ##parallaxFade", &brush->parallaxFade);
+
+    ImGui::Text("Parallax Refine: ");
+    ImGui::InputFloat("# ##parallaxRefine", &brush->parallaxRefine);
+
     ImGui::Text("Specular Strength: ");
     ImGui::InputFloat("\%##specularStrength", &brush->specularStrength);
 
