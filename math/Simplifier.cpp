@@ -10,12 +10,12 @@ Simplifier::Simplifier(Octree * tree, float angle, float distance, bool texturin
 	this->texturing = texturing;
 }
 
-void Simplifier::simplify(Octree * tree, OctreeNode * node, BoundingCube cube, BoundingCube * chunkCube, int level) {
-	BoundingCube outerCube(cube.getMin() -cube.getLength(), cube.getLength());
-	if(chunkCube == NULL || !chunkCube->contains(outerCube)) {
-		return;
-	}
+bool isBorder(BoundingCube chunk, BoundingCube c) {
+	return 	chunk.getMinX() == c.getMinX() || chunk.getMinY() == c.getMinY() || chunk.getMinZ() == c.getMinZ() ||
+			chunk.getMaxX() == c.getMaxX() || chunk.getMaxY() == c.getMaxY() || chunk.getMaxZ() == c.getMaxZ();
+}
 
+void Simplifier::simplify(Octree * tree, OctreeNode * node, BoundingCube cube, BoundingCube * chunkCube, int level) {
 	bool canSimplify = true;
 	uint mask = node->mask;
 
@@ -27,7 +27,6 @@ void Simplifier::simplify(Octree * tree, OctreeNode * node, BoundingCube cube, B
 	Plane parentPlane(node->vertex.normal, node->vertex.position); 
 	Vertex parentVertex = node->vertex;
 	
-	BoundingCube childCube = Octree::getChildCube(cube, 0);
 	//std::vector<OctreeNode*> nodes = tree->getNodeCorners(childCube, level+1, false, 1);
 	//std::vector<OctreeNode*> nodes = tree->getNeighbors(cube, level);
 	OctreeNode* nodes[8];
@@ -39,9 +38,10 @@ void Simplifier::simplify(Octree * tree, OctreeNode * node, BoundingCube cube, B
 	for(int i=0; i < 8 ; ++i) {
 		OctreeNode * c = nodes[i];
 		if(c!=NULL && c->solid == ContainmentType::Intersects) {
+			BoundingCube childCube = Octree::getChildCube(cube, i);
 		    float d = parentPlane.distance(c->vertex.position);
 			float a = glm::dot(parentVertex.normal, c->vertex.normal);
-			if(a < angle || d > distance || (parentVertex.texIndex != c->vertex.texIndex && texturing)){
+			if(isBorder(*chunkCube, childCube) || a < angle || d > distance || (parentVertex.texIndex != c->vertex.texIndex && texturing)){
 				canSimplify = false;
 				break;
 			}
