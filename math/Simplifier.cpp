@@ -11,8 +11,7 @@ Simplifier::Simplifier(Octree * tree, float angle, float distance, bool texturin
 }
 
 bool isBorder(BoundingCube chunk, BoundingCube c) {
-	return 	chunk.getMinX() == c.getMinX() || chunk.getMinY() == c.getMinY() || chunk.getMinZ() == c.getMinZ() ||
-			chunk.getMaxX() == c.getMaxX() || chunk.getMaxY() == c.getMaxY() || chunk.getMaxZ() == c.getMaxZ();
+	return chunk.getMinX() == c.getMinX() || chunk.getMinY() == c.getMinY() || chunk.getMinZ() == c.getMinZ();
 }
 
 void Simplifier::simplify(Octree * tree, OctreeNode * node, BoundingCube cube, BoundingCube * chunkCube, int level) {
@@ -38,10 +37,25 @@ void Simplifier::simplify(Octree * tree, OctreeNode * node, BoundingCube cube, B
 	for(int i=0; i < 8 ; ++i) {
 		OctreeNode * c = nodes[i];
 		if(c!=NULL && c->solid == ContainmentType::Intersects) {
+			if(parentVertex.texIndex != c->vertex.texIndex && texturing) {
+				canSimplify = false;
+				break;		
+			}
+			
 			BoundingCube childCube = Octree::getChildCube(cube, i);
+			if(isBorder(*chunkCube, childCube)){
+				canSimplify = false;
+				break;
+			}
+		
 		    float d = parentPlane.distance(c->vertex.position);
+			if( d > distance ) {
+				canSimplify = false;
+				break;
+			}
+
 			float a = glm::dot(parentVertex.normal, c->vertex.normal);
-			if(isBorder(*chunkCube, childCube) || a < angle || d > distance || (parentVertex.texIndex != c->vertex.texIndex && texturing)){
+			if(a < angle){
 				canSimplify = false;
 				break;
 			}
