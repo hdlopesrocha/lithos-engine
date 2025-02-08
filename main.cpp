@@ -505,7 +505,7 @@ public:
 		solidSpace = new Octree(BoundingCube(glm::vec3(0,0,0), 2.0));
 		liquidSpace = new Octree(BoundingCube(glm::vec3(0,20,0), 2.0));
 
-		BoundingBox mapBox(glm::vec3(-100,-50,-100), glm::vec3(100,50,100));
+		BoundingBox mapBox(glm::vec3(-100,-60,-100), glm::vec3(100,50,100));
 		HeightFunction * function = new GradientPerlinSurface(100, 1.0f/128.0f, 0);
 		CachedHeightMapSurface * surface = new CachedHeightMapSurface(function, mapBox, solidSpace->minSize);
 		HeightMap map(surface, mapBox.getMin(),mapBox.getMax(), solidSpace->minSize);
@@ -520,13 +520,13 @@ public:
 		solidSpace->add(new SphereContainmentHandler(BoundingSphere(glm::vec3(11,61,-11),4), new SimpleBrush(textures[16])));
 
 
-		BoundingBox waterBox(glm::vec3(-100,-20,-100), glm::vec3(100,3,100));
+		BoundingBox waterBox(glm::vec3(-100,-60,-100), glm::vec3(100,3,100));
 		//liquidSpace->add(new OctreeContainmentHandler(solidSpace, waterBox, new SimpleBrush(textures[6])));
 		//BoundingBox waterBox(glm::vec3(50,50,0), glm::vec3(70,70,20));
 		liquidSpace->add(new BoxContainmentHandler(waterBox, new SimpleBrush(textures[16])));
 
-		solidRenderer = new OctreeRenderer(solidSpace, &solidTrianglesCount, TYPE_SOLID_DRAWABLE, 5, 0.98, 0.02, true);
-		liquidRenderer = new OctreeRenderer(liquidSpace, &liquidTrianglesCount, TYPE_LIQUID_DRAWABLE, 5, 0.98, 0.02, true);
+		solidRenderer = new OctreeRenderer(solidSpace, &solidTrianglesCount, TYPE_SOLID_DRAWABLE, 5, 0.99, 0.01, true);
+		liquidRenderer = new OctreeRenderer(liquidSpace, &liquidTrianglesCount, TYPE_LIQUID_DRAWABLE, 5, 0.99, 0.01, true);
 		shadowRenderer = new OctreeRenderer(solidSpace, &shadowTrianglesCount, TYPE_SHADOW_DRAWABLE, 6, 0.7, 1.0, false);
 		//tesselator->normalize();
 

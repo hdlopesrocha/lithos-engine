@@ -27,44 +27,49 @@ void Simplifier::simplify(Octree * tree, OctreeNode * node, BoundingCube cube, B
 	Vertex parentVertex = node->vertex;
 	
 	//std::vector<OctreeNode*> nodes = tree->getNodeCorners(childCube, level+1, false, 1);
-	//std::vector<OctreeNode*> nodes = tree->getNeighbors(cube, level);
-	OctreeNode* nodes[8];
-	for (int i=0 ; i < 8 ; ++i) {
-		nodes[i] =node->children[i];
-	}
-
-	// for leaf nodes shouldn't loop
 	for(int i=0; i < 8 ; ++i) {
-		OctreeNode * c = nodes[i];
+		BoundingCube cc(cube.getMin() - cube.getLength()*Octree::getShift(i), cube.getLength());
+		OctreeNode * c = tree->getNodeAt(cc.getCenter(), level, 0);
 		if(c!=NULL && c->solid == ContainmentType::Intersects) {
-			if(parentVertex.texIndex != c->vertex.texIndex && texturing) {
-				canSimplify = false;
-				break;		
-			}
-			
-			BoundingCube childCube = Octree::getChildCube(cube, i);
-			if(isBorder(*chunkCube, childCube)){
+			if(!chunkCube->contains(cc)){
 				canSimplify = false;
 				break;
 			}
-		
-		    float d = parentPlane.distance(c->vertex.position);
-			if( d > distance ) {
-				canSimplify = false;
-				break;
-			}
-
-			float a = glm::dot(parentVertex.normal, c->vertex.normal);
-			if(a < angle){
-				canSimplify = false;
-				break;
-			}
-			sumP += c->vertex.position;
-			sumN += c->vertex.normal;
-			++nodeCount;
 		}
 	}
+	
+	if(canSimplify) {
+		OctreeNode* nodes[8];
+		for (int i=0 ; i < 8 ; ++i) {
+			nodes[i] =node->children[i];
+		}
 
+		// for leaf nodes shouldn't loop
+		for(int i=0; i < 8 ; ++i) {
+			OctreeNode * c = nodes[i];
+			if(c!=NULL && c->solid == ContainmentType::Intersects) {
+				if(parentVertex.texIndex != c->vertex.texIndex && texturing) {
+					canSimplify = false;
+					break;		
+				}
+				
+				float d = parentPlane.distance(c->vertex.position);
+				if( d > distance ) {
+					canSimplify = false;
+					break;
+				}
+
+				float a = glm::dot(parentVertex.normal, c->vertex.normal);
+				if(a < angle){
+					canSimplify = false;
+					break;
+				}
+				sumP += c->vertex.position;
+				sumN += c->vertex.normal;
+				++nodeCount;
+			}
+		}
+	}
 	if(canSimplify && nodeCount > 0)  {
 		//node->clear();
 		parentVertex.position = sumP / (float)nodeCount;
@@ -99,7 +104,7 @@ bool Simplifier::test(int level, OctreeNode * node, BoundingCube cube, void * co
 }
 
 void Simplifier::getOrder(OctreeNode * node, BoundingCube cube, int * order){
-	for(int i = 0 ; i < 8 ; ++i) {
+	for(int i = 7 ; i >= 0 ; --i) {
 		order[i] = i;
 	}
 }

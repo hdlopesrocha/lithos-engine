@@ -240,12 +240,13 @@ class Octree: public BoundingCube {
 		OctreeNode * getNodeAt(glm::vec3 pos, int level, int simplification);
 		void getNodeCorners(BoundingCube cube, int level, int simplification, int direction, OctreeNode ** out);
 		int getQuadNodes(OctreeNode** corners, glm::ivec4 quad, OctreeNode ** out);
-		std::vector<OctreeNode*> getNeighbors(BoundingCube cube, int level);
+		void getNeighbors(BoundingCube cube, int level, OctreeNode ** out);
 
 		void save(std::string filename);
 		static glm::vec3 getShift(int i);
 		static glm::vec3 getShift3(int i);
 		static BoundingCube getChildCube(BoundingCube cube, int i);
+		static BoundingCube getCube3(BoundingCube cube, int i);
 
 		int getHeight(BoundingCube cube);
 

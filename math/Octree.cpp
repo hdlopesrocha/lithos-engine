@@ -11,6 +11,10 @@ BoundingCube Octree::getChildCube(BoundingCube cube, int i) {
     return BoundingCube(cube.getMin() + newLength * Octree::getShift(i), newLength);
 }
 
+BoundingCube Octree::getCube3(BoundingCube cube, int i) {
+    return BoundingCube(cube.getMin() + cube.getLength() * Octree::getShift3(i), cube.getLength());
+}
+
 int getNodeIndex(glm::vec3 vec, BoundingCube cube, bool checkBounds) {
 	if(checkBounds && !cube.contains(vec)) {
 		return -1;
@@ -74,8 +78,7 @@ int Octree::getHeight(BoundingCube cube){
 	return r >= 0  ? (int) glm::floor(r) : -1;
 }
 
-std::vector<OctreeNode*> Octree::getNeighbors(BoundingCube cube, int level) {
-	std::vector<OctreeNode*> corners;
+void Octree::getNeighbors(BoundingCube cube, int level, OctreeNode ** out) {
 	// Get corners
 	//corners.push_back(node);
 	for(int i=0; i < 27; ++i) {
@@ -83,9 +86,8 @@ std::vector<OctreeNode*> Octree::getNeighbors(BoundingCube cube, int level) {
 		//std::cout << s.x << "," << s.y << "," << s.z << std::endl;
 		glm::vec3 pos = cube.getCenter() + cube.getLength() * s;
 		OctreeNode * n = getNodeAt(pos,level, 0);
-		corners.push_back(n);
+		out[i] = n;
 	}
-	return corners;
 }
 
 void Octree::getNodeCorners(BoundingCube cube, int level, int simplification, int direction, OctreeNode ** out) {
