@@ -21,7 +21,7 @@ void OctreeRenderer::update(glm::mat4 m) {
 OctreeNode * OctreeRenderer::getChild(OctreeNode * node, int index){
 	return node->children[index];
 }
-
+static int simplficationId = 0;
 void * OctreeRenderer::before(int level, OctreeNode * node, BoundingCube cube, void * context) {		
 	bool canGenerate = true;
 	for(int i=0; i < node->info.size(); ++i){
@@ -34,13 +34,14 @@ void * OctreeRenderer::before(int level, OctreeNode * node, BoundingCube cube, v
 	if(tree->getHeight(cube)==geometryLevel){
 	
 		if(canGenerate && loaded == 0){
+			++simplficationId;
 			// Simplify
-			Simplifier simplifier(tree, simplificationAngle, simplificationDistance, simplificationTexturing); 
+			Simplifier simplifier(tree, simplificationAngle, simplificationDistance, simplificationTexturing, simplficationId); 
 			simplifier.iterate(level, node, cube, &cube);
 			
 			// Tesselate
 			Geometry * chunk = new Geometry();
-			Tesselator tesselator(tree, triangles, chunk);
+			Tesselator tesselator(tree, triangles, chunk, simplficationId);
 			tesselator.iterate(level, node, cube, NULL);
 
 			// Send to GPU

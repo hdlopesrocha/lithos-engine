@@ -205,7 +205,7 @@ class OctreeNode {
 	public: 
 		Vertex vertex;
 		OctreeNode *children[8];
-		bool simplified;
+		int simplification;
 		uint mask;
 		ContainmentType solid;
 		std::vector<NodeInfo> info;
@@ -237,8 +237,8 @@ class Octree: public BoundingCube {
 		void add(ContainmentHandler * handler);
 		void del(ContainmentHandler * handler);
 		void iterate(IteratorHandler * handler);
-		OctreeNode * getNodeAt(glm::vec3 pos, int level, bool simplify);
-		void getNodeCorners(BoundingCube cube, int level, bool simplify, int direction, OctreeNode ** out);
+		OctreeNode * getNodeAt(glm::vec3 pos, int level, int simplification);
+		void getNodeCorners(BoundingCube cube, int level, int simplification, int direction, OctreeNode ** out);
 		int getQuadNodes(OctreeNode** corners, glm::ivec4 quad, OctreeNode ** out);
 		std::vector<OctreeNode*> getNeighbors(BoundingCube cube, int level);
 
@@ -277,7 +277,8 @@ class Tesselator : public IteratorHandler{
 		Octree * tree;
 		int * triangles;
 		Geometry * chunk;
-		Tesselator(Octree * tree, int * triangles, Geometry * chunk);
+		int simplification;
+		Tesselator(Octree * tree, int * triangles, Geometry * chunk, int simplification);
 		void * before(int level, OctreeNode * node, BoundingCube cube, void * context);
 		void after(int level, OctreeNode * node, BoundingCube cube, void * context);
 		bool test(int level, OctreeNode * node, BoundingCube cube, void * context);
@@ -291,7 +292,11 @@ class Simplifier : public IteratorHandler{
 		float angle;
 		float distance;
 	    bool texturing;
-		Simplifier(Octree * tree, float angle, float distance, bool texturing);
+		int simplification;
+		Simplifier(Octree * tree, float angle, float distance, bool texturing, int simplification);
+
+		void simplify(Octree * tree, OctreeNode * node, BoundingCube cube, BoundingCube * chunkCube, int level);
+
 		void * before(int level, OctreeNode * node, BoundingCube cube, void * context);
 		void after(int level, OctreeNode * node, BoundingCube cube, void * context);
 		bool test(int level, OctreeNode * node, BoundingCube cube, void * context);

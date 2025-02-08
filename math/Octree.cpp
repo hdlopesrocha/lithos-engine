@@ -22,12 +22,12 @@ int getNodeIndex(glm::vec3 vec, BoundingCube cube, bool checkBounds) {
 	return px * 4 + py * 2 + pz;
 }
 
-OctreeNode * Octree::getNodeAt(glm::vec3 pos, int level, bool simplify) {
+OctreeNode * Octree::getNodeAt(glm::vec3 pos, int level, int simplification) {
 	OctreeNode * node = root;
 	BoundingCube cube = *this;
 
 	while(node!= NULL && level>0){
-		if(simplify && node->simplified) {
+		if(simplification && node->simplification == simplification) {
 			return node;
 		}
 		unsigned int i = getNodeIndex(pos, cube, true);
@@ -82,18 +82,18 @@ std::vector<OctreeNode*> Octree::getNeighbors(BoundingCube cube, int level) {
 		glm::vec3 s = Octree::getShift3(i);
 		//std::cout << s.x << "," << s.y << "," << s.z << std::endl;
 		glm::vec3 pos = cube.getCenter() + cube.getLength() * s;
-		OctreeNode * n = getNodeAt(pos,level, false);
+		OctreeNode * n = getNodeAt(pos,level, 0);
 		corners.push_back(n);
 	}
 	return corners;
 }
 
-void Octree::getNodeCorners(BoundingCube cube, int level, bool simplify, int direction, OctreeNode ** out) {
+void Octree::getNodeCorners(BoundingCube cube, int level, int simplification, int direction, OctreeNode ** out) {
 	// Get corners
 	//corners.push_back(node);
 	for(int i=0; i < 8; ++i) {
 		glm::vec3 pos = cube.getCenter() + direction * cube.getLength() * Octree::getShift(i);
-		OctreeNode * n = getNodeAt(pos,level, simplify);
+		OctreeNode * n = getNodeAt(pos,level, simplification);
 		out[i] = n;
 	}
 }
@@ -150,7 +150,6 @@ OctreeNode * addAux(Octree * tree, ContainmentHandler * handler, OctreeNode * no
 		node->clear();
 	}
 	else if(height != 0) {
-		node->simplified = false;
 		for(int i=0; i <8 ; ++i) {
 			BoundingCube subCube = Octree::getChildCube(cube,i);
 			node->children[i] = addAux(tree, handler, node->children[i], subCube, level +1);
@@ -199,7 +198,6 @@ OctreeNode * delAux(Octree * tree,  ContainmentHandler * handler, OctreeNode * n
 			node->solid = check;
 
 			if(height != 0) {
-				node->simplified = false;
 				for(int i=0; i <8 ; ++i) {
 					BoundingCube subCube = Octree::getChildCube(cube,i);
 					node->children[i] = delAux(tree, handler, node->children[i], subCube, level +1);

@@ -14,8 +14,9 @@ static std::vector<glm::ivec2> tessEdge;
 
 static bool initialized = false;
 
-Tesselator::Tesselator(Octree * tree, int * triangles, Geometry * chunk) {
+Tesselator::Tesselator(Octree * tree, int * triangles, Geometry * chunk, int simplification) {
 	this->tree = tree;
+	this->simplification = simplification;
 	this->chunk = chunk;
 	this->triangles = triangles;
 	if(!initialized) {
@@ -74,7 +75,7 @@ OctreeNode * Tesselator::getChild(OctreeNode * node, int index) {
 void * Tesselator::before(int level, OctreeNode * node, BoundingCube cube, void * context) {		
 	if(tree->getHeight(cube)==0){
 		OctreeNode * corners[8];
-		tree->getNodeCorners(cube, level, true, 1, corners);
+		tree->getNodeCorners(cube, level, simplification, 1, corners);
 		// Tesselate
 		for(int k=0; k<tessOrder.size(); ++k){
 			glm::ivec4 quad = tessOrder[k];
