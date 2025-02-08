@@ -9,7 +9,7 @@
 #define TYPE_SOLID_DRAWABLE 1
 #define TYPE_SHADOW_DRAWABLE 2
 #define TYPE_LIQUID_DRAWABLE 3
-
+#define DISCARD_BRUSH_INDEX -1
 //#define DEBUG_GEO 0
 
 class SimpleBrush : public TextureBrush {
@@ -22,6 +22,33 @@ class SimpleBrush : public TextureBrush {
 	}
 
 	void paint(Vertex * vertex) {
+		vertex->texIndex = texture->index;
+	}
+};
+
+
+class WaterBrush : public TextureBrush {
+
+	Texture * water;
+	Texture discardTexture;
+
+	public: 
+	WaterBrush(Texture* water){
+		discardTexture.index = DISCARD_BRUSH_INDEX;
+		this->water = water;
+	}
+
+
+	void paint(Vertex * vertex) {
+		float steepness =glm::dot(glm::vec3(0.0f,1.0f,0.0f), vertex->normal );
+		
+
+		Texture * texture;
+		if (glm::dot(glm::vec3(0.0f,1.0f,0.0f), vertex->normal ) <=0 ){
+			texture= &discardTexture;
+		} else {
+			texture = water;
+		} 
 		vertex->texIndex = texture->index;
 	}
 };
@@ -39,8 +66,11 @@ class LandBrush : public TextureBrush {
 	Texture * rockMixGrass;
 	Texture * rockMixSnow;
 	Texture * rockMixSand;
+	Texture discardTexture;
+
 	public: 
 	LandBrush(std::vector<Brush*> brushes){
+		discardTexture.index = DISCARD_BRUSH_INDEX;
 		this->underground = brushes[7]->texture;
 		this->grass = brushes[2]->texture;
 		this->sand = brushes[3]->texture;
@@ -64,7 +94,7 @@ class LandBrush : public TextureBrush {
 
 		Texture * texture;
 		if (glm::dot(glm::vec3(0.0f,1.0f,0.0f), vertex->normal ) <=0 ){
-			texture= underground;
+			texture= &discardTexture;
 		} else if(steepness < 0.8 ){
 			texture = rock;
 		} else if(steepness < 0.9 ){
@@ -523,7 +553,7 @@ public:
 		BoundingBox waterBox(glm::vec3(-100,-60,-100), glm::vec3(100,3,100));
 		//liquidSpace->add(new OctreeContainmentHandler(solidSpace, waterBox, new SimpleBrush(textures[6])));
 		//BoundingBox waterBox(glm::vec3(50,50,0), glm::vec3(70,70,20));
-		liquidSpace->add(new BoxContainmentHandler(waterBox, new SimpleBrush(textures[16])));
+		liquidSpace->add(new BoxContainmentHandler(waterBox, new WaterBrush(textures[16])));
 
 		solidRenderer = new OctreeRenderer(solidSpace, &solidTrianglesCount, TYPE_SOLID_DRAWABLE, 5, 0.9, 0.2, true);
 		liquidRenderer = new OctreeRenderer(liquidSpace, &liquidTrianglesCount, TYPE_LIQUID_DRAWABLE, 5, 0.9, 0.2, true);
@@ -712,8 +742,8 @@ public:
 			glLineWidth(2.0);
 			glPointSize(4.0);	
 
-			solidSpace->iterate(solidRenderer);
-			//liquidSpace->iterate(liquidRenderer);
+			//solidSpace->iterate(solidRenderer);
+			liquidSpace->iterate(liquidRenderer);
 		} else {
 			glPolygonMode(GL_FRONT, GL_FILL);
 			glUniform1ui(program3dLocs->depthTestEnabledLoc, 0); // Set the sampler uniform
