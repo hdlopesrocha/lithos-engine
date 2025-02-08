@@ -73,7 +73,8 @@ OctreeNode * Tesselator::getChild(OctreeNode * node, int index) {
 
 void * Tesselator::before(int level, OctreeNode * node, BoundingCube cube, void * context) {		
 	if(tree->getHeight(cube)==0){
-		std::vector<OctreeNode*> corners = tree->getNodeCorners(cube, level, true, 1);
+		OctreeNode * corners[8];
+		tree->getNodeCorners(cube, level, true, 1, corners);
 		// Tesselate
 		for(int k=0; k<tessOrder.size(); ++k){
 			glm::ivec4 quad = tessOrder[k];

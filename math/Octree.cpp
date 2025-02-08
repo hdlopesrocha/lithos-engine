@@ -88,19 +88,17 @@ std::vector<OctreeNode*> Octree::getNeighbors(BoundingCube cube, int level) {
 	return corners;
 }
 
-std::vector<OctreeNode*> Octree::getNodeCorners(BoundingCube cube, int level, bool simplify, int direction) {
-	std::vector<OctreeNode*> corners;
+void Octree::getNodeCorners(BoundingCube cube, int level, bool simplify, int direction, OctreeNode ** out) {
 	// Get corners
 	//corners.push_back(node);
 	for(int i=0; i < 8; ++i) {
 		glm::vec3 pos = cube.getCenter() + direction * cube.getLength() * Octree::getShift(i);
 		OctreeNode * n = getNodeAt(pos,level, simplify);
-		corners.push_back(n);
+		out[i] = n;
 	}
-	return corners;
 }
 
-std::vector<OctreeNode*> Octree::getQuadNodes(std::vector<OctreeNode*> corners, glm::ivec4 quad) {
+std::vector<OctreeNode*> Octree::getQuadNodes(OctreeNode** corners, glm::ivec4 quad) {
 	std::vector<OctreeNode*> result;
 	for(int i =0; i<4 ; ++i){
 		OctreeNode * n = corners[quad[i]];

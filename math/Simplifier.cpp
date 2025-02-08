@@ -32,13 +32,13 @@ void simplify(Octree * tree, OctreeNode * node, BoundingCube cube, BoundingCube 
 
 	BoundingCube childCube = Octree::getChildCube(cube, 0);
 	//std::vector<OctreeNode*> nodes = tree->getNodeCorners(childCube, level+1, false, 1);
-	std::vector<OctreeNode*> nodes;
+	OctreeNode* nodes[8];
 	for (int i=0 ; i < 8 ; ++i) {
-		nodes.push_back(node->children[i]);
+		nodes[i] =node->children[i];
 	}
 
 	// for leaf nodes shouldn't loop
-	for(int i=0; i <nodes.size() ; ++i) {
+	for(int i=0; i < 8 ; ++i) {
 		OctreeNode * c = nodes[i];
 		if(c!=NULL && c->solid == ContainmentType::Intersects) {
 		    float d = parentPlane.distance(c->vertex.position);
