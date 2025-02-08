@@ -40,7 +40,7 @@ void simplify(Octree * tree, OctreeNode * node, BoundingCube cube, BoundingCube 
 		if(c!=NULL && c->solid == ContainmentType::Intersects) {
 		    float d = parentPlane.distance(c->vertex.position);
 			float a = glm::dot(parentVertex.normal, c->vertex.normal);
-			if(!c->simplified || a < angle || d > distance || (parentVertex.texIndex != c->vertex.texIndex && texturing)){
+			if(a < angle || d > distance || (parentVertex.texIndex != c->vertex.texIndex && texturing)){
 				canSimplify = false;
 				break;
 			}
@@ -56,9 +56,9 @@ void simplify(Octree * tree, OctreeNode * node, BoundingCube cube, BoundingCube 
 		node->vertex = parentVertex;
 		//vertex.normal = sumN / (float)nodeCount;
 		//node->mask = mask;
+		node->simplified = true;
 	} 
 
-	node->simplified = canSimplify;
 }
 
 OctreeNode * Simplifier::getChild(OctreeNode * node, int index){
@@ -67,6 +67,7 @@ OctreeNode * Simplifier::getChild(OctreeNode * node, int index){
 }
 
 void * Simplifier::before(int level, OctreeNode * node, BoundingCube cube, void * context) {		
+	node->simplified = false;
 	return context; 			 			
 }
 
@@ -84,7 +85,7 @@ bool Simplifier::test(int level, OctreeNode * node, BoundingCube cube, void * co
 }
 
 void Simplifier::getOrder(OctreeNode * node, BoundingCube cube, int * order){
-	for(int i = 7 ; i >= 0 ; --i) {
+	for(int i = 0 ; i < 8 ; ++i) {
 		order[i] = i;
 	}
 }
