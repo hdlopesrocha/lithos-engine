@@ -13,7 +13,6 @@
 //#define DEBUG_GEO 0
 
 class SimpleBrush : public TextureBrush {
-
 	Texture * texture;
 
 	public: 
@@ -26,9 +25,7 @@ class SimpleBrush : public TextureBrush {
 	}
 };
 
-
 class WaterBrush : public TextureBrush {
-
 	Texture * water;
 	Texture discardTexture;
 
@@ -38,11 +35,9 @@ class WaterBrush : public TextureBrush {
 		this->water = water;
 	}
 
-
 	void paint(Vertex * vertex) {
 		float steepness =glm::dot(glm::vec3(0.0f,1.0f,0.0f), vertex->normal );
 		
-
 		Texture * texture;
 		if (glm::dot(glm::vec3(0.0f,1.0f,0.0f), vertex->normal ) <=0 ){
 			texture= &discardTexture;
@@ -54,7 +49,6 @@ class WaterBrush : public TextureBrush {
 };
 
 class LandBrush : public TextureBrush {
-
 	Texture * underground;
 	Texture * grass;
 	Texture * sand;
@@ -79,18 +73,15 @@ class LandBrush : public TextureBrush {
 		this->snow = brushes[5]->texture;
 		this->grassMixSand = brushes[9]->texture;
 		this->grassMixSnow = brushes[10]->texture;
-	
 		this->rockMixGrass = brushes[11]->texture;
 		this->rockMixSnow = brushes[12]->texture;
 		this->rockMixSand = brushes[13]->texture;
 	}
 
-
 	void paint(Vertex * vertex) {
 		float steepness =glm::dot(glm::vec3(0.0f,1.0f,0.0f), vertex->normal );
 		int grassLevel = 25;
 		int sandLevel = 5;
-
 
 		Texture * texture;
 		if (glm::dot(glm::vec3(0.0f,1.0f,0.0f), vertex->normal ) <=0 ){
@@ -125,8 +116,6 @@ class LandBrush : public TextureBrush {
 	}
 };
 
-
-
 class OctreeContainmentHandler : public ContainmentHandler {
 	public:
 	Octree * octree;
@@ -158,7 +147,6 @@ class OctreeContainmentHandler : public ContainmentHandler {
 		return box.test(cube);
 	}
 
-
 	Vertex getVertex(BoundingCube cube, ContainmentType solid) {
 		Vertex vtx;
 		vtx.position = cube.getCenter();
@@ -174,8 +162,6 @@ class GlslInclude {
 		this->line = line;
 		this->code = code;
 	}
-
-
 };
 
 std::string replace(std::string input,  std::string replace_word, std::string replace_by ) {
@@ -186,7 +172,6 @@ std::string replace(std::string input,  std::string replace_word, std::string re
 	}
 	return input;
 }
-
 
 std::string replaceIncludes(std::vector<GlslInclude> includes, std::string code){
 	for(int i=0; i< includes.size() ;++i) {
@@ -253,9 +238,7 @@ class ProgramLocations {
 		glUniform1ui(debugEnabledLoc,settings->debugEnabled);
 		glUniform1ui(shadowEnabledLoc, settings->shadowEnabled);
 		glUniform1ui(depthTestEnabledLoc, 0);
-
 	}
-
 };
 
 class MainApplication : public LithosApplication {
@@ -275,7 +258,6 @@ class MainApplication : public LithosApplication {
 	#ifdef DEBUG_GEO
 	DrawableGeometry * vaoDebug;
 	#endif
-
 
 	GLuint programSwap;
 	GLuint program3d;
@@ -319,16 +301,10 @@ public:
 
 	}
 
-
-
-
-
-
     virtual void setup() {
 		glEnable(GL_DEPTH_TEST);
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
 
 		std::vector<GlslInclude> includes;
 		includes.push_back(GlslInclude("#include<functions.glsl>" , readFile("shaders/util/functions.glsl")));
@@ -337,7 +313,6 @@ public:
 		includes.push_back(GlslInclude("#include<structs.glsl>" , readFile("shaders/util/structs.glsl")));
 		includes.push_back(GlslInclude("#include<parallax.glsl>" , readFile("shaders/util/parallax.glsl")));
 
-	
 		programShadow = createShaderProgram(
 			compileShader(replaceIncludes(includes, readFile("shaders/shadow_vertex.glsl")),GL_VERTEX_SHADER), 
 			compileShader(replaceIncludes(includes,readFile("shaders/shadow_fragment.glsl")),GL_FRAGMENT_SHADER), 
@@ -345,7 +320,6 @@ public:
 			0
 		);
 		glUseProgram(programShadow);
-
 
 		programSwap = createShaderProgram(
 			compileShader(replaceIncludes(includes,readFile("shaders/texture/swap_vertex.glsl")),GL_VERTEX_SHADER), 
@@ -379,7 +353,6 @@ public:
 		);
 		glUseProgram(programMixTexture);
 
-
 		programWaterTexture = createShaderProgram(
 			compileShader(replaceIncludes(includes,readFile("shaders/texture/water_vertex.glsl")),GL_VERTEX_SHADER), 
 			compileShader(replaceIncludes(includes,readFile("shaders/texture/water_fragment.glsl")),GL_FRAGMENT_SHADER), 
@@ -401,15 +374,10 @@ public:
 		screen2dVao = DrawableGeometry::create2DVAO(0,0,200,200);
 		fillAreaVao = DrawableGeometry::create2DVAO(-1,1, 1,-1);
 
-
 		modelViewProjectionShadowLoc = glGetUniformLocation(programShadow, "modelViewProjection");
-
-
-
 
 		shadowFrameBuffer = createDepthFrameBuffer(2048, 2048);
 		liquidFrameBuffer = createRenderFrameBuffer(getWidth(), getHeight());
-
 
 		{
 			Texture * t = new Texture(loadTextureArray("textures/grid.png","",""));
@@ -515,8 +483,7 @@ public:
 			brushes.push_back(new Brush(t, glm::vec2(0.2), 0.02, 8, 32, 16,4, 10.0, 0.5 , 1.33));
 			animatedTextures.push_back(tm);
 		}
-
-
+		
 		noiseTexture = loadTextureImage("textures/noise.png");
 
 		activeTexture = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, "shadowMap", shadowFrameBuffer.depthTexture);
@@ -524,8 +491,6 @@ public:
 		
 		Texture::bindTextures(program3d, GL_TEXTURE_2D_ARRAY, activeTexture, "textures", &textures);
 		Brush::bindBrushes(program3d, &brushes);
-
-
 
         camera.quaternion =   glm::angleAxis(glm::radians(180.0f), glm::vec3(0, 0, 1))
    	    					* glm::angleAxis(glm::radians(145.0f), glm::vec3(1, 0, 0))
@@ -548,7 +513,6 @@ public:
 		solidSpace->add(new BoxContainmentHandler(BoundingBox(glm::vec3(-10,6,-10),glm::vec3(34,50,34)),new SimpleBrush(textures[8])));
 		solidSpace->del(new SphereContainmentHandler(BoundingSphere(glm::vec3(4,54,-4),8), new SimpleBrush(textures[1])));
 		solidSpace->add(new SphereContainmentHandler(BoundingSphere(glm::vec3(11,61,-11),4), new SimpleBrush(textures[16])));
-
 
 		BoundingBox waterBox(glm::vec3(-100,-60,-100), glm::vec3(100,3,100));
 		//liquidSpace->add(new OctreeContainmentHandler(solidSpace, waterBox, new SimpleBrush(textures[6])));
@@ -587,7 +551,7 @@ public:
 		depthBufferViewer = new DepthBufferViewer(programDepth,renderBuffer.depthTexture,256,256);
 		imageViewer = new ImageViewer(liquidFrameBuffer.colorTexture, 256,256);
 		settingsEditor = new SettingsEditor(settings);
-	 }
+	}
 
     virtual void update(float deltaTime){
 		time += deltaTime;
@@ -597,7 +561,6 @@ public:
 
         camera.projection = glm::perspective(glm::radians(45.0f), getWidth() / (float) getHeight(), 0.1f, 512.0f);
 	//    camera.projection[1][1] *= -1;
-    
 	 //   modelMatrix = glm::rotate(modelMatrix, deltaTime * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 
 	   	float rsense = 0.01;
@@ -642,16 +605,13 @@ public:
 		camera.quaternion = glm::normalize(camera.quaternion);
 		glm::vec3 cameraDirection = glm::vec3(0.0f, 0.0f, -1.0f)*camera.quaternion;
 	
-
 		float far = 512.0f;
 		float dist = 32.0f;
 	   	glm::vec3 lookAtLightPosition = glm::round(camera.position/16.0f)*16.0f; // + cameraDirection*far*0.5f;
 
-
 		//light.direction = glm::normalize(glm::vec3(glm::sin(time),-1.0,glm::cos(time)));
 
 		float orthoSize = 512.0f;  // Size of the orthographic box
-
 		light.projection = glm::ortho(-orthoSize, orthoSize, -orthoSize, orthoSize, 0.1f, far);
 		light.view = glm::lookAt(lookAtLightPosition - light.direction*dist, lookAtLightPosition, glm::vec3(0,1,0));
 
@@ -686,7 +646,6 @@ public:
 		glm::mat4 mvp = camera.getMVP(model);
 		glm::mat4 mlp = light.getMVP(model);
 		glm::mat4 ms =  getCanonicalMVP(mlp);
-
 
 		// ================
 		// Shadow component
@@ -772,25 +731,17 @@ public:
 		}
 		glPolygonMode(GL_FRONT, GL_FILL);
 
-
-
-
-
 		#ifdef DEBUG_GEO
 	
 		glUniform1ui(program3dLocs->lightEnabledLoc, 0);
 		glUniform1ui(program3dLocs->parallaxEnabledLoc, 0);
     	glUniform1ui(program3dLocs->triplanarEnabledLoc, 0);
 	
-
 		glDisable(GL_CULL_FACE); // Enable face culling
 		vaoDebug->draw(GL_PATCHES);
-		
-		
+			
 		glPolygonMode(GL_FRONT, GL_FILL);
 		#endif
-
-
 
 		// ==========
 		// Final Pass
@@ -813,8 +764,6 @@ public:
 			glBindTexture(GL_TEXTURE_2D, liquidFrameBuffer.colorTexture);		
 			glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 		}
-	
-
     }
 	bool demo = false;
     bool bSettingsWindow = true;
@@ -900,7 +849,6 @@ public:
 
 		}
 
-
 		if(animatedTextureEditor->isOpen()) {
 			animatedTextureEditor->draw2d();
 		}
@@ -933,7 +881,6 @@ public:
 	}
 
     virtual void clean(){
-
 		// Cleanup and exit
 		glDeleteProgram(program3d);
     }
