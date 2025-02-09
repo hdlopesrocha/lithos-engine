@@ -80,9 +80,6 @@ void Simplifier::simplify(Octree * tree, OctreeNode * node, BoundingCube cube, B
 		//node->mask = mask;
 		node->simplification = simplification;
 	} 
-	
-
-
 }
 
 OctreeNode * Simplifier::getChild(OctreeNode * node, int index){

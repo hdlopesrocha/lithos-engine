@@ -1,3 +1,6 @@
+#ifndef UI_HPP
+#define UI_HPP
+
 #include <vector>
 #include "../gl/gl.hpp"
 
@@ -124,3 +127,5 @@ class SettingsEditor : public Closable {
     void draw2d();
     void draw3d();
 };
+
+#endif

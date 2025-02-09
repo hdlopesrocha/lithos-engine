@@ -19,8 +19,6 @@ TextureArray AnimatedTexture::getTexture(){
 }
 
 void AnimatedTexture::animate(float time){
-
-
     GLint originalFrameBuffer;
     glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &originalFrameBuffer);
 
@@ -50,5 +48,4 @@ void AnimatedTexture::animate(float time){
     glGenerateMipmap(GL_TEXTURE_2D_ARRAY);
 
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, originalFrameBuffer);
-
 }

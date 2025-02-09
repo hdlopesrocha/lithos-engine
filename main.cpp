@@ -5,116 +5,11 @@
 #include "DebugTesselator.hpp"
 #include "math/math.hpp"
 #include "ui/ui.hpp"
+#include "tools/tools.hpp"
 #include "HeightFunctions.hpp"
-#define TYPE_SOLID_DRAWABLE 1
-#define TYPE_SHADOW_DRAWABLE 2
-#define TYPE_LIQUID_DRAWABLE 3
-#define DISCARD_BRUSH_INDEX -1
+#include "Scene.hpp"
 //#define DEBUG_GEO 0
 
-class SimpleBrush : public TextureBrush {
-	Texture * texture;
-
-	public: 
-	SimpleBrush(Texture * texture){
-		this->texture = texture;
-	}
-
-	void paint(Vertex * vertex) {
-		vertex->texIndex = texture->index;
-	}
-};
-
-class WaterBrush : public TextureBrush {
-	Texture * water;
-	Texture discardTexture;
-
-	public: 
-	WaterBrush(Texture* water){
-		discardTexture.index = DISCARD_BRUSH_INDEX;
-		this->water = water;
-	}
-
-	void paint(Vertex * vertex) {
-		float steepness =glm::dot(glm::vec3(0.0f,1.0f,0.0f), vertex->normal );
-		
-		Texture * texture;
-		if (glm::dot(glm::vec3(0.0f,1.0f,0.0f), vertex->normal ) <=0 ){
-			texture= &discardTexture;
-		} else {
-			texture = water;
-		} 
-		vertex->texIndex = texture->index;
-	}
-};
-
-class LandBrush : public TextureBrush {
-	Texture * underground;
-	Texture * grass;
-	Texture * sand;
-	Texture * softSand;
-	Texture * rock;
-	Texture * snow;
-	Texture * grassMixSand;
-	Texture * grassMixSnow;
-	Texture * rockMixGrass;
-	Texture * rockMixSnow;
-	Texture * rockMixSand;
-	Texture discardTexture;
-
-	public: 
-	LandBrush(std::vector<Brush*> brushes){
-		discardTexture.index = DISCARD_BRUSH_INDEX;
-		this->underground = brushes[7]->texture;
-		this->grass = brushes[2]->texture;
-		this->sand = brushes[3]->texture;
-		this->softSand = brushes[15]->texture;
-		this->rock = brushes[4]->texture;
-		this->snow = brushes[5]->texture;
-		this->grassMixSand = brushes[9]->texture;
-		this->grassMixSnow = brushes[10]->texture;
-		this->rockMixGrass = brushes[11]->texture;
-		this->rockMixSnow = brushes[12]->texture;
-		this->rockMixSand = brushes[13]->texture;
-	}
-
-	void paint(Vertex * vertex) {
-		float steepness =glm::dot(glm::vec3(0.0f,1.0f,0.0f), vertex->normal );
-		int grassLevel = 25;
-		int sandLevel = 5;
-
-		Texture * texture;
-		if (glm::dot(glm::vec3(0.0f,1.0f,0.0f), vertex->normal ) <=0 ){
-			texture= &discardTexture;
-		} else if(steepness < 0.8 ){
-			texture = rock;
-		} else if(steepness < 0.9 ){
-		    if(vertex->position.y < sandLevel -1){
-				texture = rock;
-			} else if(vertex->position.y < sandLevel){
-				texture = rockMixSand;
-			} else if(vertex->position.y < grassLevel){
-				texture = rockMixGrass;
-			} else {
-				texture = rockMixSnow;
-			}
-		} else if(vertex->position.y < sandLevel-1){
-			texture = softSand;
-		} else if(vertex->position.y < sandLevel){
-			texture = sand;
-		} else if(vertex->position.y < sandLevel+1){
-			texture = grassMixSand;
-		} else if(vertex->position.y < grassLevel){
-			texture = grass;
-		} else if(vertex->position.y < grassLevel+1){
-			texture = grassMixSnow;
-		} else {
-			texture = snow;
-		}
-
-		vertex->texIndex = texture->index;
-	}
-};
 
 class OctreeContainmentHandler : public ContainmentHandler {
 	public:
@@ -247,13 +142,10 @@ class MainApplication : public LithosApplication {
 	std::vector<TextureMixer*> mixers;
 	std::vector<AnimatedTexture*> animatedTextures;
 
-  	Camera camera;
-	DirectionalLight light;
-	Octree * solidSpace;
-	Octree * liquidSpace;
-	OctreeRenderer * solidRenderer;
-	OctreeRenderer * shadowRenderer;
-	OctreeRenderer * liquidRenderer;
+
+	Scene * mainScene;
+
+
 	Settings * settings = new Settings();
 	#ifdef DEBUG_GEO
 	DrawableGeometry * vaoDebug;
@@ -267,9 +159,6 @@ class MainApplication : public LithosApplication {
 	GLuint programMixTexture;
 	GLuint programWaterTexture;
 
-	int solidTrianglesCount = 0;
-	int liquidTrianglesCount = 0;
-	int shadowTrianglesCount = 0;
 
 	GLuint modelViewProjectionShadowLoc;
 	ProgramLocations * program3dLocs;
@@ -492,36 +381,11 @@ public:
 		Texture::bindTextures(program3d, GL_TEXTURE_2D_ARRAY, activeTexture, "textures", &textures);
 		Brush::bindBrushes(program3d, &brushes);
 
-        camera.quaternion =   glm::angleAxis(glm::radians(180.0f), glm::vec3(0, 0, 1))
-   	    					* glm::angleAxis(glm::radians(145.0f), glm::vec3(1, 0, 0))
-   	    					* glm::angleAxis(glm::radians(135.0f), glm::vec3(0, 1, 0));  
-		camera.position = glm::vec3(48,48,48);
 
-		solidSpace = new Octree(BoundingCube(glm::vec3(0,0,0), 2.0));
-		liquidSpace = new Octree(BoundingCube(glm::vec3(0,20,0), 2.0));
+		mainScene = new Scene();
+		mainScene->setup(textures, brushes);
 
-		BoundingBox mapBox(glm::vec3(-100,-60,-100), glm::vec3(100,50,100));
-		HeightFunction * function = new GradientPerlinSurface(100, 1.0f/128.0f, 0);
-		CachedHeightMapSurface * surface = new CachedHeightMapSurface(function, mapBox, solidSpace->minSize);
-		HeightMap map(surface, mapBox.getMin(),mapBox.getMax(), solidSpace->minSize);
-
-		solidSpace->add(new HeightMapContainmentHandler(&map, new LandBrush(brushes)));
-		//tree->del(new SphereContainmentHandler(BoundingSphere(glm::vec3(00,-30,0),50), textures[7]));
-		solidSpace->add(new SphereContainmentHandler(BoundingSphere(glm::vec3(0,50,0),20), new SimpleBrush(textures[6])));
-		solidSpace->add(new SphereContainmentHandler(BoundingSphere(glm::vec3(-11,61,11),10), new SimpleBrush(textures[5])));
-		solidSpace->del(new SphereContainmentHandler(BoundingSphere(glm::vec3(11,61,-11),10), new SimpleBrush(textures[4])));
-		solidSpace->add(new BoxContainmentHandler(BoundingBox(glm::vec3(-10,6,-10),glm::vec3(34,50,34)),new SimpleBrush(textures[8])));
-		solidSpace->del(new SphereContainmentHandler(BoundingSphere(glm::vec3(4,54,-4),8), new SimpleBrush(textures[1])));
-		solidSpace->add(new SphereContainmentHandler(BoundingSphere(glm::vec3(11,61,-11),4), new SimpleBrush(textures[16])));
-
-		BoundingBox waterBox(glm::vec3(-100,-60,-100), glm::vec3(100,3,100));
-		//liquidSpace->add(new OctreeContainmentHandler(solidSpace, waterBox, new SimpleBrush(textures[6])));
-		//BoundingBox waterBox(glm::vec3(50,50,0), glm::vec3(70,70,20));
-		liquidSpace->add(new BoxContainmentHandler(waterBox, new WaterBrush(textures[16])));
-
-		solidRenderer = new OctreeRenderer(solidSpace, &solidTrianglesCount, TYPE_SOLID_DRAWABLE, 5, 0.9, 0.2, true);
-		liquidRenderer = new OctreeRenderer(liquidSpace, &liquidTrianglesCount, TYPE_LIQUID_DRAWABLE, 5, 0.9, 0.2, true);
-		shadowRenderer = new OctreeRenderer(solidSpace, &shadowTrianglesCount, TYPE_SHADOW_DRAWABLE, 6, 0.1, 4.0, false);
+	
 		//tesselator->normalize();
 
 		#ifdef DEBUG_GEO
@@ -530,7 +394,6 @@ public:
 		vaoDebug = new DrawableGeometry(&debugTesselator->chunk);
 		#endif
 
-        light.direction = glm::normalize(glm::vec3(-1.0,-1.0,-1.0));
 	 
 	 	std::cout << "Setup complete!" << std::endl;
 		//std::cout << "#triangles = " << Tesselator::triangles << std::endl;
@@ -544,7 +407,7 @@ public:
 		ImGui_ImplGlfw_InitForOpenGL(getWindow(), true);
 		ImGui_ImplOpenGL3_Init("#version 460");
 
-		brushEditor = new BrushEditor(&camera, &brushes, program3d, programTexture);
+		brushEditor = new BrushEditor(&mainScene->camera, &brushes, program3d, programTexture);
 		shadowMapViewer = new ShadowMapViewer(shadowFrameBuffer.depthTexture);
 		textureMixerEditor = new TextureMixerEditor(&mixers, &textures, programTexture);
 		animatedTextureEditor = new AnimatedTextureEditor(&animatedTextures, &textures, programTexture, 256,256);
@@ -559,61 +422,61 @@ public:
 		   	close();
 		}
 
-        camera.projection = glm::perspective(glm::radians(45.0f), getWidth() / (float) getHeight(), 0.1f, 512.0f);
+        mainScene->camera.projection = glm::perspective(glm::radians(45.0f), getWidth() / (float) getHeight(), 0.1f, 512.0f);
 	//    camera.projection[1][1] *= -1;
 	 //   modelMatrix = glm::rotate(modelMatrix, deltaTime * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 
 	   	float rsense = 0.01;
 
 	   	if (getKeyboardStatus(GLFW_KEY_W) != GLFW_RELEASE) {
-	   	   	camera.quaternion = glm::angleAxis(+rsense, glm::vec3(1,0,0))*camera.quaternion;
+	   	   	mainScene->camera.quaternion = glm::angleAxis(+rsense, glm::vec3(1,0,0))*mainScene->camera.quaternion;
 		}
 	   	if (getKeyboardStatus(GLFW_KEY_S) != GLFW_RELEASE) {
-	   	   	camera.quaternion = glm::angleAxis(-rsense, glm::vec3(1,0,0))*camera.quaternion;
+	   	   	mainScene->camera.quaternion = glm::angleAxis(-rsense, glm::vec3(1,0,0))*mainScene->camera.quaternion;
 		}
    		if (getKeyboardStatus(GLFW_KEY_A) != GLFW_RELEASE) {
-	   	   	camera.quaternion = glm::angleAxis(-rsense, glm::vec3(0,1,0))*camera.quaternion;
+	   	   	mainScene->camera.quaternion = glm::angleAxis(-rsense, glm::vec3(0,1,0))*mainScene->camera.quaternion;
 		}
 	   	if (getKeyboardStatus(GLFW_KEY_D) != GLFW_RELEASE) {
-	   	   	camera.quaternion = glm::angleAxis(+rsense, glm::vec3(0,1,0))*camera.quaternion;
+	   	   	mainScene->camera.quaternion = glm::angleAxis(+rsense, glm::vec3(0,1,0))*mainScene->camera.quaternion;
 		}
 		if (getKeyboardStatus(GLFW_KEY_Q) != GLFW_RELEASE) {
-	   	   	camera.quaternion = glm::angleAxis(+rsense, glm::vec3(0,0,1))*camera.quaternion;
+	   	   	mainScene->camera.quaternion = glm::angleAxis(+rsense, glm::vec3(0,0,1))*mainScene->camera.quaternion;
 		}
 	   	if (getKeyboardStatus(GLFW_KEY_E) != GLFW_RELEASE) {
-	   	   	camera.quaternion = glm::angleAxis(-rsense, glm::vec3(0,0,1))*camera.quaternion;
+	   	   	mainScene->camera.quaternion = glm::angleAxis(-rsense, glm::vec3(0,0,1))*mainScene->camera.quaternion;
 		}
 
-		glm::vec3 xAxis = glm::vec3(1.0f, 0.0f, 0.0f)*camera.quaternion;
-		glm::vec3 yAxis = glm::vec3(0.0f, 1.0f, 0.0f)*camera.quaternion;
-		glm::vec3 zAxis = glm::vec3(0.0f, 0.0f, 1.0f)*camera.quaternion;
+		glm::vec3 xAxis = glm::vec3(1.0f, 0.0f, 0.0f)*mainScene->camera.quaternion;
+		glm::vec3 yAxis = glm::vec3(0.0f, 1.0f, 0.0f)*mainScene->camera.quaternion;
+		glm::vec3 zAxis = glm::vec3(0.0f, 0.0f, 1.0f)*mainScene->camera.quaternion;
 
 	   	float tsense = deltaTime*10;
 	   	if (getKeyboardStatus(GLFW_KEY_UP) != GLFW_RELEASE) {
-	   		camera.position -= zAxis*tsense;
+	   		mainScene->camera.position -= zAxis*tsense;
 		}
 	   	if (getKeyboardStatus(GLFW_KEY_DOWN) != GLFW_RELEASE) {
-	   		camera.position += zAxis*tsense;
+	   		mainScene->camera.position += zAxis*tsense;
 		}
 	   	if (getKeyboardStatus(GLFW_KEY_RIGHT) != GLFW_RELEASE) {
-	   		camera.position += xAxis*tsense;
+	   		mainScene->camera.position += xAxis*tsense;
 		}
    		if (getKeyboardStatus(GLFW_KEY_LEFT) != GLFW_RELEASE) {
-	   		camera.position -= xAxis*tsense;
+	   		mainScene->camera.position -= xAxis*tsense;
 		}
 
-		camera.quaternion = glm::normalize(camera.quaternion);
-		glm::vec3 cameraDirection = glm::vec3(0.0f, 0.0f, -1.0f)*camera.quaternion;
+		mainScene->camera.quaternion = glm::normalize(mainScene->camera.quaternion);
+		glm::vec3 cameraDirection = glm::vec3(0.0f, 0.0f, -1.0f)*mainScene->camera.quaternion;
 	
 		float far = 512.0f;
 		float dist = 32.0f;
-	   	glm::vec3 lookAtLightPosition = glm::round(camera.position/16.0f)*16.0f; // + cameraDirection*far*0.5f;
+	   	glm::vec3 lookAtLightPosition = glm::round(mainScene->camera.position/16.0f)*16.0f; // + cameraDirection*far*0.5f;
 
 		//light.direction = glm::normalize(glm::vec3(glm::sin(time),-1.0,glm::cos(time)));
 
 		float orthoSize = 512.0f;  // Size of the orthographic box
-		light.projection = glm::ortho(-orthoSize, orthoSize, -orthoSize, orthoSize, 0.1f, far);
-		light.view = glm::lookAt(lookAtLightPosition - light.direction*dist, lookAtLightPosition, glm::vec3(0,1,0));
+		mainScene->light.projection = glm::ortho(-orthoSize, orthoSize, -orthoSize, orthoSize, 0.1f, far);
+		mainScene->light.view = glm::lookAt(lookAtLightPosition - mainScene->light.direction*dist, lookAtLightPosition, glm::vec3(0,1,0));
 
 		for(int i=0; i<animatedTextures.size() ; ++i) {
 			AnimatedTexture * texture = animatedTextures[i];
@@ -621,31 +484,21 @@ public:
 		}
     }
 
-	glm::mat4 getCanonicalMVP(glm::mat4 m) {
-		return glm::translate(glm::mat4(1.0f), glm::vec3(0.5)) 
-						* glm::scale(glm::mat4(1.0f), glm::vec3(0.5)) 
-						* m;
-	}
+
 
     virtual void draw3d() {
 
 		glClearColor (0.0,0.0,0.0,0.0);
-
 		glm::mat4 model = glm::mat4(1.0f); // Identity matrix
-		solidRenderer->loaded = 0;
-		liquidRenderer->loaded = 0;
-		shadowRenderer->loaded = 0;
 
-		solidRenderer->cameraPosition = camera.position;
-		liquidRenderer->cameraPosition = camera.position;
-		shadowRenderer->cameraPosition = camera.position -light.direction*512.0f;
-
-		glm::mat4 rotate = glm::mat4_cast(camera.quaternion);
-		glm::mat4 translate = glm::translate(glm::mat4(1.0f), -camera.position);
-	    camera.view = rotate * translate;
-		glm::mat4 mvp = camera.getMVP(model);
-		glm::mat4 mlp = light.getMVP(model);
+		glm::mat4 rotate = glm::mat4_cast(mainScene->camera.quaternion);
+		glm::mat4 translate = glm::translate(glm::mat4(1.0f), -mainScene->camera.position);
+	    mainScene->camera.view = rotate * translate;
+		glm::mat4 mvp = mainScene->camera.getMVP(model);
+		glm::mat4 mlp = mainScene->light.getMVP(model);
 		glm::mat4 ms =  getCanonicalMVP(mlp);
+
+		mainScene->update3d(mvp, mlp);
 
 		// ================
 		// Shadow component
@@ -657,11 +510,9 @@ public:
 			glClear(GL_DEPTH_BUFFER_BIT);
 			glUseProgram(programShadow);
 			glUniformMatrix4fv(modelViewProjectionShadowLoc, 1, GL_FALSE, glm::value_ptr(mlp));
-
-			shadowRenderer->mode = GL_TRIANGLES;
-			shadowRenderer->update(mlp);
-			solidSpace->iterate(shadowRenderer);
+			mainScene->draw3dShadow();
 		}
+
 
 		// ============
 		// 3D component
@@ -683,12 +534,9 @@ public:
 		glPolygonMode(GL_FRONT, GL_FILL);
 
 		glUseProgram(program3d);
-		program3dLocs->update(mvp, model,ms,light.direction, camera.position, time, settings);
-		solidRenderer->update(mvp);
-		solidRenderer->mode = GL_PATCHES;
 
-		liquidRenderer->update(mvp);
-		liquidRenderer->mode = GL_PATCHES;
+		program3dLocs->update(mvp, model,ms,mainScene->light.direction, mainScene->camera.position, time, settings);
+
 
 		if(settings->wireFrameEnabled) {
 			glUniform1ui(program3dLocs->lightEnabledLoc, 0);
@@ -701,14 +549,15 @@ public:
 			glLineWidth(2.0);
 			glPointSize(4.0);	
 
-			//solidSpace->iterate(solidRenderer);
-			liquidSpace->iterate(liquidRenderer);
+			mainScene->draw3dSolid();
+			mainScene->draw3dLiquid();
+	
 		} else {
 			glPolygonMode(GL_FRONT, GL_FILL);
 			glUniform1ui(program3dLocs->depthTestEnabledLoc, 0); // Set the sampler uniform
 			glUniform1ui(program3dLocs->debugEnabledLoc, 0);
 
-			solidSpace->iterate(solidRenderer);
+			mainScene->draw3dSolid();
 
 			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, liquidFrameBuffer.frameBuffer);
 			glViewport(0, 0, liquidFrameBuffer.width, liquidFrameBuffer.height);
@@ -723,7 +572,7 @@ public:
 			glBindTexture(GL_TEXTURE_2D, renderBuffer.colorTexture);		
 			glUniform1i(program3dLocs->underTextureLoc, 31); // Set the sampler uniform
 			
-			liquidSpace->iterate(liquidRenderer);
+			mainScene->draw3dLiquid();
 		}
 
 		if(brushEditor->isOpen()) {
@@ -785,7 +634,7 @@ public:
 					// Handle "Open" action
 				}
 				if (ImGui::MenuItem("Save", "Ctrl+S")) {
-					// Handle "Save" action
+					mainScene->save();
 				}
 				if (ImGui::MenuItem("Exit")) {
 					this->close();
@@ -842,9 +691,9 @@ public:
 										ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | 
 										ImGuiWindowFlags_NoNav);
 			ImGui::Text("%d FPS", framesPerSecond);
-			ImGui::Text("%d solid triangles", solidTrianglesCount);
-			ImGui::Text("%d liquid triangles", liquidTrianglesCount);
-			ImGui::Text("%d shadow triangles", shadowTrianglesCount);
+			ImGui::Text("%d solid triangles", mainScene->solidTrianglesCount);
+			ImGui::Text("%d liquid triangles", mainScene->liquidTrianglesCount);
+			ImGui::Text("%d shadow triangles", mainScene->shadowTrianglesCount);
 			ImGui::End();
 
 		}
