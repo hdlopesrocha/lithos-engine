@@ -383,7 +383,7 @@ public:
 
 
 		mainScene = new Scene();
-		mainScene->setup(textures, brushes);
+		mainScene->setup();
 
 	
 		//tesselator->normalize();
@@ -628,7 +628,7 @@ public:
 			// File Menu
 			if (ImGui::BeginMenu("File")) {
 				if (ImGui::MenuItem("New")) {
-					// Handle "New" action
+					mainScene->create(textures, brushes);
 				}
 				if (ImGui::MenuItem("Open", "Ctrl+O")) {
 					// Handle "Open" action
