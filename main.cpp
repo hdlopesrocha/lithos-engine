@@ -550,7 +550,7 @@ public:
 			glPointSize(4.0);	
 
 			mainScene->draw3dSolid();
-			//mainScene->draw3dLiquid();
+			mainScene->draw3dLiquid();
 	
 		} else {
 			glPolygonMode(GL_FRONT, GL_FILL);
@@ -572,7 +572,7 @@ public:
 			glBindTexture(GL_TEXTURE_2D, renderBuffer.colorTexture);		
 			glUniform1i(program3dLocs->underTextureLoc, 31); // Set the sampler uniform
 			
-		//	mainScene->draw3dLiquid();
+			mainScene->draw3dLiquid();
 		}
 
 		if(brushEditor->isOpen()) {
