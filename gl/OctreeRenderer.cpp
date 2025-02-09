@@ -43,7 +43,6 @@ void * OctreeRenderer::before(int level, OctreeNode * node, BoundingCube cube, v
 			Geometry * chunk = new Geometry();
 			Tesselator tesselator(tree, triangles, chunk, simplficationId);
 			tesselator.iterate(level, node, cube, NULL);
-
 			// Send to GPU
 			NodeInfo info;
 			info.data = new DrawableGeometry(chunk);

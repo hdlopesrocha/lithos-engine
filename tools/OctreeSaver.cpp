@@ -18,7 +18,7 @@ uint save(OctreeNode * node, std::vector<OctreeNodeSerialized*> * nodes) {
 		n->normal = node->vertex.normal;
 		n->texIndex = node->vertex.texIndex;
 		n->mask = node->mask;
-		n->solid = n->solid;
+		n->solid = node->solid;
 		uint index = nodes->size(); 
 		nodes->push_back(n);
 
@@ -42,8 +42,16 @@ OctreeSaver::OctreeSaver(Octree * tree, std::string filename) {
     }
 	save(tree->root, &this->nodes);
 
+	OctreeSerialized  octreeSerialized;
+	octreeSerialized.min = tree->getMin();
+	octreeSerialized.length = tree->getLength();
+	octreeSerialized.minSize = tree->minSize;
+
+	file.write(reinterpret_cast<const char*>(&octreeSerialized), sizeof(OctreeSerialized));
+
 	size_t size = nodes.size();
-	//std::cout << "Saving " << std::to_string(size) << " nodes" << std::endl;
+	std::cout << "Saving " << std::to_string(size) << " nodes" << std::endl;
+	std::cout << std::to_string(sizeof(OctreeNodeSerialized)) << " bytes/node" << std::endl;
 
 	file.write(reinterpret_cast<const char*>(&size), sizeof(size_t) );
 

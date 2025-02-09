@@ -16,7 +16,6 @@ OctreeNode * load(int i, std::vector<OctreeNodeSerialized> * nodes) {
 	for(int j=0 ; j <8 ; ++j){
 		int index = serialized.children[j];
 		if(index != 0) {
-			//std::cout << "node[" << std::to_string(index) << "] = " << node->vertex.toString() << std::endl;
 			node->setChild(j , load(index, nodes));
 		}
 	}
@@ -34,14 +33,21 @@ OctreeLoader::OctreeLoader(Octree * tree, std::string filename) {
         return;
     }
 
+	OctreeSerialized octreeSerialized;
+	file.read(reinterpret_cast<char*>(&octreeSerialized), sizeof(OctreeSerialized) );
+
 	size_t size;
 	file.read(reinterpret_cast<char*>(&size), sizeof(size_t) );
-	//std::cout << "Loading " << std::to_string(size) << " nodes" << std::endl;
+	std::cout << "Loading " << std::to_string(size) << " nodes" << std::endl;
+	std::cout << "Octree: l=" << std::to_string(octreeSerialized.length) << ", mS=" << std::to_string(octreeSerialized.minSize) << ", min={" <<  std::to_string(octreeSerialized.min.x) << "," << std::to_string(octreeSerialized.min.y) << "," << std::to_string(octreeSerialized.min.z) <<"}" << std::endl;
 
 	std::vector<OctreeNodeSerialized> nodes(size);
    	file.read(reinterpret_cast<char*>(nodes.data()), size * sizeof(OctreeNodeSerialized));
 
 	tree->root = load(0,&nodes);
+	tree->minSize = octreeSerialized.minSize;
+	tree->setMin(octreeSerialized.min);
+	tree->setLength(octreeSerialized.length);
     file.close();
 }
 

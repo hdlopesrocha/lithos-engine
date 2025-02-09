@@ -15,6 +15,14 @@ struct OctreeNodeSerialized {
     uint children[8];
 };
 
+struct OctreeSerialized {
+    public:
+    glm::vec3 min;
+    float length;
+	float minSize;
+};
+
+
 class OctreeSaver {
 	Octree * tree;
     std::ofstream file;
