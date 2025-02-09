@@ -49,6 +49,7 @@ OctreeLoader::OctreeLoader(Octree * tree, std::string filename) {
 	tree->setMin(octreeSerialized.min);
 	tree->setLength(octreeSerialized.length);
     file.close();
+	nodes.clear();
 }
 
 

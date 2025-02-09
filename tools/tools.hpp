@@ -26,7 +26,6 @@ struct OctreeSerialized {
 class OctreeSaver {
 	Octree * tree;
     std::ofstream file;
-    std::vector<OctreeNodeSerialized*> nodes;
 
     public: 
 		OctreeSaver(Octree * tree, std::string filename);

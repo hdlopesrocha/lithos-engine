@@ -384,7 +384,7 @@ public:
 
 		mainScene = new Scene();
 		mainScene->setup();
-
+		mainScene->load();
 	
 		//tesselator->normalize();
 

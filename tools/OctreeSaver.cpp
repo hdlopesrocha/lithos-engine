@@ -34,13 +34,14 @@ uint save(OctreeNode * node, std::vector<OctreeNodeSerialized*> * nodes) {
 OctreeSaver::OctreeSaver(Octree * tree, std::string filename) {
 	this->tree = tree;
 	ensureFolderExists("data");
+    std::vector<OctreeNodeSerialized*> nodes;
 
 	this->file = std::ofstream("data/"+filename, std::ios::binary);
     if (!file) {
         std::cerr << "Error opening file for writing: " << filename << std::endl;
         return;
     }
-	save(tree->root, &this->nodes);
+	save(tree->root, &nodes);
 
 	OctreeSerialized  octreeSerialized;
 	octreeSerialized.min = tree->getMin();
@@ -55,10 +56,11 @@ OctreeSaver::OctreeSaver(Octree * tree, std::string filename) {
 
 	file.write(reinterpret_cast<const char*>(&size), sizeof(size_t) );
 
-	for(int i=0; i < this->nodes.size(); ++i) {
-		OctreeNodeSerialized * n = this->nodes[i];
+	for(int i=0; i < nodes.size(); ++i) {
+		OctreeNodeSerialized * n = nodes[i];
 		file.write(reinterpret_cast<const char*>(n), sizeof(OctreeNodeSerialized) );
 	}
 	file.close();
+	nodes.clear();
 }
 

@@ -35,7 +35,6 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <chrono>
-#include "rapidjson/document.h"
 #include <sstream>
 #include <string>
 #include "../math/math.hpp"
