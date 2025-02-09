@@ -43,38 +43,14 @@ OctreeSaver::OctreeSaver(Octree * tree, std::string filename) {
 	save(tree->root, &this->nodes);
 
 	size_t size = nodes.size();
+	//std::cout << "Saving " << std::to_string(size) << " nodes" << std::endl;
+
 	file.write(reinterpret_cast<const char*>(&size), sizeof(size_t) );
 
 	for(int i=0; i < this->nodes.size(); ++i) {
 		OctreeNodeSerialized * n = this->nodes[i];
 		file.write(reinterpret_cast<const char*>(n), sizeof(OctreeNodeSerialized) );
 	}
-}
-
-void OctreeSaver::close() {
-    file.close();
-}
-
-OctreeNode * OctreeSaver::getChild(OctreeNode * node, int index){
-	return node->children[index];
-}
-
-void * OctreeSaver::before(int level, OctreeNode * node, BoundingCube cube, void * context) {		
-	return NULL; 			 			
-}
-
-void OctreeSaver::after(int level, OctreeNode * node, BoundingCube cube, void * context) {			
-	return;
-}
-
-bool OctreeSaver::test(int level, OctreeNode * node, BoundingCube cube, void * context) {	
-	return true;
-}
-
-
-void OctreeSaver::getOrder(OctreeNode * node, BoundingCube cube, int * order){
-	for(int i = 0 ; i < 8 ; ++i) {
-		order[i] = i;
-	}
+	file.close();
 }
 

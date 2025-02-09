@@ -631,7 +631,7 @@ public:
 					mainScene->create(textures, brushes);
 				}
 				if (ImGui::MenuItem("Open", "Ctrl+O")) {
-					// Handle "Open" action
+					mainScene->load();
 				}
 				if (ImGui::MenuItem("Save", "Ctrl+S")) {
 					mainScene->save();

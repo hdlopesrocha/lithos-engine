@@ -15,23 +15,22 @@ struct OctreeNodeSerialized {
     uint children[8];
 };
 
-class OctreeSaver : public IteratorHandler{
+class OctreeSaver {
 	Octree * tree;
     std::ofstream file;
     std::vector<OctreeNodeSerialized*> nodes;
 
     public: 
 		OctreeSaver(Octree * tree, std::string filename);
-
-		void update(glm::mat4 m);
-		void * before(int level, OctreeNode * node, BoundingCube cube, void * context);
-		void after(int level, OctreeNode * node, BoundingCube cube, void * context);
-		bool test(int level, OctreeNode * node, BoundingCube cube, void * context);
-        OctreeNode * getChild(OctreeNode * node, int index);
-		void getOrder(OctreeNode * node, BoundingCube cube, int * order);
-        void close();
 };
 
+class OctreeLoader {
+	Octree * tree;
+    std::ifstream file;
+
+    public: 
+		OctreeLoader(Octree * tree, std::string filename);
+};
 
 class LandBrush : public TextureBrush {
 	Texture * underground;
