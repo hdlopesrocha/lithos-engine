@@ -24,7 +24,7 @@ static int simplficationId = 0;
 
 void markNeighborsAsDirty(Octree * tree, BoundingCube cube, int level, int drawableType) {
 	for(int i=1; i < 7 ; ++i) {
-		glm::vec3 p = cube.getCenter() + cube.getLength()* Octree::getShift(i);
+		glm::vec3 p = cube.getCenter() - cube.getLength()* Octree::getShift(i);
 		OctreeNode * n = tree->getNodeAt(p, level, 0);
 		if(n!=NULL) {
 			for(int j=0; j < n->info.size(); ++j){
@@ -56,14 +56,26 @@ void removeDirtyNodeInfo(OctreeNode * node, int drawableType) {
     node->info.erase(std::remove_if(node->info.begin(), node->info.end(), shouldRemove), node->info.end());
 }
 
+NodeInfo * getNodeInfo(OctreeNode * node, int infoType) {
+	for(int i=0; i < node->info.size(); ++i){
+		NodeInfo * info = &node->info[i];
+		if(info->type == infoType) {
+			return info;
+		}
+	}
+	return NULL;
+}
+
 void * OctreeProcessor::before(int level, OctreeNode * node, BoundingCube cube, void * context) {		
 	bool canGenerate = true;
-	removeDirtyNodeInfo(node, drawableType);
 	
 	for(int i=0; i < node->info.size(); ++i){
 		NodeInfo * info = &node->info[i];
 		if(info->type == drawableType) {
-			canGenerate = false;
+			DrawableGeometry * geo = (DrawableGeometry*) info->data;
+			if(!geo->dirty) { 
+				canGenerate = false;
+			}
 		}
 		if(info->type == INFO_TYPE_FILE) {
 			OctreeNodeFile *f = (OctreeNodeFile*) info->data;
@@ -74,7 +86,6 @@ void * OctreeProcessor::before(int level, OctreeNode * node, BoundingCube cube, 
 
 	if(tree->getHeight(cube)==geometryLevel){
 		if(canGenerate && loaded == 0){
-			std::cout << "Generate " << node->vertex.toString() << std::endl;
 
 			++simplficationId;
 			// Simplify
@@ -86,10 +97,18 @@ void * OctreeProcessor::before(int level, OctreeNode * node, BoundingCube cube, 
 			Tesselator tesselator(tree, triangles, chunk, simplficationId);
 			tesselator.iterate(level, node, cube, NULL);
 			// Send to GPU
-			NodeInfo info;
-			info.data = new DrawableGeometry(chunk);
-			info.type = drawableType;
-			node->info.push_back(info);
+			
+			NodeInfo * existingInfo = getNodeInfo(node, drawableType);
+			if(existingInfo== NULL) {
+				NodeInfo info;
+				info.data = new DrawableGeometry(chunk);
+				info.type = drawableType;
+				node->info.push_back(info);
+			}else {
+				DrawableGeometry * existingData = (DrawableGeometry*) existingInfo->data;
+				delete existingData;
+				existingInfo->data = new DrawableGeometry(chunk);
+			}
 			
 			delete chunk;
 			++loaded;
