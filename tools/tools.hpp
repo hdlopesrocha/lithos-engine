@@ -1,6 +1,8 @@
 #ifndef TOOLS_HPP
 #define TOOLS_HPP
-
+#include <filesystem>
+#include <iostream>
+#include <fstream>
 #include "../math/math.hpp"
 #include "../gl/gl.hpp"
 #define DISCARD_BRUSH_INDEX -1
@@ -23,21 +25,29 @@ struct OctreeSerialized {
 };
 
 
-class OctreeSaver {
+class OctreeFile {
 	Octree * tree;
-    std::ofstream file;
+    std::string filename;
+    int chunkHeight;
 
     public: 
-		OctreeSaver(Octree * tree, std::string filename);
+		OctreeFile(Octree * tree, std::string filename, int chunkHeight);
+        void save();
+        void load();
+
 };
 
-class OctreeLoader {
-	Octree * tree;
-    std::ifstream file;
+
+class OctreeNodeFile {
+	OctreeNode * node;
+    std::string filename;
 
     public: 
-		OctreeLoader(Octree * tree, std::string filename);
+		OctreeNodeFile(OctreeNode * node, std::string filename);
+        void save();
+        OctreeNode * load();
 };
+
 
 class LandBrush : public TextureBrush {
 	Texture * underground;
@@ -76,5 +86,7 @@ class WaterBrush : public TextureBrush {
 	WaterBrush(Texture* water);
 	void paint(Vertex * vertex);
 };
+
+void ensureFolderExists(const std::string& folder);
 
 #endif

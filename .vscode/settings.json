@@ -90,7 +90,8 @@
         "stdfloat": "cpp",
         "syncstream": "cpp",
         "typeindex": "cpp",
-        "valarray": "cpp"
+        "valarray": "cpp",
+        "filesystem": "cpp"
     },
     "cmake.sourceDirectory": "/home/hdlrocha/lithos/dependencies/rapidjson"
 }

@@ -101,12 +101,16 @@ class Scene {
 
 
 	void save() {
-		OctreeSaver saver1(solidSpace, "solid.bin");
-		OctreeSaver saver2(liquidSpace, "liquid.bin");
+		OctreeFile saver1(solidSpace, "solid", 5);
+		OctreeFile saver2(liquidSpace, "liquid", 5);
+		saver1.save();
+		saver2.save();
 	}
 
 	void load() {
-		OctreeLoader loader1(solidSpace, "solid.bin");
-		OctreeLoader loader2(liquidSpace, "liquid.bin");
+		OctreeFile loader1(solidSpace, "solid", 5);
+		OctreeFile loader2(liquidSpace, "liquid", 5);
+		loader1.load();
+		loader2.load();
 	}
 };
