@@ -146,6 +146,7 @@ class DrawableGeometry {
     bool dirty;
 
 	DrawableGeometry(Geometry * t);
+    ~DrawableGeometry();
     void draw(uint mode);
     static GLuint create2DVAO(float x, float y, float w, float h);
 

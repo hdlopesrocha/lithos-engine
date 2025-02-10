@@ -24,6 +24,12 @@ DrawableGeometry::DrawableGeometry(Geometry * t){
 		
 }
 
+ DrawableGeometry::~DrawableGeometry() {
+	glDeleteBuffers(1, &vbo);
+	glDeleteBuffers(1, &ebo);
+	glDeleteVertexArrays(1, &vao);
+ }
+
 void DrawableGeometry::draw(uint mode) {
 	if(this->indices) {
 		glBindVertexArray(this->vao);
