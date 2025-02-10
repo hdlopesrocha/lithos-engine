@@ -12,7 +12,6 @@
 #define HEIGHT 1050
 #define DEBUG 1
 #define NDEBUG 1
-
 #include "../dependencies/imgui/imgui.h"
 #include "../dependencies/imgui/imgui_impl_glfw.h"
 #include "../dependencies/imgui/imgui_impl_opengl3.h"
@@ -38,6 +37,9 @@
 #include <sstream>
 #include <string>
 #include "../math/math.hpp"
+#include <filesystem>
+#include <iostream>
+#include <ranges>
 
 struct InstanceData {
 	glm::mat4 model;
@@ -141,6 +143,7 @@ class DrawableGeometry {
 	public:
 	GLuint vao, vbo, ebo;
 	int indices;
+    bool dirty;
 
 	DrawableGeometry(Geometry * t);
     void draw(uint mode);
@@ -148,8 +151,7 @@ class DrawableGeometry {
 
 };
 
-
-class OctreeRenderer : public IteratorHandler{
+class OctreeProcessor : public IteratorHandler{
 	Octree * tree;
 	Geometry chunk;
 	Frustum frustum;
@@ -161,11 +163,33 @@ class OctreeRenderer : public IteratorHandler{
 
     public: 
 		int loaded = 0;
-        uint mode;
 		int geometryLevel;
         glm::vec3 cameraPosition;
         int * triangles;
-		OctreeRenderer(Octree * tree, int * triangles, int drawableType, int geometryLevel, float simplificationAngle, float simplificationDistance, bool simplificationTexturing);
+		OctreeProcessor(Octree * tree, int * triangles, int drawableType, int geometryLevel, float simplificationAngle, float simplificationDistance, bool simplificationTexturing);
+
+		void update(glm::mat4 m);
+		void * before(int level, OctreeNode * node, BoundingCube cube, void * context);
+		void after(int level, OctreeNode * node, BoundingCube cube, void * context);
+		bool test(int level, OctreeNode * node, BoundingCube cube, void * context);
+        OctreeNode * getChild(OctreeNode * node, int index);
+		void getOrder(OctreeNode * node, BoundingCube cube, int * order);
+
+};
+
+
+class OctreeRenderer : public IteratorHandler{
+	Octree * tree;
+	Geometry chunk;
+	Frustum frustum;
+	int geometryType;
+    int drawableType;
+
+    public: 
+        uint mode;
+		int geometryLevel;
+        glm::vec3 cameraPosition;
+		OctreeRenderer(Octree * tree, int drawableType, int geometryLevel);
 
 		void update(glm::mat4 m);
 		void * before(int level, OctreeNode * node, BoundingCube cube, void * context);

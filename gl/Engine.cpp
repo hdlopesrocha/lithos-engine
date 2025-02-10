@@ -430,3 +430,4 @@ GLuint LithosApplication::createShaderProgram(GLuint vertexShader, GLuint fragme
 
     return program;
 }
+

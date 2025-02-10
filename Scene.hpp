@@ -21,6 +21,11 @@ class Scene {
 		OctreeRenderer * solidRenderer;
 		OctreeRenderer * shadowRenderer;
 		OctreeRenderer * liquidRenderer;
+		OctreeProcessor * solidProcessor;
+		OctreeProcessor * shadowProcessor;
+		OctreeProcessor * liquidProcessor;
+
+
 		Camera camera;
 		DirectionalLight light;
 
@@ -40,40 +45,51 @@ class Scene {
 		solidSpace = new Octree(BoundingCube(glm::vec3(0,0,0), 2.0));
 		liquidSpace = new Octree(BoundingCube(glm::vec3(0,20,0), 2.0));
   
-		solidRenderer = new OctreeRenderer(solidSpace, &solidTrianglesCount, TYPE_SOLID_DRAWABLE, 5, 0.9, 0.2, true);
-		liquidRenderer = new OctreeRenderer(liquidSpace, &liquidTrianglesCount, TYPE_LIQUID_DRAWABLE, 5, 0.9, 0.2, true);
-		shadowRenderer = new OctreeRenderer(solidSpace, &shadowTrianglesCount, TYPE_SHADOW_DRAWABLE, 6, 0.1, 4.0, false);
+		solidRenderer = new OctreeRenderer(solidSpace, TYPE_SOLID_DRAWABLE, 5);
+		liquidRenderer = new OctreeRenderer(liquidSpace, TYPE_LIQUID_DRAWABLE, 5);
+		shadowRenderer = new OctreeRenderer(solidSpace, TYPE_SHADOW_DRAWABLE, 6);
+
+
+		solidProcessor = new OctreeProcessor(solidSpace, &solidTrianglesCount, TYPE_SOLID_DRAWABLE, 5, 0.9, 0.2, true);
+		liquidProcessor = new OctreeProcessor(liquidSpace, &liquidTrianglesCount, TYPE_LIQUID_DRAWABLE, 5, 0.9, 0.2, true);
+		shadowProcessor = new OctreeProcessor(solidSpace, &shadowTrianglesCount, TYPE_SHADOW_DRAWABLE, 6, 0.1, 4.0, false);
     }
 
 	void draw3dShadow() {
+		solidSpace->iterate(shadowProcessor);
 		solidSpace->iterate(shadowRenderer);
 	}
 
 	void update3d(glm::mat4 mvp, glm::mat4 mlp) {
-		solidRenderer->loaded = 0;
-		liquidRenderer->loaded = 0;
-		shadowRenderer->loaded = 0;
+		solidProcessor->loaded = 0;
+		liquidProcessor->loaded = 0;
+		shadowProcessor->loaded = 0;
 
 		solidRenderer->cameraPosition = camera.position;
 		liquidRenderer->cameraPosition = camera.position;
 		shadowRenderer->cameraPosition = camera.position -light.direction*512.0f;
 	
 		solidRenderer->update(mvp);
+		solidProcessor->update(mvp);
 		solidRenderer->mode = GL_PATCHES;
 
 		liquidRenderer->update(mvp);
+		liquidProcessor->update(mvp);
 		liquidRenderer->mode = GL_PATCHES;
 
 		shadowRenderer->update(mlp);
+		shadowProcessor->update(mlp);
 		shadowRenderer->mode = GL_TRIANGLES;
 	}
 
 
 	void draw3dSolid() {
+		solidSpace->iterate(solidProcessor);
 		solidSpace->iterate(solidRenderer);
 	}
 
 	void draw3dLiquid() {
+		liquidSpace->iterate(liquidProcessor);
 		liquidSpace->iterate(liquidRenderer);
 	}
 

@@ -1,5 +1,5 @@
 #include <bitset>
-#include "tools.hpp"
+#include "math.hpp"
 #include <glm/gtx/norm.hpp> 
 
 
@@ -11,26 +11,29 @@ OctreeFile::OctreeFile(Octree * tree, std::string filename, int chunkHeight) {
 }
 
 OctreeNode * loadRecursive(int i, std::vector<OctreeNodeSerialized> * nodes, int height, std::string filename) {
+	OctreeNodeSerialized serialized = nodes->at(i);
+	Vertex vertex(serialized.position, serialized.normal, glm::vec2(0), serialized.texIndex);
+
+	OctreeNode * node = new OctreeNode(vertex);
+	node->mask = serialized.mask;
+	node->solid = serialized.solid;
+
+	
 	if(height>0) {
-		OctreeNodeSerialized serialized = nodes->at(i);
-		Vertex vertex(serialized.position, serialized.normal, glm::vec2(0), serialized.texIndex);
-
-		OctreeNode * node = new OctreeNode(vertex);
-		node->mask = serialized.mask;
-		node->solid = serialized.solid;
-
 		for(int j=0 ; j <8 ; ++j){
 			int index = serialized.children[j];
 			if(index != 0) {
 				node->setChild(j , loadRecursive(index, nodes, height -1, filename + std::to_string(j)));
 			}
 		}
-
-		return node;
 	}else {
-		OctreeNodeFile file(NULL, "data/" + filename + ".bin");
-		return file.load();
+		OctreeNodeFile * file = new OctreeNodeFile(node, "data/" + filename + ".bin");
+		NodeInfo info;
+		info.data = file;
+		info.type = INFO_TYPE_FILE;		
+		node->info.push_back(info);
 	}
+	return node;
 }
 
 

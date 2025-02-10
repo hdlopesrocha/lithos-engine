@@ -1,5 +1,5 @@
 #include <bitset>
-#include "tools.hpp"
+#include "math.hpp"
 #include <glm/gtx/norm.hpp> 
 
 
@@ -9,18 +9,19 @@ OctreeNodeFile::OctreeNodeFile(OctreeNode * node, std::string filename) {
 	this->filename = filename;
 }
 
-OctreeNode * loadRecursive2(int i, std::vector<OctreeNodeSerialized> * nodes) {
+OctreeNode * loadRecursive2(OctreeNode * node, int i, std::vector<OctreeNodeSerialized> * nodes) {
 	OctreeNodeSerialized serialized = nodes->at(i);
 	Vertex vertex(serialized.position, serialized.normal, glm::vec2(0), serialized.texIndex);
-
-	OctreeNode * node = new OctreeNode(vertex);
-	node->mask = serialized.mask;
-	node->solid = serialized.solid;
+	if(node == NULL) {
+		node = new OctreeNode(vertex);
+		node->mask = serialized.mask;
+		node->solid = serialized.solid;
+	}
 
 	for(int j=0 ; j <8 ; ++j){
 		int index = serialized.children[j];
 		if(index != 0) {
-			node->setChild(j , loadRecursive2(index, nodes));
+			node->setChild(j , loadRecursive2(NULL, index, nodes));
 		}
 	}
 
@@ -28,24 +29,24 @@ OctreeNode * loadRecursive2(int i, std::vector<OctreeNodeSerialized> * nodes) {
 }
 
 
-OctreeNode * OctreeNodeFile::load() {
+void OctreeNodeFile::load() {
 	std::ifstream file = std::ifstream(filename, std::ios::binary);
     if (!file) {
         std::cerr << "Error opening file for reading: " << filename << std::endl;
-        return NULL;
+        return;
     }
 
 	size_t size;
 	file.read(reinterpret_cast<char*>(&size), sizeof(size_t) );
-	std::cout << "Loading " << std::to_string(size) << " nodes" << std::endl;
+	//std::cout << "Loading " << std::to_string(size) << " nodes" << std::endl;
 
 	std::vector<OctreeNodeSerialized> nodes(size);
    	file.read(reinterpret_cast<char*>(nodes.data()), size * sizeof(OctreeNodeSerialized));
-	node = loadRecursive2(0, &nodes);
-
+	loadRecursive2(node, 0, &nodes);
+	// TODO: free memory
+	node->info.clear();
     file.close();
 	nodes.clear();
-	return node;
 }
 
 
@@ -81,7 +82,7 @@ void OctreeNodeFile::save(){
 	saveRecursive2(node, &nodes);
 
 	size_t size = nodes.size();
-	std::cout << "Saving " << std::to_string(size) << " nodes" << std::endl;
+	//std::cout << "Saving " << std::to_string(size) << " nodes" << std::endl;
 	std::cout << std::to_string(sizeof(OctreeNodeSerialized)) << " bytes/node" << std::endl;
 
 	file.write(reinterpret_cast<const char*>(&size), sizeof(size_t) );

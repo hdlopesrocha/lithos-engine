@@ -8,6 +8,9 @@
 #include <fstream>
 #include <vector>
 #include <map>
+#include <filesystem>
+#define INFO_TYPE_FILE 99
+#define INFO_TYPE_REMOVE 0
 
 
 class BoundingSphere;
@@ -390,6 +393,44 @@ class HeightMapContainmentHandler : public ContainmentHandler {
 	Vertex getVertex(BoundingCube cube, ContainmentType solid);
 };
 
+struct OctreeNodeSerialized {
+    public:
+    glm::vec3 position;
+    glm::vec3 normal;
+    uint texIndex;
+    uint mask;
+    ContainmentType solid;
+    uint children[8];
+};
+
+struct OctreeSerialized {
+    public:
+    glm::vec3 min;
+    float length;
+	float minSize;
+};
+
+class OctreeFile {
+	Octree * tree;
+    std::string filename;
+    int chunkHeight;
+
+    public: 
+		OctreeFile(Octree * tree, std::string filename, int chunkHeight);
+        void save();
+        void load();
+
+};
+
+class OctreeNodeFile {
+	OctreeNode * node;
+    std::string filename;
+
+    public: 
+		OctreeNodeFile(OctreeNode * node, std::string filename);
+        void save();
+        void load();
+};
 
 class Math
 {
@@ -405,6 +446,7 @@ public:
 	static glm::vec3 surfaceNormal(glm::vec3 point, BoundingBox box);
 
 };
+void ensureFolderExists(const std::string& folder);
 
 
 #endif

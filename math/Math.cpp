@@ -62,3 +62,9 @@ glm::vec3 Math::surfaceNormal(glm::vec3 point, BoundingBox box) {
 
     return glm::normalize(v);
 }
+
+void ensureFolderExists(const std::string& folder) {
+    if (!std::filesystem::exists(folder)) {
+        std::filesystem::create_directories(folder);
+    }
+}
