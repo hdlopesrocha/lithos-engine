@@ -43,8 +43,6 @@ void OctreeNodeFile::load() {
 	std::vector<OctreeNodeSerialized> nodes(size);
    	file.read(reinterpret_cast<char*>(nodes.data()), size * sizeof(OctreeNodeSerialized));
 	loadRecursive2(node, 0, &nodes);
-	// TODO: free memory
-	node->info.clear();
     file.close();
 	nodes.clear();
 }

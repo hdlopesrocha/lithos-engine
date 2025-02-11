@@ -30,7 +30,8 @@ OctreeNode * loadRecursive(int i, std::vector<OctreeNodeSerialized> * nodes, int
 		OctreeNodeFile * file = new OctreeNodeFile(node, "data/" + filename + ".bin");
 		NodeInfo info;
 		info.data = file;
-		info.type = INFO_TYPE_FILE;		
+		info.type = INFO_TYPE_FILE;	
+		info.dirty = true;	
 		node->info.push_back(info);
 	}
 	return node;

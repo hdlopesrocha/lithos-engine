@@ -30,8 +30,7 @@ void markNeighborsAsDirty(Octree * tree, BoundingCube cube, int level, int drawa
 			for(int j=0; j < n->info.size(); ++j){
 				NodeInfo * info = &n->info[j];
 				if(info->type == drawableType) {
-					DrawableGeometry * geo = (DrawableGeometry*) info->data;
-					geo->dirty = true;
+					info->dirty = true;
 				}
 			}
 		}
@@ -45,12 +44,8 @@ bool shouldRemove(const NodeInfo& item) {
 void removeDirtyNodeInfo(OctreeNode * node, int drawableType) {
 	for(int i=0; i < node->info.size(); ++i){
 		NodeInfo * info = &node->info[i];
-		if(info->type == drawableType) {
-			DrawableGeometry * geo = (DrawableGeometry*) info->data;
-			if(geo->dirty) {
-				std::cout << "Marked dirty" << std::endl;
-				info->type = INFO_TYPE_REMOVE;
-			}
+		if(info->type == drawableType && info->dirty) {
+			info->type = INFO_TYPE_REMOVE;
 		}
 	}
     node->info.erase(std::remove_if(node->info.begin(), node->info.end(), shouldRemove), node->info.end());
@@ -71,16 +66,14 @@ void * OctreeProcessor::before(int level, OctreeNode * node, BoundingCube cube, 
 	
 	for(int i=0; i < node->info.size(); ++i){
 		NodeInfo * info = &node->info[i];
-		if(info->type == drawableType) {
-			DrawableGeometry * geo = (DrawableGeometry*) info->data;
-			if(!geo->dirty) { 
-				canGenerate = false;
-			}
-		}
-		if(info->type == INFO_TYPE_FILE) {
+		if(info->type == INFO_TYPE_FILE && info->dirty) {
 			OctreeNodeFile *f = (OctreeNodeFile*) info->data;
 			f->load();
 			markNeighborsAsDirty(tree, cube, level, drawableType);
+			info->dirty = false;
+		}
+		if(info->type == drawableType && !info->dirty) {
+			canGenerate = false;
 		}
 	}
 
@@ -93,24 +86,28 @@ void * OctreeProcessor::before(int level, OctreeNode * node, BoundingCube cube, 
 			simplifier.iterate(level, node, cube, &cube);
 			
 			// Tesselate
-			Geometry * chunk = new Geometry();
-			Tesselator tesselator(tree, triangles, chunk, simplficationId);
+			Geometry * loadable = new Geometry();
+			Tesselator tesselator(tree, triangles, loadable, simplficationId);
 			tesselator.iterate(level, node, cube, NULL);
 			// Send to GPU
 			
 			NodeInfo * existingInfo = getNodeInfo(node, drawableType);
 			if(existingInfo== NULL) {
 				NodeInfo info;
-				info.data = new DrawableGeometry(chunk);
+				info.temp = loadable;
+				info.data = NULL;
 				info.type = drawableType;
+				info.dirty = false;
+
 				node->info.push_back(info);
 			}else {
-				DrawableGeometry * existingData = (DrawableGeometry*) existingInfo->data;
-				delete existingData;
-				existingInfo->data = new DrawableGeometry(chunk);
+				if(existingInfo->temp != NULL) {
+					Geometry * c = (Geometry*) existingInfo->temp;
+					delete c;
+				}
+				existingInfo->temp = loadable;
+				existingInfo->dirty = false;
 			}
-			
-			delete chunk;
 			++loaded;
 		}
 	

@@ -23,8 +23,19 @@ void * OctreeRenderer::before(int level, OctreeNode * node, BoundingCube cube, v
 			NodeInfo * info = &node->info[i];
 			// drawable geometry
 			if(info->type == drawableType) {
-				DrawableGeometry * geo = (DrawableGeometry*) info->data;
-				geo->draw(mode);
+				DrawableGeometry * drawable = (DrawableGeometry*) info->data;
+				Geometry * loadable = (Geometry*) info->temp;
+
+				if(loadable != NULL) {
+					if(drawable!=NULL) {
+						delete drawable;
+					}
+					info->data = drawable = new DrawableGeometry(loadable);
+					info->temp = NULL;
+					delete loadable;
+				}
+
+				drawable->draw(mode);
 			}	
 		}	
 		return node;

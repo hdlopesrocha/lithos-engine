@@ -2,7 +2,6 @@
 
 DrawableGeometry::DrawableGeometry(Geometry * t){
 	indices = t->indices.size();
-	dirty = false;
 	glGenVertexArrays(1, &vao);
 	glGenBuffers(1, &vbo);
 	glGenBuffers(1, &ebo);

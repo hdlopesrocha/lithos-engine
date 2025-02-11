@@ -143,7 +143,6 @@ class DrawableGeometry {
 	public:
 	GLuint vao, vbo, ebo;
 	int indices;
-    bool dirty;
 
 	DrawableGeometry(Geometry * t);
     ~DrawableGeometry();

@@ -201,7 +201,9 @@ class ContainmentHandler {
 struct NodeInfo {
 	public:
 	void * data;
+	void * temp;
 	int type;
+	bool dirty = false;
 };
 
 class OctreeNode {
