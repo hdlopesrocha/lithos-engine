@@ -36,12 +36,14 @@ void OctreeNodeFile::load() {
         return;
     }
 
+    std::stringstream decompressed = gzipDecompressFromIfstream(file);
+
 	size_t size;
-	file.read(reinterpret_cast<char*>(&size), sizeof(size_t) );
+	decompressed.read(reinterpret_cast<char*>(&size), sizeof(size_t) );
 	//std::cout << "Loading " << std::to_string(size) << " nodes" << std::endl;
 
 	std::vector<OctreeNodeSerialized> nodes(size);
-   	file.read(reinterpret_cast<char*>(nodes.data()), size * sizeof(OctreeNodeSerialized));
+   	decompressed.read(reinterpret_cast<char*>(nodes.data()), size * sizeof(OctreeNodeSerialized));
 	loadRecursive2(node, 0, &nodes);
     file.close();
 	nodes.clear();
@@ -81,14 +83,17 @@ void OctreeNodeFile::save(){
 
 	size_t size = nodes.size();
 	//std::cout << "Saving " << std::to_string(size) << " nodes" << std::endl;
-	std::cout << std::to_string(sizeof(OctreeNodeSerialized)) << " bytes/node" << std::endl;
-
-	file.write(reinterpret_cast<const char*>(&size), sizeof(size_t) );
+	//std::cout << std::to_string(sizeof(OctreeNodeSerialized)) << " bytes/node" << std::endl;
+    std::ostringstream decompressed;
+	decompressed.write(reinterpret_cast<const char*>(&size), sizeof(size_t) );
 
 	for(int i=0; i < nodes.size(); ++i) {
 		OctreeNodeSerialized * n = nodes[i];
-		file.write(reinterpret_cast<const char*>(n), sizeof(OctreeNodeSerialized) );
+		decompressed.write(reinterpret_cast<const char*>(n), sizeof(OctreeNodeSerialized) );
 	}
+
+	std::istringstream inputStream(decompressed.str());
+ 	gzipCompressToOfstream(inputStream, file);
 	file.close();
 	nodes.clear();
 }

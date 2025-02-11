@@ -450,5 +450,7 @@ public:
 };
 void ensureFolderExists(const std::string& folder);
 
+std::stringstream gzipDecompressFromIfstream(std::ifstream& inputFile);
+void gzipCompressToOfstream(std::istream& inputStream, std::ofstream& outputFile);
 
 #endif

@@ -499,7 +499,6 @@ public:
 		glm::mat4 ms =  getCanonicalMVP(mlp);
 
 		mainScene->update3d(mvp, mlp);
-
 		// ================
 		// Shadow component
 		// ================

@@ -1,6 +1,7 @@
 
 #include "math/math.hpp"
 #include "tools/tools.hpp"
+#include <thread>
 
 #define TYPE_SOLID_DRAWABLE 1
 #define TYPE_SHADOW_DRAWABLE 2
@@ -56,9 +57,17 @@ class Scene {
     }
 
 	void draw3dShadow() {
-		solidSpace->iterate(shadowProcessor);
 		solidSpace->iterate(shadowRenderer);
 	}
+
+bool isProcessing = false;
+	void processSpace() {
+		solidSpace->iterate(solidProcessor);
+		liquidSpace->iterate(liquidProcessor);
+		solidSpace->iterate(shadowProcessor);
+		isProcessing = false;
+	}
+
 
 	void update3d(glm::mat4 mvp, glm::mat4 mlp) {
 		solidProcessor->loaded = 0;
@@ -80,16 +89,20 @@ class Scene {
 		shadowRenderer->update(mlp);
 		shadowProcessor->update(mlp);
 		shadowRenderer->mode = GL_TRIANGLES;
+
+		if(!isProcessing) {
+			isProcessing = true;
+			std::thread t(&Scene::processSpace, this); 
+			t.join();
+		}
 	}
 
 
 	void draw3dSolid() {
-		solidSpace->iterate(solidProcessor);
 		solidSpace->iterate(solidRenderer);
 	}
 
 	void draw3dLiquid() {
-		liquidSpace->iterate(liquidProcessor);
 		liquidSpace->iterate(liquidRenderer);
 	}
 
@@ -117,15 +130,15 @@ class Scene {
 
 
 	void save() {
-		OctreeFile saver1(solidSpace, "solid", 5);
-		OctreeFile saver2(liquidSpace, "liquid", 5);
+		OctreeFile saver1(solidSpace, "solid", 6);
+		OctreeFile saver2(liquidSpace, "liquid", 6);
 		saver1.save();
 		saver2.save();
 	}
 
 	void load() {
-		OctreeFile loader1(solidSpace, "solid", 5);
-		OctreeFile loader2(liquidSpace, "liquid", 5);
+		OctreeFile loader1(solidSpace, "solid", 6);
+		OctreeFile loader2(liquidSpace, "liquid", 6);
 		loader1.load();
 		loader2.load();
 	}
