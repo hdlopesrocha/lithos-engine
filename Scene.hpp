@@ -25,7 +25,7 @@ class Scene {
 		OctreeProcessor * solidProcessor;
 		OctreeProcessor * shadowProcessor;
 		OctreeProcessor * liquidProcessor;
-
+		Vegetation * vegetation;
 
 		Camera camera;
 		DirectionalLight light;
@@ -54,6 +54,8 @@ class Scene {
 		solidProcessor = new OctreeProcessor(solidSpace, &solidTrianglesCount, TYPE_SOLID_DRAWABLE, 5, 0.9, 0.2, true);
 		liquidProcessor = new OctreeProcessor(liquidSpace, &liquidTrianglesCount, TYPE_LIQUID_DRAWABLE, 5, 0.9, 0.2, true);
 		shadowProcessor = new OctreeProcessor(solidSpace, &shadowTrianglesCount, TYPE_SHADOW_DRAWABLE, 6, 0.1, 4.0, false);
+
+		vegetation = new Vegetation();
     }
 
 	void draw3dShadow() {
@@ -97,6 +99,11 @@ bool isProcessing = false;
 		}
 	}
 
+	void drawVegetation() {
+		glDisable(GL_CULL_FACE); // Enable face culling
+		vegetation->drawable->draw(GL_TRIANGLES);
+		glEnable(GL_CULL_FACE); // Enable face culling
+	}
 
 	void draw3dSolid() {
 		solidSpace->iterate(solidRenderer);

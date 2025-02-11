@@ -292,6 +292,13 @@ class Settings {
 
 };
 
+class Vegetation {
+    public:
+    DrawableGeometry * drawable;
+
+    Vegetation();
+};
+
 GLuint createTextureArray(int width, int height, int layers); 
 RenderBuffer createMultiLayerRenderFrameBuffer(int width, int height, int layers);
 RenderBuffer createDepthFrameBuffer(int width, int height);

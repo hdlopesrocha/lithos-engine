@@ -134,6 +134,15 @@ class ProgramLocations {
 		glUniform1ui(shadowEnabledLoc, settings->shadowEnabled);
 		glUniform1ui(depthTestEnabledLoc, 0);
 	}
+
+	void updateWireframe() {
+		glUniform1ui(lightEnabledLoc, 0);
+		glUniform1ui(parallaxEnabledLoc, 0);
+		glUniform1ui(triplanarEnabledLoc, 0);
+		glUniform1ui(debugEnabledLoc, 1);
+		glUniform1ui(depthTestEnabledLoc, 0); // Set the sampler uniform
+
+	}
 };
 
 class MainApplication : public LithosApplication {
@@ -154,6 +163,7 @@ class MainApplication : public LithosApplication {
 	GLuint programSwap;
 	GLuint program3d;
 	GLuint programShadow;
+	GLuint programVegetation;
 	GLuint programTexture;
 	GLuint programDepth;
 	GLuint programMixTexture;
@@ -162,6 +172,7 @@ class MainApplication : public LithosApplication {
 
 	GLuint modelViewProjectionShadowLoc;
 	ProgramLocations * program3dLocs;
+	ProgramLocations * programVegetationLocs;
 	GLuint noiseTexture;
 	GLuint screen2dVao;
 	GLuint fillAreaVao;
@@ -209,6 +220,15 @@ public:
 			0
 		);
 		glUseProgram(programShadow);
+
+		programVegetation = createShaderProgram(
+			compileShader(replaceIncludes(includes,readFile("shaders/vegetation_vertex.glsl")),GL_VERTEX_SHADER), 
+			compileShader(replaceIncludes(includes,readFile("shaders/vegetation_fragment.glsl")),GL_FRAGMENT_SHADER), 
+			0, 
+			0
+		);
+		programVegetationLocs = new ProgramLocations(programVegetation);
+		glUseProgram(programVegetation);
 
 		programSwap = createShaderProgram(
 			compileShader(replaceIncludes(includes,readFile("shaders/texture/swap_vertex.glsl")),GL_VERTEX_SHADER), 
@@ -532,17 +552,11 @@ public:
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glPolygonMode(GL_FRONT, GL_FILL);
 
-		glUseProgram(program3d);
-
-		program3dLocs->update(mvp, model,ms,mainScene->light.direction, mainScene->camera.position, time, settings);
-
 
 		if(settings->wireFrameEnabled) {
-			glUniform1ui(program3dLocs->lightEnabledLoc, 0);
-			glUniform1ui(program3dLocs->parallaxEnabledLoc, 0);
-			glUniform1ui(program3dLocs->triplanarEnabledLoc, 0);
-			glUniform1ui(program3dLocs->debugEnabledLoc, 1);
-			glUniform1ui(program3dLocs->depthTestEnabledLoc, 0); // Set the sampler uniform
+			glUseProgram(program3d);
+			program3dLocs->update(mvp, model,ms,mainScene->light.direction, mainScene->camera.position, time, settings);
+			program3dLocs->updateWireframe();
 
 			glPolygonMode(GL_FRONT, GL_LINE);
 			glLineWidth(2.0);
@@ -550,13 +564,26 @@ public:
 
 			mainScene->draw3dSolid();
 			mainScene->draw3dLiquid();
-	
+			//glUseProgram(programVegetation);
+
+			glUseProgram(programVegetation);
+			programVegetationLocs->update(mvp, model,ms,mainScene->light.direction, mainScene->camera.position, time, settings);
+			programVegetationLocs->updateWireframe();
+			mainScene->drawVegetation();
+			//glUseProgram(program3d);
+
 		} else {
 			glPolygonMode(GL_FRONT, GL_FILL);
-			glUniform1ui(program3dLocs->depthTestEnabledLoc, 0); // Set the sampler uniform
-			glUniform1ui(program3dLocs->debugEnabledLoc, 0);
-
+			glUseProgram(program3d);
+			program3dLocs->update(mvp, model,ms,mainScene->light.direction, mainScene->camera.position, time, settings);
 			mainScene->draw3dSolid();
+
+			glUseProgram(programVegetation);
+			programVegetationLocs->update(mvp, model,ms,mainScene->light.direction, mainScene->camera.position, time, settings);
+			mainScene->drawVegetation();
+
+			glUseProgram(program3d);
+			program3dLocs->update(mvp, model,ms,mainScene->light.direction, mainScene->camera.position, time, settings);
 
 			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, liquidFrameBuffer.frameBuffer);
 			glViewport(0, 0, liquidFrameBuffer.width, liquidFrameBuffer.height);

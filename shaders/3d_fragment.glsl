@@ -14,7 +14,6 @@ uniform bool shadowEnabled;
 uniform bool triplanarEnabled;
 uniform bool parallaxEnabled;
 uniform bool depthTestEnabled;
-uniform float waterRefractiveIndex; // Usually 1.33
 
 uniform vec3 lightDirection; 
 uniform vec3 cameraPosition; 
