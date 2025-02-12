@@ -97,6 +97,7 @@ class ProgramLocations {
 	GLuint shadowMapLoc;
 	GLuint noiseLoc;
 	GLuint timeLoc;
+	GLuint layerLoc;
 
 	ProgramLocations(GLuint program) {
 		this->program = program;
@@ -118,6 +119,7 @@ class ProgramLocations {
 		this->depthTestEnabledLoc = glGetUniformLocation(program, "depthTestEnabled");
 		this->depthTextureLoc = glGetUniformLocation(program, "depthTexture");
 		this->underTextureLoc = glGetUniformLocation(program, "underTexture");
+		this->layerLoc = glGetUniformLocation(program, "layer");
 	}
 
 	void update(glm::mat4 modelViewProjection,glm::mat4 model, glm::mat4 matrixShadow, glm::vec3 lightDirection, glm::vec3 cameraPosition, float time, Settings * settings) {
@@ -392,6 +394,8 @@ public:
 		
 		noiseTexture = loadTextureImage("textures/noise.png");
 
+		activeTexture = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, "depthTexture", renderBuffer.depthTexture);
+		activeTexture = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, "underTexture", renderBuffer.colorTexture);
 		activeTexture = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, "shadowMap", shadowFrameBuffer.depthTexture);
 		activeTexture = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, "noise", noiseTexture);
 		
@@ -575,9 +579,9 @@ public:
 			program3dLocs->update(mvp, model,ms,mainScene->light.direction, mainScene->camera.position, time, settings);
 			mainScene->draw3dSolid();
 
-			glUseProgram(programVegetation);
-			programVegetationLocs->update(mvp, model,ms,mainScene->light.direction, mainScene->camera.position, time, settings);
-			mainScene->drawVegetation();
+			//glUseProgram(programVegetation);
+			//programVegetationLocs->update(mvp, model,ms,mainScene->light.direction, mainScene->camera.position, time, settings);
+			//mainScene->drawVegetation();
 
 			glUseProgram(program3d);
 			program3dLocs->update(mvp, model,ms,mainScene->light.direction, mainScene->camera.position, time, settings);
@@ -587,13 +591,6 @@ public:
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 			glUniform1ui(program3dLocs->depthTestEnabledLoc, 1); // Set the sampler uniform
 			
-			glActiveTexture(GL_TEXTURE0+30); 
-			glBindTexture(GL_TEXTURE_2D, renderBuffer.depthTexture);		
-			glUniform1i(program3dLocs->depthTextureLoc, 30); // Set the sampler uniform
-
-			glActiveTexture(GL_TEXTURE0+31); 
-			glBindTexture(GL_TEXTURE_2D, renderBuffer.colorTexture);		
-			glUniform1i(program3dLocs->underTextureLoc, 31); // Set the sampler uniform
 			
 			mainScene->draw3dLiquid();
 		}
