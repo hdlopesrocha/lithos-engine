@@ -9,7 +9,7 @@ layout(location = 3) in uint textureIndex;
 #include<structs.glsl>
 #include<functions.glsl>
 
-out float vTextureWeights[20];
+out uint vTextureIndex;
 out vec2 vTextureCoord;
 out vec3 vPosition;
 out vec3 vNormal;
@@ -20,13 +20,8 @@ uniform mat4 modelViewProjection;
 uniform TextureProperties brushes[20];
 
 void main() {
-
     vTextureCoord = textureCoord;
-   
-    for (int i = 0; i < 20; ++i) {
-        vTextureWeights[i] = 0.0;
-    }
-    vTextureWeights[textureIndex] = 1.0;
+    vTextureIndex = textureIndex;
     vProps = brushes[textureIndex];
     
     vPosition = position;
