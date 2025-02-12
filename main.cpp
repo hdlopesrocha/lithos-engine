@@ -577,6 +577,8 @@ public:
 			glPolygonMode(GL_FRONT, GL_FILL);
 			glUseProgram(program3d);
 			program3dLocs->update(mvp, model,ms,mainScene->light.direction, mainScene->camera.position, time, settings);
+			
+			glUniform1i(program3dLocs->layerLoc, 1); // Set the sampler uniform
 			mainScene->draw3dSolid();
 
 			//glUseProgram(programVegetation);

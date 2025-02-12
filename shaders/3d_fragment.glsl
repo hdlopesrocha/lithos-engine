@@ -18,6 +18,7 @@ uniform bool depthTestEnabled;
 uniform vec3 lightDirection; 
 uniform vec3 cameraPosition; 
 uniform float time;
+uniform int layer;
 uniform mat4 model; 
 
 #include<functions.glsl>
@@ -47,6 +48,11 @@ float linearizeDepth(float depth) {
 
 void main() {
     vec2 pixelUV = gl_FragCoord.xy / textureSize(underTexture, 0);
+
+    if(layer == 0) {
+        color = vec4(1.0,1.0,1.0,0.5);
+        return;
+    }
 
     if(depthTestEnabled) {
         float d1 = linearizeDepth(texture(depthTexture, pixelUV).r);
