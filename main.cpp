@@ -164,6 +164,7 @@ class MainApplication : public LithosApplication {
 	GLuint program3d;
 	GLuint programShadow;
 	GLuint programVegetation;
+	GLuint programVegetationMixer;
 	GLuint programTexture;
 	GLuint programDepth;
 	GLuint programMixTexture;
@@ -229,6 +230,14 @@ public:
 		);
 		programVegetationLocs = new ProgramLocations(programVegetation);
 		glUseProgram(programVegetation);
+
+		programVegetationMixer = createShaderProgram(
+			compileShader(replaceIncludes(includes,readFile("shaders/texture/vegetation_vertex.glsl")),GL_VERTEX_SHADER), 
+			compileShader(replaceIncludes(includes,readFile("shaders/texture/vegetation_fragment.glsl")),GL_FRAGMENT_SHADER), 
+			compileShader(replaceIncludes(includes,readFile("shaders/texture/vegetation_geometry.glsl")),GL_GEOMETRY_SHADER), 
+			0
+		);
+		glUseProgram(programVegetationMixer);
 
 		programSwap = createShaderProgram(
 			compileShader(replaceIncludes(includes,readFile("shaders/texture/swap_vertex.glsl")),GL_VERTEX_SHADER), 
