@@ -54,13 +54,12 @@ void main() {
         return;
     }
 
-    if(depthTestEnabled) {
         float d1 = linearizeDepth(texture(depthTexture, pixelUV).r);
         float d2 = linearizeDepth(gl_FragCoord.z);
         if(d1<d2) {
             discard;
         }
-    }
+    
 
 
     vec2 uv = gTextureCoord;

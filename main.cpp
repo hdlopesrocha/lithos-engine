@@ -577,6 +577,7 @@ public:
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, renderBuffer.frameBuffer);
 		glViewport(0, 0, renderBuffer.width, renderBuffer.height);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glUniform1i(program3dLocs->layerLoc, 1); 
 
 		if(settings->wireFrameEnabled) {
 			program3dLocs->updateWireframe();
@@ -598,7 +599,6 @@ public:
 		} else {
 			glPolygonMode(GL_FRONT, GL_FILL);
 	
-			glUniform1i(program3dLocs->layerLoc, 1); 
 			mainScene->draw3dSolid();
 
 			//glUseProgram(programVegetation);
