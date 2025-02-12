@@ -117,7 +117,6 @@ private:
 	int keyboard[KEYBOARD_SIZE];
 public:
     GLint originalFrameBuffer;
-    RenderBuffer renderBuffer;
     int framesPerSecond = 0;
 
     virtual void setup() = 0;
@@ -137,7 +136,6 @@ public:
     std::string readFile(const std::string& filePath);
     GLuint compileShader(const std::string& shaderCode, GLenum shaderType);
     GLuint createShaderProgram(std::initializer_list<GLuint> shaders);
-    RenderBuffer createMultiLayerRenderFrameBuffer(int width, int height, int layers);
 };
 
 class DrawableGeometry {

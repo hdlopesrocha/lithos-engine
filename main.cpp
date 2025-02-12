@@ -179,6 +179,7 @@ class MainApplication : public LithosApplication {
 	GLuint noiseTexture;
 	GLuint screen2dVao;
 	GLuint fillAreaVao;
+	RenderBuffer renderBuffer;
 	RenderBuffer shadowFrameBuffer;
 	RenderBuffer liquidFrameBuffer;
 
@@ -284,6 +285,7 @@ public:
 
 		modelViewProjectionShadowLoc = glGetUniformLocation(programShadow, "modelViewProjection");
 
+		renderBuffer = createRenderFrameBuffer(getWidth(), getHeight());
 		shadowFrameBuffer = createDepthFrameBuffer(2048, 2048);
 		liquidFrameBuffer = createRenderFrameBuffer(getWidth(), getHeight());
 

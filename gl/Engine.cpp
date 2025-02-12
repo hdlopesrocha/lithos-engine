@@ -154,9 +154,6 @@ void LithosApplication::run() {
         // Backup original framebuffer
         glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &originalFrameBuffer);
         
-        renderBuffer = createRenderFrameBuffer(getWidth(), getHeight());
-
-		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, originalFrameBuffer);
 
         setup();
         mainLoop();
