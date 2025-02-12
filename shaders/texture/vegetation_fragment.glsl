@@ -6,8 +6,6 @@ uniform sampler2DArray textureSampler;
 
 in flat int Layer;
 
-
-
 void main() {    
 
     vec4 color = texture(textureSampler, vec3(TexCoord,Layer));

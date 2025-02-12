@@ -214,77 +214,65 @@ public:
 		includes.push_back(GlslInclude("#include<structs.glsl>" , readFile("shaders/util/structs.glsl")));
 		includes.push_back(GlslInclude("#include<parallax.glsl>" , readFile("shaders/util/parallax.glsl")));
 
-		programShadow = createShaderProgram(
+		programShadow = createShaderProgram({
 			compileShader(replaceIncludes(includes, readFile("shaders/shadow_vertex.glsl")),GL_VERTEX_SHADER), 
-			compileShader(replaceIncludes(includes,readFile("shaders/shadow_fragment.glsl")),GL_FRAGMENT_SHADER), 
-			0, 
-			0
-		);
+			compileShader(replaceIncludes(includes,readFile("shaders/shadow_fragment.glsl")),GL_FRAGMENT_SHADER)
+		});
 		glUseProgram(programShadow);
 
-		programVegetation = createShaderProgram(
+		programVegetation = createShaderProgram({
 			compileShader(replaceIncludes(includes,readFile("shaders/vegetation_vertex.glsl")),GL_VERTEX_SHADER), 
-			compileShader(replaceIncludes(includes,readFile("shaders/vegetation_fragment.glsl")),GL_FRAGMENT_SHADER), 
-			0, 
-			0
-		);
+			compileShader(replaceIncludes(includes,readFile("shaders/vegetation_fragment.glsl")),GL_FRAGMENT_SHADER)
+		});
 		programVegetationLocs = new ProgramLocations(programVegetation);
 		glUseProgram(programVegetation);
 
-		programVegetationMixer = createShaderProgram(
+		programVegetationMixer = createShaderProgram({
 			compileShader(replaceIncludes(includes,readFile("shaders/texture/vegetation_vertex.glsl")),GL_VERTEX_SHADER), 
-			compileShader(replaceIncludes(includes,readFile("shaders/texture/vegetation_fragment.glsl")),GL_FRAGMENT_SHADER), 
 			compileShader(replaceIncludes(includes,readFile("shaders/texture/vegetation_geometry.glsl")),GL_GEOMETRY_SHADER), 
-			0
-		);
+			compileShader(replaceIncludes(includes,readFile("shaders/texture/vegetation_fragment.glsl")),GL_FRAGMENT_SHADER) 
+		});
 		glUseProgram(programVegetationMixer);
 
-		programSwap = createShaderProgram(
+		programSwap = createShaderProgram({
 			compileShader(replaceIncludes(includes,readFile("shaders/texture/swap_vertex.glsl")),GL_VERTEX_SHADER), 
-			compileShader(replaceIncludes(includes,readFile("shaders/texture/swap_fragment.glsl")),GL_FRAGMENT_SHADER), 
-			0, 
-			0
-		);
+			compileShader(replaceIncludes(includes,readFile("shaders/texture/swap_fragment.glsl")),GL_FRAGMENT_SHADER) 
+		});
 		glUseProgram(programSwap);
 
-		programTexture = createShaderProgram(
+		programTexture = createShaderProgram({
 			compileShader(replaceIncludes(includes,readFile("shaders/texture/texture_array_vertex.glsl")),GL_VERTEX_SHADER), 
-			compileShader(replaceIncludes(includes,readFile("shaders/texture/texture_array_fragment.glsl")),GL_FRAGMENT_SHADER), 
-			0, 
-			0
-		);
+			compileShader(replaceIncludes(includes,readFile("shaders/texture/texture_array_fragment.glsl")),GL_FRAGMENT_SHADER)
+		});
 		glUseProgram(programTexture);
 
-		programDepth = createShaderProgram(
+		programDepth = createShaderProgram({
 			compileShader(replaceIncludes(includes,readFile("shaders/texture/depth_vertex.glsl")),GL_VERTEX_SHADER), 
-			compileShader(replaceIncludes(includes,readFile("shaders/texture/depth_fragment.glsl")),GL_FRAGMENT_SHADER), 
-			0, 
-			0
-		);
+			compileShader(replaceIncludes(includes,readFile("shaders/texture/depth_fragment.glsl")),GL_FRAGMENT_SHADER)
+		});
 		glUseProgram(programDepth);
 
-		programMixTexture = createShaderProgram(
+		programMixTexture = createShaderProgram({
 			compileShader(replaceIncludes(includes,readFile("shaders/texture/mix_vertex.glsl")),GL_VERTEX_SHADER), 
-			compileShader(replaceIncludes(includes,readFile("shaders/texture/mix_fragment.glsl")),GL_FRAGMENT_SHADER), 
-			compileShader(replaceIncludes(includes,readFile("shaders/texture/mix_geometry.glsl")),GL_GEOMETRY_SHADER), 
-			0
-		);
+			compileShader(replaceIncludes(includes,readFile("shaders/texture/mix_geometry.glsl")),GL_GEOMETRY_SHADER),
+			compileShader(replaceIncludes(includes,readFile("shaders/texture/mix_fragment.glsl")),GL_FRAGMENT_SHADER) 
+		});
 		glUseProgram(programMixTexture);
 
-		programWaterTexture = createShaderProgram(
+		programWaterTexture = createShaderProgram({
 			compileShader(replaceIncludes(includes,readFile("shaders/texture/water_vertex.glsl")),GL_VERTEX_SHADER), 
-			compileShader(replaceIncludes(includes,readFile("shaders/texture/water_fragment.glsl")),GL_FRAGMENT_SHADER), 
 			compileShader(replaceIncludes(includes,readFile("shaders/texture/water_geometry.glsl")),GL_GEOMETRY_SHADER), 
-			0
-		);
+			compileShader(replaceIncludes(includes,readFile("shaders/texture/water_fragment.glsl")),GL_FRAGMENT_SHADER)
+		});
 		glUseProgram(programWaterTexture);
 
-		program3d = createShaderProgram(
+		program3d = createShaderProgram({
 			compileShader(replaceIncludes(includes,readFile("shaders/3d_vertex.glsl")),GL_VERTEX_SHADER), 
-			compileShader(replaceIncludes(includes,readFile("shaders/3d_fragment.glsl")),GL_FRAGMENT_SHADER), 
 			compileShader(replaceIncludes(includes,readFile("shaders/3d_tessControl.glsl")),GL_TESS_CONTROL_SHADER), 
-			compileShader(replaceIncludes(includes,readFile("shaders/3d_tessEvaluation.glsl")),GL_TESS_EVALUATION_SHADER)
-		);
+			compileShader(replaceIncludes(includes,readFile("shaders/3d_tessEvaluation.glsl")),GL_TESS_EVALUATION_SHADER),
+			compileShader(replaceIncludes(includes,readFile("shaders/3d_geometry.glsl")),GL_GEOMETRY_SHADER),
+			compileShader(replaceIncludes(includes,readFile("shaders/3d_fragment.glsl")),GL_FRAGMENT_SHADER) 
+		});
 		program3dLocs = new ProgramLocations(program3d);
 		glUseProgram(program3d);
 

@@ -40,6 +40,7 @@
 #include <filesystem>
 #include <iostream>
 #include <ranges>
+#include <initializer_list>
 
 struct InstanceData {
 	glm::mat4 model;
@@ -135,7 +136,7 @@ public:
 
     std::string readFile(const std::string& filePath);
     GLuint compileShader(const std::string& shaderCode, GLenum shaderType);
-    GLuint createShaderProgram(GLuint vertexShader, GLuint fragmentShader, GLuint tcs, GLuint tes);
+    GLuint createShaderProgram(std::initializer_list<GLuint> shaders);
     RenderBuffer createMultiLayerRenderFrameBuffer(int width, int height, int layers);
 };
 
