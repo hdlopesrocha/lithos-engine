@@ -179,6 +179,8 @@ class MainApplication : public LithosApplication {
 	GLuint noiseTexture;
 	GLuint screen2dVao;
 	GLuint fillAreaVao;
+
+	RenderBuffer depthFrameBuffer;
 	RenderBuffer renderBuffer;
 	RenderBuffer shadowFrameBuffer;
 	RenderBuffer liquidFrameBuffer;
@@ -286,6 +288,7 @@ public:
 		modelViewProjectionShadowLoc = glGetUniformLocation(programShadow, "modelViewProjection");
 
 		renderBuffer = createRenderFrameBuffer(getWidth(), getHeight());
+		depthFrameBuffer = createDepthFrameBuffer(getWidth(), getHeight());
 		shadowFrameBuffer = createDepthFrameBuffer(2048, 2048);
 		liquidFrameBuffer = createRenderFrameBuffer(getWidth(), getHeight());
 
@@ -396,7 +399,7 @@ public:
 		
 		noiseTexture = loadTextureImage("textures/noise.png");
 
-		activeTexture = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, "depthTexture", renderBuffer.depthTexture);
+		activeTexture = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, "depthTexture", depthFrameBuffer.depthTexture);
 		activeTexture = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, "underTexture", renderBuffer.colorTexture);
 		activeTexture = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, "shadowMap", shadowFrameBuffer.depthTexture);
 		activeTexture = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, "noise", noiseTexture);
@@ -539,9 +542,6 @@ public:
 		// ============
 		// 3D component
 		// ============
-		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, renderBuffer.frameBuffer);
-		glViewport(0, 0, renderBuffer.width, renderBuffer.height);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		glPatchParameteri(GL_PATCH_VERTICES, 3); // Define the number of control points per patch
 		glEnable(GL_CULL_FACE); // Enable face culling
@@ -556,9 +556,29 @@ public:
 		glPolygonMode(GL_FRONT, GL_FILL);
 
 
+		glUseProgram(program3d);
+		program3dLocs->update(mvp, model,ms,mainScene->light.direction, mainScene->camera.position, time, settings);
+			
+
+		// =================
+		// First Pass: Depth
+		// =================
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, depthFrameBuffer.frameBuffer);
+		glViewport(0, 0, depthFrameBuffer.width, depthFrameBuffer.height);
+		glClear(GL_DEPTH_BUFFER_BIT);
+		glUniform1i(program3dLocs->layerLoc, 0);
+		mainScene->draw3dSolid();
+
+
+		// ==================
+		// Second Pass: Solid
+		//===================
+
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, renderBuffer.frameBuffer);
+		glViewport(0, 0, renderBuffer.width, renderBuffer.height);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 		if(settings->wireFrameEnabled) {
-			glUseProgram(program3d);
-			program3dLocs->update(mvp, model,ms,mainScene->light.direction, mainScene->camera.position, time, settings);
 			program3dLocs->updateWireframe();
 
 			glPolygonMode(GL_FRONT, GL_LINE);
@@ -577,10 +597,8 @@ public:
 
 		} else {
 			glPolygonMode(GL_FRONT, GL_FILL);
-			glUseProgram(program3d);
-			program3dLocs->update(mvp, model,ms,mainScene->light.direction, mainScene->camera.position, time, settings);
-			
-			glUniform1i(program3dLocs->layerLoc, 1); // Set the sampler uniform
+	
+			glUniform1i(program3dLocs->layerLoc, 1); 
 			mainScene->draw3dSolid();
 
 			//glUseProgram(programVegetation);
