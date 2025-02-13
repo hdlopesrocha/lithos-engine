@@ -6,6 +6,10 @@ VegetationTexture::VegetationTexture(int width, int height, GLuint program, std:
     this->selectedTexture = selectedTexture;    
     this->program = program;
     this->previewVao = DrawableGeometry::create2DVAO(-1,-1, 1,1);
+    this->samplerLoc = glGetUniformLocation(program, "textureSampler");
+    this->layerLoc = glGetUniformLocation(program, "layerIndex");
+    this->modelLoc = glGetUniformLocation(program, "model");
+
 }
 
 TextureArray VegetationTexture::getTexture(){
@@ -19,15 +23,18 @@ void VegetationTexture::mix(){
 
     glUseProgram(program);
 
+    glm::mat4 model = glm::rotate(glm::scale(glm::mat4(1.0), glm::vec3(0.5)), (float) (M_PI/4.0), glm::vec3(0.0,0.0,1.0) );
+
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, textureBuffer.frameBuffer);
     glViewport(0, 0, textureBuffer.width, textureBuffer.height);
     glClear(GL_COLOR_BUFFER_BIT);
     glActiveTexture(GL_TEXTURE0); 
     glBindTexture(GL_TEXTURE_2D_ARRAY, texture->texture);
-    glUniform1i(glGetUniformLocation(program, "textureSampler"), 0);
+    glUniform1i(this->samplerLoc, 0);
+	glUniformMatrix4fv(this->modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 
     for (int layer = 0; layer < 3; ++layer) {
-        glUniform1i(glGetUniformLocation(program, "layerIndex"), layer);
+        glUniform1i(this->layerLoc, layer);
         glBindVertexArray(previewVao);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     }
