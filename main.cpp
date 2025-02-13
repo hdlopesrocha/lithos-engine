@@ -152,6 +152,7 @@ class MainApplication : public LithosApplication {
 	std::vector<Texture*> vegetationTextures;
 	std::vector<Brush*> brushes;
 	std::vector<Brush*> vegetationBrushes;
+	std::vector<AtlasTexture*> atlasTextures;
 
 	std::vector<TextureMixer*> mixers;
 	std::vector<AnimatedTexture*> animatedTextures;
@@ -403,14 +404,17 @@ public:
 		{
 			Texture * t = new Texture(loadTextureArray("textures/vegetation/foliage_color.png", "textures/vegetation/foliage_normal.png", "textures/vegetation/foliage_opacity.png"));
 			vegetationTextures.push_back(t);
-		}
-		{
+
 			std::vector<Tile> tiles;
+			tiles.push_back(Tile(glm::vec2(1.0),glm::vec2(0.0)));
 			tiles.push_back(Tile(glm::vec2(0.25),glm::vec2(0.5)));
 			tiles.push_back(Tile(glm::vec2(0.5),glm::vec2(0.25)));
 			tiles.push_back(Tile(glm::vec2(0.25, 0.75),glm::vec2(0.5, 0.25)));
-
-			AtlasTexture * vt = new AtlasTexture(256, 256, programVegetationMixer, &vegetationTextures, 0, tiles);
+			AtlasTexture * at = new AtlasTexture(t, tiles);
+			atlasTextures.push_back(at);
+		}
+		{
+			VegetationTexture * vt = new VegetationTexture(256, 256, programVegetationMixer, atlasTextures[0]);
 			Texture * t = new Texture(vt->getTexture());
 			vegetationTextures.push_back(t);
 			vt->mix();

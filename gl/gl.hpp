@@ -307,9 +307,17 @@ class Vegetation3d {
 };
 
 class AtlasTexture {
+    public:
+    Texture * texture;
+    std::vector<Tile> tiles;
+    public:
+    AtlasTexture(Texture* texture, std::vector<Tile> tiles);
+};
+
+
+class VegetationTexture {
     RenderBuffer textureBuffer;
-    std::vector<Texture*> * textures;
-    int selectedTexture;
+    AtlasTexture * atlasTexture;
     GLuint program;
     GLuint previewVao;
     GLuint samplerLoc;
@@ -319,10 +327,11 @@ class AtlasTexture {
     GLuint tileSizeLoc;
     std::vector<Tile> tiles;
     public:
-    AtlasTexture(int width, int height, GLuint program, std::vector<Texture*> * textures, int selectedTexture, std::vector<Tile> tiles);
+    VegetationTexture(int width, int height, GLuint program, AtlasTexture * atlasTexture);
     void mix();
     TextureArray getTexture();
 };
+
 
 GLuint createTextureArray(int width, int height, int layers); 
 RenderBuffer createMultiLayerRenderFrameBuffer(int width, int height, int layers);
