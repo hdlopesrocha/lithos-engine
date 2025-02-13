@@ -306,6 +306,9 @@ class VegetationTexture {
     GLuint samplerLoc;
     GLuint layerLoc; 
     GLuint modelLoc; 
+    GLuint tileOffsetLoc;
+    GLuint tileSizeLoc;
+
     public:
     VegetationTexture(int width, int height, GLuint program, std::vector<Texture*> * textures, int selectedTexture);
     void mix();

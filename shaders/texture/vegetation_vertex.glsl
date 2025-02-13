@@ -4,8 +4,10 @@ layout(location = 1) in vec2 texCoord;
 
 out vec2 vTexCoord;
 uniform mat3 model;
+uniform vec2 tileSize;
+uniform vec2 tileOffset;
 
 void main() {
-    vTexCoord = texCoord;
+    vTexCoord = texCoord*tileSize+tileOffset;
     gl_Position = vec4(model * vec3(position, 0.0), 1.0);
 }
