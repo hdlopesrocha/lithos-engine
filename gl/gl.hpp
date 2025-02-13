@@ -290,6 +290,15 @@ class Settings {
 
 };
 
+struct Tile {
+    public:
+    glm::vec2 size;
+    glm::vec2 offset;
+    
+    Tile(glm::vec2 size, glm::vec2 offset);
+};
+
+
 class Vegetation3d {
     public:
     DrawableGeometry * drawable;
@@ -297,7 +306,7 @@ class Vegetation3d {
     Vegetation3d();
 };
 
-class VegetationTexture {
+class AtlasTexture {
     RenderBuffer textureBuffer;
     std::vector<Texture*> * textures;
     int selectedTexture;
@@ -308,9 +317,9 @@ class VegetationTexture {
     GLuint modelLoc; 
     GLuint tileOffsetLoc;
     GLuint tileSizeLoc;
-
+    std::vector<Tile> tiles;
     public:
-    VegetationTexture(int width, int height, GLuint program, std::vector<Texture*> * textures, int selectedTexture);
+    AtlasTexture(int width, int height, GLuint program, std::vector<Texture*> * textures, int selectedTexture, std::vector<Tile> tiles);
     void mix();
     TextureArray getTexture();
 };

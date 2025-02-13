@@ -1,6 +1,6 @@
 #include "gl.hpp"
 
-VegetationTexture::VegetationTexture(int width, int height, GLuint program, std::vector<Texture*> * textures, int selectedTexture) {
+AtlasTexture::AtlasTexture(int width, int height, GLuint program, std::vector<Texture*> * textures, int selectedTexture, std::vector<Tile> tiles) {
     this->textureBuffer = createMultiLayerRenderFrameBuffer(width,height, 3);
     this->textures = textures;
     this->selectedTexture = selectedTexture;    
@@ -11,13 +11,14 @@ VegetationTexture::VegetationTexture(int width, int height, GLuint program, std:
     this->modelLoc = glGetUniformLocation(program, "model");
     this->tileOffsetLoc = glGetUniformLocation(program, "tileOffset");
     this->tileSizeLoc = glGetUniformLocation(program, "tileSize");
+    this->tiles = tiles;
 }
 
-TextureArray VegetationTexture::getTexture(){
+TextureArray AtlasTexture::getTexture(){
     return textureBuffer.colorTexture;
 }
 
-void VegetationTexture::mix(){
+void AtlasTexture::mix(){
     GLint originalFrameBuffer;
     glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &originalFrameBuffer);
     Texture * texture = (*this->textures)[this->selectedTexture];

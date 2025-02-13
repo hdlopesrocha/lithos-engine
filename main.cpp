@@ -405,7 +405,12 @@ public:
 			vegetationTextures.push_back(t);
 		}
 		{
-			VegetationTexture * vt = new VegetationTexture(256, 256, programVegetationMixer, &vegetationTextures, 0);
+			std::vector<Tile> tiles;
+			tiles.push_back(Tile(glm::vec2(0.25),glm::vec2(0.5)));
+			tiles.push_back(Tile(glm::vec2(0.5),glm::vec2(0.25)));
+			tiles.push_back(Tile(glm::vec2(0.25, 0.75),glm::vec2(0.5, 0.25)));
+
+			AtlasTexture * vt = new AtlasTexture(256, 256, programVegetationMixer, &vegetationTextures, 0, tiles);
 			Texture * t = new Texture(vt->getTexture());
 			vegetationTextures.push_back(t);
 			vt->mix();
