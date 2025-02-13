@@ -236,7 +236,6 @@ class Brush {
 };
 
 class TextureMixer {
-    bool open = false;
     RenderBuffer textureMixerBuffer;
     std::vector<Texture*> * textures;
     GLuint program;
@@ -260,7 +259,6 @@ class TextureMixer {
 };
 
 class AnimatedTexture {
-    bool open = false;
     RenderBuffer textureMixerBuffer;
     std::vector<Texture*> * textures;
     GLuint program;
@@ -296,6 +294,19 @@ class Vegetation3d {
     DrawableGeometry * drawable;
 
     Vegetation3d();
+};
+
+class VegetationTexture {
+    RenderBuffer textureBuffer;
+    std::vector<Texture*> * textures;
+    int selectedTexture;
+    GLuint program;
+    GLuint previewVao;
+
+    public:
+    VegetationTexture(int width, int height, GLuint program, std::vector<Texture*> * textures, int selectedTexture);
+    void mix();
+    TextureArray getTexture();
 };
 
 GLuint createTextureArray(int width, int height, int layers); 

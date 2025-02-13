@@ -404,6 +404,12 @@ public:
 			Texture * t = new Texture(loadTextureArray("textures/vegetation/foliage_color.png", "textures/vegetation/foliage_normal.png", "textures/vegetation/foliage_opacity.png"));
 			vegetationTextures.push_back(t);
 		}
+		{
+			VegetationTexture * vt = new VegetationTexture(256, 256, programVegetationMixer, &vegetationTextures, 0);
+			Texture * t = new Texture(vt->getTexture());
+			vegetationTextures.push_back(t);
+			vt->mix();
+		}
 		noiseTexture = loadTextureImage("textures/noise.png");
 
 		activeTexture = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, "depthTexture", depthFrameBuffer.depthTexture);
