@@ -20,7 +20,7 @@ TextureArray VegetationTexture::getTexture(){
 void VegetationTexture::mix(){
     GLint originalFrameBuffer;
     glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &originalFrameBuffer);
-    Texture * texture = atlasTexture->texture;
+    Texture * texture = atlasTexture;
 
     glUseProgram(program);
 

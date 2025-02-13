@@ -402,16 +402,14 @@ public:
 			animatedTextures.push_back(tm);
 		}
 		{
-			Texture * t = new Texture(loadTextureArray("textures/vegetation/foliage_color.png", "textures/vegetation/foliage_normal.png", "textures/vegetation/foliage_opacity.png"));
-			vegetationTextures.push_back(t);
+			AtlasTexture * at = new AtlasTexture(loadTextureArray("textures/vegetation/foliage_color.png", "textures/vegetation/foliage_normal.png", "textures/vegetation/foliage_opacity.png"));
+			at->tiles.push_back(Tile(glm::vec2(1.0),glm::vec2(0.0)));
+			at->tiles.push_back(Tile(glm::vec2(0.25),glm::vec2(0.5)));
+			at->tiles.push_back(Tile(glm::vec2(0.5),glm::vec2(0.25)));
+			at->tiles.push_back(Tile(glm::vec2(0.25, 0.75),glm::vec2(0.5, 0.25)));
 
-			std::vector<Tile> tiles;
-			tiles.push_back(Tile(glm::vec2(1.0),glm::vec2(0.0)));
-			tiles.push_back(Tile(glm::vec2(0.25),glm::vec2(0.5)));
-			tiles.push_back(Tile(glm::vec2(0.5),glm::vec2(0.25)));
-			tiles.push_back(Tile(glm::vec2(0.25, 0.75),glm::vec2(0.5, 0.25)));
-			AtlasTexture * at = new AtlasTexture(t, tiles);
 			atlasTextures.push_back(at);
+			vegetationTextures.push_back(at);
 		}
 		{
 			VegetationTexture * vt = new VegetationTexture(256, 256, programVegetationMixer, atlasTextures[0]);

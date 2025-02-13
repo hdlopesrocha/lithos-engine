@@ -306,12 +306,10 @@ class Vegetation3d {
     Vegetation3d();
 };
 
-class AtlasTexture {
+class AtlasTexture: public Texture {
     public:
-    Texture * texture;
+    using Texture::Texture;
     std::vector<Tile> tiles;
-    public:
-    AtlasTexture(Texture* texture, std::vector<Tile> tiles);
 };
 
 
