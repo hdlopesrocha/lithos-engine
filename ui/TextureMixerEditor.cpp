@@ -4,7 +4,7 @@
 TextureMixerEditor::TextureMixerEditor(std::vector<TextureMixer*> * mixers, std::vector<Texture*> * textures, GLuint previewProgram) {
     this->mixers = mixers;
     this->textures = textures;
-    this->previewer = new TexturePreviewer(previewProgram, 512, 512);
+    this->previewer = new TexturePreviewer(previewProgram, 512, 512, {"Color", "Normal", "Bump"});
     this->selectedMixer = 0;
 }
 

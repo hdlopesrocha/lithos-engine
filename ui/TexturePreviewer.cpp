@@ -1,13 +1,16 @@
 #include "ui.hpp"
 
 
-TexturePreviewer::TexturePreviewer(GLuint previewProgram, int width, int height) {
+TexturePreviewer::TexturePreviewer(GLuint previewProgram, int width, int height, std::initializer_list<std::string> layers) {
     this->previewProgram = previewProgram;
     this->previewBuffer = createRenderFrameBuffer(width,height);
     this->previewVao = DrawableGeometry::create2DVAO(-1,-1, 1,1);
     this->selectedLayer = 0;
     this->width = width;
     this->height = height;
+    for(std::string name : layers) {
+        this->layers.push_back(name);
+    }
 }
 
 void TexturePreviewer::draw2d(TextureArray texture){
@@ -26,26 +29,14 @@ void TexturePreviewer::draw2d(TextureArray texture){
 
 
     if (ImGui::BeginTabBar("layerPicker_tab")) {
-        if (ImGui::BeginTabItem("Color")) {
-            selectedLayer = 0;
-            ImGui::EndTabItem();
+        for(int i=0 ; i < layers.size(); ++i) {
+            std::string name = layers[i];
+            if (ImGui::BeginTabItem(name.c_str())) {
+                selectedLayer = i;
+                ImGui::EndTabItem();
+            }
         }
-
-        if (ImGui::BeginTabItem("Normal")) {
-            selectedLayer = 1;
-            ImGui::EndTabItem();
-        }
-
-        if (ImGui::BeginTabItem("Bump")) {
-            selectedLayer = 2;
-            ImGui::EndTabItem();
-        }
-    
         ImGui::EndTabBar();
     }
-
-
 	ImGui::Image((ImTextureID)(intptr_t)previewBuffer.colorTexture, ImVec2(width, height));
-
-
 }

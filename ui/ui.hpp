@@ -14,11 +14,12 @@ class TexturePreviewer {
     RenderBuffer previewBuffer;
     GLuint previewProgram;
     GLuint previewVao;
+    std::vector<std::string> layers;
     int selectedLayer;
     int width;
     int height;
 public:
-    TexturePreviewer(GLuint previewProgram, int width, int height);
+    TexturePreviewer(GLuint previewProgram, int width, int height, std::initializer_list<std::string> layers);
     void draw2d(TextureArray texture);
 
 };

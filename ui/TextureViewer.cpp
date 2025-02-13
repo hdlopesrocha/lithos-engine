@@ -4,7 +4,7 @@
 
 TextureViewer::TextureViewer(std::vector<Texture*> * textures, GLuint previewProgram) {
     this->textures = textures;
-    this->previewer = new TexturePreviewer(previewProgram, 256, 256);
+    this->previewer = new TexturePreviewer(previewProgram, 256, 256, {"Color", "Normal", "Opacity"});
     this->selectedTexture = 0;
 }
 

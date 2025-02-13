@@ -6,7 +6,7 @@ BrushEditor::BrushEditor(Camera * camera, std::vector<Brush*> * brushes, GLuint 
     this->program3d = program3d;
     this->camera = camera;
     this->brushes = brushes;
-    this->previewer = new TexturePreviewer(previewProgram, 256, 256);
+    this->previewer = new TexturePreviewer(previewProgram, 256, 256, {"Color", "Normal", "Bump"});
     SphereGeometry sphereGeometry(40,80);
 	this->sphere = new DrawableGeometry(&sphereGeometry);
 
