@@ -29,6 +29,32 @@ class Closable {
     void show();
     void hide();
     bool isOpen();
+    
+    virtual void draw2d() = 0;
+    virtual void draw3d() = 0;
+
+    void draw2dIfOpen(){
+        if(open) {
+            draw2d();
+        }
+    }
+
+    void draw3dIfOpen(){
+        if(open) {
+            draw3d();
+        } 
+    }
+};
+
+class TextureViewer: public Closable {
+    std::vector<Texture*> * textures;
+    TexturePreviewer * previewer;
+  	int selectedTexture = 0;
+
+    public:
+    TextureViewer(std::vector<Texture*> * textures, GLuint previewProgram);
+    void draw2d();
+    void draw3d();
 };
 
 class BrushEditor: public Closable {

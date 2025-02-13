@@ -194,7 +194,7 @@ class MainApplication : public LithosApplication {
 
 	// UI
 	BrushEditor * brushEditor;
-	BrushEditor * vegetationBrushEditor;
+	TextureViewer * vegetationViewer;
 	ShadowMapViewer * shadowMapViewer;
 	TextureMixerEditor * textureMixerEditor;
 	AnimatedTextureEditor * animatedTextureEditor;
@@ -402,7 +402,6 @@ public:
 		}
 		{
 			Texture * t = new Texture(loadTextureArray("textures/vegetation/foliage_color.png", "textures/vegetation/foliage_normal.png", "textures/vegetation/foliage_opacity.png"));
-			vegetationBrushes.push_back(new Brush(t));
 			vegetationTextures.push_back(t);
 		}
 		noiseTexture = loadTextureImage("textures/noise.png");
@@ -445,7 +444,7 @@ public:
 		ImGui_ImplOpenGL3_Init("#version 460");
 
 		brushEditor = new BrushEditor(&mainScene->camera, &brushes, program3d, programTexture);
-		vegetationBrushEditor = new BrushEditor(&mainScene->camera, &vegetationBrushes, programVegetation, programTexture);
+		vegetationViewer = new TextureViewer(&vegetationTextures, programTexture);
 		shadowMapViewer = new ShadowMapViewer(shadowFrameBuffer.depthTexture);
 		textureMixerEditor = new TextureMixerEditor(&mixers, &textures, programTexture);
 		animatedTextureEditor = new AnimatedTextureEditor(&animatedTextures, &textures, programTexture, 256,256);
@@ -628,9 +627,8 @@ public:
 			mainScene->draw3dLiquid();
 		}
 
-		if(brushEditor->isOpen()) {
-			brushEditor->draw3d();
-		}
+		brushEditor->draw3dIfOpen();
+		
 		glPolygonMode(GL_FRONT, GL_FILL);
 
 		#ifdef DEBUG_GEO
@@ -703,8 +701,8 @@ public:
 				if (ImGui::MenuItem("Brush", "Ctrl+B")) {
 					brushEditor->show();
 				}
-				if (ImGui::MenuItem("Vegetation Brush", "Ctrl+B")) {
-					vegetationBrushEditor->show();
+				if (ImGui::MenuItem("Vegetation Viewer", "Ctrl+B")) {
+					vegetationViewer->show();
 				}
 				if (ImGui::MenuItem("Depth Buffer Viewer", "Ctrl+B")) {
 					depthBufferViewer->show();
@@ -754,30 +752,15 @@ public:
 
 		}
 
-		if(animatedTextureEditor->isOpen()) {
-			animatedTextureEditor->draw2d();
-		}
-		if(brushEditor->isOpen()) {
-			brushEditor->draw2d();
-		}
-		if(vegetationBrushEditor->isOpen()) {
-			vegetationBrushEditor->draw2d();
-		}
-		if(shadowMapViewer->isOpen()) {
-			shadowMapViewer->draw2d();
-		}
-		if(textureMixerEditor->isOpen()) {
-			textureMixerEditor->draw2d();
-		}
-		if(depthBufferViewer->isOpen()) {
-			depthBufferViewer->draw2d();
-		}
-		if(imageViewer->isOpen()) {
-			imageViewer->draw2d();
-		}
-		if(settingsEditor->isOpen()) {
-			settingsEditor->draw2d();
-		}
+		animatedTextureEditor->draw2dIfOpen();
+		brushEditor->draw2dIfOpen();
+		vegetationViewer->draw2dIfOpen();
+		shadowMapViewer->draw2dIfOpen();
+		textureMixerEditor->draw2dIfOpen();
+		depthBufferViewer->draw2dIfOpen();
+		imageViewer->draw2dIfOpen();
+		settingsEditor->draw2dIfOpen();
+		
 
 		if(demo) {
 			ImGui::ShowDemoWindow(&demo);
