@@ -18,13 +18,16 @@ out TextureProperties vProps;
 uniform vec3 lightDirection;  
 uniform mat4 modelViewProjection; 
 uniform TextureProperties brushes[20];
+uniform int layer;
 
 void main() {
-    vTextureCoord = textureCoord;
-    vTextureIndex = textureIndex;
-    vProps = brushes[textureIndex];
-    
-    vPosition = position;
-    vNormal = normal;
+    if(layer > 0) {
+        vTextureCoord = textureCoord;
+        vTextureIndex = textureIndex;
+        vProps = brushes[textureIndex];
+        
+        vPosition = position;
+        vNormal = normal;
+    }
     gl_Position = vec4(position, 1.0);
 }

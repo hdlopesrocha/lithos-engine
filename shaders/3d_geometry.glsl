@@ -3,6 +3,7 @@ layout(triangles) in;
 layout(triangle_strip, max_vertices = 3) out;
 
 #include<structs.glsl>
+uniform int layer;
 
 in vec2 teTextureCoord[];
 in vec3 teTextureWeights[];
@@ -28,15 +29,16 @@ void main() {
         gl_Position = gl_in[i].gl_Position;
         gl_Layer = layerIndex; 
 
-        gTextureCoord = teTextureCoord[i];
-        gTextureWeights = teTextureWeights[i];
-        gTextureIndices = teTextureIndices[i];
+        if(layer > 0) {
+            gTextureCoord = teTextureCoord[i];
+            gTextureWeights = teTextureWeights[i];
+            gTextureIndices = teTextureIndices[i];
 
-        gProps = teProps[i];
-        gPosition = tePosition[i];
-        gNormal = teNormal[i];
-        gLightViewPosition = teLightViewPosition[i];
-
+            gProps = teProps[i];
+            gPosition = tePosition[i];
+            gNormal = teNormal[i];
+            gLightViewPosition = teLightViewPosition[i];
+        }
 
         EmitVertex();
     }

@@ -18,6 +18,7 @@ out vec3 tcPosition[];
 out TextureProperties tcProps[];
 
 uniform vec3 cameraPosition; 
+uniform int layer;
 
 void main() {
      vec3 patchCentroid = (vPosition[0] + vPosition[1] + vPosition[2]) / 3.0;
@@ -29,12 +30,15 @@ void main() {
     gl_TessLevelInner[0] = tessellationFactor;
 
     tcPosition[gl_InvocationID] = vPosition[gl_InvocationID]; 
-    tcNormal[gl_InvocationID] = vNormal[gl_InvocationID];
     
-    tcProps[gl_InvocationID] = vProps[gl_InvocationID];
+    if(layer > 0) {
+        tcNormal[gl_InvocationID] = vNormal[gl_InvocationID];
+        
+        tcProps[gl_InvocationID] = vProps[gl_InvocationID];
 
-    tcTextureCoord[gl_InvocationID] = vTextureCoord[gl_InvocationID];
-    for (int i = 0; i < 3; ++i) {
-        tcTextureIndices[gl_InvocationID][i] = vTextureIndex[i];
+        tcTextureCoord[gl_InvocationID] = vTextureCoord[gl_InvocationID];
+        for (int i = 0; i < 3; ++i) {
+            tcTextureIndices[gl_InvocationID][i] = vTextureIndex[i];
+        }
     }
 }
