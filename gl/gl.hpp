@@ -291,11 +291,11 @@ class Settings {
 
 };
 
-class Vegetation {
+class Vegetation3d {
     public:
     DrawableGeometry * drawable;
 
-    Vegetation();
+    Vegetation3d();
 };
 
 GLuint createTextureArray(int width, int height, int layers); 

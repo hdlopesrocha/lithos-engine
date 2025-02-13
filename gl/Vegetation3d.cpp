@@ -13,7 +13,7 @@ glm::vec3 rotate2(glm::vec3 point, glm::vec3 axis1, float angle1, glm::vec3 axis
     return result;
 }
 
-Vegetation::Vegetation() {
+Vegetation3d::Vegetation3d() {
     Geometry * geometry = new Geometry();
     int planes = 4;
         float PI = glm::pi<float>();
