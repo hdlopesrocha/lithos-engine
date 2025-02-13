@@ -6,19 +6,22 @@ layout(triangles, equal_spacing, ccw) in; // Define primitive type and tessellat
 
 uniform bool debugEnabled;
 
-in float tcTextureWeights[][20];
+in vec3 tcTextureWeights[];
 in vec2 tcTextureCoord[];
 in vec3 tcNormal[];
 in vec3 tcPosition[];
 in TextureProperties tcProps[];
+in uvec3 tcTextureIndices[];
 
 
 out vec3 teNormal;
 out vec2 teTextureCoord;
-out float teTextureWeights[20];
+out vec3 teTextureWeights;
 out vec3 tePosition;
 out TextureProperties teProps;
 out vec4 teLightViewPosition;
+flat out uvec3 teTextureIndices;
+
 
 uniform TextureProperties overrideProps;
 uniform mat4 modelViewProjection; 
@@ -65,10 +68,9 @@ void main() {
     }
 
 
-    for (int i = 0; i < 20; ++i) {
-        teTextureWeights[i] = (gl_TessCoord[0] * tcTextureWeights[0][i] + gl_TessCoord[1] * tcTextureWeights[1][i] + gl_TessCoord[2] * tcTextureWeights[2][i]);
-    }
-
+    teTextureWeights = gl_TessCoord;
+    teTextureIndices = tcTextureIndices[0];
+    
 
     // Interpolate the triangle position using barycentric coordinates
     tePosition = gl_TessCoord[0] * tcPosition[0] + gl_TessCoord[1] * tcPosition[1] + gl_TessCoord[2] * tcPosition[2];

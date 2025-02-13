@@ -11,7 +11,7 @@ in vec3 vPosition[];
 in vec3 vNormal[];
 in TextureProperties vProps[];
 
-out float tcTextureWeights[][20];
+flat out uvec3 tcTextureIndices[];
 out vec2 tcTextureCoord[];
 out vec3 tcNormal[];
 out vec3 tcPosition[];
@@ -34,10 +34,7 @@ void main() {
     tcProps[gl_InvocationID] = vProps[gl_InvocationID];
 
     tcTextureCoord[gl_InvocationID] = vTextureCoord[gl_InvocationID];
-    for (int i = 0; i < 20; ++i) {
-        tcTextureWeights[gl_InvocationID][i] = 0.0;
+    for (int i = 0; i < 3; ++i) {
+        tcTextureIndices[gl_InvocationID][i] = vTextureIndex[i];
     }
-    uint ti = vTextureIndex[gl_InvocationID];
-    tcTextureWeights[gl_InvocationID][ti] = 1.0;
-
 }

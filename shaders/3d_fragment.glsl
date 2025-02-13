@@ -24,7 +24,9 @@ uniform mat4 model;
 #include<functions.glsl>
 
 in vec2 gTextureCoord;
-in float gTextureWeights[20];
+in vec3 gTextureWeights;
+flat in uvec3 gTextureIndices;
+
 in TextureProperties gProps;
 in vec3 gPosition;
 in vec3 gNormal;
@@ -47,6 +49,7 @@ float linearizeDepth(float depth) {
 
 
 void main() {
+
     vec2 pixelUV = gl_FragCoord.xy / textureSize(underTexture, 0);
 
     if(layer == 0) {
@@ -54,12 +57,13 @@ void main() {
         return;
     }
 
-        float d1 = linearizeDepth(texture(depthTexture, pixelUV).r);
-        float d2 = linearizeDepth(gl_FragCoord.z);
-        if(d1<d2) {
-            discard;
-        }
-    
+    float d1 = linearizeDepth(texture(depthTexture, pixelUV).r);
+    float d2 = linearizeDepth(gl_FragCoord.z);
+    if(d1<d2) {
+        discard;
+    }
+
+
 
 
     vec2 uv = gTextureCoord;
@@ -83,10 +87,10 @@ void main() {
     vec3 viewDirectionTangent = normalize(transpose(TBN) * viewDirection);
 
     if(parallaxEnabled && distanceFactor * gProps.parallaxScale > 0.0) {
-       uv = parallaxMapping(gTextureWeights, uv, viewDirectionTangent, distanceFactor*gProps.parallaxScale , distanceFactor*gProps.parallaxMinLayers, distanceFactor*gProps.parallaxMaxLayers, int(ceil(distanceFactor*gProps.parallaxRefine)));
+       uv = parallaxMapping(gTextureWeights, gTextureIndices, uv, viewDirectionTangent, distanceFactor*gProps.parallaxScale , distanceFactor*gProps.parallaxMinLayers, distanceFactor*gProps.parallaxMaxLayers, int(ceil(distanceFactor*gProps.parallaxRefine)));
     }
   
-    vec4 mixedColor = textureBlend(gTextureWeights, textures, uv, 0);
+    vec4 mixedColor = textureBlend(gTextureWeights, gTextureIndices, textures, uv, 0);
     if(mixedColor.a == 0.0) {
         discard;
     }
@@ -94,7 +98,7 @@ void main() {
     if(lightEnabled) {
         vec3 specularColor = vec3(1.0,1.0,1.0);
 
-        vec3 normalMap = textureBlend(gTextureWeights, textures, uv, 1).rgb * 2.0 - 1.0;
+        vec3 normalMap = textureBlend(gTextureWeights, gTextureIndices, textures, uv, 1).rgb * 2.0 - 1.0;
         normalMap = normalize(normalMap); // Convert to range [-1, 1]
 
         vec3 worldNormal = normalize(TBN * normalMap);

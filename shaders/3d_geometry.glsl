@@ -5,14 +5,17 @@ layout(triangle_strip, max_vertices = 3) out;
 #include<structs.glsl>
 
 in vec2 teTextureCoord[];
-in float teTextureWeights[][20];
+in vec3 teTextureWeights[];
 in TextureProperties teProps[];
 in vec3 tePosition[];
 in vec3 teNormal[];
 in vec4 teLightViewPosition[];
+in uvec3 teTextureIndices[];
 
 out vec2 gTextureCoord;
-out float gTextureWeights[20];
+out vec3 gTextureWeights;
+flat out uvec3 gTextureIndices;
+
 out TextureProperties gProps;
 out vec3 gPosition;
 out vec3 gNormal;
@@ -26,9 +29,9 @@ void main() {
         gl_Layer = layerIndex; 
 
         gTextureCoord = teTextureCoord[i];
-        for(int j =0; j < 20 ; ++j) {
-            gTextureWeights[j] = teTextureWeights[i][j];
-        }
+        gTextureWeights = teTextureWeights[i];
+        gTextureIndices = teTextureIndices[i];
+
         gProps = teProps[i];
         gPosition = tePosition[i];
         gNormal = teNormal[i];

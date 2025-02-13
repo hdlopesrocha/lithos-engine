@@ -1,4 +1,4 @@
-vec2 parallaxMapping(in float ws[20], vec2 uv, vec3 viewDir, float scale, float minLayers, float maxLayers, int approxCycles) {
+vec2 parallaxMapping(vec3 ws, uvec3 ti, vec2 uv, vec3 viewDir, float scale, float minLayers, float maxLayers, int approxCycles) {
     float numLayers = mix(maxLayers, minLayers, dot(vec3(0.0, 0.0, 1.0), -viewDir));  
 
 	float deltaDepth = 1.0 / float( numLayers );
@@ -20,7 +20,7 @@ vec2 parallaxMapping(in float ws[20], vec2 uv, vec3 viewDir, float scale, float 
 
         currentUv -= deltaUv;
         currentDepth -= deltaDepth;
-        currentHeight = textureBlend(ws, textures, currentUv, 2).r;
+        currentHeight = textureBlend(ws,ti, textures, currentUv, 2).r;
 
         if(currentHeight > currentDepth) {
             break;
@@ -30,7 +30,7 @@ vec2 parallaxMapping(in float ws[20], vec2 uv, vec3 viewDir, float scale, float 
     for (int i = 0; i < approxCycles; ++i) {
         vec2 midUv = 0.5 * (currentUv + prevUv);
         float midDepth = 0.5 * (currentDepth + prevDepth);
-        float midHeight = textureBlend(ws, textures, midUv, 2).r;
+        float midHeight = textureBlend(ws, ti, textures, midUv, 2).r;
         
         if (midHeight > midDepth) {
             currentUv = midUv;
