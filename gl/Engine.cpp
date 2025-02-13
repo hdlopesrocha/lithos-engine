@@ -26,6 +26,7 @@ int LithosApplication::initWindow() {
     // Make the window's context current
     glfwMakeContextCurrent(window);
 	glfwSetWindowUserPointer(window, this);
+    glfwSwapInterval(0);
 
 
     // Initialize GLEW

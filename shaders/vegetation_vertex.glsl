@@ -13,7 +13,7 @@ out vec2 vTextureCoord;
 out vec3 vPosition;
 out vec3 vNormal;
 out TextureProperties vProps;
-out vec4 lightViewPosition;
+out vec4 vLightViewPosition;
 
 uniform mat4 modelViewProjection; 
 uniform TextureProperties brushes[20];
@@ -26,6 +26,6 @@ void main() {
     vNormal = normal;
 
     gl_Position = modelViewProjection * vec4(position, 1.0);    
-    lightViewPosition = matrixShadow * vec4(position, 1.0);  
+    vLightViewPosition = matrixShadow * vec4(position, 1.0);  
 
 }

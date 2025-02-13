@@ -20,7 +20,7 @@ BrushEditor::BrushEditor(Camera * camera, std::vector<Brush*> * brushes, GLuint 
     this->brushRadius = 2.0f;
 
     this->mode = BrushMode::ADD;
-    this->selectedBrush = 6;
+    this->selectedBrush = 0;
     this->brush = (*brushes)[this->selectedBrush];
 }
 

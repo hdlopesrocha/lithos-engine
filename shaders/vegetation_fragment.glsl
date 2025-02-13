@@ -21,7 +21,7 @@ in vec2 vTextureCoord;
 in TextureProperties vProps;
 in vec3 vPosition;
 in vec3 vNormal;
-in vec4 lightViewPosition;
+in vec4 vLightViewPosition;
 
 out vec4 color;    // Final fragment color
 
@@ -62,7 +62,7 @@ void main() {
         shadow.shadowAmount = 1.0;
         shadow.lightAmount = 1.0;
         if(shadowEnabled) {
-            shadow = getShadow(shadowMap, noise, lightViewPosition, position);
+            shadow = getShadow(shadowMap, noise, vLightViewPosition, position);
         }
         if(debugEnabled) {
             color = vec4(worldNormal,1.0);

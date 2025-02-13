@@ -149,7 +149,10 @@ class ProgramLocations {
 
 class MainApplication : public LithosApplication {
 	std::vector<Texture*> textures;
+	std::vector<Texture*> vegetationTextures;
 	std::vector<Brush*> brushes;
+	std::vector<Brush*> vegetationBrushes;
+
 	std::vector<TextureMixer*> mixers;
 	std::vector<AnimatedTexture*> animatedTextures;
 
@@ -191,6 +194,7 @@ class MainApplication : public LithosApplication {
 
 	// UI
 	BrushEditor * brushEditor;
+	BrushEditor * vegetationBrushEditor;
 	ShadowMapViewer * shadowMapViewer;
 	TextureMixerEditor * textureMixerEditor;
 	AnimatedTextureEditor * animatedTextureEditor;
@@ -396,16 +400,23 @@ public:
 			brushes.push_back(new Brush(t, glm::vec2(0.2), 0.02, 8, 32, 16,4, 10.0, 0.5 , 1.33));
 			animatedTextures.push_back(tm);
 		}
-		
+		{
+			Texture * t = new Texture(loadTextureArray("textures/vegetation/foliage_color.png", "textures/vegetation/foliage_normal.png", "textures/vegetation/foliage_opacity.png"));
+			vegetationBrushes.push_back(new Brush(t));
+			vegetationTextures.push_back(t);
+		}
 		noiseTexture = loadTextureImage("textures/noise.png");
 
 		activeTexture = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, "depthTexture", depthFrameBuffer.depthTexture);
 		activeTexture = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, "underTexture", renderBuffer.colorTexture);
 		activeTexture = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, "shadowMap", shadowFrameBuffer.depthTexture);
 		activeTexture = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, "noise", noiseTexture);
-		
+
+		activeTexture = Texture::bindTextures(programVegetation, GL_TEXTURE_2D_ARRAY, activeTexture, "textures", &vegetationTextures);
 		Texture::bindTextures(program3d, GL_TEXTURE_2D_ARRAY, activeTexture, "textures", &textures);
+
 		Brush::bindBrushes(program3d, &brushes);
+		Brush::bindBrushes(programVegetation, &vegetationBrushes);
 
 
 		mainScene = new Scene();
@@ -434,6 +445,7 @@ public:
 		ImGui_ImplOpenGL3_Init("#version 460");
 
 		brushEditor = new BrushEditor(&mainScene->camera, &brushes, program3d, programTexture);
+		vegetationBrushEditor = new BrushEditor(&mainScene->camera, &vegetationBrushes, programVegetation, programTexture);
 		shadowMapViewer = new ShadowMapViewer(shadowFrameBuffer.depthTexture);
 		textureMixerEditor = new TextureMixerEditor(&mixers, &textures, programTexture);
 		animatedTextureEditor = new AnimatedTextureEditor(&animatedTextures, &textures, programTexture, 256,256);
@@ -588,7 +600,6 @@ public:
 
 			mainScene->draw3dSolid();
 			mainScene->draw3dLiquid();
-			//glUseProgram(programVegetation);
 
 			glUseProgram(programVegetation);
 			programVegetationLocs->update(mvp, model,ms,mainScene->light.direction, mainScene->camera.position, time, settings);
@@ -601,9 +612,9 @@ public:
 	
 			mainScene->draw3dSolid();
 
-			//glUseProgram(programVegetation);
-			//programVegetationLocs->update(mvp, model,ms,mainScene->light.direction, mainScene->camera.position, time, settings);
-			//mainScene->drawVegetation();
+			glUseProgram(programVegetation);
+			programVegetationLocs->update(mvp, model,ms,mainScene->light.direction, mainScene->camera.position, time, settings);
+			mainScene->drawVegetation();
 
 			glUseProgram(program3d);
 			program3dLocs->update(mvp, model,ms,mainScene->light.direction, mainScene->camera.position, time, settings);
@@ -692,6 +703,9 @@ public:
 				if (ImGui::MenuItem("Brush", "Ctrl+B")) {
 					brushEditor->show();
 				}
+				if (ImGui::MenuItem("Vegetation Brush", "Ctrl+B")) {
+					vegetationBrushEditor->show();
+				}
 				if (ImGui::MenuItem("Depth Buffer Viewer", "Ctrl+B")) {
 					depthBufferViewer->show();
 				}
@@ -745,6 +759,9 @@ public:
 		}
 		if(brushEditor->isOpen()) {
 			brushEditor->draw2d();
+		}
+		if(vegetationBrushEditor->isOpen()) {
+			vegetationBrushEditor->draw2d();
 		}
 		if(shadowMapViewer->isOpen()) {
 			shadowMapViewer->draw2d();
