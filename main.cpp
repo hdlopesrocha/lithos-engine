@@ -170,7 +170,7 @@ class MainApplication : public LithosApplication {
 	GLuint program3d;
 	GLuint programShadow;
 	GLuint programVegetation;
-	GLuint programVegetationMixer;
+	GLuint programAtlas;
 	GLuint programTexture;
 	GLuint programDepth;
 	GLuint programMixTexture;
@@ -195,6 +195,7 @@ class MainApplication : public LithosApplication {
 
 	// UI
 	BrushEditor * brushEditor;
+	AtlasViewer * atlasViewer;
 	TextureViewer * vegetationViewer;
 	ShadowMapViewer * shadowMapViewer;
 	TextureMixerEditor * textureMixerEditor;
@@ -237,12 +238,12 @@ public:
 		programVegetationLocs = new ProgramLocations(programVegetation);
 		glUseProgram(programVegetation);
 
-		programVegetationMixer = createShaderProgram({
-			compileShader(replaceIncludes(includes,readFile("shaders/texture/vegetation_vertex.glsl")),GL_VERTEX_SHADER), 
-			compileShader(replaceIncludes(includes,readFile("shaders/texture/vegetation_geometry.glsl")),GL_GEOMETRY_SHADER), 
-			compileShader(replaceIncludes(includes,readFile("shaders/texture/vegetation_fragment.glsl")),GL_FRAGMENT_SHADER) 
+		programAtlas = createShaderProgram({
+			compileShader(replaceIncludes(includes,readFile("shaders/texture/atlas_vertex.glsl")),GL_VERTEX_SHADER), 
+			compileShader(replaceIncludes(includes,readFile("shaders/texture/atlas_geometry.glsl")),GL_GEOMETRY_SHADER), 
+			compileShader(replaceIncludes(includes,readFile("shaders/texture/atlas_fragment.glsl")),GL_FRAGMENT_SHADER) 
 		});
-		glUseProgram(programVegetationMixer);
+		glUseProgram(programAtlas);
 
 		programSwap = createShaderProgram({
 			compileShader(replaceIncludes(includes,readFile("shaders/texture/swap_vertex.glsl")),GL_VERTEX_SHADER), 
@@ -412,7 +413,7 @@ public:
 			vegetationTextures.push_back(at);
 		}
 		{
-			VegetationTexture * vt = new VegetationTexture(256, 256, programVegetationMixer, atlasTextures[0]);
+			VegetationTexture * vt = new VegetationTexture(256, 256, programAtlas, atlasTextures[0]);
 			Texture * t = new Texture(vt->getTexture());
 			vegetationTextures.push_back(t);
 			vt->mix();
@@ -464,6 +465,7 @@ public:
 		depthBufferViewer = new DepthBufferViewer(programDepth,renderBuffer.depthTexture,256,256);
 		imageViewer = new ImageViewer(liquidFrameBuffer.colorTexture, 256,256);
 		settingsEditor = new SettingsEditor(settings);
+		atlasViewer = new AtlasViewer(&atlasTextures, programAtlas, 256,256);
 	}
 
     virtual void update(float deltaTime){
@@ -714,6 +716,9 @@ public:
 				if (ImGui::MenuItem("Brush", "Ctrl+B")) {
 					brushEditor->show();
 				}
+				if (ImGui::MenuItem("Atlas Viewer", "Ctrl+B")) {
+					atlasViewer->show();
+				}		
 				if (ImGui::MenuItem("Vegetation Viewer", "Ctrl+B")) {
 					vegetationViewer->show();
 				}
@@ -773,6 +778,7 @@ public:
 		depthBufferViewer->draw2dIfOpen();
 		imageViewer->draw2dIfOpen();
 		settingsEditor->draw2dIfOpen();
+		atlasViewer->draw2dIfOpen();
 		
 
 		if(demo) {
