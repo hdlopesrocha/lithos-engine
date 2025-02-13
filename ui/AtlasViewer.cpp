@@ -19,14 +19,14 @@ AtlasViewer::AtlasViewer(std::vector<AtlasTexture*> * textures, GLuint previewPr
 
 
 void AtlasViewer::draw2d(){
-    ImGui::Begin("Texture Viewer", &open, ImGuiWindowFlags_AlwaysAutoResize);
+    ImGui::Begin("Atlas Viewer", &open, ImGuiWindowFlags_AlwaysAutoResize);
 
     ImGui::Text("Selected texture: ");
     ImGui::SameLine();
 
     AtlasTexture * atlas = (*textures)[Math::mod(selectedTexture, textures->size())];
     Tile tile = atlas->tiles[Math::mod(selectedTile, atlas->tiles.size())];
-    glm::mat3 model = glm::scale(glm::translate( glm::mat4(1.0), glm::vec3(tile.offset, 0.0) ), glm::vec3(tile.size, 1.0));
+    glm::mat3 model = glm::translate(glm::scale( glm::mat4(1.0), glm::vec3(tile.size, 1.0) ), glm::vec3(tile.offset, 0.0));
 
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, previewBuffer.frameBuffer);
     glViewport(0, 0, previewBuffer.width, previewBuffer.height); 
