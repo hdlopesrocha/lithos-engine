@@ -151,3 +151,9 @@ void gzipCompressToOfstream(std::istream& inputStream, std::ofstream& outputFile
 
     deflateEnd(&strm);
 }
+
+glm::mat4 Math::getCanonicalMVP(glm::mat4 m) {
+	return glm::translate(glm::mat4(1.0f), glm::vec3(0.5)) 
+					* glm::scale(glm::mat4(1.0f), glm::vec3(0.5)) 
+					* m;
+}

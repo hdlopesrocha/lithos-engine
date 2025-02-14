@@ -289,7 +289,7 @@ public:
 
 		// Use the shader program
 		screen2dVao = DrawableGeometry::create2DVAO(0,0,200,200);
-		fillAreaVao = DrawableGeometry::create2DVAO(-1,1, 1,-1);
+		fillAreaVao = DrawableGeometry::create2DVAO(-1,-1, 1,1);
 
 		modelViewProjectionShadowLoc = glGetUniformLocation(programShadow, "modelViewProjection");
 
@@ -405,9 +405,15 @@ public:
 		{
 			AtlasTexture * at = new AtlasTexture(loadTextureArray("textures/vegetation/foliage_color.png", "textures/vegetation/foliage_normal.png", "textures/vegetation/foliage_opacity.png"));
 			at->tiles.push_back(Tile(glm::vec2(1.0),glm::vec2(0.0)));
-			at->tiles.push_back(Tile(glm::vec2(0.25),glm::vec2(0.5)));
-			at->tiles.push_back(Tile(glm::vec2(0.5),glm::vec2(0.25)));
-			at->tiles.push_back(Tile(glm::vec2(0.25, 0.75),glm::vec2(0.5, 0.25)));
+			at->tiles.push_back(Tile(glm::vec2(0.15, 1.0),glm::vec2(0.0, 0.0)));
+			at->tiles.push_back(Tile(glm::vec2(0.15, 0.5),glm::vec2(0.15, 0.0)));
+			at->tiles.push_back(Tile(glm::vec2(0.15, 0.5),glm::vec2(0.15, 0.5)));
+			at->tiles.push_back(Tile(glm::vec2(0.15, 0.5),glm::vec2(0.30, 0.0)));
+			at->tiles.push_back(Tile(glm::vec2(0.15, 0.5),glm::vec2(0.30, 0.5)));
+			at->tiles.push_back(Tile(glm::vec2(0.15, 0.5),glm::vec2(0.45, 0.0)));
+			at->tiles.push_back(Tile(glm::vec2(0.15, 0.5),glm::vec2(0.45, 0.5)));
+			at->tiles.push_back(Tile(glm::vec2(0.4, 0.5),glm::vec2(0.6, 0.0)));
+			at->tiles.push_back(Tile(glm::vec2(0.4, 0.5),glm::vec2(0.6, 0.5)));
 
 			atlasTextures.push_back(at);
 			vegetationTextures.push_back(at);
@@ -548,7 +554,7 @@ public:
 	    mainScene->camera.view = rotate * translate;
 		glm::mat4 mvp = mainScene->camera.getMVP(model);
 		glm::mat4 mlp = mainScene->light.getMVP(model);
-		glm::mat4 ms =  getCanonicalMVP(mlp);
+		glm::mat4 ms =  Math::getCanonicalMVP(mlp);
 
 		mainScene->update3d(mvp, mlp);
 		// ================

@@ -24,7 +24,7 @@ void VegetationTexture::mix(){
 
     glUseProgram(program);
 
-    glm::mat3 model = glm::rotate(glm::scale(glm::mat4(1.0), glm::vec3(0.5)), (float) (M_PI/4.0), glm::vec3(0.0,0.0,1.0) );
+    glm::mat4 model = glm::rotate(glm::scale(glm::mat4(1.0), glm::vec3(0.5)), (float) (M_PI/4.0), glm::vec3(0.0,0.0,1.0) );
     glm::vec2 tileOffset = glm::vec2(0.5);
     glm::vec2 tileSize = glm::vec2(0.25);
 
@@ -34,7 +34,7 @@ void VegetationTexture::mix(){
     glActiveTexture(GL_TEXTURE0); 
     glBindTexture(GL_TEXTURE_2D_ARRAY, texture->texture);
     glUniform1i(this->samplerLoc, 0);
-	glUniformMatrix3fv(this->modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+	glUniformMatrix4fv(this->modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 	glUniform2fv(this->tileOffsetLoc, 1, glm::value_ptr(tileOffset));
 	glUniform2fv(this->tileSizeLoc, 1, glm::value_ptr(tileSize));
 

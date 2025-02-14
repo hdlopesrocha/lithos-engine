@@ -8,11 +8,7 @@
 #define TYPE_LIQUID_DRAWABLE 3
 
 
-glm::mat4 getCanonicalMVP(glm::mat4 m) {
-	return glm::translate(glm::mat4(1.0f), glm::vec3(0.5)) 
-					* glm::scale(glm::mat4(1.0f), glm::vec3(0.5)) 
-					* m;
-}
+
 
 class Scene {
 

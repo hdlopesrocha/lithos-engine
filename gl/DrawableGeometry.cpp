@@ -39,10 +39,10 @@ void DrawableGeometry::draw(uint mode) {
 GLuint DrawableGeometry::create2DVAO(float x, float y, float w, float h) {
 	float vertices[] = {
 		// positions   // tex coords
-		x, y,    0.0f, 1.0f,
-		x, h,    0.0f, 0.0f,
-		w, h,    1.0f, 0.0f,
-		w, y,    1.0f, 1.0f
+		x, y,    0.0f, 0.0f,
+		x, h,    0.0f, 1.0f,
+		w, h,    1.0f, 1.0f,
+		w, y,    1.0f, 0.0f
 
 	};
 	unsigned int indices[] = {

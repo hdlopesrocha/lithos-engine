@@ -1,7 +1,9 @@
 #ifndef MATH_HPP
 #define MATH_HPP
-
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <glm/gtc/quaternion.hpp>
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -446,6 +448,7 @@ public:
 	static int mod(int a, int b);
 	static glm::vec2 triplanarMapping(glm::vec3 position, int plane);
 	static glm::vec3 surfaceNormal(glm::vec3 point, BoundingBox box);
+	static glm::mat4 getCanonicalMVP(glm::mat4 m);
 
 };
 void ensureFolderExists(const std::string& folder);

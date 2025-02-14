@@ -25,8 +25,18 @@ void AtlasViewer::draw2d(){
     ImGui::SameLine();
 
     AtlasTexture * atlas = (*textures)[Math::mod(selectedTexture, textures->size())];
-    Tile tile = atlas->tiles[Math::mod(selectedTile, atlas->tiles.size())];
-    glm::mat3 model = glm::translate(glm::scale( glm::mat4(1.0), glm::vec3(tile.size, 1.0) ), glm::vec3(tile.offset, 0.0));
+    Tile * tile = &atlas->tiles[Math::mod(selectedTile, atlas->tiles.size())];
+    glm::mat4 model = glm::mat4(1.0);
+
+
+    model = glm::translate(model, glm::vec3(-1.0));
+    model = glm::scale(model, glm::vec3(2.0));
+
+    model = glm::translate(model, glm::vec3(tile->offset, 0.0));
+    model = glm::scale(model, glm::vec3(tile->size, 1.0));
+
+    model = glm::scale(model, glm::vec3(0.5));
+    model = glm::translate(model, glm::vec3(1.0));
 
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, previewBuffer.frameBuffer);
     glViewport(0, 0, previewBuffer.width, previewBuffer.height); 
@@ -38,9 +48,9 @@ void AtlasViewer::draw2d(){
     glBindTexture(GL_TEXTURE_2D_ARRAY, atlas->texture);
     glUniform1i(glGetUniformLocation(previewProgram, "textureSampler"), 0); // Set the sampler uniform
     glUniform1i(glGetUniformLocation(previewProgram, "layerIndex"), selectedLayer); // Set the sampler uniform
-   	glUniform2fv(glGetUniformLocation(previewProgram, "tileOffset"), 1, glm::value_ptr(tile.offset));
-	glUniform2fv(glGetUniformLocation(previewProgram, "tileSize"), 1, glm::value_ptr(tile.size));
-	glUniformMatrix3fv(glGetUniformLocation(previewProgram, "model"), 1, GL_FALSE, glm::value_ptr(model));
+   	glUniform2fv(glGetUniformLocation(previewProgram, "tileOffset"), 1, glm::value_ptr(tile->offset));
+	glUniform2fv(glGetUniformLocation(previewProgram, "tileSize"), 1, glm::value_ptr(tile->size));
+	glUniformMatrix4fv(glGetUniformLocation(previewProgram, "model"), 1, GL_FALSE, glm::value_ptr(model));
 
     glBindVertexArray(previewVao);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
@@ -63,14 +73,11 @@ void AtlasViewer::draw2d(){
     ImGui::SameLine();
     if (ImGui::ArrowButton("##selectedTexture_left", ImGuiDir_Left)) {
         selectedTexture = selectedTexture - 1;
-        selectedTile = 0;
     }
     ImGui::SameLine();
     if (ImGui::ArrowButton("##selectedTexture_right", ImGuiDir_Right)) {
         selectedTexture = selectedTexture + 1;
-        selectedTile = 0;
     }
-
 
     ImGui::Text("Selected tile: ");
     ImGui::SameLine();
@@ -81,6 +88,12 @@ void AtlasViewer::draw2d(){
     if (ImGui::ArrowButton("##selectedTile_right", ImGuiDir_Right)) {
         selectedTile = selectedTile + 1;
     }
+
+    ImGui::Text("Offset: ");
+    ImGui::InputFloat2("m##tileOffset", &tile->offset[0]);
+
+    ImGui::Text("Size: ");
+    ImGui::InputFloat2("m##tileSize", &tile->size[0]);
 
     ImGui::End();
 }
