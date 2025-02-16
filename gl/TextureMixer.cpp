@@ -25,23 +25,17 @@ void TextureMixer::mix(int baseTextureIndex, int overlayTextureIndex ){
 }
 
 void TextureMixer::mix(){
-
-
     Texture * baseTexture = (*textures)[baseTextureIndex];
     Texture * overlayTexture = (*textures)[overlayTextureIndex];
 
-    GLint originalFrameBuffer;
-    glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &originalFrameBuffer);
-
     glUseProgram(program);
 
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, textureMixerBuffer.frameBuffer);
+    glBindFramebuffer(GL_FRAMEBUFFER, textureMixerBuffer.frameBuffer);
     glViewport(0, 0, textureMixerBuffer.width, textureMixerBuffer.height);
     glClear(GL_COLOR_BUFFER_BIT);
     glActiveTexture(GL_TEXTURE0); 
     glBindTexture(GL_TEXTURE_2D_ARRAY, baseTexture->texture);
     glUniform1i(glGetUniformLocation(program, "baseTexture"), 0);
-
 
     glActiveTexture(GL_TEXTURE1); 
     glBindTexture(GL_TEXTURE_2D_ARRAY, overlayTexture->texture);
@@ -53,17 +47,13 @@ void TextureMixer::mix(){
     glUniform1i(glGetUniformLocation(program, "perlinLacunarity"), perlinLacunarity); // Set the sampler uniform
     glUniform1f(glGetUniformLocation(program, "brightness"), brightness); // Set the sampler uniform
     glUniform1f(glGetUniformLocation(program, "contrast"), contrast); // Set the sampler uniform
+    glBindVertexArray(previewVao);
 
-    for (int layer = 0; layer < 3; ++layer) {
-        glUniform1i(glGetUniformLocation(program, "layerIndex"), layer);
-        glBindVertexArray(previewVao);
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-    }
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
     glActiveTexture(GL_TEXTURE0); 
     glBindTexture(GL_TEXTURE_2D_ARRAY, textureMixerBuffer.colorTexture);
     glGenerateMipmap(GL_TEXTURE_2D_ARRAY);
 
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, originalFrameBuffer);
-
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }

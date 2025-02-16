@@ -17,7 +17,7 @@ out TextureProperties vProps;
 
 uniform vec3 lightDirection;  
 uniform mat4 modelViewProjection; 
-uniform TextureProperties brushes[20];
+uniform TextureProperties brushes[25];
 uniform int layer;
 
 void main() {

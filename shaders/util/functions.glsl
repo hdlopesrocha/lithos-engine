@@ -25,7 +25,7 @@ vec2 triplanarMapping(vec3 position, int plane, vec2 scale) {
 }
 
 
-vec4 textureBlend(vec3 ws, uvec3 ti, sampler2DArray ts[20], vec2 uv, int index) {
+vec4 textureBlend(vec3 ws, uvec3 ti, sampler2DArray ts[25], vec2 uv, int index) {
     if(overrideTextureEnabled) {
         return texture(ts[overrideTexture], vec3(uv, index));
     }
@@ -40,15 +40,3 @@ vec4 textureBlend(vec3 ws, uvec3 ti, sampler2DArray ts[20], vec2 uv, int index) 
 	}
     return res;
 }
-
-float floatBlend(in float ws[20], float ts[20]) {
-    float res = 0.0;
-    for(int i=0 ; i < 20; ++i) {
-        float w = ws[i];
-        if(w>0.0) {
-            res += ts[i]*w;
-        }
-	}
-    return res;
-}
-

@@ -63,8 +63,8 @@ struct IndirectDraw {
 };
 
 
-typedef uint32_t TextureArray;
-typedef uint32_t TextureImage;
+typedef GLuint TextureArray;
+typedef GLuint TextureImage;
 
 struct Model3D {
      std::map<std::string, IndexBufferObject> buffers;
@@ -293,6 +293,16 @@ struct Tile {
     Tile(glm::vec2 size, glm::vec2 offset);
 };
 
+struct TileDraw {
+    public:
+    glm::vec2 size;
+    glm::vec2 offset;
+    float angle;
+    uint index;
+    
+    TileDraw(uint index,glm::vec2 size, glm::vec2 offset, float angle);
+};
+
 
 class Vegetation3d {
     public:
@@ -307,24 +317,20 @@ class AtlasTexture: public Texture {
     std::vector<Tile> tiles;
 };
 
-
-class VegetationTexture {
-    RenderBuffer textureBuffer;
-    AtlasTexture * atlasTexture;
+class AtlasDrawer {
+    RenderBuffer renderBuffer;
     GLuint program;
-    GLuint previewVao;
+    GLuint viewVao;
     GLuint samplerLoc;
     GLuint layerLoc; 
     GLuint modelLoc; 
     GLuint tileOffsetLoc;
     GLuint tileSizeLoc;
-    std::vector<Tile> tiles;
     public:
-    VegetationTexture(int width, int height, GLuint program, AtlasTexture * atlasTexture);
-    void mix();
+    AtlasDrawer(GLuint program, int width, int height);
     TextureArray getTexture();
+    void draw(AtlasTexture * atlas,  std::vector<TileDraw> draws);
 };
-
 
 GLuint createTextureArray(int width, int height, int layers); 
 RenderBuffer createMultiLayerRenderFrameBuffer(int width, int height, int layers);

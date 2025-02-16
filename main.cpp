@@ -149,14 +149,12 @@ class ProgramLocations {
 
 class MainApplication : public LithosApplication {
 	std::vector<Texture*> textures;
-	std::vector<Texture*> vegetationTextures;
 	std::vector<Brush*> brushes;
 	std::vector<Brush*> vegetationBrushes;
 	std::vector<AtlasTexture*> atlasTextures;
-
 	std::vector<TextureMixer*> mixers;
 	std::vector<AnimatedTexture*> animatedTextures;
-
+	AtlasDrawer * basicAtlasDrawer;
 
 	Scene * mainScene;
 
@@ -189,8 +187,11 @@ class MainApplication : public LithosApplication {
 	RenderBuffer shadowFrameBuffer;
 	RenderBuffer liquidFrameBuffer;
 
-	int activeTexture = 4; // To avoid rebinding other textures
-
+	int activeTexture = 5; // To avoid rebinding other textures
+	int activeDepth;
+	int activeShadow;
+	int activeUnder;
+	
 	float time = 0.0f;
 
 	// UI
@@ -416,22 +417,24 @@ public:
 			at->tiles.push_back(Tile(glm::vec2(0.4, 0.5),glm::vec2(0.6, 0.5)));
 
 			atlasTextures.push_back(at);
-			vegetationTextures.push_back(at);
+
+			std::vector<TileDraw> draws;
+			draws.push_back(TileDraw(1,glm::vec2(0.5),glm::vec2(0.5), 0.5));
+			basicAtlasDrawer = new AtlasDrawer(programAtlas, 1024, 1024);
+			basicAtlasDrawer->draw(at, draws);
+			textures.push_back(new Texture(basicAtlasDrawer->getTexture()));
 		}
-		{
-			VegetationTexture * vt = new VegetationTexture(256, 256, programAtlas, atlasTextures[0]);
-			Texture * t = new Texture(vt->getTexture());
-			vegetationTextures.push_back(t);
-			vt->mix();
-		}
+
+
+
+
 		noiseTexture = loadTextureImage("textures/noise.png");
 
-		activeTexture = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, "depthTexture", depthFrameBuffer.depthTexture);
-		activeTexture = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, "underTexture", renderBuffer.colorTexture);
-		activeTexture = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, "shadowMap", shadowFrameBuffer.depthTexture);
+		activeTexture = activeDepth = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, "depthTexture", depthFrameBuffer.depthTexture);
+		activeTexture = activeUnder = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, "underTexture", renderBuffer.colorTexture);
+		activeTexture = activeShadow = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, "shadowMap", shadowFrameBuffer.depthTexture);
 		activeTexture = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, "noise", noiseTexture);
 
-		activeTexture = Texture::bindTextures(programVegetation, GL_TEXTURE_2D_ARRAY, activeTexture, "textures", &vegetationTextures);
 		Texture::bindTextures(program3d, GL_TEXTURE_2D_ARRAY, activeTexture, "textures", &textures);
 
 		Brush::bindBrushes(program3d, &brushes);
@@ -462,16 +465,14 @@ public:
 		ImGui::StyleColorsDark();
 		ImGui_ImplGlfw_InitForOpenGL(getWindow(), true);
 		ImGui_ImplOpenGL3_Init("#version 460");
-
+		atlasViewer = new AtlasViewer(&atlasTextures, basicAtlasDrawer, programTexture, 256,256);
 		brushEditor = new BrushEditor(&mainScene->camera, &brushes, program3d, programTexture);
-		vegetationViewer = new TextureViewer(&vegetationTextures, programTexture);
 		shadowMapViewer = new ShadowMapViewer(shadowFrameBuffer.depthTexture);
 		textureMixerEditor = new TextureMixerEditor(&mixers, &textures, programTexture);
 		animatedTextureEditor = new AnimatedTextureEditor(&animatedTextures, &textures, programTexture, 256,256);
 		depthBufferViewer = new DepthBufferViewer(programDepth,renderBuffer.depthTexture,256,256);
 		imageViewer = new ImageViewer(liquidFrameBuffer.colorTexture, 256,256);
 		settingsEditor = new SettingsEditor(settings);
-		atlasViewer = new AtlasViewer(&atlasTextures, programAtlas, 256,256);
 	}
 
     virtual void update(float deltaTime){
@@ -561,7 +562,7 @@ public:
 		// Shadow component
 		// ================
 		if(settings->shadowEnabled) {
-			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, shadowFrameBuffer.frameBuffer);
+			glBindFramebuffer(GL_FRAMEBUFFER, shadowFrameBuffer.frameBuffer);
 			glViewport(0, 0, shadowFrameBuffer.width, shadowFrameBuffer.height);
 			glEnable(GL_DEPTH_TEST);
 			glClear(GL_DEPTH_BUFFER_BIT);
@@ -595,7 +596,7 @@ public:
 		// =================
 		// First Pass: Depth
 		// =================
-		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, depthFrameBuffer.frameBuffer);
+		glBindFramebuffer(GL_FRAMEBUFFER, depthFrameBuffer.frameBuffer);
 		glViewport(0, 0, depthFrameBuffer.width, depthFrameBuffer.height);
 		glClear(GL_DEPTH_BUFFER_BIT);
 		glUniform1i(program3dLocs->layerLoc, 0);
@@ -606,7 +607,7 @@ public:
 		// Second Pass: Solid
 		//===================
 
-		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, renderBuffer.frameBuffer);
+		glBindFramebuffer(GL_FRAMEBUFFER, renderBuffer.frameBuffer);
 		glViewport(0, 0, renderBuffer.width, renderBuffer.height);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glUniform1i(program3dLocs->layerLoc, 1); 
@@ -639,7 +640,7 @@ public:
 			glUseProgram(program3d);
 			program3dLocs->update(mvp, model,ms,mainScene->light.direction, mainScene->camera.position, time, settings);
 
-			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, liquidFrameBuffer.frameBuffer);
+			glBindFramebuffer(GL_FRAMEBUFFER, liquidFrameBuffer.frameBuffer);
 			glViewport(0, 0, liquidFrameBuffer.width, liquidFrameBuffer.height);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 			glUniform1ui(program3dLocs->depthTestEnabledLoc, 1); // Set the sampler uniform
@@ -671,6 +672,10 @@ public:
 		glViewport(0, 0, getWidth(), getHeight());
 		glClearColor (0.1,0.1,0.1,1.0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+//glBindFramebuffer(GL_READ_FRAMEBUFFER, fbo1);
+//glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo2);
+//glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
 		glUseProgram(programSwap);
 		glDisable(GL_DEPTH_TEST);
@@ -768,6 +773,15 @@ public:
 										ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | 
 										ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | 
 										ImGuiWindowFlags_NoNav);
+			
+			
+			#ifdef GL_ATI_meminfo
+				GLint vram_usage[4] = {0};
+				glGetIntegerv(GL_TEXTURE_FREE_MEMORY_ATI, vram_usage);
+
+				ImGui::Text("Available VRAM: %d MB", vram_usage[0] / 1024);
+			#endif
+			
 			ImGui::Text("%d FPS", framesPerSecond);
 			ImGui::Text("%d solid triangles", mainScene->solidTrianglesCount);
 			ImGui::Text("%d liquid triangles", mainScene->liquidTrianglesCount);

@@ -6,6 +6,10 @@
 #include "gl.hpp"
 double lastFrameTime = 0.0;
 
+void APIENTRY openglDebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity,
+                                  GLsizei length, const GLchar* message, const void* userParam) {
+  //  std::cerr << "OpenGL Debug Message: " << message << std::endl;
+}
 
 
 int LithosApplication::initWindow() {
@@ -44,6 +48,9 @@ int LithosApplication::initWindow() {
 
     // Print OpenGL version
     std::cout << "OpenGL Version: " << glGetString(GL_VERSION) << std::endl;
+
+    glEnable(GL_DEBUG_OUTPUT);
+    glDebugMessageCallback(openglDebugCallback, nullptr);
 
 
     return 0;
@@ -101,15 +108,10 @@ void LithosApplication::mainLoop() {
 }
 
 RenderBuffer createRenderFrameBuffer(int width, int height) {
-    GLint originalFrameBuffer;
-    glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &originalFrameBuffer);
-
     RenderBuffer buffer;
     buffer.width = width;
     buffer.height = height;
     
-
-
     glGenTextures(1, &buffer.colorTexture);
     glBindTexture(GL_TEXTURE_2D, buffer.colorTexture);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
@@ -145,7 +147,7 @@ glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
     if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE){
         std::cerr << "createRenderFrameBuffer error!" << std::endl;
     }
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, originalFrameBuffer);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
     return buffer;
 }
 
@@ -181,7 +183,13 @@ GLuint createTextureArray(int width, int height, int layers) {
 
 
     int mipLevels = 1 + floor(log2(glm::max(width, height)));
-    glTexStorage3D(GL_TEXTURE_2D_ARRAY, mipLevels, GL_RGBA8, width, height, 3);
+    glTexStorage3D(GL_TEXTURE_2D_ARRAY, mipLevels, GL_RGBA8, width, height, layers);
+    GLenum err = glGetError();
+    if (err != GL_NO_ERROR) {
+        std::cerr << "glTexStorage3D error: " << err << std::endl;
+    }
+    
+    
     glGenerateMipmap(GL_TEXTURE_2D_ARRAY);
 
 
@@ -190,8 +198,6 @@ GLuint createTextureArray(int width, int height, int layers) {
 }
 
 RenderBuffer createMultiLayerRenderFrameBuffer(int width, int height, int layers) {
-    GLint originalFrameBuffer;
-    glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &originalFrameBuffer);
    
     RenderBuffer buffer;
     buffer.width = width;
@@ -199,6 +205,12 @@ RenderBuffer createMultiLayerRenderFrameBuffer(int width, int height, int layers
     buffer.colorTexture = createTextureArray(width, height, layers);
 
     glGenFramebuffers(1, &buffer.frameBuffer);
+    GLenum err = glGetError();
+    if (err != GL_NO_ERROR) {
+        std::cerr << "glGenFramebuffers failed with error: " << err << std::endl;
+    }
+
+
     glBindFramebuffer(GL_FRAMEBUFFER, buffer.frameBuffer);
 
     // Attach the entire texture array (for layered rendering)
@@ -208,15 +220,12 @@ RenderBuffer createMultiLayerRenderFrameBuffer(int width, int height, int layers
         std::cerr << "Framebuffer is not complete!" << std::endl;
     }
    
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, originalFrameBuffer);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
     return buffer;
 }
 
 
 RenderBuffer createDepthFrameBuffer(int width, int height) {
-    GLint originalFrameBuffer;
-    glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &originalFrameBuffer);
-    
     RenderBuffer buffer;
     buffer.width = width;
     buffer.height = height;
@@ -241,7 +250,7 @@ RenderBuffer createDepthFrameBuffer(int width, int height) {
     glDrawBuffer(GL_NONE);
     glReadBuffer(GL_NONE);
     
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, originalFrameBuffer);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 
     return buffer;
 }

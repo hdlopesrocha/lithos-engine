@@ -14,12 +14,12 @@ TexturePreviewer::TexturePreviewer(GLuint previewProgram, int width, int height,
 }
 
 void TexturePreviewer::draw2d(TextureArray texture){
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, previewBuffer.frameBuffer);
+    glUseProgram(previewProgram);
+    glBindFramebuffer(GL_FRAMEBUFFER, previewBuffer.frameBuffer);
     glViewport(0, 0, previewBuffer.width, previewBuffer.height); 
 	glClearColor (0.0,0.0,0.0,0.0);    
     glClear(GL_COLOR_BUFFER_BIT);
 
-    glUseProgram(previewProgram);
     glActiveTexture(GL_TEXTURE0); 
     glBindTexture(GL_TEXTURE_2D_ARRAY, texture);
     glUniform1i(glGetUniformLocation(previewProgram, "textureSampler"), 0); // Set the sampler uniform
@@ -38,5 +38,6 @@ void TexturePreviewer::draw2d(TextureArray texture){
         }
         ImGui::EndTabBar();
     }
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	ImGui::Image((ImTextureID)(intptr_t)previewBuffer.colorTexture, ImVec2(width, height));
 }

@@ -2,7 +2,7 @@
 
 #include<structs.glsl>
 
-uniform sampler2DArray textures[20];
+uniform sampler2DArray textures[25];
 uniform sampler2D shadowMap;
 uniform sampler2D noise;
 

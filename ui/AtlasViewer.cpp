@@ -2,19 +2,14 @@
 #include <glm/gtc/type_ptr.hpp>
 
 
-AtlasViewer::AtlasViewer(std::vector<AtlasTexture*> * textures, GLuint previewProgram, int width, int height) {
+AtlasViewer::AtlasViewer(std::vector<AtlasTexture*> * textures, AtlasDrawer * drawer, GLuint previewProgram, int width, int height) {
     this->textures = textures;
-    this->previewProgram = previewProgram;
-    this->previewBuffer = createRenderFrameBuffer(width,height);
-    this->previewVao = DrawableGeometry::create2DVAO(-1,-1, 1,1);
+    this->drawer = drawer;
+    this->previewer = new TexturePreviewer(previewProgram, width, height, {"Color", "Normal", "Opacity"});
     this->selectedTexture = 0;
     this->selectedTile = 0;
-    this->selectedLayer = 0;
-    this->width = width;
-    this->height = height;
-    this->layers.push_back("Color");
-    this->layers.push_back("Normal");
-    this->layers.push_back("Opacity");
+
+    this->draws.push_back(TileDraw(0, glm::vec2(1.0), glm::vec2(0.0), 0));
 }
 
 
@@ -24,50 +19,17 @@ void AtlasViewer::draw2d(){
     ImGui::Text("Selected texture: ");
     ImGui::SameLine();
 
-    AtlasTexture * atlas = (*textures)[Math::mod(selectedTexture, textures->size())];
-    Tile * tile = &atlas->tiles[Math::mod(selectedTile, atlas->tiles.size())];
-    glm::mat4 model = glm::mat4(1.0);
+    uint atlasIndex =Math::mod(selectedTexture, textures->size());
+    AtlasTexture * atlas = (*textures)[atlasIndex];
+    uint tileIndex =Math::mod(selectedTile, atlas->tiles.size());
+    Tile * tile = &atlas->tiles[tileIndex];
+    TileDraw * tileDraw = &this->draws[0];
+    tileDraw->offset = tile->offset;
+    tileDraw->size = tile->size;
+    tileDraw->index = tileIndex;
 
-
-    model = glm::translate(model, glm::vec3(-1.0));
-    model = glm::scale(model, glm::vec3(2.0));
-
-    model = glm::translate(model, glm::vec3(tile->offset, 0.0));
-    model = glm::scale(model, glm::vec3(tile->size, 1.0));
-
-    model = glm::scale(model, glm::vec3(0.5));
-    model = glm::translate(model, glm::vec3(1.0));
-
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, previewBuffer.frameBuffer);
-    glViewport(0, 0, previewBuffer.width, previewBuffer.height); 
-	glClearColor (0.0,0.0,0.0,0.0);    
-    glClear(GL_COLOR_BUFFER_BIT);
-
-    glUseProgram(previewProgram);
-    glActiveTexture(GL_TEXTURE0); 
-    glBindTexture(GL_TEXTURE_2D_ARRAY, atlas->texture);
-    glUniform1i(glGetUniformLocation(previewProgram, "textureSampler"), 0); // Set the sampler uniform
-    glUniform1i(glGetUniformLocation(previewProgram, "layerIndex"), selectedLayer); // Set the sampler uniform
-   	glUniform2fv(glGetUniformLocation(previewProgram, "tileOffset"), 1, glm::value_ptr(tile->offset));
-	glUniform2fv(glGetUniformLocation(previewProgram, "tileSize"), 1, glm::value_ptr(tile->size));
-	glUniformMatrix4fv(glGetUniformLocation(previewProgram, "model"), 1, GL_FALSE, glm::value_ptr(model));
-
-    glBindVertexArray(previewVao);
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-
-
-    if (ImGui::BeginTabBar("layerPicker_tab")) {
-        for(int i=0 ; i < layers.size(); ++i) {
-            std::string name = layers[i];
-            if (ImGui::BeginTabItem(name.c_str())) {
-                selectedLayer = i;
-                ImGui::EndTabItem();
-            }
-        }
-        ImGui::EndTabBar();
-    }
-	ImGui::Image((ImTextureID)(intptr_t)previewBuffer.colorTexture, ImVec2(width, height));
-
+    drawer->draw(atlas, draws);
+    previewer->draw2d(drawer->getTexture());
 
     ImGui::Text("Selected texture: ");
     ImGui::SameLine();

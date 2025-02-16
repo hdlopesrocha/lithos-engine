@@ -2,11 +2,11 @@
 
 #include<structs.glsl>
 
-uniform sampler2DArray textures[20];
 uniform sampler2D shadowMap;
 uniform sampler2D noise;
 uniform sampler2D depthTexture;
 uniform sampler2D underTexture;
+uniform sampler2DArray textures[25];
 
 uniform bool debugEnabled;
 uniform bool lightEnabled;
