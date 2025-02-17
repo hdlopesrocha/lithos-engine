@@ -13,7 +13,6 @@ uniform bool lightEnabled;
 uniform bool shadowEnabled;
 uniform bool triplanarEnabled;
 uniform bool parallaxEnabled;
-uniform bool depthTestEnabled;
 
 uniform vec3 lightDirection; 
 uniform vec3 cameraPosition; 

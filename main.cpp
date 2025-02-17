@@ -88,7 +88,6 @@ class ProgramLocations {
 	GLuint triplanarEnabledLoc;
 	GLuint parallaxEnabledLoc;
 	GLuint shadowEnabledLoc;
-	GLuint depthTestEnabledLoc;
 	GLuint depthTextureLoc;
 	GLuint underTextureLoc;
 	GLuint cameraPositionLoc;
@@ -114,7 +113,6 @@ class ProgramLocations {
 		this->shadowMapLoc = glGetUniformLocation(program, "shadowMap");
 		this->noiseLoc = glGetUniformLocation(program, "noise");
 		this->overrideTextureEnabledLoc = glGetUniformLocation(program, "overrideTextureEnabled");
-		this->depthTestEnabledLoc = glGetUniformLocation(program, "depthTestEnabled");
 		this->depthTextureLoc = glGetUniformLocation(program, "depthTexture");
 		this->underTextureLoc = glGetUniformLocation(program, "underTexture");
 		this->layerLoc = glGetUniformLocation(program, "layer");
@@ -132,7 +130,6 @@ class ProgramLocations {
 		glUniform1ui(parallaxEnabledLoc, settings->parallaxEnabled);
 		glUniform1ui(debugEnabledLoc,settings->debugEnabled);
 		glUniform1ui(shadowEnabledLoc, settings->shadowEnabled);
-		glUniform1ui(depthTestEnabledLoc, 0);
 	}
 
 	void updateWireframe() {
@@ -140,7 +137,6 @@ class ProgramLocations {
 		glUniform1ui(parallaxEnabledLoc, 0);
 		glUniform1ui(triplanarEnabledLoc, 0);
 		glUniform1ui(debugEnabledLoc, 1);
-		glUniform1ui(depthTestEnabledLoc, 0); // Set the sampler uniform
 
 	}
 };
@@ -405,7 +401,6 @@ public:
 
 		Brush::bindBrushes(program3d, &brushes);
 
-
 		mainScene = new Scene();
 		mainScene->setup();
 		mainScene->load();
@@ -418,10 +413,6 @@ public:
 		vaoDebug = new DrawableGeometry(&debugTesselator->chunk);
 		#endif
 
-	 
-		//std::cout << "#triangles = " << Tesselator::triangles << std::endl;
-		
-
 		atlasViewer = new AtlasViewer(&atlasTextures, programAtlas, programTexture, 256,256);
 		brushEditor = new BrushEditor(&mainScene->camera, &brushes, &textures, program3d, programTexture);
 		shadowMapViewer = new ShadowMapViewer(shadowFrameBuffer.depthTexture);
@@ -429,7 +420,6 @@ public:
 		animatedTextureEditor = new AnimatedTextureEditor(&animatedTextures, &textures, programTexture, 256,256);
 		depthBufferViewer = new DepthBufferViewer(programDepth,renderBuffer.depthTexture,256,256);
 		settingsEditor = new SettingsEditor(settings);
-
 
 		// ImGui
 		IMGUI_CHECKVERSION();
@@ -439,7 +429,6 @@ public:
 		ImGui::StyleColorsDark();
 		ImGui_ImplGlfw_InitForOpenGL(getWindow(), true);
 		ImGui_ImplOpenGL3_Init("#version 460");
-
 
 	}
 
@@ -525,6 +514,7 @@ public:
 		glm::mat4 ms =  Math::getCanonicalMVP(mlp);
 
 		mainScene->update3d(mvp, mlp);
+
 		// ================
 		// Shadow component
 		// ================
@@ -538,11 +528,9 @@ public:
 			mainScene->draw3dShadow();
 		}
 
-
 		// ============
 		// 3D component
 		// ============
-
 		glPatchParameteri(GL_PATCH_VERTICES, 3); // Define the number of control points per patch
 		glEnable(GL_CULL_FACE); // Enable face culling
 		glCullFace(GL_BACK); // Or GL_FRONT
@@ -573,7 +561,6 @@ public:
 		// ==================
 		// Second Pass: Solid
 		//===================
-
 		glBindFramebuffer(GL_FRAMEBUFFER, renderBuffer.frameBuffer);
 		glViewport(0, 0, renderBuffer.width, renderBuffer.height);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -612,11 +599,8 @@ public:
 				GL_NEAREST           
 			);
 
-
 			glBindFramebuffer(GL_FRAMEBUFFER, renderBuffer.frameBuffer);
 			glViewport(0, 0, renderBuffer.width, renderBuffer.height);
-			glUniform1ui(program3dLocs->depthTestEnabledLoc, 1); // Set the sampler uniform
-			
 			
 			mainScene->draw3dLiquid();
 		}
