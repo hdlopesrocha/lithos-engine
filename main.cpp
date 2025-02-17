@@ -188,9 +188,7 @@ class MainApplication : public LithosApplication {
 	RenderBuffer liquidFrameBuffer;
 
 	int activeTexture = 5; // To avoid rebinding other textures
-	int activeDepth;
-	int activeShadow;
-	int activeUnder;
+
 	
 	float time = 0.0f;
 
@@ -394,7 +392,7 @@ public:
 			brushes.push_back(new Brush(t, glm::vec2(1.0), 0.01, 4, 16, 8,4, 256, 0.2 , 0.0));
 		}
 		{
-			AnimatedTexture * tm = new AnimatedTexture(1024,1024, programWaterTexture, &textures);
+			AnimatedTexture * tm = new AnimatedTexture(1024,1024, programWaterTexture);
 			tm->animate(0);
 			Texture * t = new Texture(tm->getTexture());
 			textures.push_back(t);
@@ -415,12 +413,9 @@ public:
 			at->tiles.push_back(Tile(glm::vec2(0.4, 0.5),glm::vec2(0.6, 0.5)));
 
 			atlasTextures.push_back(at);
+			textures.push_back(at);
+			//brushes.push_back(new Brush(at, glm::vec2(0.2), 0.02, 8, 32, 16,4, 10.0, 0.5 , 1.33));
 
-			std::vector<TileDraw> draws;
-			draws.push_back(TileDraw(1,glm::vec2(0.5),glm::vec2(0.5), 0.5));
-			basicAtlasDrawer = new AtlasDrawer(programAtlas, 1024, 1024);
-			basicAtlasDrawer->draw(at, draws);
-			textures.push_back(new Texture(basicAtlasDrawer->getTexture()));
 		}
 
 
@@ -428,9 +423,9 @@ public:
 
 		noiseTexture = loadTextureImage("textures/noise.png");
 
-		activeTexture = activeDepth = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, "depthTexture", depthFrameBuffer.depthTexture);
-		activeTexture = activeUnder = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, "underTexture", renderBuffer.colorTexture);
-		activeTexture = activeShadow = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, "shadowMap", shadowFrameBuffer.depthTexture);
+		activeTexture = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, "depthTexture", depthFrameBuffer.depthTexture);
+		activeTexture = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, "underTexture", renderBuffer.colorTexture);
+		activeTexture = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, "shadowMap", shadowFrameBuffer.depthTexture);
 		activeTexture = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, "noise", noiseTexture);
 
 		Texture::bindTextures(program3d, GL_TEXTURE_2D_ARRAY, activeTexture, "textures", &textures);
@@ -452,9 +447,19 @@ public:
 		#endif
 
 	 
-	 	std::cout << "Setup complete!" << std::endl;
 		//std::cout << "#triangles = " << Tesselator::triangles << std::endl;
 		
+
+		atlasViewer = new AtlasViewer(&atlasTextures, programAtlas, programTexture, 256,256);
+		brushEditor = new BrushEditor(&mainScene->camera, &brushes, program3d, programTexture);
+		shadowMapViewer = new ShadowMapViewer(shadowFrameBuffer.depthTexture);
+		textureMixerEditor = new TextureMixerEditor(&mixers, &textures, programTexture);
+		animatedTextureEditor = new AnimatedTextureEditor(&animatedTextures, &textures, programTexture, 256,256);
+		depthBufferViewer = new DepthBufferViewer(programDepth,renderBuffer.depthTexture,256,256);
+		imageViewer = new ImageViewer(liquidFrameBuffer.colorTexture, 256,256);
+		settingsEditor = new SettingsEditor(settings);
+
+
 		// ImGui
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
@@ -463,14 +468,8 @@ public:
 		ImGui::StyleColorsDark();
 		ImGui_ImplGlfw_InitForOpenGL(getWindow(), true);
 		ImGui_ImplOpenGL3_Init("#version 460");
-		atlasViewer = new AtlasViewer(&atlasTextures, basicAtlasDrawer, programTexture, 256,256);
-		brushEditor = new BrushEditor(&mainScene->camera, &brushes, program3d, programTexture);
-		shadowMapViewer = new ShadowMapViewer(shadowFrameBuffer.depthTexture);
-		textureMixerEditor = new TextureMixerEditor(&mixers, &textures, programTexture);
-		animatedTextureEditor = new AnimatedTextureEditor(&animatedTextures, &textures, programTexture, 256,256);
-		depthBufferViewer = new DepthBufferViewer(programDepth,renderBuffer.depthTexture,256,256);
-		imageViewer = new ImageViewer(liquidFrameBuffer.colorTexture, 256,256);
-		settingsEditor = new SettingsEditor(settings);
+
+
 	}
 
     virtual void update(float deltaTime){

@@ -256,7 +256,6 @@ class TextureMixer {
 
 class AnimatedTexture {
     RenderBuffer textureMixerBuffer;
-    std::vector<Texture*> * textures;
     GLuint program;
     GLuint previewVao;
 
@@ -268,7 +267,7 @@ class AnimatedTexture {
     float brightness;
     float contrast;
     glm::vec4 color;
-    AnimatedTexture(int width, int height, GLuint program, std::vector<Texture*> * textures);
+    AnimatedTexture(int width, int height, GLuint program);
     TextureArray getTexture();
     void animate(float time);
 };

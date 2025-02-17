@@ -11,7 +11,6 @@ TextureMixer::TextureMixer(int width, int height, GLuint program, std::vector<Te
     this->perlinLacunarity = 2;
     this->brightness = 0;
     this->contrast = 10;
-    
 }
 
 TextureArray TextureMixer::getTexture(){
@@ -25,8 +24,8 @@ void TextureMixer::mix(int baseTextureIndex, int overlayTextureIndex ){
 }
 
 void TextureMixer::mix(){
-    Texture * baseTexture = (*textures)[baseTextureIndex];
-    Texture * overlayTexture = (*textures)[overlayTextureIndex];
+    Texture * baseTexture = (*textures)[Math::mod(baseTextureIndex, textures->size())];
+    Texture * overlayTexture = (*textures)[Math::mod(overlayTextureIndex, textures->size())];
 
     glUseProgram(program);
 

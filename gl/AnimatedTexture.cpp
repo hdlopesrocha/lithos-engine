@@ -1,9 +1,8 @@
 #include "gl.hpp"
 #include <glm/gtc/type_ptr.hpp>
 
-AnimatedTexture::AnimatedTexture(int width, int height, GLuint program, std::vector<Texture*> * textures) {
+AnimatedTexture::AnimatedTexture(int width, int height, GLuint program) {
     this->textureMixerBuffer = createMultiLayerRenderFrameBuffer(width,height, 3);
-    this->textures = textures;
     this->program = program;
     this->previewVao = DrawableGeometry::create2DVAO(-1,-1, 1,1);
     this->perlinScale = 9;

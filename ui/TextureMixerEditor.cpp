@@ -15,7 +15,7 @@ void TextureMixerEditor::draw2d(){
     //Texture * baseTexture = (*textures)[selectedBaseTexture];
     //Texture * overlayTexture = (*textures)[selectedOverlayTexture];
 
-    TextureMixer * mixer = (*mixers)[selectedMixer];
+    TextureMixer * mixer = (*mixers)[Math::mod(selectedMixer, mixers->size())];
     mixer->mix();
     //textureMixer->mix(baseTexture, overlayTexture);
 
@@ -24,11 +24,11 @@ void TextureMixerEditor::draw2d(){
     ImGui::Text("Mixer: ");
     ImGui::SameLine();
     if (ImGui::ArrowButton("##mixer_arrow_left", ImGuiDir_Left)) {
-        selectedMixer = Math::mod(selectedMixer - 1, mixers->size());
+        --selectedMixer;
     }
     ImGui::SameLine();
     if (ImGui::ArrowButton("##mixer_arrow_right", ImGuiDir_Right)) {
-        selectedMixer = Math::mod(selectedMixer + 1, mixers->size());
+        ++selectedMixer;
     }
 
 
@@ -37,22 +37,22 @@ void TextureMixerEditor::draw2d(){
     ImGui::SameLine();
 
     if (ImGui::ArrowButton("##base_arrow_left", ImGuiDir_Left)) {
-        mixer->baseTextureIndex = Math::mod(mixer->baseTextureIndex - 1, textures->size());
+        --mixer->baseTextureIndex;
     }
     ImGui::SameLine();
     if (ImGui::ArrowButton("##base_arrow_right", ImGuiDir_Right)) {
-        mixer->baseTextureIndex = Math::mod(mixer->baseTextureIndex + 1, textures->size());
+        ++mixer->baseTextureIndex;
     }
 
     ImGui::Text("Overlay texture: ");
     ImGui::SameLine();
 
     if (ImGui::ArrowButton("##overlay_arrow_left", ImGuiDir_Left)) {
-        mixer->overlayTextureIndex = Math::mod(mixer->overlayTextureIndex - 1, textures->size());
+        --mixer->overlayTextureIndex;
     }
     ImGui::SameLine();
     if (ImGui::ArrowButton("##overlay_arrow_right", ImGuiDir_Right)) {
-        mixer->overlayTextureIndex = Math::mod(mixer->overlayTextureIndex + 1, textures->size());
+        ++mixer->overlayTextureIndex;
     }
 
 float step = 0.1f;
