@@ -1,10 +1,10 @@
 #include "tools.hpp"
 
  
-SimpleBrush::SimpleBrush(Texture * texture){
-    this->texture = texture;
+SimpleBrush::SimpleBrush(Brush * brush){
+    this->brush = brush;
 }
 
 void SimpleBrush::paint(Vertex * vertex) {
-    vertex->brushIndex = texture->index;
+    vertex->brushIndex = brush->brushIndex;
 }

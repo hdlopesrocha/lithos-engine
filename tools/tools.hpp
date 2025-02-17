@@ -7,17 +7,17 @@
 
 
 class LandBrush : public TextureBrush {
-	uint underground;
-	uint grass;
-	uint sand;
-	uint softSand;
-	uint rock;
-	uint snow;
-	uint grassMixSand;
-	uint grassMixSnow;
-	uint rockMixGrass;
-	uint rockMixSnow;
-	uint rockMixSand;
+	Brush * underground;
+	Brush * grass;
+	Brush * sand;
+	Brush * softSand;
+	Brush * rock;
+	Brush * snow;
+	Brush * grassMixSand;
+	Brush * grassMixSnow;
+	Brush * rockMixGrass;
+	Brush * rockMixSnow;
+	Brush * rockMixSand;
 
 	public: 
 	LandBrush(std::vector<Brush*> brushes);
@@ -25,21 +25,20 @@ class LandBrush : public TextureBrush {
 };
 
 class SimpleBrush : public TextureBrush {
-	Texture * texture;
+	Brush * brush;
 
 	public: 
-	SimpleBrush(Texture * texture);
+	SimpleBrush(Brush * brush);
 	void paint(Vertex * vertex);
 };
 
 
 
 class WaterBrush : public TextureBrush {
-	Texture * water;
-	Texture discardTexture;
+	Brush * water;
 
 	public: 
-	WaterBrush(Texture* water);
+	WaterBrush(Brush* water);
 	void paint(Vertex * vertex);
 };
 

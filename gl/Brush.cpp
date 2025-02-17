@@ -58,7 +58,7 @@ void Brush::bindBrushes(GLuint program, std::vector<Brush*> * brushes) {
     for(int i = 0; i < brushes->size() ; ++i) {
         Brush * brush = (*brushes)[i];
         std::string objectName = "brushes[" + std::to_string(i)  +"]";
-
+        brush->brushIndex = i;
         bindBrush(program, objectName, "brushTextures["+std::to_string(i) + "]", brush);
     }
 }

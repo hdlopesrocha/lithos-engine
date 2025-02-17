@@ -1,17 +1,17 @@
 #include "tools.hpp"
 
 LandBrush::LandBrush(std::vector<Brush*> brushes){
-    this->underground = brushes[7]->textureIndex;
-    this->grass = brushes[2]->textureIndex;
-    this->sand = brushes[3]->textureIndex;
-    this->softSand = brushes[15]->textureIndex;
-    this->rock = brushes[4]->textureIndex;
-    this->snow = brushes[5]->textureIndex;
-    this->grassMixSand = brushes[9]->textureIndex;
-    this->grassMixSnow = brushes[10]->textureIndex;
-    this->rockMixGrass = brushes[11]->textureIndex;
-    this->rockMixSnow = brushes[12]->textureIndex;
-    this->rockMixSand = brushes[13]->textureIndex;
+    this->underground = brushes[7];
+    this->grass = brushes[2];
+    this->sand = brushes[3];
+    this->softSand = brushes[15];
+    this->rock = brushes[4];
+    this->snow = brushes[5];
+    this->grassMixSand = brushes[9];
+    this->grassMixSnow = brushes[10];
+    this->rockMixGrass = brushes[11];
+    this->rockMixSnow = brushes[12];
+    this->rockMixSand = brushes[13];
 }
 
 void LandBrush::paint(Vertex * vertex) {
@@ -19,34 +19,34 @@ void LandBrush::paint(Vertex * vertex) {
     int grassLevel = 25;
     int sandLevel = 5;
 
-    uint textureIndex;
+    uint brushIndex;
     if (glm::dot(glm::vec3(0.0f,1.0f,0.0f), vertex->normal ) <=0 ){
-        textureIndex = DISCARD_BRUSH_INDEX;
+        brushIndex = DISCARD_BRUSH_INDEX;
     } else if(steepness < 0.8 ){
-        textureIndex = rock;
+        brushIndex = rock->brushIndex;
     } else if(steepness < 0.9 ){
         if(vertex->position.y < sandLevel -1){
-            textureIndex = rock;
+            brushIndex = rock->brushIndex;
         } else if(vertex->position.y < sandLevel){
-            textureIndex = rockMixSand;
+            brushIndex = rockMixSand->brushIndex;
         } else if(vertex->position.y < grassLevel){
-            textureIndex = rockMixGrass;
+            brushIndex = rockMixGrass->brushIndex;
         } else {
-            textureIndex = rockMixSnow;
+            brushIndex = rockMixSnow->brushIndex;
         }
     } else if(vertex->position.y < sandLevel-1){
-        textureIndex = softSand;
+        brushIndex = softSand->brushIndex;
     } else if(vertex->position.y < sandLevel){
-        textureIndex = sand;
+        brushIndex = sand->brushIndex;
     } else if(vertex->position.y < sandLevel+1){
-        textureIndex = grassMixSand;
+        brushIndex = grassMixSand->brushIndex;
     } else if(vertex->position.y < grassLevel){
-        textureIndex = grass;
+        brushIndex = grass->brushIndex;
     } else if(vertex->position.y < grassLevel+1){
-        textureIndex = grassMixSnow;
+        brushIndex = grassMixSnow->brushIndex;
     } else {
-        textureIndex = snow;
+        brushIndex = snow->brushIndex;
     }
 
-    vertex->brushIndex = textureIndex;
+    vertex->brushIndex = brushIndex;
 }

@@ -197,7 +197,6 @@ class OctreeRenderer : public IteratorHandler{
 
 class Texture {
 	public:
-	int index;
 	TextureArray texture;
 
 	Texture();
@@ -212,6 +211,7 @@ class Texture {
 class Brush {
     public:
     uint textureIndex;
+    uint brushIndex;
 	float parallaxScale;
 	float parallaxMinLayers;
 	float parallaxMaxLayers;
