@@ -177,12 +177,10 @@ class MainApplication : public LithosApplication {
 	ProgramLocations * program3dLocs;
 	ProgramLocations * programVegetationLocs;
 	GLuint noiseTexture;
-	GLuint screen2dVao;
-	GLuint fillAreaVao;
 
 	RenderBuffer depthFrameBuffer;
 	RenderBuffer renderBuffer;
-	RenderBuffer underBuffer;
+	RenderBuffer solidBuffer;
 	RenderBuffer shadowFrameBuffer;
 
 	int activeTexture = 5; // To avoid rebinding other textures
@@ -281,14 +279,10 @@ public:
 		program3dLocs = new ProgramLocations(program3d);
 		glUseProgram(program3d);
 
-		// Use the shader program
-		screen2dVao = DrawableGeometry::create2DVAO(0,0,200,200);
-		fillAreaVao = DrawableGeometry::create2DVAO(-1,-1, 1,1);
-
 		modelViewProjectionShadowLoc = glGetUniformLocation(programShadow, "modelViewProjection");
 
 		renderBuffer = createRenderFrameBuffer(getWidth(), getHeight());
-		underBuffer = createRenderFrameBuffer(getWidth(), getHeight());
+		solidBuffer = createRenderFrameBuffer(getWidth(), getHeight());
 		depthFrameBuffer = createDepthFrameBuffer(getWidth(), getHeight());
 		shadowFrameBuffer = createDepthFrameBuffer(2048, 2048);
 
@@ -417,7 +411,7 @@ public:
 		noiseTexture = loadTextureImage("textures/noise.png");
 
 		activeTexture = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, "depthTexture", depthFrameBuffer.depthTexture);
-		activeTexture = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, "underTexture", underBuffer.colorTexture);
+		activeTexture = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, "underTexture", solidBuffer.colorTexture);
 		activeTexture = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, "shadowMap", shadowFrameBuffer.depthTexture);
 		activeTexture = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, "noise", noiseTexture);
 
@@ -630,10 +624,10 @@ public:
 
 			// Bind the source framebuffer (FBO you rendered to)
 			glBindFramebuffer(GL_READ_FRAMEBUFFER, renderBuffer.frameBuffer);
-			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, underBuffer.frameBuffer);
+			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, solidBuffer.frameBuffer);
 			glBlitFramebuffer(
 				0, 0, renderBuffer.width, renderBuffer.height, // Source rectangle (x0, y0, x1, y1)
-				0, 0, underBuffer.width, underBuffer.height, 
+				0, 0, solidBuffer.width, solidBuffer.height, 
 				GL_COLOR_BUFFER_BIT,  
 				GL_NEAREST           
 			);
