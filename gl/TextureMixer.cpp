@@ -40,12 +40,12 @@ void TextureMixer::mix(){
     glBindTexture(GL_TEXTURE_2D_ARRAY, overlayTexture->texture);
     glUniform1i(glGetUniformLocation(program, "overlayTexture"), 1);
 
-    glUniform1i(glGetUniformLocation(program, "perlinScale"), perlinScale); // Set the sampler uniform
-    glUniform1f(glGetUniformLocation(program, "perlinTime"), perlinTime); // Set the sampler uniform
-    glUniform1i(glGetUniformLocation(program, "perlinIterations"), perlinIterations); // Set the sampler uniform
-    glUniform1i(glGetUniformLocation(program, "perlinLacunarity"), perlinLacunarity); // Set the sampler uniform
-    glUniform1f(glGetUniformLocation(program, "brightness"), brightness); // Set the sampler uniform
-    glUniform1f(glGetUniformLocation(program, "contrast"), contrast); // Set the sampler uniform
+    glUniform1i(glGetUniformLocation(program, "perlinScale"), perlinScale); 
+    glUniform1f(glGetUniformLocation(program, "perlinTime"), perlinTime); 
+    glUniform1i(glGetUniformLocation(program, "perlinIterations"), perlinIterations); 
+    glUniform1i(glGetUniformLocation(program, "perlinLacunarity"), perlinLacunarity); 
+    glUniform1f(glGetUniformLocation(program, "brightness"), brightness); 
+    glUniform1f(glGetUniformLocation(program, "contrast"), contrast);
     glBindVertexArray(previewVao);
 
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);

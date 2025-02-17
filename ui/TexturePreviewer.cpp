@@ -22,8 +22,8 @@ void TexturePreviewer::draw2d(TextureArray texture){
 
     glActiveTexture(GL_TEXTURE0); 
     glBindTexture(GL_TEXTURE_2D_ARRAY, texture);
-    glUniform1i(glGetUniformLocation(previewProgram, "textureSampler"), 0); // Set the sampler uniform
-    glUniform1i(glGetUniformLocation(previewProgram, "textureLayer"), selectedLayer); // Set the sampler uniform
+    glUniform1i(glGetUniformLocation(previewProgram, "textureSampler"), 0); 
+    glUniform1i(glGetUniformLocation(previewProgram, "textureLayer"), selectedLayer); 
     glBindVertexArray(previewVao);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 

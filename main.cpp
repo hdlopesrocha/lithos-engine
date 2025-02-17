@@ -532,11 +532,10 @@ public:
 		// 3D component
 		// ============
 		glPatchParameteri(GL_PATCH_VERTICES, 3); // Define the number of control points per patch
-		glEnable(GL_CULL_FACE); // Enable face culling
+		glEnable(GL_CULL_FACE);
 		glCullFace(GL_BACK); // Or GL_FRONT
 		glFrontFace(GL_CCW); // Ensure this matches your vertex data
 		glEnable(GL_DEPTH_TEST);
-		//glDepthFunc(GL_LESS);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 		glEnable(GL_BLEND);
@@ -615,7 +614,7 @@ public:
 		glUniform1ui(program3dLocs->parallaxEnabledLoc, 0);
     	glUniform1ui(program3dLocs->triplanarEnabledLoc, 0);
 	
-		glDisable(GL_CULL_FACE); // Enable face culling
+		glDisable(GL_CULL_FACE); 
 		vaoDebug->draw(GL_PATCHES);
 			
 		glPolygonMode(GL_FRONT, GL_FILL);

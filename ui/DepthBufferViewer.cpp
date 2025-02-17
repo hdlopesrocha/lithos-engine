@@ -20,7 +20,7 @@ void DepthBufferViewer::draw2d(){
     glUseProgram(previewProgram);
     glActiveTexture(GL_TEXTURE0); 
     glBindTexture(GL_TEXTURE_2D, depthTexture);
-    glUniform1i(glGetUniformLocation(previewProgram, "textureSampler"), 0); // Set the sampler uniform
+    glUniform1i(glGetUniformLocation(previewProgram, "textureSampler"), 0); 
     glBindVertexArray(previewVao);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 

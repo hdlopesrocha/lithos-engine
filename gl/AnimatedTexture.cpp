@@ -25,13 +25,13 @@ void AnimatedTexture::animate(float time){
 	glClearColor (0.0,0.0,0.0,0.0);    
     glClear(GL_COLOR_BUFFER_BIT);
     
-    glUniform1i(glGetUniformLocation(program, "perlinScale"), perlinScale); // Set the sampler uniform
-    glUniform1f(glGetUniformLocation(program, "perlinTime"), time); // Set the sampler uniform
-    glUniform1i(glGetUniformLocation(program, "perlinIterations"), perlinIterations); // Set the sampler uniform
-    glUniform1i(glGetUniformLocation(program, "perlinLacunarity"), perlinLacunarity); // Set the sampler uniform
-    glUniform1f(glGetUniformLocation(program, "brightness"), brightness); // Set the sampler uniform
-    glUniform1f(glGetUniformLocation(program, "contrast"), contrast); // Set the sampler uniform
-    glUniform4fv(glGetUniformLocation(program, "color"), 1, glm::value_ptr(color)); // Set the sampler uniform
+    glUniform1i(glGetUniformLocation(program, "perlinScale"), perlinScale); 
+    glUniform1f(glGetUniformLocation(program, "perlinTime"), time); 
+    glUniform1i(glGetUniformLocation(program, "perlinIterations"), perlinIterations); 
+    glUniform1i(glGetUniformLocation(program, "perlinLacunarity"), perlinLacunarity); 
+    glUniform1f(glGetUniformLocation(program, "brightness"), brightness); 
+    glUniform1f(glGetUniformLocation(program, "contrast"), contrast); 
+    glUniform4fv(glGetUniformLocation(program, "color"), 1, glm::value_ptr(color)); 
     glBindVertexArray(previewVao);
 
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);

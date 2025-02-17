@@ -96,9 +96,9 @@ bool isProcessing = false;
 	}
 
 	void drawVegetation() {
-		glDisable(GL_CULL_FACE); // Enable face culling
+		glDisable(GL_CULL_FACE); 
 		vegetation->drawable->draw(GL_TRIANGLES);
-		glEnable(GL_CULL_FACE); // Enable face culling
+		glEnable(GL_CULL_FACE);
 	}
 
 	void draw3dSolid() {
