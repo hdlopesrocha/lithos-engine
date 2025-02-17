@@ -165,7 +165,6 @@ class MainApplication : public LithosApplication {
 	GLuint programSwap;
 	GLuint program3d;
 	GLuint programShadow;
-	GLuint programVegetation;
 	GLuint programAtlas;
 	GLuint programTexture;
 	GLuint programDepth;
@@ -175,7 +174,6 @@ class MainApplication : public LithosApplication {
 
 	GLuint modelViewProjectionShadowLoc;
 	ProgramLocations * program3dLocs;
-	ProgramLocations * programVegetationLocs;
 	GLuint noiseTexture;
 
 	RenderBuffer depthFrameBuffer;
@@ -223,13 +221,6 @@ public:
 			compileShader(replaceIncludes(includes,readFile("shaders/shadow_fragment.glsl")),GL_FRAGMENT_SHADER)
 		});
 		glUseProgram(programShadow);
-
-		programVegetation = createShaderProgram({
-			compileShader(replaceIncludes(includes,readFile("shaders/vegetation_vertex.glsl")),GL_VERTEX_SHADER), 
-			compileShader(replaceIncludes(includes,readFile("shaders/vegetation_fragment.glsl")),GL_FRAGMENT_SHADER)
-		});
-		programVegetationLocs = new ProgramLocations(programVegetation);
-		glUseProgram(programVegetation);
 
 		programAtlas = createShaderProgram({
 			compileShader(replaceIncludes(includes,readFile("shaders/texture/atlas_vertex.glsl")),GL_VERTEX_SHADER), 
@@ -347,7 +338,6 @@ public:
 			mixers.push_back(tm);
 			textures.push_back(t);
 		}
-
 		{
 			TextureMixer * tm = new TextureMixer(1024,1024, programMixTexture, &textures);
 			tm->mix(4, 2);
@@ -405,11 +395,7 @@ public:
 
 		}
 
-
-
-
 		noiseTexture = loadTextureImage("textures/noise.png");
-
 		activeTexture = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, "depthTexture", depthFrameBuffer.depthTexture);
 		activeTexture = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, "underTexture", solidBuffer.colorTexture);
 		activeTexture = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, "shadowMap", shadowFrameBuffer.depthTexture);
@@ -418,7 +404,6 @@ public:
 		Texture::bindTextures(program3d, GL_TEXTURE_2D_ARRAY, activeTexture, "textures", &textures);
 
 		Brush::bindBrushes(program3d, &brushes);
-		Brush::bindBrushes(programVegetation, &vegetationBrushes);
 
 
 		mainScene = new Scene();
@@ -604,9 +589,6 @@ public:
 			mainScene->draw3dSolid();
 			mainScene->draw3dLiquid();
 
-			glUseProgram(programVegetation);
-			programVegetationLocs->update(mvp, model,ms,mainScene->light.direction, mainScene->camera.position, time, settings);
-			programVegetationLocs->updateWireframe();
 			mainScene->drawVegetation();
 			//glUseProgram(program3d);
 
@@ -615,8 +597,6 @@ public:
 	
 			mainScene->draw3dSolid();
 
-			glUseProgram(programVegetation);
-			programVegetationLocs->update(mvp, model,ms,mainScene->light.direction, mainScene->camera.position, time, settings);
 			mainScene->drawVegetation();
 
 			glUseProgram(program3d);
