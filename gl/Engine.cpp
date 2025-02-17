@@ -107,6 +107,34 @@ void LithosApplication::mainLoop() {
     ImGui::DestroyContext();
 }
 
+
+RenderBuffer createRenderFrameBufferWithoutDepth(int width, int height) {
+    RenderBuffer buffer;
+    buffer.width = width;
+    buffer.height = height;
+    
+    glGenTextures(1, &buffer.colorTexture);
+    glBindTexture(GL_TEXTURE_2D, buffer.colorTexture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+    glGenFramebuffers(1, &buffer.frameBuffer);
+    glBindFramebuffer(GL_FRAMEBUFFER, buffer.frameBuffer);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, buffer.colorTexture, 0);
+
+    GLenum drawBuffers[1] = {GL_COLOR_ATTACHMENT0 };
+    glDrawBuffers(1, drawBuffers);
+    
+    if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE){
+        std::cerr << "createRenderFrameBuffer error!" << std::endl;
+    }
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    return buffer;
+}
+
 RenderBuffer createRenderFrameBuffer(int width, int height) {
     RenderBuffer buffer;
     buffer.width = width;
@@ -188,9 +216,8 @@ GLuint createTextureArray(int width, int height, int layers) {
     if (err != GL_NO_ERROR) {
         std::cerr << "glTexStorage3D error: " << err << std::endl;
     }
-    
-    
-    glGenerateMipmap(GL_TEXTURE_2D_ARRAY);
+
+   // glGenerateMipmap(GL_TEXTURE_2D_ARRAY);
 
 
     glBindTexture(GL_TEXTURE_2D_ARRAY, 0);

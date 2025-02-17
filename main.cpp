@@ -197,7 +197,6 @@ class MainApplication : public LithosApplication {
 	// UI
 	BrushEditor * brushEditor;
 	AtlasViewer * atlasViewer;
-	TextureViewer * vegetationViewer;
 	ShadowMapViewer * shadowMapViewer;
 	TextureMixerEditor * textureMixerEditor;
 	AnimatedTextureEditor * animatedTextureEditor;
@@ -729,9 +728,6 @@ public:
 				if (ImGui::MenuItem("Atlas Viewer", "Ctrl+B")) {
 					atlasViewer->show();
 				}		
-				if (ImGui::MenuItem("Vegetation Viewer", "Ctrl+B")) {
-					vegetationViewer->show();
-				}
 				if (ImGui::MenuItem("Depth Buffer Viewer", "Ctrl+B")) {
 					depthBufferViewer->show();
 				}
@@ -791,7 +787,6 @@ public:
 
 		animatedTextureEditor->draw2dIfOpen();
 		brushEditor->draw2dIfOpen();
-		vegetationViewer->draw2dIfOpen();
 		shadowMapViewer->draw2dIfOpen();
 		textureMixerEditor->draw2dIfOpen();
 		depthBufferViewer->draw2dIfOpen();

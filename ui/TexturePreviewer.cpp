@@ -3,7 +3,7 @@
 
 TexturePreviewer::TexturePreviewer(GLuint previewProgram, int width, int height, std::initializer_list<std::string> layers) {
     this->previewProgram = previewProgram;
-    this->previewBuffer = createRenderFrameBuffer(width,height);
+    this->previewBuffer = createRenderFrameBufferWithoutDepth(width,height);
     this->previewVao = DrawableGeometry::create2DVAO(-1,-1, 1,1);
     this->selectedLayer = 0;
     this->width = width;

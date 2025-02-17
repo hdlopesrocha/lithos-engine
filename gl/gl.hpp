@@ -336,5 +336,5 @@ GLuint createTextureArray(int width, int height, int layers);
 RenderBuffer createMultiLayerRenderFrameBuffer(int width, int height, int layers);
 RenderBuffer createDepthFrameBuffer(int width, int height);
 RenderBuffer createRenderFrameBuffer(int width, int height);
-
+RenderBuffer createRenderFrameBufferWithoutDepth(int width, int height);
 #endif
