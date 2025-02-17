@@ -46,8 +46,8 @@ GLuint DrawableGeometry::create2DVAO(float x, float y, float w, float h) {
 
 	};
 	unsigned int indices[] = {
-		0, 1, 2,
-		2, 3, 0
+		0, 2, 1,
+		2, 0, 3
 	};
 
 	unsigned int VBO, VAO, EBO;

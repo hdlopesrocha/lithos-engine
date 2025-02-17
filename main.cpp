@@ -535,8 +535,7 @@ public:
 
 
     virtual void draw3d() {
-
-		glClearColor (0.0,0.0,0.0,0.0);
+		glClearColor (0.1,0.1,0.1,1.0);
 		glm::mat4 model = glm::mat4(1.0f); // Identity matrix
 
 		glm::mat4 rotate = glm::mat4_cast(mainScene->camera.quaternion);
@@ -667,24 +666,16 @@ public:
 		// ==========
 		// Final Pass
 		// ==========
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, renderBuffer.frameBuffer);
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, originalFrameBuffer);
-		glViewport(0, 0, getWidth(), getHeight());
-		glClearColor (0.1,0.1,0.1,1.0);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glBlitFramebuffer(
+			0, 0, renderBuffer.width, renderBuffer.height, // Source rectangle (x0, y0, x1, y1)
+			0, 0, getWidth(), getHeight(), 
+			GL_COLOR_BUFFER_BIT,  
+			GL_NEAREST           
+		);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-//glBindFramebuffer(GL_READ_FRAMEBUFFER, fbo1);
-//glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo2);
-//glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
-
-		glUseProgram(programSwap);
-		glDisable(GL_DEPTH_TEST);
-		glDisable(GL_CULL_FACE);
-		glActiveTexture(GL_TEXTURE0); 
-		glUniform1i(glGetUniformLocation(programSwap, "textureSampler"), 0); // Set the sampler uniform
-		glBindVertexArray(fillAreaVao);
-
-		glBindTexture(GL_TEXTURE_2D, renderBuffer.colorTexture);		
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     }
 	bool demo = false;
     bool bSettingsWindow = true;
