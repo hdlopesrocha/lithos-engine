@@ -182,8 +182,8 @@ class MainApplication : public LithosApplication {
 
 	RenderBuffer depthFrameBuffer;
 	RenderBuffer renderBuffer;
+	RenderBuffer underBuffer;
 	RenderBuffer shadowFrameBuffer;
-	RenderBuffer liquidFrameBuffer;
 
 	int activeTexture = 5; // To avoid rebinding other textures
 
@@ -197,7 +197,6 @@ class MainApplication : public LithosApplication {
 	TextureMixerEditor * textureMixerEditor;
 	AnimatedTextureEditor * animatedTextureEditor;
 	DepthBufferViewer * depthBufferViewer;
-	ImageViewer * imageViewer;
 	SettingsEditor * settingsEditor;
 
 public:
@@ -289,9 +288,9 @@ public:
 		modelViewProjectionShadowLoc = glGetUniformLocation(programShadow, "modelViewProjection");
 
 		renderBuffer = createRenderFrameBuffer(getWidth(), getHeight());
+		underBuffer = createRenderFrameBuffer(getWidth(), getHeight());
 		depthFrameBuffer = createDepthFrameBuffer(getWidth(), getHeight());
 		shadowFrameBuffer = createDepthFrameBuffer(2048, 2048);
-		liquidFrameBuffer = createRenderFrameBuffer(getWidth(), getHeight());
 
 		{
 			Texture * t = new Texture(loadTextureArray("textures/grid.png","",""));
@@ -418,7 +417,7 @@ public:
 		noiseTexture = loadTextureImage("textures/noise.png");
 
 		activeTexture = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, "depthTexture", depthFrameBuffer.depthTexture);
-		activeTexture = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, "underTexture", renderBuffer.colorTexture);
+		activeTexture = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, "underTexture", underBuffer.colorTexture);
 		activeTexture = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, "shadowMap", shadowFrameBuffer.depthTexture);
 		activeTexture = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, "noise", noiseTexture);
 
@@ -450,7 +449,6 @@ public:
 		textureMixerEditor = new TextureMixerEditor(&mixers, &textures, programTexture);
 		animatedTextureEditor = new AnimatedTextureEditor(&animatedTextures, &textures, programTexture, 256,256);
 		depthBufferViewer = new DepthBufferViewer(programDepth,renderBuffer.depthTexture,256,256);
-		imageViewer = new ImageViewer(liquidFrameBuffer.colorTexture, 256,256);
 		settingsEditor = new SettingsEditor(settings);
 
 
@@ -631,9 +629,19 @@ public:
 			glUseProgram(program3d);
 			program3dLocs->update(mvp, model,ms,mainScene->light.direction, mainScene->camera.position, time, settings);
 
-			glBindFramebuffer(GL_FRAMEBUFFER, liquidFrameBuffer.frameBuffer);
-			glViewport(0, 0, liquidFrameBuffer.width, liquidFrameBuffer.height);
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			// Bind the source framebuffer (FBO you rendered to)
+			glBindFramebuffer(GL_READ_FRAMEBUFFER, renderBuffer.frameBuffer);
+			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, underBuffer.frameBuffer);
+			glBlitFramebuffer(
+				0, 0, renderBuffer.width, renderBuffer.height, // Source rectangle (x0, y0, x1, y1)
+				0, 0, underBuffer.width, underBuffer.height, 
+				GL_COLOR_BUFFER_BIT,  
+				GL_NEAREST           
+			);
+
+
+			glBindFramebuffer(GL_FRAMEBUFFER, renderBuffer.frameBuffer);
+			glViewport(0, 0, renderBuffer.width, renderBuffer.height);
 			glUniform1ui(program3dLocs->depthTestEnabledLoc, 1); // Set the sampler uniform
 			
 			
@@ -677,10 +685,6 @@ public:
 
 		glBindTexture(GL_TEXTURE_2D, renderBuffer.colorTexture);		
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-		if(!settings->wireFrameEnabled) {
-			glBindTexture(GL_TEXTURE_2D, liquidFrameBuffer.colorTexture);		
-			glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-		}
     }
 	bool demo = false;
     bool bSettingsWindow = true;
@@ -723,9 +727,6 @@ public:
 				}		
 				if (ImGui::MenuItem("Depth Buffer Viewer", "Ctrl+B")) {
 					depthBufferViewer->show();
-				}
-				if (ImGui::MenuItem("Image Viewer", "Ctrl+B")) {
-					imageViewer->show();
 				}
 				if (ImGui::MenuItem("Shadow Map Viewer", "Ctrl+D")) {
 					shadowMapViewer->show();
@@ -783,7 +784,6 @@ public:
 		shadowMapViewer->draw2dIfOpen();
 		textureMixerEditor->draw2dIfOpen();
 		depthBufferViewer->draw2dIfOpen();
-		imageViewer->draw2dIfOpen();
 		settingsEditor->draw2dIfOpen();
 		atlasViewer->draw2dIfOpen();
 		
