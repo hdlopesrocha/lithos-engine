@@ -27,7 +27,6 @@ void TexturePreviewer::draw2d(TextureArray texture){
     glBindVertexArray(previewVao);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
-
     if (ImGui::BeginTabBar("layerPicker_tab")) {
         for(int i=0 ; i < layers.size(); ++i) {
             std::string name = layers[i];

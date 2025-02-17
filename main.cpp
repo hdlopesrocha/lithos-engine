@@ -282,7 +282,6 @@ public:
 			compileShader(replaceIncludes(includes,readFile("shaders/3d_vertex.glsl")),GL_VERTEX_SHADER), 
 			compileShader(replaceIncludes(includes,readFile("shaders/3d_tessControl.glsl")),GL_TESS_CONTROL_SHADER), 
 			compileShader(replaceIncludes(includes,readFile("shaders/3d_tessEvaluation.glsl")),GL_TESS_EVALUATION_SHADER),
-			compileShader(replaceIncludes(includes,readFile("shaders/3d_geometry.glsl")),GL_GEOMETRY_SHADER),
 			compileShader(replaceIncludes(includes,readFile("shaders/3d_fragment.glsl")),GL_FRAGMENT_SHADER) 
 		});
 		program3dLocs = new ProgramLocations(program3d);

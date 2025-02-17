@@ -23,14 +23,14 @@ uniform mat4 model;
 
 #include<functions.glsl>
 
-in vec2 gTextureCoord;
-in vec3 gTextureWeights;
-flat in uvec3 gTextureIndices;
+in vec2 teTextureCoord;
+in vec3 teTextureWeights;
+flat in uvec3 teTextureIndices;
 
-in TextureProperties gProps;
-in vec3 gPosition;
-in vec3 gNormal;
-in vec4 gLightViewPosition;
+in TextureProperties teProps;
+in vec3 tePosition;
+in vec3 teNormal;
+in vec4 teLightViewPosition;
 
 out vec4 color;    // Final fragment color
 
@@ -63,34 +63,31 @@ void main() {
         discard;
     }
 
+    vec2 uv = teTextureCoord;
 
-
-
-    vec2 uv = gTextureCoord;
-
-    vec4 positionWorld = model * vec4(gPosition, 1.0);
+    vec4 positionWorld = model * vec4(tePosition, 1.0);
     vec3 position = positionWorld.xyz;    
     mat3 normalMatrix = transpose(inverse(mat3(model)));
-    vec3 normal = normalize(normalMatrix * gNormal);
+    vec3 normal = normalize(normalMatrix * teNormal);
 
     float effectAmount = sin(time*3.14/4.0)*0.5 + 0.5;
     float distance = length(cameraPosition - position);
-    float distanceFactor = clamp(gProps.parallaxFade / distance, 0.0, 1.0); // Adjust these numbers to fit your scene
+    float distanceFactor = clamp(teProps.parallaxFade / distance, 0.0, 1.0); // Adjust these numbers to fit your scene
 
     if(triplanarEnabled) {
         int plane = triplanarPlane(position, normal);
-        uv = triplanarMapping(position, plane, gProps.textureScale) * 0.1;
+        uv = triplanarMapping(position, plane, teProps.textureScale) * 0.1;
     }
 
     vec3 viewDirection = normalize(position-cameraPosition);
-    mat3 TBN = getTBN(gPosition, gNormal, uv, model, false);
+    mat3 TBN = getTBN(tePosition, teNormal, uv, model, false);
     vec3 viewDirectionTangent = normalize(transpose(TBN) * viewDirection);
 
-    if(parallaxEnabled && distanceFactor * gProps.parallaxScale > 0.0) {
-       uv = parallaxMapping(gTextureWeights, gTextureIndices, uv, viewDirectionTangent, distanceFactor*gProps.parallaxScale , distanceFactor*gProps.parallaxMinLayers, distanceFactor*gProps.parallaxMaxLayers, int(ceil(distanceFactor*gProps.parallaxRefine)));
+    if(parallaxEnabled && distanceFactor * teProps.parallaxScale > 0.0) {
+       uv = parallaxMapping(teTextureWeights, teTextureIndices, uv, viewDirectionTangent, distanceFactor*teProps.parallaxScale , distanceFactor*teProps.parallaxMinLayers, distanceFactor*teProps.parallaxMaxLayers, int(ceil(distanceFactor*teProps.parallaxRefine)));
     }
   
-    vec4 mixedColor = textureBlend(gTextureWeights, gTextureIndices, textures, uv, 0);
+    vec4 mixedColor = textureBlend(teTextureWeights, teTextureIndices, textures, uv, 0);
     if(mixedColor.a == 0.0) {
         discard;
     }
@@ -98,36 +95,36 @@ void main() {
     if(lightEnabled) {
         vec3 specularColor = vec3(1.0,1.0,1.0);
 
-        vec3 normalMap = textureBlend(gTextureWeights, gTextureIndices, textures, uv, 1).rgb * 2.0 - 1.0;
+        vec3 normalMap = textureBlend(teTextureWeights, teTextureIndices, textures, uv, 1).rgb * 2.0 - 1.0;
         normalMap = normalize(normalMap); // Convert to range [-1, 1]
 
         vec3 worldNormal = normalize(TBN * normalMap);
 
         vec3 reflection = reflect(-lightDirection, worldNormal);
 
-        float phongSpec = pow(max(dot(reflection, viewDirection), 0.0), gProps.shininess);
+        float phongSpec = pow(max(dot(reflection, viewDirection), 0.0), teProps.shininess);
         float diffuse = clamp(max(dot(worldNormal, -lightDirection), 0.0), 0.2, 1.0);
 
         ShadowProperties shadow; 
         shadow.shadowAmount = 1.0;
         shadow.lightAmount = 1.0;
         if(shadowEnabled) {
-            shadow = getShadow(shadowMap, noise, gLightViewPosition, position);
+            shadow = getShadow(shadowMap, noise, teLightViewPosition, position);
         }
         if(debugEnabled) {
             color = vec4(worldNormal,1.0);
         }else {
             vec4 refractedColor = vec4(0.0,0.0,0.0,0.0);
 
-            if(gProps.refractiveIndex > 0.0) {
+            if(teProps.refractiveIndex > 0.0) {
                 // Compute refraction
-                float eta = 1.0 / gProps.refractiveIndex; // Air to water
+                float eta = 1.0 / teProps.refractiveIndex; // Air to water
                 vec3 refractedDir = refract(viewDirectionTangent, normalMap, eta);
                 vec2 refractedUV = pixelUV + refractedDir.xy * 0.1; // UV distortion
                 refractedColor = texture(underTexture, refractedUV);
             }
 
-            color = refractedColor + vec4(((mixedColor).rgb*diffuse + specularColor * gProps.specularStrength * phongSpec *  shadow.lightAmount)*shadow.shadowAmount , mixedColor.a+gProps.specularStrength * phongSpec *  shadow.lightAmount); 
+            color = refractedColor + vec4(((mixedColor).rgb*diffuse + specularColor * teProps.specularStrength * phongSpec *  shadow.lightAmount)*shadow.shadowAmount , mixedColor.a+teProps.specularStrength * phongSpec *  shadow.lightAmount); 
         }
     }else {
         if(debugEnabled) {

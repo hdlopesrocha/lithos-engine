@@ -54,7 +54,7 @@ void AtlasDrawer::draw(AtlasTexture * atlas,  std::vector<TileDraw> draws){
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
    
     }
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 }
 

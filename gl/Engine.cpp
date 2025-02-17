@@ -147,7 +147,7 @@ glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
     if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE){
         std::cerr << "createRenderFrameBuffer error!" << std::endl;
     }
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
     return buffer;
 }
 
@@ -220,7 +220,7 @@ RenderBuffer createMultiLayerRenderFrameBuffer(int width, int height, int layers
         std::cerr << "Framebuffer is not complete!" << std::endl;
     }
    
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
     return buffer;
 }
 
@@ -250,7 +250,7 @@ RenderBuffer createDepthFrameBuffer(int width, int height) {
     glDrawBuffer(GL_NONE);
     glReadBuffer(GL_NONE);
     
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     return buffer;
 }
