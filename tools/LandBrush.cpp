@@ -4,7 +4,7 @@ LandBrush::LandBrush(std::vector<Brush*> brushes){
     this->underground = brushes[7];
     this->grass = brushes[2];
     this->sand = brushes[3];
-    this->softSand = brushes[15];
+    this->softSand = brushes[14];
     this->rock = brushes[4];
     this->snow = brushes[5];
     this->grassMixSand = brushes[9];

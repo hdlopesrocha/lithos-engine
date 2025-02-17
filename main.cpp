@@ -367,7 +367,6 @@ public:
 			TextureMixer * tm = new TextureMixer(1024,1024, programMixTexture, &textures);
 			tm->mix(4, 5);
 			Texture * t = new Texture(tm->getTexture());
-			
 			brushes.push_back(new Brush(textures.size(), glm::vec2(1.0), 0.01, 8, 32, 16,4, 256, 0.2 , 0.0));
 			mixers.push_back(tm);
 			textures.push_back(t);
@@ -378,11 +377,6 @@ public:
 			Texture * t = new Texture(tm->getTexture());
 			brushes.push_back(new Brush(textures.size(), glm::vec2(1.0), 0.01, 8, 32, 16,4, 256, 0.2 , 0.0));
 			mixers.push_back(tm);
-			textures.push_back(t);
-		}
-		{
-			Texture * t = new Texture(loadTextureArray("textures/ice_color.jpg", "textures/ice_normal.jpg", "textures/ice_bump.jpg"));
-			brushes.push_back(new Brush(textures.size(), glm::vec2(1.0), 0.01, 8, 32, 16,4, 256, 0.2 , 0.0));
 			textures.push_back(t);
 		}
 		{
@@ -412,6 +406,7 @@ public:
 			at->tiles.push_back(Tile(glm::vec2(0.4, 0.5),glm::vec2(0.6, 0.5)));
 
 			atlasTextures.push_back(at);
+			// TODO: removing this line makes it unstable, dunno why :-(
 			textures.push_back(at);
 			//brushes.push_back(new Brush(at, glm::vec2(0.2), 0.02, 8, 32, 16,4, 10.0, 0.5 , 1.33));
 
