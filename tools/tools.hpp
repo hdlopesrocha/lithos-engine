@@ -7,18 +7,17 @@
 
 
 class LandBrush : public TextureBrush {
-	Texture * underground;
-	Texture * grass;
-	Texture * sand;
-	Texture * softSand;
-	Texture * rock;
-	Texture * snow;
-	Texture * grassMixSand;
-	Texture * grassMixSnow;
-	Texture * rockMixGrass;
-	Texture * rockMixSnow;
-	Texture * rockMixSand;
-	Texture discardTexture;
+	uint underground;
+	uint grass;
+	uint sand;
+	uint softSand;
+	uint rock;
+	uint snow;
+	uint grassMixSand;
+	uint grassMixSnow;
+	uint rockMixGrass;
+	uint rockMixSnow;
+	uint rockMixSand;
 
 	public: 
 	LandBrush(std::vector<Brush*> brushes);

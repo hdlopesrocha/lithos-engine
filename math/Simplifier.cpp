@@ -35,7 +35,7 @@ void Simplifier::simplify(Octree * tree, OctreeNode * node, BoundingCube cube, B
 				break;
 			}
 
-			if(parentVertex.texIndex != c->vertex.texIndex && texturing) {
+			if(parentVertex.brushIndex != c->vertex.brushIndex && texturing) {
 				canSimplify = false;
 				break;		
 			}

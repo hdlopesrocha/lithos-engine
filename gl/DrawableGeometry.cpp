@@ -18,7 +18,7 @@ DrawableGeometry::DrawableGeometry(Geometry * t){
 	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) offsetof(Vertex, texCoord));
 	glEnableVertexAttribArray(2);		
-	glVertexAttribIPointer(3, 1, GL_UNSIGNED_INT, sizeof(Vertex), (void*) offsetof(Vertex, texIndex) );
+	glVertexAttribIPointer(3, 1, GL_UNSIGNED_INT, sizeof(Vertex), (void*) offsetof(Vertex, brushIndex) );
 	glEnableVertexAttribArray(3);
 		
 }

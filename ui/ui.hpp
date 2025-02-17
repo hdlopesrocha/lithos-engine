@@ -74,6 +74,7 @@ class AtlasViewer: public Closable {
 
 class BrushEditor: public Closable {
     std::vector<Brush*> * brushes;
+    std::vector<Texture*> * textures;
     GLuint program3d;
 	DrawableGeometry * sphere;
     Camera * camera;
@@ -81,7 +82,6 @@ class BrushEditor: public Closable {
 	GLuint modelViewProjectionLoc;
 	GLuint shadowEnabledLoc;
 	GLuint overrideTextureEnabledLoc;
-	GLuint overrideTextureLoc;
   
     TexturePreviewer * previewer;
     BrushMode mode;
@@ -91,7 +91,7 @@ class BrushEditor: public Closable {
     float brushRadius;
 
     public:
-    BrushEditor(Camera * camera,std::vector<Brush*> * brushes, GLuint program3d, GLuint previewProgram);
+    BrushEditor(Camera * camera,std::vector<Brush*> * brushes, std::vector<Texture*> * textures, GLuint program3d, GLuint previewProgram);
     void draw2d();
     void draw3d();
     int getSelectedBrush();

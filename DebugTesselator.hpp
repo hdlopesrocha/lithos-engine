@@ -76,7 +76,7 @@ int h = tree->getHeight(cube);
 						Vertex vtx;
 						vtx.position = corners[triOrder[j]];
 						vtx.texCoord = tessTexDebug[j];
-						vtx.texIndex = 0;
+						vtx.brushIndex = 0;
 						vtx.normal = glm::vec3(0.0);
 						chunk.addVertex(vtx, true);
 						//std::cout << vtx.toKey() << std::endl; 

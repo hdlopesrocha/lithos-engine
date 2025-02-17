@@ -6,5 +6,5 @@ SimpleBrush::SimpleBrush(Texture * texture){
 }
 
 void SimpleBrush::paint(Vertex * vertex) {
-    vertex->texIndex = texture->index;
+    vertex->brushIndex = texture->index;
 }

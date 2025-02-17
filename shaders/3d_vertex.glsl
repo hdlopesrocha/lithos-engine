@@ -4,7 +4,7 @@
 layout(location = 0) in vec3 position; 
 layout(location = 1) in vec3 normal;    
 layout(location = 2) in vec2 textureCoord;    
-layout(location = 3) in uint textureIndex;     
+layout(location = 3) in uint brushIndex;     
 
 #include<structs.glsl>
 #include<functions.glsl>
@@ -18,13 +18,15 @@ out TextureProperties vProps;
 uniform vec3 lightDirection;  
 uniform mat4 modelViewProjection; 
 uniform TextureProperties brushes[25];
+uniform uint brushTextures[25];
+
 uniform int layer;
 
 void main() {
     if(layer > 0) {
         vTextureCoord = textureCoord;
-        vTextureIndex = textureIndex;
-        vProps = brushes[textureIndex];
+        vTextureIndex = brushTextures[brushIndex];
+        vProps = brushes[brushIndex];
         
         vPosition = position;
         vNormal = normal;

@@ -2,9 +2,10 @@
 #include <glm/gtc/type_ptr.hpp>
 
 
-BrushEditor::BrushEditor(Camera * camera, std::vector<Brush*> * brushes, GLuint program3d, GLuint previewProgram) {
+BrushEditor::BrushEditor(Camera * camera, std::vector<Brush*> * brushes, std::vector<Texture*> * textures, GLuint program3d, GLuint previewProgram) {
     this->program3d = program3d;
     this->camera = camera;
+    this->textures = textures;
     this->brushes = brushes;
     this->previewer = new TexturePreviewer(previewProgram, 256, 256, {"Color", "Normal", "Bump"});
     SphereGeometry sphereGeometry(40,80);
@@ -13,7 +14,6 @@ BrushEditor::BrushEditor(Camera * camera, std::vector<Brush*> * brushes, GLuint 
     this->modelLoc = glGetUniformLocation(program3d, "model");
     this->modelViewProjectionLoc = glGetUniformLocation(program3d, "modelViewProjection");
     this->shadowEnabledLoc = glGetUniformLocation(program3d, "shadowEnabled");
-    this->overrideTextureLoc = glGetUniformLocation(program3d, "overrideTexture");
     this->overrideTextureEnabledLoc = glGetUniformLocation(program3d, "overrideTextureEnabled");
 
     this->brushPosition = glm::vec3(0);
@@ -49,7 +49,10 @@ const char* toString(BrushMode v)
 void BrushEditor::draw2d(){
     ImGui::Begin("Brush Editor", &open, ImGuiWindowFlags_AlwaysAutoResize);
 
-    previewer->draw2d((*brushes)[selectedBrush]->texture->texture);
+    Brush * brush = (*brushes)[selectedBrush];
+    Texture * texture = (*textures)[brush->textureIndex];
+
+    previewer->draw2d(texture->texture);
 
     ImGui::Text("Selected texture: ");
     ImGui::SameLine();
@@ -130,10 +133,9 @@ void BrushEditor::draw3d(){
     glUniformMatrix4fv(modelViewProjectionLoc, 1, GL_FALSE, glm::value_ptr(mvp2));
     glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model2));
     glUniform1ui(shadowEnabledLoc, 0);
-    glUniform1ui(overrideTextureLoc, getSelectedBrush());
     glUniform1ui(overrideTextureEnabledLoc, 1);
-    Brush::bindBrush(program3d, "overrideProps" , brush);
-    Brush::bindBrush(program3d, "brushes[" + std::to_string(selectedBrush) + "]" , brush);
+    Brush::bindBrush(program3d, "overrideProps" , "overrideTexture", brush);
+    Brush::bindBrush(program3d, "brushes[" + std::to_string(selectedBrush) + "]" , "brushTextures["+std::to_string(selectedBrush) + "]", brush);
 
     sphere->draw(GL_PATCHES);
     glUniform1ui(overrideTextureEnabledLoc, 0);

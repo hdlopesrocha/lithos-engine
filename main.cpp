@@ -93,7 +93,6 @@ class ProgramLocations {
 	GLuint underTextureLoc;
 	GLuint cameraPositionLoc;
 	GLuint overrideTextureEnabledLoc;
-	GLuint overrideTextureLoc;
 	GLuint shadowMapLoc;
 	GLuint noiseLoc;
 	GLuint timeLoc;
@@ -114,7 +113,6 @@ class ProgramLocations {
 		this->timeLoc = glGetUniformLocation(program, "time");
 		this->shadowMapLoc = glGetUniformLocation(program, "shadowMap");
 		this->noiseLoc = glGetUniformLocation(program, "noise");
-		this->overrideTextureLoc = glGetUniformLocation(program, "overrideTexture");
 		this->overrideTextureEnabledLoc = glGetUniformLocation(program, "overrideTextureEnabled");
 		this->depthTestEnabledLoc = glGetUniformLocation(program, "depthTestEnabled");
 		this->depthTextureLoc = glGetUniformLocation(program, "depthTexture");
@@ -297,107 +295,108 @@ public:
 
 		{
 			Texture * t = new Texture(loadTextureArray("textures/grid.png","",""));
+			brushes.push_back(new Brush(textures.size()));
 			textures.push_back(t);
-			brushes.push_back(new Brush(t));
 		}
 		{
 			Texture * t = new Texture(loadTextureArray("textures/lava_color.jpg", "textures/lava_normal.jpg","textures/lava_bump.jpg"));
+			brushes.push_back(new Brush(textures.size(), glm::vec2(1.0), 0.1, 8, 32, 16,4 ,256, 0.4, 0.0));
 			textures.push_back(t);
-			brushes.push_back(new Brush(t, glm::vec2(1.0), 0.1, 8, 32, 16,4 ,256, 0.4, 0.0));
 		}
 		{
 			Texture * t = new Texture(loadTextureArray("textures/grass_color.png", "textures/grass_normal.png", "textures/grass_bump.png"));
+			brushes.push_back(new Brush(textures.size(), glm::vec2(1.0), 0.01, 2, 8, 8,4 ,32, 0.03, 0.0));
 			textures.push_back(t);
-			brushes.push_back(new Brush(t, glm::vec2(1.0), 0.01, 2, 8, 8,4 ,32, 0.03, 0.0));
         }
 		{
 			Texture * t = new Texture(loadTextureArray("textures/sand_color.jpg", "textures/sand_normal.jpg", "textures/sand_bump.jpg"));
+			brushes.push_back(new Brush(textures.size(), glm::vec2(1.0), 0.05, 8, 32, 16,4 ,32,0.02, 0.0));
 			textures.push_back(t);
-			brushes.push_back(new Brush(t, glm::vec2(1.0), 0.05, 8, 32, 16,4 ,32,0.02, 0.0));
         }
 		{
 			Texture * t = new Texture(loadTextureArray("textures/rock_color.png", "textures/rock_normal.png", "textures/rock_bump.png"));
+			brushes.push_back(new Brush(textures.size(), glm::vec2(1.0), 0.1, 8, 32, 16,4,128, 0.4, 0.0));
 			textures.push_back(t);
-			brushes.push_back(new Brush(t, glm::vec2(1.0), 0.1, 8, 32, 16,4,128, 0.4, 0.0));
         }
 		{
 			Texture * t = new Texture(loadTextureArray("textures/snow_color.png", "textures/snow_normal.png", "textures/snow_bump.png"));
+			brushes.push_back(new Brush(textures.size(), glm::vec2(1.0), 0.1, 8, 32, 16,4, 32 , 0.4, 0.0));
 			textures.push_back(t);
-			brushes.push_back(new Brush(t, glm::vec2(1.0), 0.1, 8, 32, 16,4, 32 , 0.4, 0.0));
         }
 		{
 			Texture * t = new Texture(loadTextureArray("textures/metal_color.png", "textures/metal_normal.png", "textures/metal_bump.png"));
+			brushes.push_back(new Brush(textures.size(), glm::vec2(1.0), 0.1, 8, 64, 64,4, 32, 0.6 , 0.0));
 			textures.push_back(t);
-			brushes.push_back(new Brush(t, glm::vec2(1.0), 0.1, 8, 64, 64,4, 32, 0.6 , 0.0));
         }
 		{
 			Texture * t = new Texture(loadTextureArray("textures/dirt_color.png", "textures/dirt_normal.png", "textures/dirt_bump.png"));
+			brushes.push_back(new Brush(textures.size(), glm::vec2(1.0), 0.1, 8, 32, 16,4 , 256, 0.02, 0.0));
 			textures.push_back(t);
-			brushes.push_back(new Brush(t, glm::vec2(1.0), 0.1, 8, 32, 16,4 , 256, 0.02, 0.0));
         }
 		{
 			Texture * t = new Texture(loadTextureArray("textures/bricks_color.png", "textures/bricks_normal.png", "textures/bricks_bump.png"));
+			brushes.push_back(new Brush(textures.size(), glm::vec2(1.0), 0.01, 8, 32, 16,4, 256, 0.2 , 0.0));
 			textures.push_back(t);
-			brushes.push_back(new Brush(t, glm::vec2(1.0), 0.01, 8, 32, 16,4, 256, 0.2 , 0.0));
 		}
 		{
 			TextureMixer * tm = new TextureMixer(1024,1024, programMixTexture, &textures);
 			tm->mix(2, 3);
 			Texture * t = new Texture(tm->getTexture());
-			textures.push_back(t);
-			brushes.push_back(new Brush(t, glm::vec2(1.0), 0.01, 8, 32, 16,4, 256, 0.2 , 0.0));
+			brushes.push_back(new Brush(textures.size(), glm::vec2(1.0), 0.01, 8, 32, 16,4, 256, 0.2 , 0.0));
 			mixers.push_back(tm);
+			textures.push_back(t);
 		}
 		{
 			TextureMixer * tm = new TextureMixer(1024,1024, programMixTexture, &textures);
 			tm->mix(2, 5);
 			Texture * t = new Texture(tm->getTexture());
-			textures.push_back(t);
-			brushes.push_back(new Brush(t, glm::vec2(1.0), 0.01, 8, 32, 16,4, 256, 0.2 , 0.0));
+			brushes.push_back(new Brush(textures.size(), glm::vec2(1.0), 0.01, 8, 32, 16,4, 256, 0.2 , 0.0));
 			mixers.push_back(tm);
+			textures.push_back(t);
 		}
 
 		{
 			TextureMixer * tm = new TextureMixer(1024,1024, programMixTexture, &textures);
 			tm->mix(4, 2);
 			Texture * t = new Texture(tm->getTexture());
-			textures.push_back(t);
-			brushes.push_back(new Brush(t, glm::vec2(1.0), 0.01, 8, 32, 16,4, 256, 0.2 , 0.0));
+			brushes.push_back(new Brush(textures.size(), glm::vec2(1.0), 0.01, 8, 32, 16,4, 256, 0.2 , 0.0));
 			mixers.push_back(tm);
+			textures.push_back(t);
 		}
 		{
 			TextureMixer * tm = new TextureMixer(1024,1024, programMixTexture, &textures);
 			tm->mix(4, 5);
 			Texture * t = new Texture(tm->getTexture());
-			textures.push_back(t);
-			brushes.push_back(new Brush(t, glm::vec2(1.0), 0.01, 8, 32, 16,4, 256, 0.2 , 0.0));
+			
+			brushes.push_back(new Brush(textures.size(), glm::vec2(1.0), 0.01, 8, 32, 16,4, 256, 0.2 , 0.0));
 			mixers.push_back(tm);
+			textures.push_back(t);
 		}
 		{
 			TextureMixer * tm = new TextureMixer(1024,1024, programMixTexture, &textures);
 			tm->mix(4, 3);
 			Texture * t = new Texture(tm->getTexture());
-			textures.push_back(t);
-			brushes.push_back(new Brush(t, glm::vec2(1.0), 0.01, 8, 32, 16,4, 256, 0.2 , 0.0));
+			brushes.push_back(new Brush(textures.size(), glm::vec2(1.0), 0.01, 8, 32, 16,4, 256, 0.2 , 0.0));
 			mixers.push_back(tm);
+			textures.push_back(t);
 		}
 		{
 			Texture * t = new Texture(loadTextureArray("textures/ice_color.jpg", "textures/ice_normal.jpg", "textures/ice_bump.jpg"));
+			brushes.push_back(new Brush(textures.size(), glm::vec2(1.0), 0.01, 8, 32, 16,4, 256, 0.2 , 0.0));
 			textures.push_back(t);
-			brushes.push_back(new Brush(t, glm::vec2(1.0), 0.01, 8, 32, 16,4, 256, 0.2 , 0.0));
 		}
 		{
 			Texture * t = new Texture(loadTextureArray("textures/soft_sand_color.jpg", "textures/soft_sand_normal.jpg", "textures/soft_sand_bump.jpg"));
+			brushes.push_back(new Brush(textures.size(), glm::vec2(1.0), 0.01, 4, 16, 8,4, 256, 0.2 , 0.0));
 			textures.push_back(t);
-			brushes.push_back(new Brush(t, glm::vec2(1.0), 0.01, 4, 16, 8,4, 256, 0.2 , 0.0));
 		}
 		{
 			AnimatedTexture * tm = new AnimatedTexture(1024,1024, programWaterTexture);
 			tm->animate(0);
 			Texture * t = new Texture(tm->getTexture());
-			textures.push_back(t);
-			brushes.push_back(new Brush(t, glm::vec2(0.2), 0.02, 8, 32, 16,4, 10.0, 0.5 , 1.33));
+			brushes.push_back(new Brush(textures.size(), glm::vec2(0.2), 0.02, 8, 32, 16,4, 10.0, 0.5 , 1.33));
 			animatedTextures.push_back(tm);
+			textures.push_back(t);
 		}
 		{
 			AtlasTexture * at = new AtlasTexture(loadTextureArray("textures/vegetation/foliage_color.png", "textures/vegetation/foliage_normal.png", "textures/vegetation/foliage_opacity.png"));
@@ -451,7 +450,7 @@ public:
 		
 
 		atlasViewer = new AtlasViewer(&atlasTextures, programAtlas, programTexture, 256,256);
-		brushEditor = new BrushEditor(&mainScene->camera, &brushes, program3d, programTexture);
+		brushEditor = new BrushEditor(&mainScene->camera, &brushes, &textures, program3d, programTexture);
 		shadowMapViewer = new ShadowMapViewer(shadowFrameBuffer.depthTexture);
 		textureMixerEditor = new TextureMixerEditor(&mixers, &textures, programTexture);
 		animatedTextureEditor = new AnimatedTextureEditor(&animatedTextures, &textures, programTexture, 256,256);

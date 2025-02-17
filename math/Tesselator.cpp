@@ -50,14 +50,14 @@ int addQuad(OctreeNode** quad, Geometry * chunk, bool reverse) {
 	int count = 0;
 
 
-	if(c0!= c1 && c1 != c2 && c0!=c2 && c0->vertex.texIndex>=0 && c1->vertex.texIndex>=0 && c2->vertex.texIndex>=0){
+	if(c0!= c1 && c1 != c2 && c0!=c2 && c0->vertex.brushIndex>=0 && c1->vertex.brushIndex>=0 && c2->vertex.brushIndex>=0){
 		chunk->addVertex(v0, true);
 		chunk->addVertex(v2, true);
 		chunk->addVertex(v1, true);
 		++count;
 	}
 
-	if(c0!= c3 && c3 != c2 && c0!=c2 && c0->vertex.texIndex>=0 && c2->vertex.texIndex>=0 && c3->vertex.texIndex>=0){
+	if(c0!= c3 && c3 != c2 && c0!=c2 && c0->vertex.brushIndex>=0 && c2->vertex.brushIndex>=0 && c3->vertex.brushIndex>=0){
 		chunk->addVertex(v0, true);
 		chunk->addVertex(v3, true);
 		chunk->addVertex(v2, true);

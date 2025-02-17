@@ -56,7 +56,7 @@ uint saveRecursive2(OctreeNode * node, std::vector<OctreeNodeSerialized*> * node
 		OctreeNodeSerialized * n = new OctreeNodeSerialized();
 		n->position = node->vertex.position;
 		n->normal = node->vertex.normal;
-		n->texIndex = node->vertex.texIndex;
+		n->texIndex = node->vertex.brushIndex;
 		n->mask = node->mask;
 		n->solid = node->solid;
 		uint index = nodes->size(); 

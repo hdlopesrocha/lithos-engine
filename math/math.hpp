@@ -36,13 +36,13 @@ struct Vertex {
     glm::vec3 position;
     glm::vec3 normal;
     glm::vec2 texCoord;
-    int texIndex;
+    int brushIndex;
 
     Vertex(){
 		this->position = glm::vec3(0);
     	this->normal = glm::vec3(0);
     	this->texCoord = glm::vec2(0);
-    	this->texIndex = 0;
+    	this->brushIndex = 0;
     }
 
     Vertex(glm::vec3 pos) : Vertex(){
@@ -53,7 +53,7 @@ struct Vertex {
     	this->position = pos;
     	this->normal = normal;
     	this->texCoord = texCoord;
-    	this->texIndex = texIndex;
+    	this->brushIndex = texIndex;
     }
 
 
@@ -69,7 +69,7 @@ struct Vertex {
 			<< "\"p\":" << "[" << position.x <<  "," <<  position.y <<  "," <<  position.z << "],"
 			<< "\"n\":" << "[" << normal.x <<  "," <<  normal.y <<  "," <<  normal.z << "],"
 			<< "\"c\":" << "[" << texCoord.x <<  "," <<  texCoord.y << "],"
-			<< "\"i\":" << texIndex
+			<< "\"i\":" << brushIndex
 		<< "}";
 		return ss.str();
     }

@@ -14,6 +14,6 @@ void WaterBrush::paint(Vertex * vertex) {
     } else {
         texture = water;
     } 
-    vertex->texIndex = texture->index;
+    vertex->brushIndex = texture->index;
 }
 
