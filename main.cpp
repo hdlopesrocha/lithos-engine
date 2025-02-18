@@ -190,6 +190,7 @@ class MainApplication : public LithosApplication {
 	AnimatedTextureEditor * animatedTextureEditor;
 	DepthBufferViewer * depthBufferViewer;
 	SettingsEditor * settingsEditor;
+	TextureViewer * textureViewer;
 
 public:
 	MainApplication() {
@@ -274,8 +275,11 @@ public:
 		shadowFrameBuffer = createDepthFrameBuffer(2048, 2048);
 
 		{
-			Texture * t = new Texture(loadTextureArray("textures/grid.png","",""));
-			brushes.push_back(new Brush(textures.size()));
+			AnimatedTexture * tm = new AnimatedTexture(1024,1024, programWaterTexture);
+			tm->animate(0);
+			Texture * t = new Texture(tm->getTexture());
+			brushes.push_back(new Brush(textures.size(), glm::vec2(0.2), 0.02, 8, 32, 16,4, 10.0, 0.5 , 1.33));
+			animatedTextures.push_back(tm);
 			textures.push_back(t);
 		}
 		{
@@ -364,11 +368,8 @@ public:
 			textures.push_back(t);
 		}
 		{
-			AnimatedTexture * tm = new AnimatedTexture(1024,1024, programWaterTexture);
-			tm->animate(0);
-			Texture * t = new Texture(tm->getTexture());
-			brushes.push_back(new Brush(textures.size(), glm::vec2(0.2), 0.02, 8, 32, 16,4, 10.0, 0.5 , 1.33));
-			animatedTextures.push_back(tm);
+			Texture * t = new Texture(loadTextureArray("textures/forest_color.png", "textures/forest_normal.png","textures/forest_bump.png"));
+			brushes.push_back(new Brush(textures.size()));
 			textures.push_back(t);
 		}
 		{
@@ -385,10 +386,7 @@ public:
 			at->tiles.push_back(Tile(glm::vec2(0.4, 0.5),glm::vec2(0.6, 0.5)));
 
 			atlasTextures.push_back(at);
-			// TODO: removing this line makes it unstable, dunno why :-(
-			textures.push_back(at);
 			//brushes.push_back(new Brush(at, glm::vec2(0.2), 0.02, 8, 32, 16,4, 10.0, 0.5 , 1.33));
-
 		}
 
 		noiseTexture = loadTextureImage("textures/noise.png");
@@ -420,6 +418,7 @@ public:
 		animatedTextureEditor = new AnimatedTextureEditor(&animatedTextures, &textures, programTexture, 256,256);
 		depthBufferViewer = new DepthBufferViewer(programDepth,renderBuffer.depthTexture,256,256);
 		settingsEditor = new SettingsEditor(settings);
+		textureViewer = new TextureViewer(&textures, programTexture);
 
 		// ImGui
 		IMGUI_CHECKVERSION();
@@ -682,6 +681,9 @@ public:
 				if (ImGui::MenuItem("Texture Mixer", "Ctrl+M")) {
 					textureMixerEditor->show();
 				}
+				if (ImGui::MenuItem("Texture Viewer", "Ctrl+M")) {
+					textureViewer->show();
+				}
 				if (ImGui::MenuItem("Settings", "Ctrl+S")) {
 					settingsEditor->show();
 				}
@@ -734,6 +736,7 @@ public:
 		depthBufferViewer->draw2dIfOpen();
 		settingsEditor->draw2dIfOpen();
 		atlasViewer->draw2dIfOpen();
+		textureViewer->draw2dIfOpen();
 		
 
 		if(demo) {

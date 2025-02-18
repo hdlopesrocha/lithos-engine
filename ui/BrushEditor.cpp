@@ -54,7 +54,7 @@ void BrushEditor::draw2d(){
 
     previewer->draw2d(texture->texture);
 
-    ImGui::Text("Selected brush: ");
+    ImGui::Text("Selected brush: %d", selectedBrush);
     ImGui::SameLine();
 
     if (ImGui::ArrowButton("##arrow_left", ImGuiDir_Left)) {

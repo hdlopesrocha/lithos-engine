@@ -4,7 +4,7 @@
 
 TextureViewer::TextureViewer(std::vector<Texture*> * textures, GLuint previewProgram) {
     this->textures = textures;
-    this->previewer = new TexturePreviewer(previewProgram, 256, 256, {"Color", "Normal", "Opacity"});
+    this->previewer = new TexturePreviewer(previewProgram, 256, 256, {"Color", "Normal", "Bump"});
     this->selectedTexture = 0;
 }
 
@@ -14,7 +14,7 @@ void TextureViewer::draw2d(){
 
     previewer->draw2d((*textures)[selectedTexture]->texture);
 
-    ImGui::Text("Selected texture: ");
+    ImGui::Text("Selected texture: %d", selectedTexture);
     ImGui::SameLine();
 
     if (ImGui::ArrowButton("##arrow_left", ImGuiDir_Left)) {
