@@ -41,8 +41,10 @@ void AtlasDrawer::draw(){
         
         for(int i=0 ; i < draws.size() ; ++i) {
             TileDraw tileDraw = draws[i];
+            uint tileIndex = Math::mod(tileDraw.index, atlas->tiles.size());
+
         // std::cout << tileDraw.index << " -> "<< tileDraw.offset.x << ":" <<tileDraw.offset.y << "[" << tileDraw.size.x << "," << tileDraw.size.y << "]" << std::endl;        
-            Tile * tile = &atlas->tiles[tileDraw.index];
+            Tile * tile = &atlas->tiles[tileIndex];
 
             glm::mat4 model = glm::mat4(1.0);
 
@@ -50,9 +52,12 @@ void AtlasDrawer::draw(){
             model = glm::translate(model, glm::vec3(-1.0));
             model = glm::scale(model, glm::vec3(2.0));
 
-            // 2 - scale + translate
+            // 2 - scale + translate + rotate
             model = glm::translate(model, glm::vec3(tileDraw.offset, 0.0));
+            model = glm::rotate(model, tileDraw.angle, glm::vec3(0.0, 0.0, 1.0));
             model = glm::scale(model, glm::vec3(tileDraw.size, 1.0));
+            model = glm::translate(model, -glm::vec3(tileDraw.pivot, 0.0f));
+
 
             // 1 - transform from [-1:1 to 0:1]
             model = glm::scale(model, glm::vec3(0.5));

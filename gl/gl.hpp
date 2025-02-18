@@ -296,10 +296,11 @@ struct TileDraw {
     public:
     glm::vec2 size;
     glm::vec2 offset;
+    glm::vec2 pivot;
     float angle;
     uint index;
     
-    TileDraw(uint index,glm::vec2 size, glm::vec2 offset, float angle);
+    TileDraw(uint index,glm::vec2 size, glm::vec2 offset, glm::vec2 pivot, float angle);
 };
 
 

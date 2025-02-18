@@ -78,7 +78,7 @@ class AtlasPainter: public Closable {
     AtlasDrawer * drawer;
     std::vector<TileDraw> draws;
   	int selectedTexture = 0;
-  	int selectedTile = 0;
+  	int selectedDraw = 0;
 
     public:
     AtlasPainter(std::vector<AtlasTexture*> * atlasTextures, GLuint programAtlas, GLuint previewProgram, int width, int height);

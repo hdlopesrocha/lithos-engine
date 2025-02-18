@@ -9,7 +9,7 @@ AtlasViewer::AtlasViewer(std::vector<AtlasTexture*> * atlasTextures, GLuint prog
     this->selectedTexture = 0;
     this->selectedTile = 0;
 
-    this->draws.push_back(TileDraw(0, glm::vec2(1.0), glm::vec2(0.0), 0));
+    this->draws.push_back(TileDraw(0, glm::vec2(1.0), glm::vec2(0.0), glm::vec2(0), 0));
 }
 
 
