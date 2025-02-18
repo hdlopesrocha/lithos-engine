@@ -59,7 +59,7 @@ class TextureViewer: public Closable {
 };
 
 class AtlasViewer: public Closable {
-    std::vector<AtlasTexture*> * textures;
+    std::vector<AtlasTexture*> * atlasTextures;
     TexturePreviewer * previewer;
     AtlasDrawer * drawer;
     std::vector<TileDraw> draws;
@@ -67,13 +67,13 @@ class AtlasViewer: public Closable {
   	int selectedTile = 0;
 
     public:
-    AtlasViewer(std::vector<AtlasTexture*> * textures, GLuint programAtlas, GLuint previewProgram, int width, int height);
+    AtlasViewer(std::vector<AtlasTexture*> * atlasTextures, GLuint programAtlas, GLuint previewProgram, int width, int height);
     void draw2d();
     void draw3d();
 };
 
 class AtlasPainter: public Closable {
-    std::vector<AtlasTexture*> * textures;
+    std::vector<AtlasTexture*> * atlasTextures;
     TexturePreviewer * previewer;
     AtlasDrawer * drawer;
     std::vector<TileDraw> draws;
@@ -81,7 +81,7 @@ class AtlasPainter: public Closable {
   	int selectedTile = 0;
 
     public:
-    AtlasPainter(std::vector<AtlasTexture*> * textures, GLuint programAtlas, GLuint previewProgram, int width, int height);
+    AtlasPainter(std::vector<AtlasTexture*> * atlasTextures, GLuint programAtlas, GLuint previewProgram, int width, int height);
     void draw2d();
     void draw3d();
 };

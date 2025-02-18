@@ -2,9 +2,9 @@
 #include <glm/gtc/type_ptr.hpp>
 
 
-AtlasPainter::AtlasPainter(std::vector<AtlasTexture*> * textures, GLuint programAtlas, GLuint previewProgram, int width, int height) {
-    this->textures = textures;
-    this->drawer = new AtlasDrawer(programAtlas, width, height, textures);
+AtlasPainter::AtlasPainter(std::vector<AtlasTexture*> * atlasTextures, GLuint programAtlas, GLuint previewProgram, int width, int height) {
+    this->atlasTextures = atlasTextures;
+    this->drawer = new AtlasDrawer(programAtlas, width, height, atlasTextures);
     this->previewer = new TexturePreviewer(previewProgram, width, height, {"Color", "Normal", "Opacity"});
     this->selectedTexture = 0;
     this->selectedTile = 0;
@@ -16,8 +16,8 @@ AtlasPainter::AtlasPainter(std::vector<AtlasTexture*> * textures, GLuint program
 void AtlasPainter::draw2d(){
     ImGui::Begin("Atlas Painter", &open, ImGuiWindowFlags_AlwaysAutoResize);
 
-    selectedTexture = Math::mod(selectedTexture, textures->size());
-    AtlasTexture * atlas = (*textures)[selectedTexture];
+    selectedTexture = Math::mod(selectedTexture, atlasTextures->size());
+    AtlasTexture * atlas = (*atlasTextures)[selectedTexture];
     selectedTile =Math::mod(selectedTile, atlas->tiles.size());
 
     Tile * tile = &atlas->tiles[selectedTile];
@@ -29,7 +29,7 @@ void AtlasPainter::draw2d(){
     drawer->draw(selectedTexture, draws);
     previewer->draw2d(drawer->getTexture());
 
-    ImGui::Text("Selected texture: %d ", selectedTexture);
+    ImGui::Text("Selected texture: %d/%ld ", selectedTexture, atlasTextures->size());
     ImGui::SameLine();
     if (ImGui::ArrowButton("##selectedTexture_left", ImGuiDir_Left)) {
         --selectedTexture;
@@ -39,7 +39,7 @@ void AtlasPainter::draw2d(){
         ++selectedTexture;
     }
 
-    ImGui::Text("Selected tile: %d ", selectedTile);
+    ImGui::Text("Selected tile: %d/%ld ", selectedTile, atlas->tiles.size());
     ImGui::SameLine();
     if (ImGui::ArrowButton("##selectedTile_left", ImGuiDir_Left)) {
         --selectedTile;
