@@ -20,6 +20,7 @@ TextureArray AtlasDrawer::getTexture(){
 void AtlasDrawer::draw(int atlasIndex,  std::vector<TileDraw> draws){
     this->atlasIndex = atlasIndex;
     this->draws = draws;
+    this->draw();
 }
 
 void AtlasDrawer::draw(){
