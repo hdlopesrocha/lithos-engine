@@ -325,10 +325,15 @@ class AtlasDrawer {
     GLuint modelLoc; 
     GLuint tileOffsetLoc;
     GLuint tileSizeLoc;
+    std::vector<AtlasTexture*> * atlasTextures;
+    int atlasIndex;
+
+    std::vector<TileDraw> draws;
     public:
-    AtlasDrawer(GLuint program, int width, int height);
+    AtlasDrawer(GLuint program, int width, int height, std::vector<AtlasTexture*> * atlasTextures);
     TextureArray getTexture();
-    void draw(AtlasTexture * atlas,  std::vector<TileDraw> draws);
+    void draw(int atlasIndex,  std::vector<TileDraw> draws);
+    void draw();
 };
 
 GLuint createTextureArray(int width, int height, int layers); 

@@ -24,35 +24,39 @@ void TextureMixer::mix(int baseTextureIndex, int overlayTextureIndex ){
 }
 
 void TextureMixer::mix(){
-    Texture * baseTexture = (*textures)[Math::mod(baseTextureIndex, textures->size())];
-    Texture * overlayTexture = (*textures)[Math::mod(overlayTextureIndex, textures->size())];
-
     glUseProgram(program);
-
     glBindFramebuffer(GL_FRAMEBUFFER, textureMixerBuffer.frameBuffer);
     glViewport(0, 0, textureMixerBuffer.width, textureMixerBuffer.height);
     glClear(GL_COLOR_BUFFER_BIT);
-    glActiveTexture(GL_TEXTURE0); 
-    glBindTexture(GL_TEXTURE_2D_ARRAY, baseTexture->texture);
-    glUniform1i(glGetUniformLocation(program, "baseTexture"), 0);
+    glDisable(GL_CULL_FACE);
+    glDisable(GL_DEPTH_TEST);
+    if(textures->size() > 0) {
+        Texture * baseTexture = (*textures)[Math::mod(baseTextureIndex, textures->size())];
+        Texture * overlayTexture = (*textures)[Math::mod(overlayTextureIndex, textures->size())];
 
-    glActiveTexture(GL_TEXTURE1); 
-    glBindTexture(GL_TEXTURE_2D_ARRAY, overlayTexture->texture);
-    glUniform1i(glGetUniformLocation(program, "overlayTexture"), 1);
+        glActiveTexture(GL_TEXTURE0); 
+        glBindTexture(GL_TEXTURE_2D_ARRAY, baseTexture->texture);
+        glUniform1i(glGetUniformLocation(program, "baseTexture"), 0);
 
-    glUniform1i(glGetUniformLocation(program, "perlinScale"), perlinScale); 
-    glUniform1f(glGetUniformLocation(program, "perlinTime"), perlinTime); 
-    glUniform1i(glGetUniformLocation(program, "perlinIterations"), perlinIterations); 
-    glUniform1i(glGetUniformLocation(program, "perlinLacunarity"), perlinLacunarity); 
-    glUniform1f(glGetUniformLocation(program, "brightness"), brightness); 
-    glUniform1f(glGetUniformLocation(program, "contrast"), contrast);
-    glBindVertexArray(previewVao);
+        glActiveTexture(GL_TEXTURE1); 
+        glBindTexture(GL_TEXTURE_2D_ARRAY, overlayTexture->texture);
+        glUniform1i(glGetUniformLocation(program, "overlayTexture"), 1);
 
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        glUniform1i(glGetUniformLocation(program, "perlinScale"), perlinScale); 
+        glUniform1f(glGetUniformLocation(program, "perlinTime"), perlinTime); 
+        glUniform1i(glGetUniformLocation(program, "perlinIterations"), perlinIterations); 
+        glUniform1i(glGetUniformLocation(program, "perlinLacunarity"), perlinLacunarity); 
+        glUniform1f(glGetUniformLocation(program, "brightness"), brightness); 
+        glUniform1f(glGetUniformLocation(program, "contrast"), contrast);
+        glBindVertexArray(previewVao);
 
-    glActiveTexture(GL_TEXTURE0); 
-    glBindTexture(GL_TEXTURE_2D_ARRAY, textureMixerBuffer.colorTexture);
-    glGenerateMipmap(GL_TEXTURE_2D_ARRAY);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
+        glActiveTexture(GL_TEXTURE0); 
+        glBindTexture(GL_TEXTURE_2D_ARRAY, textureMixerBuffer.colorTexture);
+        glGenerateMipmap(GL_TEXTURE_2D_ARRAY);
+    } else {
+        std::cerr << "No textures in TextureMixer!" << std::endl;
+    }
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }

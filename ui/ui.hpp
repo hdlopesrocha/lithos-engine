@@ -72,6 +72,20 @@ class AtlasViewer: public Closable {
     void draw3d();
 };
 
+class AtlasPainter: public Closable {
+    std::vector<AtlasTexture*> * textures;
+    TexturePreviewer * previewer;
+    AtlasDrawer * drawer;
+    std::vector<TileDraw> draws;
+  	int selectedTexture = 0;
+  	int selectedTile = 0;
+
+    public:
+    AtlasPainter(std::vector<AtlasTexture*> * textures, GLuint programAtlas, GLuint previewProgram, int width, int height);
+    void draw2d();
+    void draw3d();
+};
+
 class BrushEditor: public Closable {
     std::vector<Brush*> * brushes;
     std::vector<Texture*> * textures;

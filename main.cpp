@@ -146,9 +146,9 @@ class MainApplication : public LithosApplication {
 	std::vector<Brush*> brushes;
 	std::vector<Brush*> vegetationBrushes;
 	std::vector<AtlasTexture*> atlasTextures;
+	std::vector<AtlasDrawer*> atlasDrawers;
 	std::vector<TextureMixer*> mixers;
 	std::vector<AnimatedTexture*> animatedTextures;
-	AtlasDrawer * basicAtlasDrawer;
 
 	Scene * mainScene;
 
@@ -184,6 +184,7 @@ class MainApplication : public LithosApplication {
 
 	// UI
 	BrushEditor * brushEditor;
+	AtlasPainter * atlasPainter;
 	AtlasViewer * atlasViewer;
 	ShadowMapViewer * shadowMapViewer;
 	TextureMixerEditor * textureMixerEditor;
@@ -387,6 +388,13 @@ public:
 
 			atlasTextures.push_back(at);
 			//brushes.push_back(new Brush(at, glm::vec2(0.2), 0.02, 8, 32, 16,4, 10.0, 0.5 , 1.33));
+
+			AtlasDrawer * ad = new AtlasDrawer(programAtlas, 1024, 1024, &atlasTextures);
+			std::vector<TileDraw> draws;
+			draws.push_back(TileDraw(0,glm::vec2(1), glm::vec2(0), 0.5));
+			ad->draw(0, draws);
+
+			textures.push_back(new Texture(ad->getTexture()));
 		}
 
 		noiseTexture = loadTextureImage("textures/noise.png");
@@ -411,6 +419,7 @@ public:
 		vaoDebug = new DrawableGeometry(&debugTesselator->chunk);
 		#endif
 
+		atlasPainter = new AtlasPainter(&atlasTextures, programAtlas, programTexture, 256,256);
 		atlasViewer = new AtlasViewer(&atlasTextures, programAtlas, programTexture, 256,256);
 		brushEditor = new BrushEditor(&mainScene->camera, &brushes, &textures, program3d, programTexture);
 		shadowMapViewer = new ShadowMapViewer(shadowFrameBuffer.depthTexture);
@@ -669,6 +678,9 @@ public:
 				if (ImGui::MenuItem("Brush", "Ctrl+B")) {
 					brushEditor->show();
 				}
+				if (ImGui::MenuItem("Atlas Painter", "Ctrl+B")) {
+					atlasPainter->show();
+				}
 				if (ImGui::MenuItem("Atlas Viewer", "Ctrl+B")) {
 					atlasViewer->show();
 				}		
@@ -736,6 +748,7 @@ public:
 		depthBufferViewer->draw2dIfOpen();
 		settingsEditor->draw2dIfOpen();
 		atlasViewer->draw2dIfOpen();
+		atlasPainter->draw2dIfOpen();
 		textureViewer->draw2dIfOpen();
 		
 

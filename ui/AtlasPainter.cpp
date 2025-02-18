@@ -2,7 +2,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 
-AtlasViewer::AtlasViewer(std::vector<AtlasTexture*> * textures, GLuint programAtlas, GLuint previewProgram, int width, int height) {
+AtlasPainter::AtlasPainter(std::vector<AtlasTexture*> * textures, GLuint programAtlas, GLuint previewProgram, int width, int height) {
     this->textures = textures;
     this->drawer = new AtlasDrawer(programAtlas, width, height, textures);
     this->previewer = new TexturePreviewer(previewProgram, width, height, {"Color", "Normal", "Opacity"});
@@ -13,8 +13,8 @@ AtlasViewer::AtlasViewer(std::vector<AtlasTexture*> * textures, GLuint programAt
 }
 
 
-void AtlasViewer::draw2d(){
-    ImGui::Begin("Atlas Viewer", &open, ImGuiWindowFlags_AlwaysAutoResize);
+void AtlasPainter::draw2d(){
+    ImGui::Begin("Atlas Painter", &open, ImGuiWindowFlags_AlwaysAutoResize);
 
     selectedTexture = Math::mod(selectedTexture, textures->size());
     AtlasTexture * atlas = (*textures)[selectedTexture];
@@ -58,7 +58,7 @@ void AtlasViewer::draw2d(){
     ImGui::End();
 }
 
-void AtlasViewer::draw3d(){
+void AtlasPainter::draw3d(){
 
 }
 

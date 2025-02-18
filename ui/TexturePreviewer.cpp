@@ -20,6 +20,8 @@ void TexturePreviewer::draw2d(TextureArray texture){
 	glClearColor (0.0,0.0,0.0,0.0);    
     glClear(GL_COLOR_BUFFER_BIT);
 
+    glDisable(GL_CULL_FACE);
+    glDisable(GL_DEPTH_TEST);
     glActiveTexture(GL_TEXTURE0); 
     glBindTexture(GL_TEXTURE_2D_ARRAY, texture);
     glUniform1i(glGetUniformLocation(previewProgram, "textureSampler"), 0); 
