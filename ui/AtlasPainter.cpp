@@ -50,6 +50,18 @@ void AtlasPainter::draw2d(){
     if (ImGui::ArrowButton("##selectedDraw_right", ImGuiDir_Right)) {
         ++selectedDraw;
     }
+    ImGui::SameLine();
+    if (ImGui::Button("-##popDraws")) { 
+        if(draws.size()> 1) {
+            draws.pop_back();
+        }
+    } 
+
+    ImGui::SameLine();
+    if (ImGui::Button("+##pushDraws")) { 
+        selectedDraw = draws.size();
+        draws.push_back(TileDraw(0, glm::vec2(1.0), glm::vec2(0.0),glm::vec2(0.0), 0));
+    }
 
     ImGui::Separator();
 
