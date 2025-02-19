@@ -11,10 +11,7 @@ AnimatedTextureEditor::AnimatedTextureEditor(std::vector<AnimatedTexture*> * ani
 void AnimatedTextureEditor::draw2d(){
     ImGui::Begin("Animated Textures", &open, ImGuiWindowFlags_AlwaysAutoResize);
 
-    //Texture * baseTexture = (*textures)[selectedBaseTexture];
-    //Texture * overlayTexture = (*textures)[selectedOverlayTexture];
-
-    AnimatedTexture * animatedTexture = (*animatedTextures)[selectedAnimatedTexture];
+    AnimatedTexture * animatedTexture = animatedTextures->at(selectedAnimatedTexture);
 
 
     previewer->draw2d(animatedTexture->getTexture());

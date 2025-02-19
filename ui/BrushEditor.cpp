@@ -21,7 +21,7 @@ BrushEditor::BrushEditor(Camera * camera, std::vector<Brush*> * brushes, std::ve
 
     this->mode = BrushMode::ADD;
     this->selectedBrush = 0;
-    this->brush = (*brushes)[this->selectedBrush];
+    this->brush = brushes->at(this->selectedBrush);
 }
 
 
@@ -49,8 +49,8 @@ const char* toString(BrushMode v)
 void BrushEditor::draw2d(){
     ImGui::Begin("Brush Editor", &open, ImGuiWindowFlags_AlwaysAutoResize);
 
-    Brush * brush = (*brushes)[selectedBrush];
-    Texture * texture = (*textures)[brush->textureIndex];
+    Brush * brush = brushes->at(selectedBrush);
+    Texture * texture = textures->at(brush->textureIndex);
 
     previewer->draw2d(texture->texture);
 
@@ -59,12 +59,12 @@ void BrushEditor::draw2d(){
 
     if (ImGui::ArrowButton("##arrow_left", ImGuiDir_Left)) {
         selectedBrush = Math::mod(selectedBrush - 1, brushes->size());
-        this->brush = (*brushes)[this->selectedBrush];
+        this->brush = brushes->at(this->selectedBrush);
     }
     ImGui::SameLine();
     if (ImGui::ArrowButton("##arrow_right", ImGuiDir_Right)) {
         selectedBrush = Math::mod(selectedBrush + 1, brushes->size());
-        this->brush = (*brushes)[this->selectedBrush];
+        this->brush = brushes->at(this->selectedBrush);
     }
 
 

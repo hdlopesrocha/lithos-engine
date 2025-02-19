@@ -389,13 +389,28 @@ public:
 			atlasTextures.push_back(at);
 			//brushes.push_back(new Brush(at, glm::vec2(0.2), 0.02, 8, 32, 16,4, 10.0, 0.5 , 1.33));
 
-			AtlasDrawer * ad = new AtlasDrawer(programAtlas, 1024, 1024, &atlasTextures);
+			AtlasDrawer * ad = new AtlasDrawer(programAtlas, 256, 256, &atlasTextures);
 			std::vector<TileDraw> draws;
 			draws.push_back(TileDraw(0,glm::vec2(1), glm::vec2(0), glm::vec2(0.5), 0.5));
 			ad->draw(0, draws);
 
-			textures.push_back(new Texture(ad->getTexture()));
+			atlasDrawers.push_back(ad);
 		}
+		{
+			AtlasTexture * at = new AtlasTexture(loadTextureArray({"textures/vegetation/grass_color.jpg", "textures/vegetation/grass_normal.jpg", "textures/vegetation/grass_opacity.jpg"}));
+			at->tiles.push_back(Tile(glm::vec2(1.0),glm::vec2(0.0)));
+			
+			atlasTextures.push_back(at);
+
+			AtlasDrawer * ad = new AtlasDrawer(programAtlas, 256, 256, &atlasTextures);
+			std::vector<TileDraw> draws;
+			draws.push_back(TileDraw(0,glm::vec2(1), glm::vec2(0), glm::vec2(0.5), 0.5));
+			ad->draw(1, draws);
+
+			atlasDrawers.push_back(ad);
+		}
+
+
 
 		noiseTexture = loadTextureImage("textures/noise.png");
 		activeTexture = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, "depthTexture", depthFrameBuffer.depthTexture);
@@ -419,7 +434,7 @@ public:
 		vaoDebug = new DrawableGeometry(&debugTesselator->chunk);
 		#endif
 
-		atlasPainter = new AtlasPainter(&atlasTextures, programAtlas, programTexture, 256,256);
+		atlasPainter = new AtlasPainter(&atlasTextures, &atlasDrawers, programAtlas, programTexture, 256,256);
 		atlasViewer = new AtlasViewer(&atlasTextures, programAtlas, programTexture, 256,256);
 		brushEditor = new BrushEditor(&mainScene->camera, &brushes, &textures, program3d, programTexture);
 		shadowMapViewer = new ShadowMapViewer(shadowFrameBuffer.depthTexture);

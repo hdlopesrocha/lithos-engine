@@ -17,7 +17,7 @@ void AtlasViewer::draw2d(){
     ImGui::Begin("Atlas Viewer", &open, ImGuiWindowFlags_AlwaysAutoResize);
 
     selectedTexture = Math::mod(selectedTexture, atlasTextures->size());
-    AtlasTexture * atlas = (*atlasTextures)[selectedTexture];
+    AtlasTexture * atlas = atlasTextures->at(selectedTexture);
     selectedTile =Math::mod(selectedTile, atlas->tiles.size());
 
     Tile * tile = &atlas->tiles[selectedTile];

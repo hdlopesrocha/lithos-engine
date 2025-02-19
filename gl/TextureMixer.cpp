@@ -31,8 +31,8 @@ void TextureMixer::mix(){
     glDisable(GL_CULL_FACE);
     glDisable(GL_DEPTH_TEST);
     if(textures->size() > 0) {
-        Texture * baseTexture = (*textures)[Math::mod(baseTextureIndex, textures->size())];
-        Texture * overlayTexture = (*textures)[Math::mod(overlayTextureIndex, textures->size())];
+        Texture * baseTexture = textures->at(Math::mod(baseTextureIndex, textures->size()));
+        Texture * overlayTexture = textures->at(Math::mod(overlayTextureIndex, textures->size()));
 
         glActiveTexture(GL_TEXTURE0); 
         glBindTexture(GL_TEXTURE_2D_ARRAY, baseTexture->texture);

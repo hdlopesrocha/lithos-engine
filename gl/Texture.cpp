@@ -22,7 +22,7 @@ int Texture::bindTextures(GLuint program, GLuint type,int activeTexture, std::st
 
     for(int i=0 ; i < ts->size() ; ++i) {
         std::string objectName = arrayName + "[" + std::to_string(i) + "]";
-        Texture * t = (*ts)[i];
+        Texture * t = ts->at(i);
         activeTexture = Texture::bindTexture(program, type, activeTexture, objectName, t->texture);
     }
     return activeTexture;

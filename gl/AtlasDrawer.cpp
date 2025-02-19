@@ -33,7 +33,7 @@ void AtlasDrawer::draw(){
     glDisable(GL_CULL_FACE);
     glDisable(GL_DEPTH_TEST);
     if(atlasTextures->size() > 0) {
-        AtlasTexture * atlas = (*atlasTextures)[Math::mod(atlasIndex, atlasTextures->size())];
+        AtlasTexture * atlas = atlasTextures->at(Math::mod(atlasIndex, atlasTextures->size()));
         glActiveTexture(GL_TEXTURE0); 
         glBindTexture(GL_TEXTURE_2D_ARRAY, atlas->texture);
         glUniform1i(samplerLoc, 0); 
@@ -43,7 +43,11 @@ void AtlasDrawer::draw(){
             TileDraw tileDraw = draws[i];
             uint tileIndex = Math::mod(tileDraw.index, atlas->tiles.size());
 
-        // std::cout << tileDraw.index << " -> "<< tileDraw.offset.x << ":" <<tileDraw.offset.y << "[" << tileDraw.size.x << "," << tileDraw.size.y << "]" << std::endl;        
+            std::cout << tileDraw.index << " -> " <<
+                    "o={"<< tileDraw.offset.x << ":" <<tileDraw.offset.y << 
+                    "},s={" << tileDraw.size.x << ":" << tileDraw.size.y << 
+                    "},p={" << tileDraw.pivot.x << ":" << tileDraw.pivot.y << 
+                    "},a=" << tileDraw.angle << std::endl;        
             Tile * tile = &atlas->tiles[tileIndex];
 
             glm::mat4 model = glm::mat4(1.0);

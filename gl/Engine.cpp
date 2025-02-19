@@ -312,8 +312,11 @@ TextureArray LithosApplication::loadTextureArray(std::initializer_list<std::stri
     for(std::string fn : fns) {
         filenames.push_back(fn);
         datas.push_back(NULL);
+        channels.push_back(0);
     }
 
+
+    
     for(int i = 0; i < filenames.size() ; ++i) {
         std::string filename = filenames[i];
 

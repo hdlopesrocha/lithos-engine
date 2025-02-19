@@ -328,9 +328,9 @@ class AtlasDrawer {
     GLuint tileSizeLoc;
     std::vector<AtlasTexture*> * atlasTextures;
     int atlasIndex;
-
-    std::vector<TileDraw> draws;
+    
     public:
+    std::vector<TileDraw> draws;
     AtlasDrawer(GLuint program, int width, int height, std::vector<AtlasTexture*> * atlasTextures);
     TextureArray getTexture();
     void draw(int atlasIndex,  std::vector<TileDraw> draws);

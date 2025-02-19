@@ -12,7 +12,7 @@ TextureViewer::TextureViewer(std::vector<Texture*> * textures, GLuint previewPro
 void TextureViewer::draw2d(){
     ImGui::Begin("Texture Viewer", &open, ImGuiWindowFlags_AlwaysAutoResize);
 
-    previewer->draw2d((*textures)[selectedTexture]->texture);
+    previewer->draw2d(textures->at(selectedTexture)->texture);
 
     ImGui::Text("Selected texture: %d", selectedTexture);
     ImGui::SameLine();

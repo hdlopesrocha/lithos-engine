@@ -12,12 +12,9 @@ TextureMixerEditor::TextureMixerEditor(std::vector<TextureMixer*> * mixers, std:
 void TextureMixerEditor::draw2d(){
     ImGui::Begin("Texture Mixer", &open, ImGuiWindowFlags_AlwaysAutoResize);
 
-    //Texture * baseTexture = (*textures)[selectedBaseTexture];
-    //Texture * overlayTexture = (*textures)[selectedOverlayTexture];
 
-    TextureMixer * mixer = (*mixers)[Math::mod(selectedMixer, mixers->size())];
+    TextureMixer * mixer = mixers->at(Math::mod(selectedMixer, mixers->size()));
     mixer->mix();
-    //textureMixer->mix(baseTexture, overlayTexture);
 
     previewer->draw2d(mixer->getTexture());
 
