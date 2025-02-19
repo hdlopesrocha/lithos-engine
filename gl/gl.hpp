@@ -122,7 +122,7 @@ public:
     virtual void clean() = 0;
     void run();
     void close();
-    TextureArray loadTextureArray(const std::string& color, const std::string& normal, const std::string& bump);
+    TextureArray loadTextureArray(std::initializer_list<std::string> fns);
     TextureImage loadTextureImage(const std::string& color);
     int getKeyboardStatus(int key);
     int getWidth();

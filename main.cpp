@@ -284,42 +284,42 @@ public:
 			textures.push_back(t);
 		}
 		{
-			Texture * t = new Texture(loadTextureArray("textures/lava_color.jpg", "textures/lava_normal.jpg","textures/lava_bump.jpg"));
+			Texture * t = new Texture(loadTextureArray({"textures/lava_color.jpg", "textures/lava_normal.jpg","textures/lava_bump.jpg"}));
 			brushes.push_back(new Brush(textures.size(), glm::vec2(1.0), 0.1, 8, 32, 16,4 ,256, 0.4, 0.0));
 			textures.push_back(t);
 		}
 		{
-			Texture * t = new Texture(loadTextureArray("textures/grass_color.png", "textures/grass_normal.png", "textures/grass_bump.png"));
+			Texture * t = new Texture(loadTextureArray({"textures/grass_color.png", "textures/grass_normal.png", "textures/grass_bump.png"}));
 			brushes.push_back(new Brush(textures.size(), glm::vec2(1.0), 0.01, 2, 8, 8,4 ,32, 0.03, 0.0));
 			textures.push_back(t);
         }
 		{
-			Texture * t = new Texture(loadTextureArray("textures/sand_color.jpg", "textures/sand_normal.jpg", "textures/sand_bump.jpg"));
+			Texture * t = new Texture(loadTextureArray({"textures/sand_color.jpg", "textures/sand_normal.jpg", "textures/sand_bump.jpg"}));
 			brushes.push_back(new Brush(textures.size(), glm::vec2(1.0), 0.05, 8, 32, 16,4 ,32,0.02, 0.0));
 			textures.push_back(t);
         }
 		{
-			Texture * t = new Texture(loadTextureArray("textures/rock_color.png", "textures/rock_normal.png", "textures/rock_bump.png"));
+			Texture * t = new Texture(loadTextureArray({"textures/rock_color.png", "textures/rock_normal.png", "textures/rock_bump.png"}));
 			brushes.push_back(new Brush(textures.size(), glm::vec2(1.0), 0.1, 8, 32, 16,4,128, 0.4, 0.0));
 			textures.push_back(t);
         }
 		{
-			Texture * t = new Texture(loadTextureArray("textures/snow_color.png", "textures/snow_normal.png", "textures/snow_bump.png"));
+			Texture * t = new Texture(loadTextureArray({"textures/snow_color.png", "textures/snow_normal.png", "textures/snow_bump.png"}));
 			brushes.push_back(new Brush(textures.size(), glm::vec2(1.0), 0.1, 8, 32, 16,4, 32 , 0.4, 0.0));
 			textures.push_back(t);
         }
 		{
-			Texture * t = new Texture(loadTextureArray("textures/metal_color.png", "textures/metal_normal.png", "textures/metal_bump.png"));
+			Texture * t = new Texture(loadTextureArray({"textures/metal_color.png", "textures/metal_normal.png", "textures/metal_bump.png"}));
 			brushes.push_back(new Brush(textures.size(), glm::vec2(1.0), 0.1, 8, 64, 64,4, 32, 0.6 , 0.0));
 			textures.push_back(t);
         }
 		{
-			Texture * t = new Texture(loadTextureArray("textures/dirt_color.png", "textures/dirt_normal.png", "textures/dirt_bump.png"));
+			Texture * t = new Texture(loadTextureArray({"textures/dirt_color.png", "textures/dirt_normal.png", "textures/dirt_bump.png"}));
 			brushes.push_back(new Brush(textures.size(), glm::vec2(1.0), 0.1, 8, 32, 16,4 , 256, 0.02, 0.0));
 			textures.push_back(t);
         }
 		{
-			Texture * t = new Texture(loadTextureArray("textures/bricks_color.png", "textures/bricks_normal.png", "textures/bricks_bump.png"));
+			Texture * t = new Texture(loadTextureArray({"textures/bricks_color.png", "textures/bricks_normal.png", "textures/bricks_bump.png"}));
 			brushes.push_back(new Brush(textures.size(), glm::vec2(1.0), 0.01, 8, 32, 16,4, 256, 0.2 , 0.0));
 			textures.push_back(t);
 		}
@@ -364,17 +364,17 @@ public:
 			textures.push_back(t);
 		}
 		{
-			Texture * t = new Texture(loadTextureArray("textures/soft_sand_color.jpg", "textures/soft_sand_normal.jpg", "textures/soft_sand_bump.jpg"));
+			Texture * t = new Texture(loadTextureArray({"textures/soft_sand_color.jpg", "textures/soft_sand_normal.jpg", "textures/soft_sand_bump.jpg"}));
 			brushes.push_back(new Brush(textures.size(), glm::vec2(1.0), 0.01, 4, 16, 8,4, 256, 0.2 , 0.0));
 			textures.push_back(t);
 		}
 		{
-			Texture * t = new Texture(loadTextureArray("textures/forest_color.png", "textures/forest_normal.png","textures/forest_bump.png"));
+			Texture * t = new Texture(loadTextureArray({"textures/forest_color.png", "textures/forest_normal.png","textures/forest_bump.png"}));
 			brushes.push_back(new Brush(textures.size()));
 			textures.push_back(t);
 		}
 		{
-			AtlasTexture * at = new AtlasTexture(loadTextureArray("textures/vegetation/foliage_color.png", "textures/vegetation/foliage_normal.png", "textures/vegetation/foliage_opacity.png"));
+			AtlasTexture * at = new AtlasTexture(loadTextureArray({"textures/vegetation/foliage_color.png", "textures/vegetation/foliage_normal.png", "textures/vegetation/foliage_opacity.png"}));
 			at->tiles.push_back(Tile(glm::vec2(1.0),glm::vec2(0.0)));
 			at->tiles.push_back(Tile(glm::vec2(0.15, 1.0),glm::vec2(0.0, 0.0)));
 			at->tiles.push_back(Tile(glm::vec2(0.15, 0.5),glm::vec2(0.15, 0.0)));

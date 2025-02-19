@@ -292,7 +292,7 @@ GLenum channelsToFormat(int channels) {
     return GL_DEPTH_COMPONENT;
 }
 
-TextureArray LithosApplication::loadTextureArray(const std::string& color, const std::string& normal, const std::string& bump) {
+TextureArray LithosApplication::loadTextureArray(std::initializer_list<std::string> fns) {
 
     // Generate a texture object
     TextureArray textureArray;
@@ -304,26 +304,32 @@ TextureArray LithosApplication::loadTextureArray(const std::string& color, const
     int width, height;
 
 
-    std::string filenames[3] = { color, normal, bump} ;
-    unsigned char* datas[3] = {NULL, NULL, NULL};
-    int channels[3];
+    std::vector<std::string> filenames;
+    std::vector<unsigned char*> datas;
+    std::vector<int> channels;
 
-    for(int i = 0; i < 3 ; ++i) {
+
+    for(std::string fn : fns) {
+        filenames.push_back(fn);
+        datas.push_back(NULL);
+    }
+
+    for(int i = 0; i < filenames.size() ; ++i) {
         std::string filename = filenames[i];
 
         if(filename.size()){
             std::cout << "Loading " << filename << std::endl;
             datas[i] = stbi_load(filename.c_str(), &width, &height, &channels[i], 0);
             if (!datas[i]) {
-                std::cerr << "Failed to load texture: " << color << std::endl;
+                std::cerr << "Failed to load texture: " << filename << std::endl;
                 return textureArray;
             }
         }
     }
     int mipLevels = 1 + floor(log2(glm::max(width, height)));
-    glTexStorage3D(GL_TEXTURE_2D_ARRAY, mipLevels, GL_RGBA8, width, height, 3);
+    glTexStorage3D(GL_TEXTURE_2D_ARRAY, mipLevels, GL_RGBA8, width, height, datas.size());
 
-    for(int i = 0; i < 3 ; ++i) {
+    for(int i = 0; i < datas.size() ; ++i) {
         if (datas[i]) {
             glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, i, width, height, 1, channelsToFormat(channels[i]), GL_UNSIGNED_BYTE, datas[i]);
         }
@@ -340,7 +346,7 @@ TextureArray LithosApplication::loadTextureArray(const std::string& color, const
 
     // Free image data and unbind texture
 
-    for(int i = 0; i < 3 ; ++i) {
+    for(int i = 0; i < datas.size() ; ++i) {
         if (datas[i]) {
             stbi_image_free(datas[i]);
         }

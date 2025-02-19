@@ -17,5 +17,4 @@ void main() {
     }else {
         FragColor = texture(textureSampler, vec3(TexCoord,Layer));
     }
-    //FragColor = vec4(vec3(factor), 1.0);
 }
