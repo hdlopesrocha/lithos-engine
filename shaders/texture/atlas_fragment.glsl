@@ -3,17 +3,18 @@ in vec2 TexCoord;
 out vec4 FragColor;
 
 uniform sampler2DArray textureSampler;
+uniform bool filterOpacity;
 
 in flat int Layer;
 
 void main() {    
-    vec4 opacity = texture(textureSampler, vec3(TexCoord,2));
-    if(opacity.r < 0.5) {
+    vec4 opacity = texture(textureSampler, vec3(TexCoord,3));
+    if(filterOpacity && opacity.r < 0.5) {
         discard;
     }
 
-    if(Layer == 2) {
-        FragColor = vec4(1.0,1.0,1.0,1.0);
+    if(Layer == 3) {
+        FragColor = opacity;
     }else {
         FragColor = texture(textureSampler, vec3(TexCoord,Layer));
     }

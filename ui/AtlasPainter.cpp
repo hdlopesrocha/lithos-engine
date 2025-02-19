@@ -5,8 +5,7 @@
 AtlasPainter::AtlasPainter(std::vector<AtlasTexture*> * atlasTextures, std::vector<AtlasDrawer*> * atlasDrawers, GLuint programAtlas, GLuint previewProgram, int width, int height) {
     this->atlasTextures = atlasTextures;
     this->atlasDrawers = atlasDrawers;
-    this->previewer = new TexturePreviewer(previewProgram, width, height, {"Color", "Normal", "Opacity"});
-    this->selectedTexture = 0;
+    this->previewer = new TexturePreviewer(previewProgram, width, height, {"Color", "Normal", "Bump", "Opacity"});
     this->selectedDrawer = 0;
     this->selectedDraw = 0;
 
@@ -32,8 +31,8 @@ void AtlasPainter::draw2d(){
     selectedDrawer = Math::mod(selectedDrawer, atlasDrawers->size());
     AtlasDrawer * drawer = atlasDrawers->at(selectedDrawer);
 
-    selectedTexture = Math::mod(selectedTexture, atlasTextures->size());
-    AtlasTexture * atlas = atlasTextures->at(selectedTexture);
+    drawer->atlasIndex = Math::mod(drawer->atlasIndex, atlasTextures->size());
+    AtlasTexture * atlas = atlasTextures->at(drawer->atlasIndex);
 
     selectedDraw = Math::mod(selectedDraw, drawer->draws.size());
     TileDraw * tileDraw = &drawer->draws[selectedDraw];
@@ -41,17 +40,17 @@ void AtlasPainter::draw2d(){
     uint tileIndex = Math::mod(tileDraw->index, atlas->tiles.size());
     Tile * tile = &atlas->tiles[tileIndex];
     
-    drawer->draw(selectedTexture, drawer->draws);
+    drawer->draw(drawer->atlasIndex, drawer->draws);
     previewer->draw2d(drawer->getTexture());
 
-    ImGui::Text("Selected texture: %d/%ld ", selectedTexture, atlasTextures->size());
+    ImGui::Text("Selected texture: %d/%ld ", drawer->atlasIndex, atlasTextures->size());
     ImGui::SameLine();
     if (ImGui::ArrowButton("##selectedTexture_left", ImGuiDir_Left)) {
-        --selectedTexture;
+        --drawer->atlasIndex;
     }
     ImGui::SameLine();
     if (ImGui::ArrowButton("##selectedTexture_right", ImGuiDir_Right)) {
-        ++selectedTexture;
+        ++drawer->atlasIndex;
     }
 
 

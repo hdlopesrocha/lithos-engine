@@ -374,7 +374,7 @@ public:
 			textures.push_back(t);
 		}
 		{
-			AtlasTexture * at = new AtlasTexture(loadTextureArray({"textures/vegetation/foliage_color.png", "textures/vegetation/foliage_normal.png", "textures/vegetation/foliage_opacity.png"}));
+			AtlasTexture * at = new AtlasTexture(loadTextureArray({"textures/vegetation/foliage_color.png", "textures/vegetation/foliage_normal.png", "textures/vegetation/foliage_bump.png", "textures/vegetation/foliage_opacity.png"}));
 			at->tiles.push_back(Tile(glm::vec2(1.0),glm::vec2(0.0)));
 			at->tiles.push_back(Tile(glm::vec2(0.15, 1.0),glm::vec2(0.0, 0.0)));
 			at->tiles.push_back(Tile(glm::vec2(0.15, 0.5),glm::vec2(0.15, 0.0)));
@@ -391,20 +391,20 @@ public:
 
 			AtlasDrawer * ad = new AtlasDrawer(programAtlas, 256, 256, &atlasTextures);
 			std::vector<TileDraw> draws;
-			draws.push_back(TileDraw(0,glm::vec2(1), glm::vec2(0), glm::vec2(0.5), 0.5));
+			draws.push_back(TileDraw(0,glm::vec2(1), glm::vec2(0.5), glm::vec2(0.5), 0.5));
 			ad->draw(0, draws);
 
 			atlasDrawers.push_back(ad);
 		}
 		{
-			AtlasTexture * at = new AtlasTexture(loadTextureArray({"textures/vegetation/grass_color.jpg", "textures/vegetation/grass_normal.jpg", "textures/vegetation/grass_opacity.jpg"}));
+			AtlasTexture * at = new AtlasTexture(loadTextureArray({"textures/vegetation/grass_color.jpg", "textures/vegetation/grass_normal.jpg", "textures/vegetation/grass_bump.jpg", "textures/vegetation/grass_opacity.jpg"}));
 			at->tiles.push_back(Tile(glm::vec2(1.0),glm::vec2(0.0)));
 			
 			atlasTextures.push_back(at);
 
 			AtlasDrawer * ad = new AtlasDrawer(programAtlas, 256, 256, &atlasTextures);
 			std::vector<TileDraw> draws;
-			draws.push_back(TileDraw(0,glm::vec2(1), glm::vec2(0), glm::vec2(0.5), 0.5));
+			draws.push_back(TileDraw(0,glm::vec2(1), glm::vec2(0.5), glm::vec2(0.5), 0.0));
 			ad->draw(1, draws);
 
 			atlasDrawers.push_back(ad);

@@ -4,12 +4,13 @@
 AtlasDrawer::AtlasDrawer(GLuint program, int width, int height, std::vector<AtlasTexture*> * atlasTextures) {
     this->program = program;
     this->atlasTextures = atlasTextures;
-    this->renderBuffer = createMultiLayerRenderFrameBuffer(width,height, 3);
+    this->renderBuffer = createMultiLayerRenderFrameBuffer(width,height, 4);
     this->viewVao = DrawableGeometry::create2DVAO(-1,-1, 1,1);
     this->samplerLoc = glGetUniformLocation(program, "textureSampler");
     this->modelLoc = glGetUniformLocation(program, "model");
     this->tileOffsetLoc = glGetUniformLocation(program, "tileOffset");
     this->tileSizeLoc = glGetUniformLocation(program, "tileSize");
+    this->filterLoc = glGetUniformLocation(program, "filterOpacity");
     this->atlasIndex = 0;
 }
 
@@ -37,17 +38,18 @@ void AtlasDrawer::draw(){
         glActiveTexture(GL_TEXTURE0); 
         glBindTexture(GL_TEXTURE_2D_ARRAY, atlas->texture);
         glUniform1i(samplerLoc, 0); 
+        glUniform1ui(filterLoc, filterEnabled); 
         glBindVertexArray(viewVao);
         
         for(int i=0 ; i < draws.size() ; ++i) {
             TileDraw tileDraw = draws[i];
             uint tileIndex = Math::mod(tileDraw.index, atlas->tiles.size());
 
-            std::cout << tileDraw.index << " -> " <<
+           /* std::cout << tileDraw.index << " -> " <<
                     "o={"<< tileDraw.offset.x << ":" <<tileDraw.offset.y << 
                     "},s={" << tileDraw.size.x << ":" << tileDraw.size.y << 
                     "},p={" << tileDraw.pivot.x << ":" << tileDraw.pivot.y << 
-                    "},a=" << tileDraw.angle << std::endl;        
+                    "},a=" << tileDraw.angle << std::endl;    */    
             Tile * tile = &atlas->tiles[tileIndex];
 
             glm::mat4 model = glm::mat4(1.0);

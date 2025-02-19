@@ -77,7 +77,6 @@ class AtlasPainter: public Closable {
     std::vector<AtlasDrawer*> * atlasDrawers;
     TexturePreviewer * previewer;
 
-  	int selectedTexture = 0;
   	int selectedDrawer = 0;
   	int selectedDraw = 0;
 

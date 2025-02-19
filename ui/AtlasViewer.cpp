@@ -5,10 +5,10 @@
 AtlasViewer::AtlasViewer(std::vector<AtlasTexture*> * atlasTextures, GLuint programAtlas, GLuint previewProgram, int width, int height) {
     this->atlasTextures = atlasTextures;
     this->drawer = new AtlasDrawer(programAtlas, width, height, atlasTextures);
-    this->previewer = new TexturePreviewer(previewProgram, width, height, {"Color", "Normal", "Opacity"});
+    this->previewer = new TexturePreviewer(previewProgram, width, height, {"Color", "Normal", "Bump", "Opacity"});
     this->selectedTexture = 0;
     this->selectedTile = 0;
-
+    this->drawer->filterEnabled = false;
     this->draws.push_back(TileDraw(0, glm::vec2(1.0), glm::vec2(0.0), glm::vec2(0), 0));
 }
 

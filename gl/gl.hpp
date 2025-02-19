@@ -326,10 +326,12 @@ class AtlasDrawer {
     GLuint modelLoc; 
     GLuint tileOffsetLoc;
     GLuint tileSizeLoc;
+    GLuint filterLoc;
     std::vector<AtlasTexture*> * atlasTextures;
-    int atlasIndex;
     
     public:
+    bool filterEnabled = true;
+    int atlasIndex;
     std::vector<TileDraw> draws;
     AtlasDrawer(GLuint program, int width, int height, std::vector<AtlasTexture*> * atlasTextures);
     TextureArray getTexture();
