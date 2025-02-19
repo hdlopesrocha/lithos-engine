@@ -289,7 +289,7 @@ public:
 			textures.push_back(t);
 		}
 		{
-			Texture * t = new Texture(loadTextureArray({"textures/grass_color.png", "textures/grass_normal.png", "textures/grass_bump.png"}));
+			Texture * t = new Texture(loadTextureArray({"textures/grass_color.jpg", "textures/grass_normal.jpg", "textures/grass_bump.jpg"}));
 			brushes.push_back(new Brush(textures.size(), glm::vec2(1.0), 0.01, 2, 8, 8,4 ,32, 0.03, 0.0));
 			textures.push_back(t);
         }
@@ -299,27 +299,27 @@ public:
 			textures.push_back(t);
         }
 		{
-			Texture * t = new Texture(loadTextureArray({"textures/rock_color.png", "textures/rock_normal.png", "textures/rock_bump.png"}));
+			Texture * t = new Texture(loadTextureArray({"textures/rock_color.jpg", "textures/rock_normal.jpg", "textures/rock_bump.jpg"}));
 			brushes.push_back(new Brush(textures.size(), glm::vec2(1.0), 0.1, 8, 32, 16,4,128, 0.4, 0.0));
 			textures.push_back(t);
         }
 		{
-			Texture * t = new Texture(loadTextureArray({"textures/snow_color.png", "textures/snow_normal.png", "textures/snow_bump.png"}));
+			Texture * t = new Texture(loadTextureArray({"textures/snow_color.jpg", "textures/snow_normal.jpg", "textures/snow_bump.jpg"}));
 			brushes.push_back(new Brush(textures.size(), glm::vec2(1.0), 0.1, 8, 32, 16,4, 32 , 0.4, 0.0));
 			textures.push_back(t);
         }
 		{
-			Texture * t = new Texture(loadTextureArray({"textures/metal_color.png", "textures/metal_normal.png", "textures/metal_bump.png"}));
+			Texture * t = new Texture(loadTextureArray({"textures/metal_color.jpg", "textures/metal_normal.jpg", "textures/metal_bump.jpg"}));
 			brushes.push_back(new Brush(textures.size(), glm::vec2(1.0), 0.1, 8, 64, 64,4, 32, 0.6 , 0.0));
 			textures.push_back(t);
         }
 		{
-			Texture * t = new Texture(loadTextureArray({"textures/dirt_color.png", "textures/dirt_normal.png", "textures/dirt_bump.png"}));
+			Texture * t = new Texture(loadTextureArray({"textures/dirt_color.jpg", "textures/dirt_normal.jpg", "textures/dirt_bump.jpg"}));
 			brushes.push_back(new Brush(textures.size(), glm::vec2(1.0), 0.1, 8, 32, 16,4 , 256, 0.02, 0.0));
 			textures.push_back(t);
         }
 		{
-			Texture * t = new Texture(loadTextureArray({"textures/bricks_color.png", "textures/bricks_normal.png", "textures/bricks_bump.png"}));
+			Texture * t = new Texture(loadTextureArray({"textures/bricks_color.jpg", "textures/bricks_normal.jpg", "textures/bricks_bump.jpg"}));
 			brushes.push_back(new Brush(textures.size(), glm::vec2(1.0), 0.01, 8, 32, 16,4, 256, 0.2 , 0.0));
 			textures.push_back(t);
 		}
@@ -369,12 +369,12 @@ public:
 			textures.push_back(t);
 		}
 		{
-			Texture * t = new Texture(loadTextureArray({"textures/forest_color.png", "textures/forest_normal.png","textures/forest_bump.png"}));
+			Texture * t = new Texture(loadTextureArray({"textures/forest_color.jpg", "textures/forest_normal.jpg","textures/forest_bump.jpg"}));
 			brushes.push_back(new Brush(textures.size()));
 			textures.push_back(t);
 		}
 		{
-			AtlasTexture * at = new AtlasTexture(loadTextureArray({"textures/vegetation/foliage_color.png", "textures/vegetation/foliage_normal.png", "textures/vegetation/foliage_bump.png", "textures/vegetation/foliage_opacity.png"}));
+			AtlasTexture * at = new AtlasTexture(loadTextureArray({"textures/vegetation/foliage_color.jpg", "textures/vegetation/foliage_normal.jpg", "textures/vegetation/foliage_bump.jpg", "textures/vegetation/foliage_opacity.jpg"}));
 			at->tiles.push_back(Tile(glm::vec2(1.0),glm::vec2(0.0)));
 			at->tiles.push_back(Tile(glm::vec2(0.15, 1.0),glm::vec2(0.0, 0.0)));
 			at->tiles.push_back(Tile(glm::vec2(0.15, 0.5),glm::vec2(0.15, 0.0)));
@@ -402,7 +402,7 @@ public:
 			
 			atlasTextures.push_back(at);
 
-			AtlasDrawer * ad = new AtlasDrawer(programAtlas, 256, 256, &atlasTextures);
+			AtlasDrawer * ad = new AtlasDrawer(programAtlas, 512, 512, &atlasTextures);
 			std::vector<TileDraw> draws;
 			draws.push_back(TileDraw(0,glm::vec2(1), glm::vec2(0.5), glm::vec2(0.5), 0.0));
 			ad->draw(1, draws);
@@ -412,7 +412,7 @@ public:
 
 
 
-		noiseTexture = loadTextureImage("textures/noise.png");
+		noiseTexture = loadTextureImage("textures/noise.jpg");
 		activeTexture = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, "depthTexture", depthFrameBuffer.depthTexture);
 		activeTexture = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, "underTexture", solidBuffer.colorTexture);
 		activeTexture = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, "shadowMap", shadowFrameBuffer.depthTexture);
