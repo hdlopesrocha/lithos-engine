@@ -143,6 +143,7 @@ class ProgramLocations {
 
 class MainApplication : public LithosApplication {
 	std::vector<Texture*> textures;
+	std::vector<Texture*> vegetationTextures;
 	std::vector<Brush*> brushes;
 	std::vector<Brush*> vegetationBrushes;
 	std::vector<AtlasTexture*> atlasTextures;
@@ -405,6 +406,7 @@ public:
 			ad->draw(0, draws);
 
 			atlasDrawers.push_back(ad);
+			vegetationTextures.push_back(new Texture(ad->getTexture()));
 		}
 		{
 			AtlasTexture * at = new AtlasTexture(loadTextureArray({"textures/vegetation/grass_color.jpg", "textures/vegetation/grass_normal.jpg", "textures/vegetation/grass_bump.jpg", "textures/vegetation/grass_opacity.jpg"}));
@@ -418,6 +420,7 @@ public:
 			ad->draw(1, draws);
 
 			atlasDrawers.push_back(ad);
+			vegetationTextures.push_back(new Texture(ad->getTexture()));
 		}
 
 
@@ -427,7 +430,8 @@ public:
 		activeTexture = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, "underTexture", solidBuffer.colorTexture);
 		activeTexture = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, "shadowMap", shadowFrameBuffer.depthTexture);
 		activeTexture = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, "noise", noiseTexture);
-
+		
+		activeTexture = Texture::bindTextures(programVegetation, GL_TEXTURE_2D_ARRAY, activeTexture, "textures", &vegetationTextures);
 		Texture::bindTextures(program3d, GL_TEXTURE_2D_ARRAY, activeTexture, "textures", &textures);
 
 		Brush::bindBrushes(program3d, &brushes);
