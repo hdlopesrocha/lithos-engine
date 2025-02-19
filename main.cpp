@@ -402,7 +402,7 @@ public:
 			
 			atlasTextures.push_back(at);
 
-			AtlasDrawer * ad = new AtlasDrawer(programAtlas, 512, 512, &atlasTextures);
+			AtlasDrawer * ad = new AtlasDrawer(programAtlas, 1024, 1024, &atlasTextures);
 			std::vector<TileDraw> draws;
 			draws.push_back(TileDraw(0,glm::vec2(1), glm::vec2(0.5), glm::vec2(0.5), 0.0));
 			ad->draw(1, draws);

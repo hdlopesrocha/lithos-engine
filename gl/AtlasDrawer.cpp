@@ -76,6 +76,11 @@ void AtlasDrawer::draw(){
             glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     
         }
+
+        glActiveTexture(GL_TEXTURE0); 
+        glBindTexture(GL_TEXTURE_2D_ARRAY, renderBuffer.colorTexture);
+        glGenerateMipmap(GL_TEXTURE_2D_ARRAY);
+
     } else {
         std::cerr << "No textures in AtlasDrawer!" << std::endl;
     }
