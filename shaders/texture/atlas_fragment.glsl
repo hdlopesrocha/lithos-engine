@@ -9,7 +9,7 @@ in flat int Layer;
 
 void main() {    
     vec4 opacity = texture(textureSampler, vec3(TexCoord,3));
-    if(filterOpacity && opacity.r < 0.5) {
+    if(filterOpacity && opacity.r < 0.2) {
         discard;
     }
 

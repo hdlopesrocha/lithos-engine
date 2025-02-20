@@ -42,5 +42,12 @@ class WaterBrush : public TextureBrush {
 	void paint(Vertex * vertex);
 };
 
+class InstanceBuffer {
+	public:
+	std::vector<glm::vec3> positions;
+	GLuint vbo;
+	
+	InstanceBuffer(int size);
+};
 
 #endif

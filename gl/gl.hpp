@@ -51,15 +51,8 @@ struct UniformBufferObject {
 struct IndexBufferObject {
     std::vector<Vertex> vertices;
     std::vector<uint16_t> indices;
+    std::vector<glm::vec3> offsets;
     long indicesCount;
-};
-
-struct InstanceBufferObject {
-};
-
-struct IndirectDraw {
-	std::vector<InstanceData> instances;
-    IndexBufferObject * indexBufferObject;
 };
 
 
@@ -145,6 +138,18 @@ class DrawableGeometry {
     static GLuint create2DVAO(float x, float y, float w, float h);
 
 };
+
+class DrawableInstanceGeometry {
+	public:
+	GLuint vao, vbo, ebo, ibo;
+	int indices;
+    int instances;
+
+	DrawableInstanceGeometry(Geometry * t, std::vector<glm::vec3> instanceOffsets);
+    ~DrawableInstanceGeometry();
+    void draw(uint mode);
+};
+
 
 class OctreeProcessor : public IteratorHandler{
 	Octree * tree;
@@ -306,7 +311,7 @@ struct TileDraw {
 
 class Vegetation3d {
     public:
-    DrawableGeometry * drawable;
+    DrawableInstanceGeometry * drawable;
 
     Vegetation3d();
 };

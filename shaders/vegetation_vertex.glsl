@@ -5,6 +5,7 @@ layout(location = 0) in vec3 position;
 layout(location = 1) in vec3 normal;    
 layout(location = 2) in vec2 textureCoord;    
 layout(location = 3) in uint textureIndex;     
+layout(location = 4) in vec3 offset; 
 
 #include<structs.glsl>
 #include<functions.glsl>
@@ -22,10 +23,10 @@ uniform mat4 matrixShadow;
 void main() {
     vTextureCoord = textureCoord;
     vProps = brushes[textureIndex];
-    vPosition = position;
+    vPosition = position+offset;
     vNormal = normal;
 
-    gl_Position = modelViewProjection * vec4(position, 1.0);    
-    vLightViewPosition = matrixShadow * vec4(position, 1.0);  
+    gl_Position = modelViewProjection * vec4(vPosition, 1.0);    
+    vLightViewPosition = matrixShadow * vec4(vPosition, 1.0);  
 
 }

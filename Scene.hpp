@@ -22,6 +22,7 @@ class Scene {
 		OctreeProcessor * shadowProcessor;
 		OctreeProcessor * liquidProcessor;
 		Vegetation3d * vegetation;
+		InstanceBuffer * instanceBuffer;
 
 		Camera camera;
 		DirectionalLight light;
@@ -52,6 +53,7 @@ class Scene {
 		shadowProcessor = new OctreeProcessor(solidSpace, &shadowTrianglesCount, TYPE_SHADOW_DRAWABLE, 6, 0.1, 4.0, false);
 
 		vegetation = new Vegetation3d();
+		instanceBuffer = new InstanceBuffer(100);
     }
 
 	void draw3dShadow() {

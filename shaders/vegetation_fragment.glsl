@@ -42,7 +42,7 @@ void main() {
   
     vec4 mixedColor = texture(textures[1], vec3(uv, 0));
     vec4 opacity = texture(textures[1], vec3(uv, 3));
-    if(opacity.r < 0.1) {
+    if(opacity.r < 0.9) {
         discard;
     }
 
