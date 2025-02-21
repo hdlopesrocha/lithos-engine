@@ -212,12 +212,12 @@ class InstanceBuilder : public IteratorHandler{
 	Geometry chunk;
 	int geometryType;
     int drawableType;
-
+    int * triangles;
     public: 
         uint mode;
         std::vector<glm::mat4> matrices;
 		int geometryLevel;
-		InstanceBuilder(Octree * tree, int drawableType, int geometryLevel);
+		InstanceBuilder(Octree * tree, int drawableType, int geometryLevel, int * triangles);
 
 		void * before(int level, OctreeNode * node, BoundingCube cube, void * context);
 		void after(int level, OctreeNode * node, BoundingCube cube, void * context);

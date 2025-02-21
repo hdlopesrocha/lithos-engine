@@ -3,10 +3,11 @@
 #include "gl.hpp"
 #include <glm/gtx/norm.hpp> 
 
-InstanceBuilder::InstanceBuilder(Octree * tree,  int drawableType, int geometryLevel) {
+InstanceBuilder::InstanceBuilder(Octree * tree,  int drawableType, int geometryLevel, int * triangles) {
 	this->tree = tree;
 	this->drawableType = drawableType;
 	this->geometryLevel = geometryLevel;
+	this->triangles = triangles;
 }
 
 
@@ -20,7 +21,14 @@ void * InstanceBuilder::before(int level, OctreeNode * node, BoundingCube cube, 
 		Vertex * v = &node->vertex;
 		if(v->brushIndex == 2) {
 			glm::mat4 model(1.0);
+
+			OctreeNode * corners[8];
+			tree->getNodeCorners(cube, level, 0, 1, corners);
+
+			QuadNodeHandler handler(&chunk, triangles);
 			//std::cout << std::to_string(v->position.x) << "_"<< std::to_string(v->position.y) << "_"<< std::to_string(v->position.z) << std::endl;
+			tree->getQuadNodes(corners, &handler, triangles) ;
+			
 			int radius = 4;
 			// TODO: interpolate using triangles
 			for(int x=0 ; x < radius; ++x) {

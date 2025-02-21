@@ -300,7 +300,6 @@ class Tesselator : public IteratorHandler{
 		Geometry * chunk;
 		int simplification;
 		Tesselator(Octree * tree, int * triangles, Geometry * chunk, int simplification);
-		void quadify(Octree * tree, OctreeNode * node, OctreeNode ** corners);
 		void * before(int level, OctreeNode * node, BoundingCube cube, void * context);
 		void after(int level, OctreeNode * node, BoundingCube cube, void * context);
 		bool test(int level, OctreeNode * node, BoundingCube cube, void * context);

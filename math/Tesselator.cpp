@@ -70,25 +70,16 @@ QuadNodeHandler::QuadNodeHandler(Geometry * chunk, int * triangles) {
 }
 
 void QuadNodeHandler::handle(OctreeNode** quad, bool sign) {
-
 	*triangles += addQuad(quad, chunk, sign);
 }
-
-
-
-void Tesselator::quadify(Octree * tree, OctreeNode * node, OctreeNode ** corners){
-	QuadNodeHandler handler(chunk, triangles);
-	tree->getQuadNodes(corners , &handler, triangles);	
-}
-
-
 
 void * Tesselator::before(int level, OctreeNode * node, BoundingCube cube, void * context) {		
 	if(tree->getHeight(cube)==0){
 		OctreeNode * corners[8];
 		tree->getNodeCorners(cube, level, simplification, 1, corners);
 		// Tesselate
-		quadify(tree, node, corners);
+		QuadNodeHandler handler(chunk, triangles);
+		tree->getQuadNodes(corners , &handler, triangles);	
 	}
 	return context;
 }

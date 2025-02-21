@@ -97,12 +97,12 @@ void * OctreeProcessor::before(int level, OctreeNode * node, BoundingCube cube, 
 			NodeInfo * existingInstanceInfo = getNodeInfo(node, TYPE_INSTANCE_DRAWABLE);
 
 			if(existingInstanceInfo == NULL) {
-				InstanceBuilder instanceBuilder(tree, drawableType, geometryLevel);
+				InstanceBuilder instanceBuilder(tree, drawableType, geometryLevel, triangles);
 				instanceBuilder.iterate(level, node, cube, NULL);
 
 				if(instanceBuilder.matrices.size() > 0) {
 					//std::cout << "Matrices "<< std::to_string(instanceBuilder.matrices.size()) << std::endl;
-					Vegetation3d * vegetation =  new Vegetation3d(&instanceBuilder.matrices);
+					Vegetation3d * vegetation = new Vegetation3d(&instanceBuilder.matrices);
 					NodeInfo vegetationInfo;
 					vegetationInfo.type = TYPE_INSTANCE_DRAWABLE;
 					vegetationInfo.data = vegetation;
