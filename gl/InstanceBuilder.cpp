@@ -22,7 +22,7 @@ void * InstanceBuilder::before(int level, OctreeNode * node, BoundingCube cube, 
 			glm::mat4 model(1.0);
 			//std::cout << std::to_string(v->position.x) << "_"<< std::to_string(v->position.y) << "_"<< std::to_string(v->position.z) << std::endl;
 			int radius = 4;
-			
+			// TODO: interpolate using triangles
 			for(int x=0 ; x < radius; ++x) {
 				for(int z=0 ; z < radius; ++z) {
 					model = glm::translate(glm::mat4(1.0), v->position+glm::vec3(x,0,z));

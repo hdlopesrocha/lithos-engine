@@ -4,6 +4,13 @@
 Octree::Octree(BoundingCube minCube) : BoundingCube(minCube){
 	this->minSize = minCube.getLength();
 	this->root = new OctreeNode(glm::vec3(minSize*0.5));
+	if(!initialized) {
+		tessOrder.push_back(glm::ivec4(0,1,3,2));tessEdge.push_back(glm::ivec2(3,7));
+		tessOrder.push_back(glm::ivec4(0,2,6,4));tessEdge.push_back(glm::ivec2(6,7));
+		tessOrder.push_back(glm::ivec4(0,4,5,1));tessEdge.push_back(glm::ivec2(5,7));
+
+		initialized = true;
+	}
 }
 
 BoundingCube Octree::getChildCube(BoundingCube cube, int i) {
@@ -100,18 +107,33 @@ void Octree::getNodeCorners(BoundingCube cube, int level, int simplification, in
 	}
 }
 
-int Octree::getQuadNodes(OctreeNode** corners, glm::ivec4 quad, OctreeNode ** out) {
-	int size = 0;
-	for(int i =0; i<4 ; ++i){
-		OctreeNode * n = corners[quad[i]];
-		if(n != NULL && n->solid == ContainmentType::Intersects) {
-			out[i] = n;
-			++size;
-		} else {
-			break;
-		}
+void Octree::getQuadNodes(OctreeNode** corners, std::vector<std::vector<std::pair<OctreeNode*,bool>>> * quadNodes) {
+	for(int k =0 ; k < tessOrder.size(); ++k) {
+		glm::ivec2 edge = tessEdge[k];
+		OctreeNode * node = corners[0];
+		uint mask = node->mask;
+		bool sign0 = (mask & (1 << edge[0])) != 0;
+		bool sign1 = (mask & (1 << edge[1])) != 0;
+
+		if(sign0 != sign1) {
+			int size = 0;
+
+			glm::ivec4 quad = tessOrder[k];
+			std::vector<std::pair<OctreeNode*,bool>> cs;
+			for(int i =0; i<4 ; ++i){
+				OctreeNode * n = corners[quad[i]];
+				if(n != NULL && n->solid == ContainmentType::Intersects) {
+					++size;
+					cs.push_back(std::pair(n, sign1));
+				} else {
+					break;
+				}
+			}
+			if(size == 4) {
+				quadNodes->push_back(cs);
+			}
+		} 
 	}
-	return size;
 }
 
 

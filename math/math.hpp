@@ -15,6 +15,10 @@
 #define INFO_TYPE_REMOVE 0
 
 
+static std::vector<glm::ivec4> tessOrder;
+static std::vector<glm::ivec2> tessEdge;
+
+static bool initialized = false;
 class BoundingSphere;
 class BoundingBox;
 
@@ -246,7 +250,7 @@ class Octree: public BoundingCube {
 		void iterate(IteratorHandler * handler);
 		OctreeNode * getNodeAt(glm::vec3 pos, int level, int simplification);
 		void getNodeCorners(BoundingCube cube, int level, int simplification, int direction, OctreeNode ** out);
-		int getQuadNodes(OctreeNode** corners, glm::ivec4 quad, OctreeNode ** out);
+		void getQuadNodes(OctreeNode** corners, std::vector<std::vector<std::pair<OctreeNode*,bool>>> * quadNodes);
 		void getNeighbors(BoundingCube cube, int level, OctreeNode ** out);
 
 		void save(std::string filename);
@@ -287,6 +291,7 @@ class Tesselator : public IteratorHandler{
 		Geometry * chunk;
 		int simplification;
 		Tesselator(Octree * tree, int * triangles, Geometry * chunk, int simplification);
+		void quadify(Octree * tree, OctreeNode * node, OctreeNode ** corners);
 		void * before(int level, OctreeNode * node, BoundingCube cube, void * context);
 		void after(int level, OctreeNode * node, BoundingCube cube, void * context);
 		bool test(int level, OctreeNode * node, BoundingCube cube, void * context);
