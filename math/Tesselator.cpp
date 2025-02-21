@@ -19,11 +19,11 @@ Tesselator::Tesselator(Octree * tree, int * triangles, Geometry * chunk, int sim
 
 }
 
-int addQuad(std::vector<std::pair<OctreeNode*,bool>> quad, Geometry * chunk, bool reverse) {
-	OctreeNode* c0 = quad[reverse ? 3:0].first;
-	OctreeNode* c1 = quad[reverse ? 2:1].first;
-	OctreeNode* c2 = quad[reverse ? 1:2].first;
-	OctreeNode* c3 = quad[reverse ? 0:3].first;
+int addQuad(OctreeNode** quad, Geometry * chunk, bool reverse) {
+	OctreeNode* c0 = quad[reverse ? 3:0];
+	OctreeNode* c1 = quad[reverse ? 2:1];
+	OctreeNode* c2 = quad[reverse ? 1:2];
+	OctreeNode* c3 = quad[reverse ? 0:3];
 
 
 	Vertex v0 = c0->vertex;
@@ -64,20 +64,21 @@ OctreeNode * Tesselator::getChild(OctreeNode * node, int index) {
 }
 
 
+QuadNodeHandler::QuadNodeHandler(Geometry * chunk, int * triangles) {
+	this->chunk = chunk;
+	this->triangles = triangles;
+}
+
+void QuadNodeHandler::handle(OctreeNode** quad, bool sign) {
+
+	*triangles += addQuad(quad, chunk, sign);
+}
+
+
+
 void Tesselator::quadify(Octree * tree, OctreeNode * node, OctreeNode ** corners){
-
-
-	//TODO reserve
-	std::vector<std::vector<std::pair<OctreeNode*,bool>>> quadNodes;
-
-	tree->getQuadNodes(corners, &quadNodes);	
-		
-	for(std::vector<std::pair<OctreeNode*,bool>>  n : quadNodes){
-		for(std::pair<OctreeNode*,bool>  o : n){
-			*triangles += addQuad(n, chunk, o.second);
-
-		}
-	}
+	QuadNodeHandler handler(chunk, triangles);
+	tree->getQuadNodes(corners , &handler, triangles);	
 }
 
 

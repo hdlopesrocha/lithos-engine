@@ -238,6 +238,28 @@ class IteratorHandler {
 };
 
 
+class Geometry
+{
+public:
+	std::vector<Vertex> vertices;
+	std::vector<uint> indices;
+	std::map <std::string, int> compactMap;
+
+	Geometry(/* args */);
+	~Geometry();
+
+	Vertex * addVertex(Vertex vertex, bool textureUnique);
+};
+
+class QuadNodeHandler {
+
+	public: 
+	Geometry * chunk;
+	int * triangles;
+	QuadNodeHandler(Geometry * chunk, int * triangles);
+	void handle(OctreeNode** quad, bool sign);
+};
+
 class Octree: public BoundingCube {
 	public: 
 		float minSize;
@@ -250,7 +272,7 @@ class Octree: public BoundingCube {
 		void iterate(IteratorHandler * handler);
 		OctreeNode * getNodeAt(glm::vec3 pos, int level, int simplification);
 		void getNodeCorners(BoundingCube cube, int level, int simplification, int direction, OctreeNode ** out);
-		void getQuadNodes(OctreeNode** corners, std::vector<std::vector<std::pair<OctreeNode*,bool>>> * quadNodes);
+		void getQuadNodes(OctreeNode** corners, QuadNodeHandler * handler, int * triangles);
 		void getNeighbors(BoundingCube cube, int level, OctreeNode ** out);
 
 		void save(std::string filename);
@@ -261,19 +283,6 @@ class Octree: public BoundingCube {
 
 		int getHeight(BoundingCube cube);
 
-};
-
-class Geometry
-{
-public:
-	std::vector<Vertex> vertices;
-	std::vector<uint> indices;
-	std::map <std::string, int> compactMap;
-
-	Geometry(/* args */);
-	~Geometry();
-
-	Vertex * addVertex(Vertex vertex, bool textureUnique);
 };
 
 class SphereGeometry : public Geometry{
