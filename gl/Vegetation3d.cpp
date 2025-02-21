@@ -44,10 +44,11 @@ Vegetation3d::Vegetation3d() {
         geometry->addVertex(Vertex(rotate2(glm::vec3(0.5,1,0), axis1, angle, axis2, PI/4), glm::vec3(0,1,0), glm::vec2(0,0),2), false );
     }
 
-    std::vector<glm::vec3> instances;
+    std::vector<glm::mat4> instances;
     for(int i = 0; i < 256; ++i) {
         for(int j = 0; j < 256; ++j) {
-            instances.push_back(glm::vec3(i,0,j));
+            glm::mat4 model = glm::mat4(1.0);
+            instances.push_back(glm::translate(model, glm::vec3(i,0,j)));
         }
     }
 

@@ -1,6 +1,6 @@
 #include "gl.hpp"
 
-DrawableInstanceGeometry::DrawableInstanceGeometry(Geometry * t, std::vector<glm::vec3> instanceOffsets){
+DrawableInstanceGeometry::DrawableInstanceGeometry(Geometry * t, std::vector<glm::mat4> instanceOffsets){
 	indices = t->indices.size();
 	instances = instanceOffsets.size();
 	glGenVertexArrays(1, &vao);
@@ -24,10 +24,17 @@ DrawableInstanceGeometry::DrawableInstanceGeometry(Geometry * t, std::vector<glm
 	
 	// Instance data
 	glBindBuffer(GL_ARRAY_BUFFER, ibo);
-	glBufferData(GL_ARRAY_BUFFER, instanceOffsets.size()*sizeof(glm::vec3), instanceOffsets.data(), GL_STATIC_DRAW);
-	glEnableVertexAttribArray(4);	
-	glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE,sizeof(glm::vec3), (void*) NULL);
-	glVertexAttribDivisor(4,1);
+	glBufferData(GL_ARRAY_BUFFER, instanceOffsets.size()*sizeof(glm::mat4), instanceOffsets.data(), GL_STATIC_DRAW);
+	//glEnableVertexAttribArray(4);	
+	//glVertexAttribPointer(4, 16, GL_FLOAT, GL_FALSE,sizeof(glm::mat4), (void*) NULL);
+	//glVertexAttribDivisor(4,1);
+
+	for (int i = 0; i < 4; i++) {
+		glVertexAttribPointer(4 + i, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(sizeof(glm::vec4) * i));
+		glEnableVertexAttribArray(4 + i);
+		glVertexAttribDivisor(4 + i, 1);
+	}
+
 
 	// Index data
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);

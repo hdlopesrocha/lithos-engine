@@ -145,7 +145,7 @@ class DrawableInstanceGeometry {
 	int indices;
     int instances;
 
-	DrawableInstanceGeometry(Geometry * t, std::vector<glm::vec3> instanceOffsets);
+	DrawableInstanceGeometry(Geometry * t, std::vector<glm::mat4> instanceOffsets);
     ~DrawableInstanceGeometry();
     void draw(uint mode);
 };
