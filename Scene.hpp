@@ -2,13 +2,7 @@
 #include "math/math.hpp"
 #include "tools/tools.hpp"
 #include <thread>
-
-#define TYPE_SOLID_DRAWABLE 1
-#define TYPE_SHADOW_DRAWABLE 2
-#define TYPE_LIQUID_DRAWABLE 3
-
-
-
+#include "gl/gl.hpp"
 
 class Scene {
 
@@ -18,11 +12,10 @@ class Scene {
 		OctreeRenderer * solidRenderer;
 		OctreeRenderer * shadowRenderer;
 		OctreeRenderer * liquidRenderer;
+		OctreeInstanceRenderer * vegetationRenderer;
 		OctreeProcessor * solidProcessor;
 		OctreeProcessor * shadowProcessor;
 		OctreeProcessor * liquidProcessor;
-		Vegetation3d * vegetation;
-		InstanceBuffer * instanceBuffer;
 
 		Camera camera;
 		DirectionalLight light;
@@ -46,60 +39,59 @@ class Scene {
 		solidRenderer = new OctreeRenderer(solidSpace, TYPE_SOLID_DRAWABLE, 5);
 		liquidRenderer = new OctreeRenderer(liquidSpace, TYPE_LIQUID_DRAWABLE, 5);
 		shadowRenderer = new OctreeRenderer(solidSpace, TYPE_SHADOW_DRAWABLE, 6);
-
+		vegetationRenderer = new OctreeInstanceRenderer(solidSpace, TYPE_INSTANCE_DRAWABLE, 5);
 
 		solidProcessor = new OctreeProcessor(solidSpace, &solidTrianglesCount, TYPE_SOLID_DRAWABLE, 5, 0.9, 0.2, true);
 		liquidProcessor = new OctreeProcessor(liquidSpace, &liquidTrianglesCount, TYPE_LIQUID_DRAWABLE, 5, 0.9, 0.2, true);
 		shadowProcessor = new OctreeProcessor(solidSpace, &shadowTrianglesCount, TYPE_SHADOW_DRAWABLE, 6, 0.1, 4.0, false);
 
-		vegetation = new Vegetation3d();
-		instanceBuffer = new InstanceBuffer(100);
     }
 
 	void draw3dShadow() {
 		solidSpace->iterate(shadowRenderer);
 	}
 
-bool isProcessing = false;
 	void processSpace() {
 		solidSpace->iterate(solidProcessor);
 		liquidSpace->iterate(liquidProcessor);
 		solidSpace->iterate(shadowProcessor);
-		isProcessing = false;
 	}
 
 
 	void update3d(glm::mat4 mvp, glm::mat4 mlp) {
-		solidProcessor->loaded = 0;
-		liquidProcessor->loaded = 0;
-		shadowProcessor->loaded = 0;
 
 		solidRenderer->cameraPosition = camera.position;
 		liquidRenderer->cameraPosition = camera.position;
 		shadowRenderer->cameraPosition = camera.position -light.direction*512.0f;
 	
 		solidRenderer->update(mvp);
+		solidProcessor->loaded = 0;
 		solidProcessor->update(mvp);
 		solidRenderer->mode = GL_PATCHES;
 
 		liquidRenderer->update(mvp);
+		liquidProcessor->loaded = 0;
 		liquidProcessor->update(mvp);
 		liquidRenderer->mode = GL_PATCHES;
 
 		shadowRenderer->update(mlp);
+		shadowProcessor->loaded = 0;
 		shadowProcessor->update(mlp);
 		shadowRenderer->mode = GL_TRIANGLES;
 
-		if(!isProcessing) {
-			isProcessing = true;
-			std::thread t(&Scene::processSpace, this); 
-			t.join();
-		}
+		vegetationRenderer->update(mvp);
+		vegetationRenderer->mode = GL_TRIANGLES;
+
+	
+		processSpace();
+
 	}
 
 	void drawVegetation() {
 		glDisable(GL_CULL_FACE); 
-		vegetation->drawable->draw(GL_TRIANGLES);
+		vegetationRenderer->instances = 0;
+		vegetationRenderer->mode = GL_TRIANGLES;
+		solidSpace->iterate(vegetationRenderer);
 		glEnable(GL_CULL_FACE);
 	}
 

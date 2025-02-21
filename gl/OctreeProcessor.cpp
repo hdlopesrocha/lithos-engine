@@ -89,8 +89,29 @@ void * OctreeProcessor::before(int level, OctreeNode * node, BoundingCube cube, 
 			Geometry * loadable = new Geometry();
 			Tesselator tesselator(tree, triangles, loadable, simplficationId);
 			tesselator.iterate(level, node, cube, NULL);
-			// Send to GPU
 			
+			// Instances
+
+
+
+			NodeInfo * existingInstanceInfo = getNodeInfo(node, TYPE_INSTANCE_DRAWABLE);
+
+			if(existingInstanceInfo == NULL) {
+				InstanceBuilder instanceBuilder(tree, drawableType, geometryLevel);
+				instanceBuilder.iterate(level, node, cube, NULL);
+
+				if(instanceBuilder.matrices.size() > 0) {
+					//std::cout << "Matrices "<< std::to_string(instanceBuilder.matrices.size()) << std::endl;
+					Vegetation3d * vegetation =  new Vegetation3d(&instanceBuilder.matrices);
+					NodeInfo vegetationInfo;
+					vegetationInfo.type = TYPE_INSTANCE_DRAWABLE;
+					vegetationInfo.data = vegetation;
+					vegetationInfo.dirty = false;
+					node->info.push_back(vegetationInfo);
+				}
+			}
+
+			// Send to GPU
 			NodeInfo * existingInfo = getNodeInfo(node, drawableType);
 			if(existingInfo== NULL) {
 				NodeInfo info;

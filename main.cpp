@@ -552,6 +552,7 @@ public:
 		glm::mat4 ms =  Math::getCanonicalMVP(mlp);
 
 		mainScene->update3d(mvp, mlp);
+		glPolygonMode(GL_FRONT, GL_FILL);
 
 		// ================
 		// Shadow component
@@ -578,12 +579,6 @@ public:
 		glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		glPolygonMode(GL_FRONT, GL_FILL);
-
-
-		glUseProgram(program3d);
-		program3dLocs->update(mvp, model,ms,mainScene->light.direction, mainScene->camera.position, time, settings);
-			
 
 		// =================
 		// First Pass: Depth
@@ -591,9 +586,15 @@ public:
 		glBindFramebuffer(GL_FRAMEBUFFER, depthFrameBuffer.frameBuffer);
 		glViewport(0, 0, depthFrameBuffer.width, depthFrameBuffer.height);
 		glClear(GL_DEPTH_BUFFER_BIT);
+
+		glUseProgram(program3d);
+		program3dLocs->update(mvp, model,ms,mainScene->light.direction, mainScene->camera.position, time, settings);
 		glUniform1i(program3dLocs->layerLoc, 0);
 		mainScene->draw3dSolid();
 
+		glUseProgram(programVegetation);
+		programVegetationLocs->update(mvp, model,ms,mainScene->light.direction, mainScene->camera.position, time, settings);
+		mainScene->drawVegetation();
 
 		// ==================
 		// Second Pass: Solid
@@ -603,34 +604,36 @@ public:
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glUniform1i(program3dLocs->layerLoc, 1); 
 
-		if(settings->wireFrameEnabled) {
-			program3dLocs->updateWireframe();
 
-			glPolygonMode(GL_FRONT, GL_LINE);
+		if(settings->wireFrameEnabled) {
+			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 			glLineWidth(2.0);
 			glPointSize(4.0);	
 
-			mainScene->draw3dSolid();
-			mainScene->draw3dLiquid();
-
-			glUseProgram(programVegetation);
-			programVegetationLocs->update(mvp, model,ms,mainScene->light.direction, mainScene->camera.position, time, settings);
 			programVegetationLocs->updateWireframe();
-
-			mainScene->drawVegetation();
-			//glUseProgram(program3d);
-
-		} else {
-			glPolygonMode(GL_FRONT, GL_FILL);
-	
-			mainScene->draw3dSolid();
-
-			glUseProgram(programVegetation);
-			programVegetationLocs->update(mvp, model,ms,mainScene->light.direction, mainScene->camera.position, time, settings);
+			glUniform1i(programVegetationLocs->layerLoc, 1); 
 			mainScene->drawVegetation();
 
 			glUseProgram(program3d);
 			program3dLocs->update(mvp, model,ms,mainScene->light.direction, mainScene->camera.position, time, settings);
+			program3dLocs->updateWireframe();
+
+			glUniform1i(program3dLocs->layerLoc, 1);
+			mainScene->draw3dSolid();
+			glUniform1i(program3dLocs->layerLoc, 2);
+			mainScene->draw3dLiquid();
+
+			glPolygonMode(GL_FRONT, GL_FILL);
+
+			//glUseProgram(program3d);
+
+		} else {
+			mainScene->drawVegetation();
+
+			glUseProgram(program3d);
+			program3dLocs->update(mvp, model,ms,mainScene->light.direction, mainScene->camera.position, time, settings);
+			glUniform1i(program3dLocs->layerLoc, 1);
+			mainScene->draw3dSolid();
 
 			// Bind the source framebuffer (FBO you rendered to)
 			glBindFramebuffer(GL_READ_FRAMEBUFFER, renderBuffer.frameBuffer);
@@ -645,6 +648,7 @@ public:
 			glBindFramebuffer(GL_FRAMEBUFFER, renderBuffer.frameBuffer);
 			glViewport(0, 0, renderBuffer.width, renderBuffer.height);
 			
+			glUniform1i(program3dLocs->layerLoc, 2);
 			mainScene->draw3dLiquid();
 		}
 
@@ -773,6 +777,7 @@ public:
 			ImGui::Text("%d solid triangles", mainScene->solidTrianglesCount);
 			ImGui::Text("%d liquid triangles", mainScene->liquidTrianglesCount);
 			ImGui::Text("%d shadow triangles", mainScene->shadowTrianglesCount);
+			ImGui::Text("%d vegetation instances", mainScene->vegetationRenderer->instances);
 			ImGui::End();
 
 		}

@@ -13,7 +13,7 @@ glm::vec3 rotate2(glm::vec3 point, glm::vec3 axis1, float angle1, glm::vec3 axis
     return result;
 }
 
-Vegetation3d::Vegetation3d() {
+Vegetation3d::Vegetation3d(std::vector<glm::mat4> * instanceMatrices) {
     Geometry * geometry = new Geometry();
     int planes = 4;
         float PI = glm::pi<float>();
@@ -44,14 +44,6 @@ Vegetation3d::Vegetation3d() {
         geometry->addVertex(Vertex(rotate2(glm::vec3(0.5,1,0), axis1, angle, axis2, PI/4), glm::vec3(0,1,0), glm::vec2(0,0),2), false );
     }
 
-    std::vector<glm::mat4> instances;
-    for(int i = 0; i < 256; ++i) {
-        for(int j = 0; j < 256; ++j) {
-            glm::mat4 model = glm::mat4(1.0);
-            instances.push_back(glm::translate(model, glm::vec3(i,0,j)));
-        }
-    }
-
-    this->drawable = new DrawableInstanceGeometry(geometry, instances);
+    this->drawable = new DrawableInstanceGeometry(geometry, instanceMatrices);
 }
 

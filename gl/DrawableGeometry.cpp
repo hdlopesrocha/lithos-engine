@@ -20,7 +20,8 @@ DrawableGeometry::DrawableGeometry(Geometry * t){
 	glEnableVertexAttribArray(2);		
 	glVertexAttribIPointer(3, 1, GL_UNSIGNED_INT, sizeof(Vertex), (void*) offsetof(Vertex, brushIndex) );
 	glEnableVertexAttribArray(3);
-		
+	glBindVertexArray(0);
+
 }
 
  DrawableGeometry::~DrawableGeometry() {

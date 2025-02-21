@@ -12,6 +12,12 @@
 #define HEIGHT 1050
 #define DEBUG 1
 #define NDEBUG 1
+
+#define TYPE_SOLID_DRAWABLE 1
+#define TYPE_SHADOW_DRAWABLE 2
+#define TYPE_LIQUID_DRAWABLE 3
+#define TYPE_INSTANCE_DRAWABLE 4
+
 #include "../dependencies/imgui/imgui.h"
 #include "../dependencies/imgui/imgui_impl_glfw.h"
 #include "../dependencies/imgui/imgui_impl_opengl3.h"
@@ -145,7 +151,7 @@ class DrawableInstanceGeometry {
 	int indices;
     int instances;
 
-	DrawableInstanceGeometry(Geometry * t, std::vector<glm::mat4> instanceOffsets);
+	DrawableInstanceGeometry(Geometry * t, std::vector<glm::mat4> * instances);
     ~DrawableInstanceGeometry();
     void draw(uint mode);
 };
@@ -192,6 +198,27 @@ class OctreeRenderer : public IteratorHandler{
 		OctreeRenderer(Octree * tree, int drawableType, int geometryLevel);
 
 		void update(glm::mat4 m);
+		void * before(int level, OctreeNode * node, BoundingCube cube, void * context);
+		void after(int level, OctreeNode * node, BoundingCube cube, void * context);
+		bool test(int level, OctreeNode * node, BoundingCube cube, void * context);
+        OctreeNode * getChild(OctreeNode * node, int index);
+		void getOrder(OctreeNode * node, BoundingCube cube, int * order);
+
+};
+
+
+class InstanceBuilder : public IteratorHandler{
+	Octree * tree;
+	Geometry chunk;
+	int geometryType;
+    int drawableType;
+
+    public: 
+        uint mode;
+        std::vector<glm::mat4> matrices;
+		int geometryLevel;
+		InstanceBuilder(Octree * tree, int drawableType, int geometryLevel);
+
 		void * before(int level, OctreeNode * node, BoundingCube cube, void * context);
 		void after(int level, OctreeNode * node, BoundingCube cube, void * context);
 		bool test(int level, OctreeNode * node, BoundingCube cube, void * context);
@@ -313,7 +340,7 @@ class Vegetation3d {
     public:
     DrawableInstanceGeometry * drawable;
 
-    Vegetation3d();
+    Vegetation3d(std::vector<glm::mat4> * instances);
 };
 
 class AtlasTexture: public Texture {
@@ -342,6 +369,29 @@ class AtlasDrawer {
     TextureArray getTexture();
     void draw(int atlasIndex,  std::vector<TileDraw> draws);
     void draw();
+};
+
+class OctreeInstanceRenderer : public IteratorHandler{
+	Octree * tree;
+	Geometry chunk;
+	Frustum frustum;
+	int geometryType;
+    int drawableType;
+
+    public: 
+        uint mode;
+        int instances;
+		int geometryLevel;
+        glm::vec3 cameraPosition;
+		OctreeInstanceRenderer(Octree * tree, int drawableType, int geometryLevel);
+
+		void update(glm::mat4 m);
+		void * before(int level, OctreeNode * node, BoundingCube cube, void * context);
+		void after(int level, OctreeNode * node, BoundingCube cube, void * context);
+		bool test(int level, OctreeNode * node, BoundingCube cube, void * context);
+        OctreeNode * getChild(OctreeNode * node, int index);
+		void getOrder(OctreeNode * node, BoundingCube cube, int * order);
+
 };
 
 GLuint createTextureArray(int width, int height, int layers); 

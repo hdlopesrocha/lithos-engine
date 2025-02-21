@@ -1,8 +1,10 @@
 #include "gl.hpp"
 
-DrawableInstanceGeometry::DrawableInstanceGeometry(Geometry * t, std::vector<glm::mat4> instanceOffsets){
-	indices = t->indices.size();
-	instances = instanceOffsets.size();
+DrawableInstanceGeometry::DrawableInstanceGeometry(Geometry * t, std::vector<glm::mat4> * instances){
+	this->indices = t->indices.size();
+	this->instances = instances->size();
+
+
 	glGenVertexArrays(1, &vao);
 	glGenBuffers(1, &vbo);
 	glGenBuffers(1, &ebo);
@@ -24,7 +26,7 @@ DrawableInstanceGeometry::DrawableInstanceGeometry(Geometry * t, std::vector<glm
 	
 	// Instance data
 	glBindBuffer(GL_ARRAY_BUFFER, ibo);
-	glBufferData(GL_ARRAY_BUFFER, instanceOffsets.size()*sizeof(glm::mat4), instanceOffsets.data(), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, instances->size()*sizeof(glm::mat4), instances->data(), GL_STATIC_DRAW);
 	//glEnableVertexAttribArray(4);	
 	//glVertexAttribPointer(4, 16, GL_FLOAT, GL_FALSE,sizeof(glm::mat4), (void*) NULL);
 	//glVertexAttribDivisor(4,1);
@@ -39,17 +41,20 @@ DrawableInstanceGeometry::DrawableInstanceGeometry(Geometry * t, std::vector<glm
 	// Index data
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, t->indices.size()*sizeof(uint), t->indices.data(), GL_STATIC_DRAW);
+	glBindVertexArray(0);
 
 }
 
 DrawableInstanceGeometry::~DrawableInstanceGeometry() {
 	glDeleteBuffers(1, &vbo);
+	glDeleteBuffers(1, &ibo);
 	glDeleteBuffers(1, &ebo);
 	glDeleteVertexArrays(1, &vao);
  }
 
 void DrawableInstanceGeometry::draw(uint mode) {
-	if(this->indices) {
+	if(this->indices && this->instances && mode == GL_TRIANGLES) {
+		//std::cout << "Rendering " << std::to_string(this->instances) << std::endl;
 		glBindVertexArray(this->vao);
 		glDrawElementsInstanced(mode, this->indices, GL_UNSIGNED_INT, 0, instances);
 	}

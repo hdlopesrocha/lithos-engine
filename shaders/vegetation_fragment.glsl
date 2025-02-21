@@ -29,6 +29,11 @@ out vec4 color;    // Final fragment color
 
 
 void main() {
+    if(debugEnabled) {
+        color = vec4(1.0,1.0,1.0,1.0);
+        return;
+    }
+
     vec2 uv = vTextureCoord;
 
     vec4 positionWorld = model * vec4(vPosition, 1.0);
@@ -42,7 +47,7 @@ void main() {
   
     vec4 mixedColor = texture(textures[1], vec3(uv, 0));
     vec4 opacity = texture(textures[1], vec3(uv, 3));
-    if(opacity.r < 0.9) {
+    if(opacity.r < 0.5) {
         discard;
     }
 
