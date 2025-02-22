@@ -216,7 +216,7 @@ public:
 		includes.push_back(GlslInclude("#include<functions_fragment.glsl>" , readFile("shaders/util/functions_fragment.glsl")));
 		includes.push_back(GlslInclude("#include<structs.glsl>" , readFile("shaders/util/structs.glsl")));
 		includes.push_back(GlslInclude("#include<parallax.glsl>" , readFile("shaders/util/parallax.glsl")));
-
+		includes.push_back(GlslInclude("#include<depth.glsl>" , readFile("shaders/util/depth.glsl")));
 		programShadow = createShaderProgram({
 			compileShader(replaceIncludes(includes, readFile("shaders/shadow_vertex.glsl")),GL_VERTEX_SHADER), 
 			compileShader(replaceIncludes(includes,readFile("shaders/shadow_fragment.glsl")),GL_FRAGMENT_SHADER)
@@ -426,10 +426,11 @@ public:
 
 
 		noiseTexture = loadTextureImage("textures/noise.jpg");
-		activeTexture = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, "depthTexture", depthFrameBuffer.depthTexture);
-		activeTexture = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, "underTexture", solidBuffer.colorTexture);
-		activeTexture = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, "shadowMap", shadowFrameBuffer.depthTexture);
-		activeTexture = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, "noise", noiseTexture);
+		Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, program3dLocs->depthTextureLoc, depthFrameBuffer.depthTexture);
+		activeTexture = Texture::bindTexture(programVegetation, GL_TEXTURE_2D, activeTexture, programVegetationLocs->depthTextureLoc, depthFrameBuffer.depthTexture);
+		activeTexture = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, program3dLocs->underTextureLoc, solidBuffer.colorTexture);
+		activeTexture = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, program3dLocs->shadowMapLoc, shadowFrameBuffer.depthTexture);
+		activeTexture = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, program3dLocs->noiseLoc, noiseTexture);
 		
 		activeTexture = Texture::bindTextures(programVegetation, GL_TEXTURE_2D_ARRAY, activeTexture, "textures", &vegetationTextures);
 		Texture::bindTextures(program3d, GL_TEXTURE_2D_ARRAY, activeTexture, "textures", &textures);
@@ -594,6 +595,7 @@ public:
 
 		glUseProgram(programVegetation);
 		programVegetationLocs->update(mvp, model,ms,mainScene->light.direction, mainScene->camera.position, time, settings);
+		glUniform1i(programVegetationLocs->layerLoc, 0);
 		mainScene->drawVegetation();
 
 		// ==================
@@ -628,6 +630,7 @@ public:
 			//glUseProgram(program3d);
 
 		} else {
+			glUniform1i(programVegetationLocs->layerLoc, 1); 
 			mainScene->drawVegetation();
 
 			glUseProgram(program3d);

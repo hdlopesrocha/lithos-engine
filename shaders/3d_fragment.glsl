@@ -35,16 +35,8 @@ out vec4 color;    // Final fragment color
 
 #include<functions_fragment.glsl>
 #include<parallax.glsl>
+#include<depth.glsl>
 
-
-float linearizeDepth(float depth) {
-    float near = 0.1;
-    float far = 512.0;
-
-    float z = depth * 2.0 - 1.0;  // Convert to NDC (-1 to 1)
-    float d = (2.0 * near * far) / (far + near - z * (far - near));
-    return d;
-}
 
 
 void main() {
@@ -56,8 +48,8 @@ void main() {
         return;
     }
 
-    float d1 = linearizeDepth(texture(depthTexture, pixelUV).r);
-    float d2 = linearizeDepth(gl_FragCoord.z);
+    float d1 = linearizeDepth(texture(depthTexture, pixelUV).r, 0.1, 512.0);
+    float d2 = linearizeDepth(gl_FragCoord.z, 0.1, 512.0);
     if(d1<d2) {
         discard;
     }

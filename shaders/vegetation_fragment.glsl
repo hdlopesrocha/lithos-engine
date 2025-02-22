@@ -3,6 +3,7 @@
 #include<structs.glsl>
 
 uniform sampler2DArray textures[25];
+uniform sampler2D depthTexture;
 uniform sampler2D shadowMap;
 uniform sampler2D noise;
 
@@ -14,6 +15,7 @@ uniform vec3 lightDirection;
 uniform vec3 cameraPosition; 
 uniform float time;
 uniform mat4 model; 
+uniform int layer;
 
 #include<functions.glsl>
 
@@ -26,15 +28,34 @@ in vec4 vLightViewPosition;
 out vec4 color;    // Final fragment color
 
 #include<functions_fragment.glsl>
-
+#include<depth.glsl>
 
 void main() {
+
+    vec2 pixelUV = gl_FragCoord.xy / textureSize(depthTexture, 0);
+
+    if(layer == 0) {
+        color = vec4(1.0,1.0,1.0,0.5);
+    }
+
+    float d1 = linearizeDepth(texture(depthTexture, pixelUV).r, 0.1, 512.0);
+    float d2 = linearizeDepth(gl_FragCoord.z, 0.1, 512.0);
+    if(d1<d2) {
+        discard;
+    }
+
+
     if(debugEnabled) {
         color = vec4(1.0,1.0,1.0,1.0);
         return;
     }
 
     vec2 uv = vTextureCoord;
+    vec4 opacity = texture(textures[1], vec3(uv, 3));
+    if(opacity.r < 0.5) {
+        discard;
+    }
+
 
     vec4 positionWorld = model * vec4(vPosition, 1.0);
     vec3 position = positionWorld.xyz;    
@@ -46,10 +67,7 @@ void main() {
     vec3 viewDirectionTangent = normalize(transpose(TBN) * viewDirection);
   
     vec4 mixedColor = texture(textures[1], vec3(uv, 0));
-    vec4 opacity = texture(textures[1], vec3(uv, 3));
-    if(opacity.r < 0.5) {
-        discard;
-    }
+
 
     color = mixedColor;
  }

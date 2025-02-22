@@ -235,6 +235,8 @@ class Texture {
 	Texture(TextureArray texture);
 
     static int bindTexture(GLuint program, GLuint type, int activeTexture, std::string objectName, GLuint texture);
+    static int bindTexture(GLuint program, GLuint type, int activeTexture, GLuint location, GLuint texture);
+
     static int bindTextures(GLuint program, GLuint type,int activeTexture, std::string arrayName, std::vector<Texture*> * ts);
 
 };
