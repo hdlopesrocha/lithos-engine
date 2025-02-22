@@ -257,6 +257,27 @@ class QuadNodeHandler {
 	Geometry * chunk;
 	int * triangles;
 	QuadNodeHandler(Geometry * chunk, int * triangles);
+	virtual void handle(OctreeNode** quad, bool sign) = 0;
+};
+
+
+class QuadNodeInstanceBuilderHandler : public QuadNodeHandler {
+
+	public: 
+	OctreeNode ** corners;
+	std::vector<glm::mat4> * matrices;
+	using QuadNodeHandler::QuadNodeHandler;
+	QuadNodeInstanceBuilderHandler(Geometry * chunk, int * triangles,OctreeNode ** corners,std::vector<glm::mat4> * matrices);
+	void handle(OctreeNode** quad, bool sign);
+
+};
+
+class QuadNodeTesselatorHandler : public QuadNodeHandler {
+
+	public: 
+	using QuadNodeHandler::QuadNodeHandler;
+
+	QuadNodeTesselatorHandler(Geometry * chunk, int * triangles);
 	void handle(OctreeNode** quad, bool sign);
 };
 

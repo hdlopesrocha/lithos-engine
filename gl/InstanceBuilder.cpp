@@ -19,24 +19,15 @@ void * InstanceBuilder::before(int level, OctreeNode * node, BoundingCube cube, 
 	if(tree->getHeight(cube)==0){
 		
 		Vertex * v = &node->vertex;
-		if(v->brushIndex == 2) {
-			glm::mat4 model(1.0);
-
+		if(v->brushIndex == 2) { 
 			OctreeNode * corners[8];
-			tree->getNodeCorners(cube, level, 0, 1, corners);
 
-			QuadNodeHandler handler(&chunk, triangles);
+			OctreeNode ** cornersPointer = (OctreeNode **) corners;
+			tree->getNodeCorners(cube, level, 0, 1, corners);
+			QuadNodeInstanceBuilderHandler handler(&chunk, triangles,cornersPointer, &matrices);
 			//std::cout << std::to_string(v->position.x) << "_"<< std::to_string(v->position.y) << "_"<< std::to_string(v->position.z) << std::endl;
-			tree->getQuadNodes(corners, &handler, triangles) ;
+			tree->getQuadNodes(corners,(QuadNodeHandler*) &handler, triangles) ;
 			
-			int radius = 4;
-			// TODO: interpolate using triangles
-			for(int x=0 ; x < radius; ++x) {
-				for(int z=0 ; z < radius; ++z) {
-					model = glm::translate(glm::mat4(1.0), v->position+glm::vec3(x,0,z));
-					matrices.push_back(model);
-				}
-			}
 		}
 		
 		return node;
