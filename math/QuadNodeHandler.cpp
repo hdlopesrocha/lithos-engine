@@ -20,8 +20,6 @@ int addTriangle(OctreeNode* c0, OctreeNode* c1, OctreeNode* c2, Geometry * chunk
 }
 
 int addQuad(OctreeNode** quad, Geometry * chunk, bool reverse) {
-
-
 	OctreeNode* c0 = quad[reverse ? 3:0];
 	OctreeNode* c1 = quad[reverse ? 2:1];
 	OctreeNode* c2 = quad[reverse ? 1:2];
@@ -56,7 +54,7 @@ QuadNodeHandler::QuadNodeHandler(Geometry * chunk, int * triangles){
 }
 
 QuadNodeTesselatorHandler::QuadNodeTesselatorHandler(Geometry * chunk, int * triangles) : QuadNodeHandler(chunk, triangles){
-
+    ++*triangles;
 }
 
 void QuadNodeTesselatorHandler::handle(OctreeNode** quad, bool sign) {

@@ -27,6 +27,10 @@ void * InstanceBuilder::before(int level, OctreeNode * node, BoundingCube cube, 
 
 			QuadNodeInstanceBuilderHandler handler(&chunk, triangles,cornersPointer, &matrices);
 			tree->getQuadNodes(corners, &handler, triangles);
+
+
+			//QuadNodeTesselatorHandler th(&chunk,triangles);
+			//th.handle(q)
 		}
 		
 		return node;
