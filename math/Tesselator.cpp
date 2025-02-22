@@ -19,8 +19,6 @@ Tesselator::Tesselator(Octree * tree, Geometry * chunk, int simplification) {
 
 }
 
-
-
 OctreeNode * Tesselator::getChild(OctreeNode * node, int index) {
 	OctreeNode * child = node->children[index];
 	return child != NULL ? child : NULL;
@@ -30,11 +28,10 @@ void * Tesselator::before(int level, OctreeNode * node, BoundingCube cube, void 
 	if(tree->getHeight(cube)==0){
 		OctreeNode * corners[8];
 		tree->getNodeCorners(cube, level, simplification, 1, corners);
+		
 		// Tesselate
-
-
 		QuadNodeTesselatorHandler handler(chunk, &triangles);
-		tree->getQuadNodes(corners , &handler);	
+		tree->handleQuadNodes(node, corners , &handler);	
 	}
 	return context;
 }
@@ -68,7 +65,6 @@ int addTriangle(OctreeNode* c0, OctreeNode* c1, OctreeNode* c2, Geometry * chunk
             chunk->addVertex(reverse ? v0 : v2, true);
             ++count;
         }
-
     }
     return count;
 }
