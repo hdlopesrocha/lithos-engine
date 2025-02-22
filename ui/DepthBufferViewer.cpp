@@ -22,6 +22,8 @@ void DepthBufferViewer::draw2d(){
     glBindTexture(GL_TEXTURE_2D, depthTexture);
     glUniform1i(glGetUniformLocation(previewProgram, "textureSampler"), 0); 
     glBindVertexArray(previewVao);
+    glDisable(GL_DEPTH_TEST);
+    glDisable(GL_CULL_FACE);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
 

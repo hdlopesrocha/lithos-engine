@@ -42,16 +42,23 @@ out vec4 color;    // Final fragment color
 void main() {
 
     vec2 pixelUV = gl_FragCoord.xy / textureSize(underTexture, 0);
+ 
+  
 
+    float near = 0.1;
+    float far = 512.0;
+    float d1 = linearizeDepth(texture(depthTexture, pixelUV).r, near, far);
+    float d2 = linearizeDepth(gl_FragCoord.z, near, far);
+    
     if(layer == 0) {
-        color = vec4(1.0,1.0,1.0,0.5);
-        return;
+        color = vec4(vec3(d2/far),1.0);
     }
-
-    float d1 = linearizeDepth(texture(depthTexture, pixelUV).r, 0.1, 512.0);
-    float d2 = linearizeDepth(gl_FragCoord.z, 0.1, 512.0);
     if(d1<d2) {
         discard;
+    }
+
+    if(layer == 0) {
+        return;
     }
 
     vec2 uv = teTextureCoord;

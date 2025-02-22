@@ -456,7 +456,7 @@ public:
 		shadowMapViewer = new ShadowMapViewer(shadowFrameBuffer.depthTexture);
 		textureMixerEditor = new TextureMixerEditor(&mixers, &textures, programTexture);
 		animatedTextureEditor = new AnimatedTextureEditor(&animatedTextures, &textures, programTexture, 256,256);
-		depthBufferViewer = new DepthBufferViewer(programDepth,renderBuffer.depthTexture,256,256);
+		depthBufferViewer = new DepthBufferViewer(programDepth,depthFrameBuffer.colorTexture,256,256);
 		settingsEditor = new SettingsEditor(settings);
 		textureViewer = new TextureViewer(&textures, programTexture);
 
@@ -542,7 +542,6 @@ public:
 
 
     virtual void draw3d() {
-		glClearColor (0.1,0.1,0.1,1.0);
 		glm::mat4 model = glm::mat4(1.0f); // Identity matrix
 
 		glm::mat4 rotate = glm::mat4_cast(mainScene->camera.quaternion);
@@ -586,7 +585,8 @@ public:
 		// =================
 		glBindFramebuffer(GL_FRAMEBUFFER, depthFrameBuffer.frameBuffer);
 		glViewport(0, 0, depthFrameBuffer.width, depthFrameBuffer.height);
-		glClear(GL_DEPTH_BUFFER_BIT);
+		glClearColor (1.0,1.0,1.0,1.0);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		glUseProgram(program3d);
 		program3dLocs->update(mvp, model,ms,mainScene->light.direction, mainScene->camera.position, time, settings);
@@ -598,11 +598,13 @@ public:
 		glUniform1i(programVegetationLocs->layerLoc, 0);
 		mainScene->drawVegetation();
 
+
 		// ==================
 		// Second Pass: Solid
 		//===================
 		glBindFramebuffer(GL_FRAMEBUFFER, renderBuffer.frameBuffer);
 		glViewport(0, 0, renderBuffer.width, renderBuffer.height);
+		glClearColor (0.1,0.1,0.1,1.0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glUniform1i(program3dLocs->layerLoc, 1); 
 

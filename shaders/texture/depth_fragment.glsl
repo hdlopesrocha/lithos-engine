@@ -9,6 +9,5 @@ uniform sampler2D textureSampler;
 
 void main() {
     float d = texture(textureSampler, TexCoord).r;
-    d = linearizeDepth(d, 0.1, 512.0);
     FragColor = vec4(d, d ,d ,1.0);
 }
