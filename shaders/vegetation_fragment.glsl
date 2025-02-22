@@ -43,7 +43,7 @@ void main() {
     float d1 = linearizeDepth(texture(depthTexture, pixelUV).r, near, far);
     float d2 = linearizeDepth(gl_FragCoord.z, near, far);
     if(layer == 0) {
-        color = vec4(vec3(d2/far),1.0);
+        color = vec4(d2/far,0.0,0.0,1.0);
     }
     if(d1<d2) {
         discard;
