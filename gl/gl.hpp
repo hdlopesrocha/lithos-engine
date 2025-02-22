@@ -166,13 +166,13 @@ class OctreeProcessor : public IteratorHandler{
 	float simplificationAngle;
     float simplificationDistance;
     bool simplificationTexturing;
-
+    bool createInstances;
     public: 
 		int loaded = 0;
 		int geometryLevel;
         glm::vec3 cameraPosition;
         int * triangles;
-		OctreeProcessor(Octree * tree, int * triangles, int drawableType, int geometryLevel, float simplificationAngle, float simplificationDistance, bool simplificationTexturing);
+		OctreeProcessor(Octree * tree, int * triangles, int drawableType, int geometryLevel, float simplificationAngle, float simplificationDistance, bool simplificationTexturing, bool createInstances);
 
 		void update(glm::mat4 m);
 		void * before(int level, OctreeNode * node, BoundingCube cube, void * context);
@@ -212,12 +212,12 @@ class InstanceBuilder : public IteratorHandler{
 	Geometry chunk;
 	int geometryType;
     int drawableType;
-    int * triangles;
     public: 
+        int instances;
         uint mode;
         std::vector<glm::mat4> matrices;
 		int geometryLevel;
-		InstanceBuilder(Octree * tree, int drawableType, int geometryLevel, int * triangles);
+		InstanceBuilder(Octree * tree, int drawableType, int geometryLevel);
 
 		void * before(int level, OctreeNode * node, BoundingCube cube, void * context);
 		void after(int level, OctreeNode * node, BoundingCube cube, void * context);

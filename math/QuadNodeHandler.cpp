@@ -1,38 +1,6 @@
 #include "math.hpp"
 #include <random>
 
-int addTriangle(OctreeNode* c0, OctreeNode* c1, OctreeNode* c2, Geometry * chunk, bool reverse) {
-
-    Vertex v0 = c0->vertex;
-	Vertex v1 = c1->vertex;
-	Vertex v2 = c2->vertex;
-
-    int count = 0;
-
-	if(c0!= c1 && c1 != c2 && c0!=c2 && c0->vertex.brushIndex>=0 && c1->vertex.brushIndex>=0 && c2->vertex.brushIndex>=0){
-		chunk->addVertex(v0, true);
-		chunk->addVertex(v2, true);
-		chunk->addVertex(v1, true);
-		++count;
-	}
-
-    return count;
-
-}
-
-QuadNodeHandler::QuadNodeHandler(Geometry * chunk, int * triangles){
-    this->chunk = chunk;
-    this->triangles = triangles;
-}
-
-QuadNodeTesselatorHandler::QuadNodeTesselatorHandler(Geometry * chunk, int * triangles) : QuadNodeHandler(chunk, triangles){
-    ++*triangles;
-}
-
-void QuadNodeTesselatorHandler::handle(OctreeNode* c0,OctreeNode* c1,OctreeNode* c2, bool sign) {
-	*triangles += addTriangle(c0,c1,c2, chunk, sign);
-}
-
 
 
 // Compute barycentric coordinates
@@ -75,17 +43,43 @@ glm::vec3 RandomPointInTriangle(const glm::vec3& A, const glm::vec3& B, const gl
     return lambda1 * A + lambda2 * B + lambda3 * C;
 }
 
-QuadNodeInstanceBuilderHandler::QuadNodeInstanceBuilderHandler(Geometry * chunk, int * triangles,OctreeNode ** corners,std::vector<glm::mat4> * matrices) : QuadNodeHandler(chunk, triangles){
+QuadNodeInstanceBuilderHandler::QuadNodeInstanceBuilderHandler(Geometry * chunk, int * count,OctreeNode ** corners,std::vector<glm::mat4> * matrices) : QuadNodeHandler(chunk, count){
     this->corners = corners;
     this-> matrices = matrices;
 }
 
 void QuadNodeInstanceBuilderHandler::handle(OctreeNode* c0,OctreeNode* c1,OctreeNode* c2, bool sign){
-    int numPoints = 3; // Number of scattered points
+    GradientPerlinSurface fps(1.0, 1.0f/128.0f, 0);
+
+    int numPoints = 6; // Number of scattered points
     for (int i = 0; i < numPoints; i++) {
         glm::vec3 point = RandomPointInTriangle(c0->vertex.position,c1->vertex.position, c2->vertex.position);
-        glm::mat4 model(1.0);
-        model = glm::translate(glm::mat4(1.0), point);
-        matrices->push_back(model);
+        float perlin = fps.getHeightAt(point.x, 0, point.z);
+        float hMin = 0.06;
+        float hMax = 0.10;
+
+        float force = 4.0;
+        if(hMin  < perlin && perlin < hMax) {
+            glm::mat4 model(1.0);
+            float height = (perlin - hMin)/ (hMax-hMin);
+
+            glm::vec3 normal = fps.getNormal(point.x, 0, point.z);
+
+            float p = glm::dot(glm::vec3(0,1,0), normal);
+
+            p = 1.0- glm::pow(1-p, 3);
+            float h = 1.0 - glm::abs(2.0*height - 1.0);
+
+
+            float deepness = Math::clamp(1.0-h, 0.0f , 1.0f);
+
+            model = glm::translate(model, point - glm::vec3(0.0, deepness, 0.0));
+            if(h*force > 1.0) {
+                model = glm::scale(model, glm::vec3(1.0, h*force, 1.0));
+            }     
+
+            matrices->push_back(model);
+            ++*count;
+        }
     }
 }

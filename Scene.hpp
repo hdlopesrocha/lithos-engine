@@ -24,6 +24,10 @@ class Scene {
 		int liquidTrianglesCount = 0;
 		int shadowTrianglesCount = 0;
 
+		int solidInstancesCount = 0;
+		int liquidInstancesCount = 0;
+		int shadowInstancesCount = 0;
+
     void setup(	) {
 
         camera.quaternion =   glm::angleAxis(glm::radians(180.0f), glm::vec3(0, 0, 1))
@@ -41,9 +45,9 @@ class Scene {
 		shadowRenderer = new OctreeRenderer(solidSpace, TYPE_SHADOW_DRAWABLE, 6);
 		vegetationRenderer = new OctreeInstanceRenderer(solidSpace, TYPE_INSTANCE_DRAWABLE, 5);
 
-		solidProcessor = new OctreeProcessor(solidSpace, &solidTrianglesCount, TYPE_SOLID_DRAWABLE, 5, 0.9, 0.2, true);
-		liquidProcessor = new OctreeProcessor(liquidSpace, &liquidTrianglesCount, TYPE_LIQUID_DRAWABLE, 5, 0.9, 0.2, true);
-		shadowProcessor = new OctreeProcessor(solidSpace, &shadowTrianglesCount, TYPE_SHADOW_DRAWABLE, 6, 0.1, 4.0, false);
+		solidProcessor = new OctreeProcessor(solidSpace, &solidTrianglesCount, TYPE_SOLID_DRAWABLE, 5, 0.9, 0.2, true, true);
+		liquidProcessor = new OctreeProcessor(liquidSpace, &liquidTrianglesCount, TYPE_LIQUID_DRAWABLE, 5, 0.9, 0.2, true, false);
+		shadowProcessor = new OctreeProcessor(solidSpace, &shadowTrianglesCount, TYPE_SHADOW_DRAWABLE, 6, 0.1, 4.0, false, false);
 
     }
 

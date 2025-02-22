@@ -11,6 +11,8 @@
 #include <vector>
 #include <map>
 #include <filesystem>
+#define DB_PERLIN_IMPL
+#include "../lib/db_perlin.hpp"
 #define INFO_TYPE_FILE 99
 #define INFO_TYPE_REMOVE 0
 
@@ -171,9 +173,35 @@ class BoundingBox {
 
 class HeightFunction {
 	public:
-		virtual float getHeightAt(float x, float z) = 0;
+		virtual float getHeightAt(float x, float y, float z) = 0;
 		glm::vec3 getNormal(float x, float z, float delta);
 
+};
+
+class PerlinSurface : public HeightFunction {
+	public:
+	float amplitude;
+	float frequency;
+	float offset;
+
+
+	PerlinSurface(float amplitude, float frequency, float offset);
+	float getHeightAt(float x, float y, float z);
+};
+
+class FractalPerlinSurface : public PerlinSurface {
+	public:
+	using PerlinSurface::PerlinSurface;
+	FractalPerlinSurface(float amplitude, float frequency, float offset);
+	float getHeightAt(float x, float y, float z);
+};
+
+
+class GradientPerlinSurface : public PerlinSurface {
+	public:
+
+	GradientPerlinSurface(float amplitude, float frequency, float offset);
+	float getHeightAt(float x, float y, float z);
 };
 
 class HeightMap: public BoundingBox  {
@@ -255,9 +283,9 @@ class QuadNodeHandler {
 
 	public: 
 	Geometry * chunk;
-	int * triangles;
+	int * count;
 	int quadAmount;
-	QuadNodeHandler(Geometry * chunk, int * triangles);
+	QuadNodeHandler(Geometry * chunk, int * count);
 	virtual void handle(OctreeNode* c0,OctreeNode* c1,OctreeNode* c2, bool sign) = 0;
 };
 
@@ -268,7 +296,7 @@ class QuadNodeInstanceBuilderHandler : public QuadNodeHandler {
 	OctreeNode ** corners;
 	std::vector<glm::mat4> * matrices;
 	using QuadNodeHandler::QuadNodeHandler;
-	QuadNodeInstanceBuilderHandler(Geometry * chunk, int * triangles,OctreeNode ** corners,std::vector<glm::mat4> * matrices);
+	QuadNodeInstanceBuilderHandler(Geometry * chunk, int * count,OctreeNode ** corners,std::vector<glm::mat4> * matrices);
 	void handle(OctreeNode* c0,OctreeNode* c1,OctreeNode* c2, bool sign);
 
 };
@@ -278,7 +306,7 @@ class QuadNodeTesselatorHandler : public QuadNodeHandler {
 	public: 
 	using QuadNodeHandler::QuadNodeHandler;
 
-	QuadNodeTesselatorHandler(Geometry * chunk, int * triangles);
+	QuadNodeTesselatorHandler(Geometry * chunk, int * count);
 	void handle(OctreeNode* c0,OctreeNode* c1,OctreeNode* c2, bool sign);
 };
 
@@ -294,7 +322,7 @@ class Octree: public BoundingCube {
 		void iterate(IteratorHandler * handler);
 		OctreeNode * getNodeAt(glm::vec3 pos, int level, int simplification);
 		void getNodeCorners(BoundingCube cube, int level, int simplification, int direction, OctreeNode ** out);
-		void getQuadNodes(OctreeNode** corners, QuadNodeHandler * handler, int * triangles);
+		void getQuadNodes(OctreeNode** corners, QuadNodeHandler * handler);
 		void getNeighbors(BoundingCube cube, int level, OctreeNode ** out);
 
 		void save(std::string filename);
@@ -318,10 +346,10 @@ public:
 class Tesselator : public IteratorHandler{
 	public:
 		Octree * tree;
-		int * triangles;
+		int triangles;
 		Geometry * chunk;
 		int simplification;
-		Tesselator(Octree * tree, int * triangles, Geometry * chunk, int simplification);
+		Tesselator(Octree * tree, Geometry * chunk, int simplification);
 		void * before(int level, OctreeNode * node, BoundingCube cube, void * context);
 		void after(int level, OctreeNode * node, BoundingCube cube, void * context);
 		bool test(int level, OctreeNode * node, BoundingCube cube, void * context);

@@ -107,7 +107,7 @@ void Octree::getNodeCorners(BoundingCube cube, int level, int simplification, in
 	}
 }
 
-void Octree::getQuadNodes(OctreeNode** corners, QuadNodeHandler * handler, int * triangles) {
+void Octree::getQuadNodes(OctreeNode** corners, QuadNodeHandler * handler) {
 	for(int k =0 ; k < tessOrder.size(); ++k) {
 		glm::ivec2 edge = tessEdge[k];
 		OctreeNode * node = corners[0];
@@ -116,7 +116,6 @@ void Octree::getQuadNodes(OctreeNode** corners, QuadNodeHandler * handler, int *
 		bool sign1 = (mask & (1 << edge[1])) != 0;
 
 		if(sign0 != sign1) {
-			int size = 0;
 
 			glm::ivec4 quad = tessOrder[k];
 			OctreeNode * quads[4];
@@ -124,15 +123,13 @@ void Octree::getQuadNodes(OctreeNode** corners, QuadNodeHandler * handler, int *
 				OctreeNode * n = corners[quad[i]];
 				if(n != NULL && n->solid == ContainmentType::Intersects) {
 					quads[i] = n;
-					++size;
-				} else {
-					break;
+				}else {
+					quads[i] = NULL;
 				}
 			}
-			if(size == 4) {
-				handler->handle(quads[0],quads[1],quads[2],sign1);
-				handler->handle(quads[0],quads[2],quads[3],sign1);
-			}
+			handler->handle(quads[0],quads[2],quads[1],sign1);
+			handler->handle(quads[0],quads[3],quads[2],sign1);
+			
 		} 
 	}
 }

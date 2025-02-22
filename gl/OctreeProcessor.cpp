@@ -3,7 +3,7 @@
 #include "gl.hpp"
 #include <glm/gtx/norm.hpp> 
 
-OctreeProcessor::OctreeProcessor(Octree * tree, int * triangles,  int drawableType, int geometryLevel, float simplificationAngle, float simplificationDistance, bool simplificationTexturing) {
+OctreeProcessor::OctreeProcessor(Octree * tree, int * triangles,  int drawableType, int geometryLevel, float simplificationAngle, float simplificationDistance, bool simplificationTexturing, bool createInstances) {
 	this->tree = tree;
 	this->simplificationAngle = simplificationAngle;
 	this->simplificationDistance = simplificationDistance;
@@ -11,6 +11,7 @@ OctreeProcessor::OctreeProcessor(Octree * tree, int * triangles,  int drawableTy
 	this->drawableType = drawableType;
 	this->geometryLevel = geometryLevel;
 	this->triangles = triangles;
+	this->createInstances = createInstances;
 }
 
 void OctreeProcessor::update(glm::mat4 m) {
@@ -87,20 +88,20 @@ void * OctreeProcessor::before(int level, OctreeNode * node, BoundingCube cube, 
 			
 			// Tesselate
 			Geometry * loadable = new Geometry();
-			Tesselator tesselator(tree, triangles, loadable, simplficationId);
+			Tesselator tesselator(tree, loadable, simplficationId);
 			tesselator.iterate(level, node, cube, NULL);
 			
 			// Instances
-
+			*triangles += tesselator.triangles;
 
 
 			NodeInfo * existingInstanceInfo = getNodeInfo(node, TYPE_INSTANCE_DRAWABLE);
 
-			if(existingInstanceInfo == NULL) {
-				InstanceBuilder instanceBuilder(tree, drawableType, geometryLevel, triangles);
+			if(createInstances && existingInstanceInfo == NULL) {
+				InstanceBuilder instanceBuilder(tree, drawableType, geometryLevel);
 				instanceBuilder.iterate(level, node, cube, NULL);
 
-				if(instanceBuilder.matrices.size() > 0) {
+				if(instanceBuilder.instances > 0) {
 					//std::cout << "Matrices "<< std::to_string(instanceBuilder.matrices.size()) << std::endl;
 					Vegetation3d * vegetation = new Vegetation3d(&instanceBuilder.matrices);
 					NodeInfo vegetationInfo;

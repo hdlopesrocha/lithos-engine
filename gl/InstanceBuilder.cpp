@@ -3,11 +3,11 @@
 #include "gl.hpp"
 #include <glm/gtx/norm.hpp> 
 
-InstanceBuilder::InstanceBuilder(Octree * tree,  int drawableType, int geometryLevel, int * triangles) {
+InstanceBuilder::InstanceBuilder(Octree * tree,  int drawableType, int geometryLevel) {
 	this->tree = tree;
 	this->drawableType = drawableType;
 	this->geometryLevel = geometryLevel;
-	this->triangles = triangles;
+	this->instances = 0;
 }
 
 
@@ -25,8 +25,8 @@ void * InstanceBuilder::before(int level, OctreeNode * node, BoundingCube cube, 
 			OctreeNode ** cornersPointer = (OctreeNode **) corners;
 			tree->getNodeCorners(cube, level, 0, 1, corners);
 
-			QuadNodeInstanceBuilderHandler handler(&chunk, triangles,cornersPointer, &matrices);
-			tree->getQuadNodes(corners, &handler, triangles);
+			QuadNodeInstanceBuilderHandler handler(&chunk, &instances,cornersPointer, &matrices);
+			tree->getQuadNodes(corners, &handler);
 
 		}
 		
