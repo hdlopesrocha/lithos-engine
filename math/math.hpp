@@ -178,6 +178,22 @@ class HeightFunction {
 
 };
 
+
+class CachedHeightMapSurface : public HeightFunction {
+	public:
+		std::vector<std::vector<float>> data; 
+		BoundingBox box;
+		float delta;
+		int width;
+		int height;
+
+
+	CachedHeightMapSurface(HeightFunction * function, BoundingBox box, float delta);
+	float getData(int x, int z);
+	float getHeightAt(float x, float yy, float z);
+
+};
+
 class PerlinSurface : public HeightFunction {
 	public:
 	float amplitude;

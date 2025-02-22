@@ -58,7 +58,7 @@ void QuadNodeInstanceBuilderHandler::handle(OctreeNode* c0,OctreeNode* c1,Octree
         float hMin = 0.06;
         float hMax = 0.10;
 
-        float force = 4.0;
+        float force = 2.0;
         if(hMin  < perlin && perlin < hMax) {
             glm::mat4 model(1.0);
             float height = (perlin - hMin)/ (hMax-hMin);

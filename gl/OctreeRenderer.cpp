@@ -23,14 +23,17 @@ void * OctreeRenderer::before(int level, OctreeNode * node, BoundingCube cube, v
 			NodeInfo * info = &node->info[i];
 			// drawable geometry
 			if(info->type == drawableType) {
-				DrawableGeometry * drawable = (DrawableGeometry*) info->data;
+				DrawableInstanceGeometry * drawable = (DrawableInstanceGeometry*) info->data;
 				Geometry * loadable = (Geometry*) info->temp;
 
 				if(loadable != NULL) {
 					if(drawable!=NULL) {
 						delete drawable;
 					}
-					info->data = drawable = new DrawableGeometry(loadable);
+					std::vector<glm::mat4> instances;
+					instances.push_back(glm::mat4(1.0));
+					drawable = new DrawableInstanceGeometry(loadable, &instances);
+					info->data = drawable;
 					info->temp = NULL;
 					delete loadable;
 				}

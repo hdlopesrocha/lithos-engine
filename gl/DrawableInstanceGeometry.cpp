@@ -53,7 +53,7 @@ DrawableInstanceGeometry::~DrawableInstanceGeometry() {
  }
 
 void DrawableInstanceGeometry::draw(uint mode) {
-	if(this->indices && this->instances && mode == GL_TRIANGLES) {
+	if(this->indices && this->instances) {
 		//std::cout << "Rendering " << std::to_string(this->instances) << std::endl;
 		glBindVertexArray(this->vao);
 		glDrawElementsInstanced(mode, this->indices, GL_UNSIGNED_INT, 0, instances);
