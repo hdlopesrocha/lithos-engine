@@ -1,6 +1,27 @@
 #include "math.hpp"
 
+int addTriangle(OctreeNode* c0, OctreeNode* c1, OctreeNode* c2, Geometry * chunk, bool reverse) {
+
+    Vertex v0 = c0->vertex;
+	Vertex v1 = c1->vertex;
+	Vertex v2 = c2->vertex;
+
+    int count = 0;
+
+	if(c0!= c1 && c1 != c2 && c0!=c2 && c0->vertex.brushIndex>=0 && c1->vertex.brushIndex>=0 && c2->vertex.brushIndex>=0){
+		chunk->addVertex(v0, true);
+		chunk->addVertex(v2, true);
+		chunk->addVertex(v1, true);
+		++count;
+	}
+
+    return count;
+
+}
+
 int addQuad(OctreeNode** quad, Geometry * chunk, bool reverse) {
+
+
 	OctreeNode* c0 = quad[reverse ? 3:0];
 	OctreeNode* c1 = quad[reverse ? 2:1];
 	OctreeNode* c2 = quad[reverse ? 1:2];
@@ -21,20 +42,9 @@ int addQuad(OctreeNode** quad, Geometry * chunk, bool reverse) {
 
 	int count = 0;
 
+    count += addTriangle(c0,c1,c2, chunk, reverse);
+    count += addTriangle(c0,c2,c3, chunk, reverse);
 
-	if(c0!= c1 && c1 != c2 && c0!=c2 && c0->vertex.brushIndex>=0 && c1->vertex.brushIndex>=0 && c2->vertex.brushIndex>=0){
-		chunk->addVertex(v0, true);
-		chunk->addVertex(v2, true);
-		chunk->addVertex(v1, true);
-		++count;
-	}
-
-	if(c0!= c3 && c3 != c2 && c0!=c2 && c0->vertex.brushIndex>=0 && c2->vertex.brushIndex>=0 && c3->vertex.brushIndex>=0){
-		chunk->addVertex(v0, true);
-		chunk->addVertex(v3, true);
-		chunk->addVertex(v2, true);
-		++count;
-	}
 	//std::cout << "One" << std::endl;
 	return count;
 }
@@ -59,7 +69,7 @@ QuadNodeInstanceBuilderHandler::QuadNodeInstanceBuilderHandler(Geometry * chunk,
 }
 
 void QuadNodeInstanceBuilderHandler::handle(OctreeNode** quad, bool sign){
-    OctreeNode * c = corners[0];
+    OctreeNode * c = quad[0];
     glm::mat4 model(1.0);
     model = glm::translate(glm::mat4(1.0), c->vertex.position);
     matrices->push_back(model);
