@@ -130,7 +130,8 @@ void Octree::getQuadNodes(OctreeNode** corners, QuadNodeHandler * handler, int *
 				}
 			}
 			if(size == 4) {
-				handler->handle(quads,sign1);
+				handler->handle(quads[0],quads[1],quads[2],sign1);
+				handler->handle(quads[0],quads[2],quads[3],sign1);
 			}
 		} 
 	}
