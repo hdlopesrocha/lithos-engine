@@ -92,11 +92,9 @@ class Scene {
 	}
 
 	void drawVegetation() {
-		glDisable(GL_CULL_FACE); 
 		vegetationRenderer->instances = 0;
 		vegetationRenderer->mode = GL_TRIANGLES;
 		solidSpace->iterate(vegetationRenderer);
-		glEnable(GL_CULL_FACE);
 	}
 
 	void draw3dSolid() {

@@ -76,70 +76,7 @@ std::string replaceIncludes(std::vector<GlslInclude> includes, std::string code)
 	return code;
 }
 
-class ProgramLocations {
-	public:
-	GLuint program;
-	GLuint modelLoc;
-	GLuint modelViewProjectionLoc;
-	GLuint matrixShadowLoc;
-	GLuint lightDirectionLoc;
-	GLuint lightEnabledLoc;
-	GLuint debugEnabledLoc;
-	GLuint triplanarEnabledLoc;
-	GLuint parallaxEnabledLoc;
-	GLuint shadowEnabledLoc;
-	GLuint depthTextureLoc;
-	GLuint underTextureLoc;
-	GLuint cameraPositionLoc;
-	GLuint overrideTextureEnabledLoc;
-	GLuint shadowMapLoc;
-	GLuint noiseLoc;
-	GLuint timeLoc;
-	GLuint layerLoc;
 
-	ProgramLocations(GLuint program) {
-		this->program = program;
-		this->modelLoc = glGetUniformLocation(program, "model");
-		this->modelViewProjectionLoc = glGetUniformLocation(program, "modelViewProjection");
-		this->matrixShadowLoc = glGetUniformLocation(program, "matrixShadow");
-		this->lightDirectionLoc = glGetUniformLocation(program, "lightDirection");
-		this->lightEnabledLoc = glGetUniformLocation(program, "lightEnabled");
-		this->debugEnabledLoc = glGetUniformLocation(program, "debugEnabled");
-		this->triplanarEnabledLoc = glGetUniformLocation(program, "triplanarEnabled");
-		this->shadowEnabledLoc = glGetUniformLocation(program, "shadowEnabled");
-		this->parallaxEnabledLoc = glGetUniformLocation(program, "parallaxEnabled");
-		this->cameraPositionLoc = glGetUniformLocation(program, "cameraPosition");
-		this->timeLoc = glGetUniformLocation(program, "time");
-		this->shadowMapLoc = glGetUniformLocation(program, "shadowMap");
-		this->noiseLoc = glGetUniformLocation(program, "noise");
-		this->overrideTextureEnabledLoc = glGetUniformLocation(program, "overrideTextureEnabled");
-		this->depthTextureLoc = glGetUniformLocation(program, "depthTexture");
-		this->underTextureLoc = glGetUniformLocation(program, "underTexture");
-		this->layerLoc = glGetUniformLocation(program, "layer");
-	}
-
-	void update(glm::mat4 modelViewProjection,glm::mat4 model, glm::mat4 matrixShadow, glm::vec3 lightDirection, glm::vec3 cameraPosition, float time, Settings * settings) {
-		glUniformMatrix4fv(modelViewProjectionLoc, 1, GL_FALSE, glm::value_ptr(modelViewProjection));
-		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-		glUniformMatrix4fv(matrixShadowLoc, 1, GL_FALSE, glm::value_ptr(matrixShadow  ));
-		glUniform3fv(lightDirectionLoc, 1, glm::value_ptr(lightDirection));
-		glUniform3fv(cameraPositionLoc, 1, glm::value_ptr(cameraPosition));
-		glUniform1f(timeLoc, time);
-		glUniform1ui(lightEnabledLoc, settings->lightEnabled);
-		glUniform1ui(triplanarEnabledLoc, 1);
-		glUniform1ui(parallaxEnabledLoc, settings->parallaxEnabled);
-		glUniform1ui(debugEnabledLoc,settings->debugEnabled);
-		glUniform1ui(shadowEnabledLoc, settings->shadowEnabled);
-	}
-
-	void updateWireframe() {
-		glUniform1ui(lightEnabledLoc, 0);
-		glUniform1ui(parallaxEnabledLoc, 0);
-		glUniform1ui(triplanarEnabledLoc, 0);
-		glUniform1ui(debugEnabledLoc, 1);
-
-	}
-};
 
 class MainApplication : public LithosApplication {
 	std::vector<Texture*> textures;
@@ -171,8 +108,8 @@ class MainApplication : public LithosApplication {
 
 
 	GLuint modelViewProjectionShadowLoc;
-	ProgramLocations * program3dLocs;
-	ProgramLocations * programVegetationLocs;
+	ProgramData * program3dData;
+	ProgramData * programVegetationData;
 	GLuint noiseTexture;
 
 	RenderBuffer depthFrameBuffer;
@@ -267,7 +204,7 @@ public:
 			compileShader(replaceIncludes(includes,readFile("shaders/vegetation_vertex.glsl")),GL_VERTEX_SHADER), 
 			compileShader(replaceIncludes(includes,readFile("shaders/vegetation_fragment.glsl")),GL_FRAGMENT_SHADER)
 		});
-		programVegetationLocs = new ProgramLocations(programVegetation);
+		programVegetationData = new ProgramData(programVegetation);
 		glUseProgram(programVegetation);
 
 		program3d = createShaderProgram({
@@ -276,7 +213,7 @@ public:
 			compileShader(replaceIncludes(includes,readFile("shaders/3d_tessEvaluation.glsl")),GL_TESS_EVALUATION_SHADER),
 			compileShader(replaceIncludes(includes,readFile("shaders/3d_fragment.glsl")),GL_FRAGMENT_SHADER) 
 		});
-		program3dLocs = new ProgramLocations(program3d);
+		program3dData = new ProgramData(program3d);
 		glUseProgram(program3d);
 
 		modelViewProjectionShadowLoc = glGetUniformLocation(programShadow, "modelViewProjection");
@@ -426,11 +363,11 @@ public:
 
 
 		noiseTexture = loadTextureImage("textures/noise.jpg");
-		Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, program3dLocs->depthTextureLoc, depthFrameBuffer.depthTexture);
-		activeTexture = Texture::bindTexture(programVegetation, GL_TEXTURE_2D, activeTexture, programVegetationLocs->depthTextureLoc, depthFrameBuffer.depthTexture);
-		activeTexture = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, program3dLocs->underTextureLoc, solidBuffer.colorTexture);
-		activeTexture = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, program3dLocs->shadowMapLoc, shadowFrameBuffer.depthTexture);
-		activeTexture = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, program3dLocs->noiseLoc, noiseTexture);
+		Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, program3dData->depthTextureLoc, depthFrameBuffer.depthTexture);
+		activeTexture = Texture::bindTexture(programVegetation, GL_TEXTURE_2D, activeTexture, programVegetationData->depthTextureLoc, depthFrameBuffer.depthTexture);
+		activeTexture = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, program3dData->underTextureLoc, solidBuffer.colorTexture);
+		activeTexture = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, program3dData->shadowMapLoc, shadowFrameBuffer.depthTexture);
+		activeTexture = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, program3dData->noiseLoc, noiseTexture);
 		
 		activeTexture = Texture::bindTextures(programVegetation, GL_TEXTURE_2D_ARRAY, activeTexture, "textures", &vegetationTextures);
 		Texture::bindTextures(program3d, GL_TEXTURE_2D_ARRAY, activeTexture, "textures", &textures);
@@ -589,13 +526,36 @@ public:
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		glUseProgram(program3d);
-		program3dLocs->update(mvp, model,ms,mainScene->light.direction, mainScene->camera.position, time, settings);
-		glUniform1i(program3dLocs->layerLoc, 0);
+		program3dData->modelViewProjection = mvp;
+		program3dData->model = model;
+		program3dData->matrixShadow =ms;
+		program3dData->lightDirection = mainScene->light.direction;
+		program3dData->cameraPosition = mainScene->camera.position;
+		program3dData->time = time;
+        program3dData->parallaxEnabled = settings->parallaxEnabled;
+        program3dData->shadowEnabled = settings->shadowEnabled;
+        program3dData->debugEnabled = settings->debugEnabled;
+        program3dData->lightEnabled = settings->lightEnabled;
+        program3dData->wireFrameEnabled = settings->wireFrameEnabled;
+		program3dData->layer = 0;
+		program3dData->uniform();
 		mainScene->draw3dSolid();
 
 		glUseProgram(programVegetation);
-		programVegetationLocs->update(mvp, model,ms,mainScene->light.direction, mainScene->camera.position, time, settings);
-		glUniform1i(programVegetationLocs->layerLoc, 0);
+		programVegetationData->modelViewProjection = mvp;
+		programVegetationData->model = model;
+		programVegetationData->matrixShadow =ms;
+		programVegetationData->lightDirection = mainScene->light.direction;
+		programVegetationData->cameraPosition = mainScene->camera.position;
+		programVegetationData->time = time;
+        programVegetationData->parallaxEnabled = settings->parallaxEnabled;
+        programVegetationData->shadowEnabled = settings->shadowEnabled;
+        programVegetationData->debugEnabled = settings->debugEnabled;
+        programVegetationData->lightEnabled = settings->lightEnabled;
+        programVegetationData->wireFrameEnabled = settings->wireFrameEnabled;
+		programVegetationData->layer = 0;
+		programVegetationData->uniform();
+		
 		mainScene->drawVegetation();
 
 
@@ -606,7 +566,7 @@ public:
 		glViewport(0, 0, renderBuffer.width, renderBuffer.height);
 		glClearColor (0.1,0.1,0.1,1.0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		glUniform1i(program3dLocs->layerLoc, 1); 
+		glUniform1i(program3dData->layerLoc, 1); 
 
 
 		if(settings->wireFrameEnabled) {
@@ -614,17 +574,21 @@ public:
 			glLineWidth(2.0);
 			glPointSize(4.0);	
 
-			programVegetationLocs->updateWireframe();
-			glUniform1i(programVegetationLocs->layerLoc, 1); 
+			glUniform1ui(programVegetationData->lightEnabledLoc, 0);
+			glUniform1ui(programVegetationData->parallaxEnabledLoc, 0);
+			glUniform1ui(programVegetationData->triplanarEnabledLoc, 0);
+			glUniform1ui(programVegetationData->debugEnabledLoc, 1);
+			glUniform1i(programVegetationData->layerLoc, 1); 
 			mainScene->drawVegetation();
 
 			glUseProgram(program3d);
-			program3dLocs->update(mvp, model,ms,mainScene->light.direction, mainScene->camera.position, time, settings);
-			program3dLocs->updateWireframe();
+			glUniform1ui(program3dData->lightEnabledLoc, 0);
+			glUniform1ui(program3dData->parallaxEnabledLoc, 0);
+			glUniform1ui(program3dData->triplanarEnabledLoc, 0);
+			glUniform1ui(program3dData->debugEnabledLoc, 1);
+			glUniform1i(program3dData->layerLoc, 1); 
 
-			glUniform1i(program3dLocs->layerLoc, 1);
 			mainScene->draw3dSolid();
-			glUniform1i(program3dLocs->layerLoc, 2);
 			mainScene->draw3dLiquid();
 
 			glPolygonMode(GL_FRONT, GL_FILL);
@@ -632,12 +596,11 @@ public:
 			//glUseProgram(program3d);
 
 		} else {
-			glUniform1i(programVegetationLocs->layerLoc, 1); 
+			glUniform1i(programVegetationData->layerLoc, 1); 
 			mainScene->drawVegetation();
 
 			glUseProgram(program3d);
-			program3dLocs->update(mvp, model,ms,mainScene->light.direction, mainScene->camera.position, time, settings);
-			glUniform1i(program3dLocs->layerLoc, 1);
+			glUniform1i(program3dData->layerLoc, 1);
 			mainScene->draw3dSolid();
 
 			// Bind the source framebuffer (FBO you rendered to)
@@ -653,7 +616,6 @@ public:
 			glBindFramebuffer(GL_FRAMEBUFFER, renderBuffer.frameBuffer);
 			glViewport(0, 0, renderBuffer.width, renderBuffer.height);
 			
-			glUniform1i(program3dLocs->layerLoc, 2);
 			mainScene->draw3dLiquid();
 		}
 

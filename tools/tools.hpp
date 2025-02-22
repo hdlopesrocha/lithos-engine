@@ -50,4 +50,42 @@ class InstanceBuffer {
 	InstanceBuffer(int size);
 };
 
+struct ProgramData {
+	public:
+	glm::mat4 modelViewProjection;
+	glm::mat4 model;
+	glm::mat4 matrixShadow;
+	glm::vec3 lightDirection;
+	glm::vec3 cameraPosition;
+	float time;
+	bool parallaxEnabled;
+	bool shadowEnabled;
+	bool debugEnabled;
+	bool lightEnabled;
+	bool wireFrameEnabled;
+	int layer;
+
+	GLuint program;
+	GLuint modelLoc;
+	GLuint modelViewProjectionLoc;
+	GLuint matrixShadowLoc;
+	GLuint lightDirectionLoc;
+	GLuint lightEnabledLoc;
+	GLuint debugEnabledLoc;
+	GLuint triplanarEnabledLoc;
+	GLuint parallaxEnabledLoc;
+	GLuint shadowEnabledLoc;
+	GLuint depthTextureLoc;
+	GLuint underTextureLoc;
+	GLuint cameraPositionLoc;
+	GLuint overrideTextureEnabledLoc;
+	GLuint shadowMapLoc;
+	GLuint noiseLoc;
+	GLuint timeLoc;
+	GLuint layerLoc;
+
+	ProgramData(GLuint program);
+	void uniform();
+};
+
 #endif
