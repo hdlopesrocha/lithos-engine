@@ -17,12 +17,9 @@ out vec3 tcNormal[];
 out vec3 tcPosition[];
 out TextureProperties tcProps[];
 
-uniform vec3 cameraPosition; 
-uniform int layer;
-
 void main() {
      vec3 patchCentroid = (vPosition[0] + vPosition[1] + vPosition[2]) / 3.0;
-    float distance = length(cameraPosition - patchCentroid);
+    float distance = length(cameraPosition.xyz - patchCentroid);
     float tessellationFactor = clamp(100.0 / distance, 0.0, 1.0); // Adjust these numbers to fit your scene
     gl_TessLevelOuter[0] = tessellationFactor;
     gl_TessLevelOuter[1] = tessellationFactor;

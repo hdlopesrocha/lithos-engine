@@ -16,12 +16,9 @@ out vec3 vPosition;
 out vec3 vNormal;
 out TextureProperties vProps;
 
-uniform vec3 lightDirection;  
-uniform mat4 modelViewProjection; 
 uniform TextureProperties brushes[25];
 uniform uint brushTextures[25];
 
-uniform int layer;
 
 void main() {
     if(layer > 0) {

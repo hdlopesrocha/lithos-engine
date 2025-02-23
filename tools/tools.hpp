@@ -50,42 +50,40 @@ class InstanceBuffer {
 	InstanceBuffer(int size);
 };
 
+
+struct alignas(16) UniformBlock {
+    glm::mat4 model;             // 16 bytes
+    glm::mat4 modelViewProjection;  // 16 bytes
+    glm::mat4 matrixShadow;      // 16 bytes
+    glm::vec4 lightDirection;    // 16 bytes
+    glm::vec4 cameraPosition;    // 16 bytes
+    float time;                  // 4 bytes
+    int parallaxEnabled;         // 4 bytes
+    int shadowEnabled;           // 4 bytes
+    int debugEnabled;            // 4 bytes
+    int lightEnabled;            // 4 bytes
+    int triplanarEnabled;        // 4 bytes
+    int layer;                  // 4 bytes (instead of int)
+    int padding;                 // 4 bytes (optional for alignment)
+
+    // Total size: 120 bytes (aligned to 16 bytes)
+};
+
 struct ProgramData {
 	public:
-	glm::mat4 modelViewProjection;
-	glm::mat4 model;
-	glm::mat4 matrixShadow;
-	glm::vec3 lightDirection;
-	glm::vec3 cameraPosition;
-	float time;
-	bool parallaxEnabled;
-	bool shadowEnabled;
-	bool debugEnabled;
-	bool lightEnabled;
-	bool wireFrameEnabled;
-	int layer;
 
+
+	bool wireFrameEnabled;
+	GLuint ubo;
 	GLuint program;
-	GLuint modelLoc;
-	GLuint modelViewProjectionLoc;
-	GLuint matrixShadowLoc;
-	GLuint lightDirectionLoc;
-	GLuint lightEnabledLoc;
-	GLuint debugEnabledLoc;
-	GLuint triplanarEnabledLoc;
-	GLuint parallaxEnabledLoc;
-	GLuint shadowEnabledLoc;
 	GLuint depthTextureLoc;
 	GLuint underTextureLoc;
-	GLuint cameraPositionLoc;
 	GLuint overrideTextureEnabledLoc;
 	GLuint shadowMapLoc;
 	GLuint noiseLoc;
-	GLuint timeLoc;
-	GLuint layerLoc;
 
 	ProgramData(GLuint program);
-	void uniform();
+	void uniform(UniformBlock * block);
 };
 
 #endif

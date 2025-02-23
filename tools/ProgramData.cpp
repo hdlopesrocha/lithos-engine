@@ -2,36 +2,30 @@
 
 ProgramData::ProgramData(GLuint program) {
     this->program = program;
-    this->modelLoc = glGetUniformLocation(program, "model");
-    this->modelViewProjectionLoc = glGetUniformLocation(program, "modelViewProjection");
-    this->matrixShadowLoc = glGetUniformLocation(program, "matrixShadow");
-    this->lightDirectionLoc = glGetUniformLocation(program, "lightDirection");
-    this->lightEnabledLoc = glGetUniformLocation(program, "lightEnabled");
-    this->debugEnabledLoc = glGetUniformLocation(program, "debugEnabled");
-    this->triplanarEnabledLoc = glGetUniformLocation(program, "triplanarEnabled");
-    this->shadowEnabledLoc = glGetUniformLocation(program, "shadowEnabled");
-    this->parallaxEnabledLoc = glGetUniformLocation(program, "parallaxEnabled");
-    this->cameraPositionLoc = glGetUniformLocation(program, "cameraPosition");
-    this->timeLoc = glGetUniformLocation(program, "time");
+
     this->shadowMapLoc = glGetUniformLocation(program, "shadowMap");
     this->noiseLoc = glGetUniformLocation(program, "noise");
     this->overrideTextureEnabledLoc = glGetUniformLocation(program, "overrideTextureEnabled");
     this->depthTextureLoc = glGetUniformLocation(program, "depthTexture");
     this->underTextureLoc = glGetUniformLocation(program, "underTexture");
-    this->layerLoc = glGetUniformLocation(program, "layer");
+
+    glGenBuffers(1, &this->ubo);
+    glUseProgram(program);
+    glUniformBlockBinding(program, glGetUniformBlockIndex(program, "UniformBlock"), 0);
+    glBindBuffer(GL_UNIFORM_BUFFER, ubo);
+    glBufferData(GL_UNIFORM_BUFFER, sizeof(UniformBlock), NULL, GL_DYNAMIC_DRAW);
+    glBindBufferBase(GL_UNIFORM_BUFFER, 0, ubo);
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }
 
 
-void ProgramData::uniform(){
-    glUniformMatrix4fv(modelViewProjectionLoc, 1, GL_FALSE, glm::value_ptr(modelViewProjection));
-    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-    glUniformMatrix4fv(matrixShadowLoc, 1, GL_FALSE, glm::value_ptr(matrixShadow  ));
-    glUniform3fv(lightDirectionLoc, 1, glm::value_ptr(lightDirection));
-    glUniform3fv(cameraPositionLoc, 1, glm::value_ptr(cameraPosition));
-    glUniform1f(timeLoc, time);
-    glUniform1ui(lightEnabledLoc, lightEnabled);
-    glUniform1ui(triplanarEnabledLoc, 1);
-    glUniform1ui(parallaxEnabledLoc, parallaxEnabled);
-    glUniform1ui(debugEnabledLoc,debugEnabled);
-    glUniform1ui(shadowEnabledLoc, shadowEnabled);
+void ProgramData::uniform(UniformBlock * block){
+    glBindBuffer(GL_UNIFORM_BUFFER, ubo);
+
+    UniformBlock readbackBlock;
+    glGetBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(UniformBlock), &readbackBlock);
+    std::cout << "uniform(" << std::to_string(readbackBlock.layer) << ")" << std::endl;
+
+    glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(UniformBlock), block);  // Update the buffer
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }

@@ -7,15 +7,7 @@ uniform sampler2D depthTexture;
 uniform sampler2D shadowMap;
 uniform sampler2D noise;
 
-uniform bool debugEnabled;
-uniform bool lightEnabled;
-uniform bool shadowEnabled;
 
-uniform vec3 lightDirection; 
-uniform vec3 cameraPosition; 
-uniform float time;
-uniform mat4 model; 
-uniform int layer;
 
 #include<functions.glsl>
 
@@ -53,7 +45,7 @@ void main() {
     }
 
 
-    if(debugEnabled) {
+    if(debugEnabled == 1) {
         color = vec4(1.0,1.0,1.0,1.0);
         return;
     }
@@ -64,7 +56,7 @@ void main() {
     mat3 normalMatrix = transpose(inverse(mat3(model)));
     vec3 normal = normalize(normalMatrix * vNormal);
 
-    vec3 viewDirection = normalize(position-cameraPosition);
+    vec3 viewDirection = normalize(position-cameraPosition.xyz);
     mat3 TBN = getTBN(vPosition, vNormal, uv, model, false);
     vec3 viewDirectionTangent = normalize(transpose(TBN) * viewDirection);
   

@@ -4,7 +4,6 @@ layout(triangles, equal_spacing, ccw) in; // Define primitive type and tessellat
 #include<structs.glsl>
 #include<functions.glsl>
 
-uniform bool debugEnabled;
 
 in vec3 tcTextureWeights[];
 in vec2 tcTextureCoord[];
@@ -24,10 +23,6 @@ flat out uvec3 teTextureIndices;
 
 
 uniform TextureProperties overrideProps;
-uniform mat4 modelViewProjection; 
-uniform mat4 matrixShadow; 
-uniform mat4 model; 
-uniform int layer;
 
 
 void main() {

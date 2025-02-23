@@ -110,6 +110,10 @@ class MainApplication : public LithosApplication {
 	GLuint modelViewProjectionShadowLoc;
 	ProgramData * program3dData;
 	ProgramData * programVegetationData;
+
+	UniformBlock uniformBlock;
+
+
 	GLuint noiseTexture;
 
 	RenderBuffer depthFrameBuffer;
@@ -158,54 +162,45 @@ public:
 			compileShader(replaceIncludes(includes, readFile("shaders/shadow_vertex.glsl")),GL_VERTEX_SHADER), 
 			compileShader(replaceIncludes(includes,readFile("shaders/shadow_fragment.glsl")),GL_FRAGMENT_SHADER)
 		});
-		glUseProgram(programShadow);
 
 		programAtlas = createShaderProgram({
 			compileShader(replaceIncludes(includes,readFile("shaders/texture/atlas_vertex.glsl")),GL_VERTEX_SHADER), 
 			compileShader(replaceIncludes(includes,readFile("shaders/texture/atlas_geometry.glsl")),GL_GEOMETRY_SHADER), 
 			compileShader(replaceIncludes(includes,readFile("shaders/texture/atlas_fragment.glsl")),GL_FRAGMENT_SHADER) 
 		});
-		glUseProgram(programAtlas);
 
 		programSwap = createShaderProgram({
 			compileShader(replaceIncludes(includes,readFile("shaders/texture/swap_vertex.glsl")),GL_VERTEX_SHADER), 
 			compileShader(replaceIncludes(includes,readFile("shaders/texture/swap_fragment.glsl")),GL_FRAGMENT_SHADER) 
 		});
-		glUseProgram(programSwap);
 
 		programTexture = createShaderProgram({
 			compileShader(replaceIncludes(includes,readFile("shaders/texture/texture_array_vertex.glsl")),GL_VERTEX_SHADER), 
 			compileShader(replaceIncludes(includes,readFile("shaders/texture/texture_array_fragment.glsl")),GL_FRAGMENT_SHADER)
 		});
-		glUseProgram(programTexture);
 
 		programDepth = createShaderProgram({
 			compileShader(replaceIncludes(includes,readFile("shaders/texture/depth_vertex.glsl")),GL_VERTEX_SHADER), 
 			compileShader(replaceIncludes(includes,readFile("shaders/texture/depth_fragment.glsl")),GL_FRAGMENT_SHADER)
 		});
-		glUseProgram(programDepth);
 
 		programMixTexture = createShaderProgram({
 			compileShader(replaceIncludes(includes,readFile("shaders/texture/mix_vertex.glsl")),GL_VERTEX_SHADER), 
 			compileShader(replaceIncludes(includes,readFile("shaders/texture/mix_geometry.glsl")),GL_GEOMETRY_SHADER),
 			compileShader(replaceIncludes(includes,readFile("shaders/texture/mix_fragment.glsl")),GL_FRAGMENT_SHADER) 
 		});
-		glUseProgram(programMixTexture);
 
 		programWaterTexture = createShaderProgram({
 			compileShader(replaceIncludes(includes,readFile("shaders/texture/water_vertex.glsl")),GL_VERTEX_SHADER), 
 			compileShader(replaceIncludes(includes,readFile("shaders/texture/water_geometry.glsl")),GL_GEOMETRY_SHADER), 
 			compileShader(replaceIncludes(includes,readFile("shaders/texture/water_fragment.glsl")),GL_FRAGMENT_SHADER)
 		});
-		glUseProgram(programWaterTexture);
-
 
 		programVegetation = createShaderProgram({
 			compileShader(replaceIncludes(includes,readFile("shaders/vegetation_vertex.glsl")),GL_VERTEX_SHADER), 
 			compileShader(replaceIncludes(includes,readFile("shaders/vegetation_fragment.glsl")),GL_FRAGMENT_SHADER)
 		});
 		programVegetationData = new ProgramData(programVegetation);
-		glUseProgram(programVegetation);
 
 		program3d = createShaderProgram({
 			compileShader(replaceIncludes(includes,readFile("shaders/3d_vertex.glsl")),GL_VERTEX_SHADER), 
@@ -214,7 +209,6 @@ public:
 			compileShader(replaceIncludes(includes,readFile("shaders/3d_fragment.glsl")),GL_FRAGMENT_SHADER) 
 		});
 		program3dData = new ProgramData(program3d);
-		glUseProgram(program3d);
 
 		modelViewProjectionShadowLoc = glGetUniformLocation(programShadow, "modelViewProjection");
 
@@ -370,7 +364,7 @@ public:
 		activeTexture = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, program3dData->noiseLoc, noiseTexture);
 		
 		activeTexture = Texture::bindTextures(programVegetation, GL_TEXTURE_2D_ARRAY, activeTexture, "textures", &vegetationTextures);
-		Texture::bindTextures(program3d, GL_TEXTURE_2D_ARRAY, activeTexture, "textures", &textures);
+		activeTexture = Texture::bindTextures(program3d, GL_TEXTURE_2D_ARRAY, activeTexture, "textures", &textures);
 
 		Brush::bindBrushes(program3d, &brushes);
 		Brush::bindBrushes(programVegetation, &vegetationBrushes);
@@ -516,6 +510,8 @@ public:
 		glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glLineWidth(2.0);
+		glPointSize(4.0);	
 
 		// =================
 		// First Pass: Depth
@@ -525,36 +521,28 @@ public:
 		glClearColor (1.0,1.0,1.0,1.0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+
+		uniformBlock.modelViewProjection = mvp;
+		uniformBlock.model = model;
+		uniformBlock.matrixShadow =ms;
+		uniformBlock.lightDirection = glm::vec4(mainScene->light.direction, 0.0f);
+		uniformBlock.cameraPosition = glm::vec4(mainScene->camera.position, 0.0f);
+		uniformBlock.time = time;
+        uniformBlock.parallaxEnabled = settings->parallaxEnabled ? 1 : 0;
+        uniformBlock.shadowEnabled = settings->shadowEnabled ? 1 : 0;
+        uniformBlock.debugEnabled = settings->debugEnabled ? 1 : 0;
+        uniformBlock.lightEnabled = settings->lightEnabled ? 1 : 0;
+		uniformBlock.triplanarEnabled = 1;
+		uniformBlock.layer = 0;
+
 		glUseProgram(program3d);
-		program3dData->modelViewProjection = mvp;
-		program3dData->model = model;
-		program3dData->matrixShadow =ms;
-		program3dData->lightDirection = mainScene->light.direction;
-		program3dData->cameraPosition = mainScene->camera.position;
-		program3dData->time = time;
-        program3dData->parallaxEnabled = settings->parallaxEnabled;
-        program3dData->shadowEnabled = settings->shadowEnabled;
-        program3dData->debugEnabled = settings->debugEnabled;
-        program3dData->lightEnabled = settings->lightEnabled;
-        program3dData->wireFrameEnabled = settings->wireFrameEnabled;
-		program3dData->layer = 0;
-		program3dData->uniform();
+		program3dData->wireFrameEnabled = settings->wireFrameEnabled;
+		program3dData->uniform(&uniformBlock);
 		mainScene->draw3dSolid();
 
 		glUseProgram(programVegetation);
-		programVegetationData->modelViewProjection = mvp;
-		programVegetationData->model = model;
-		programVegetationData->matrixShadow =ms;
-		programVegetationData->lightDirection = mainScene->light.direction;
-		programVegetationData->cameraPosition = mainScene->camera.position;
-		programVegetationData->time = time;
-        programVegetationData->parallaxEnabled = settings->parallaxEnabled;
-        programVegetationData->shadowEnabled = settings->shadowEnabled;
-        programVegetationData->debugEnabled = settings->debugEnabled;
-        programVegetationData->lightEnabled = settings->lightEnabled;
         programVegetationData->wireFrameEnabled = settings->wireFrameEnabled;
-		programVegetationData->layer = 0;
-		programVegetationData->uniform();
+		programVegetationData->uniform(&uniformBlock);
 		
 		mainScene->drawVegetation();
 
@@ -566,41 +554,33 @@ public:
 		glViewport(0, 0, renderBuffer.width, renderBuffer.height);
 		glClearColor (0.1,0.1,0.1,1.0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		glUniform1i(program3dData->layerLoc, 1); 
 
+		uniformBlock.layer=1; 
 
 		if(settings->wireFrameEnabled) {
-			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-			glLineWidth(2.0);
-			glPointSize(4.0);	
+			uniformBlock.lightEnabled=0;
+			uniformBlock.triplanarEnabled=0;
+			uniformBlock.parallaxEnabled= 0;
+			uniformBlock.debugEnabled=1;
 
-			glUniform1ui(programVegetationData->lightEnabledLoc, 0);
-			glUniform1ui(programVegetationData->parallaxEnabledLoc, 0);
-			glUniform1ui(programVegetationData->triplanarEnabledLoc, 0);
-			glUniform1ui(programVegetationData->debugEnabledLoc, 1);
-			glUniform1i(programVegetationData->layerLoc, 1); 
+			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+			programVegetationData->uniform(&uniformBlock);
 			mainScene->drawVegetation();
 
 			glUseProgram(program3d);
-			glUniform1ui(program3dData->lightEnabledLoc, 0);
-			glUniform1ui(program3dData->parallaxEnabledLoc, 0);
-			glUniform1ui(program3dData->triplanarEnabledLoc, 0);
-			glUniform1ui(program3dData->debugEnabledLoc, 1);
-			glUniform1i(program3dData->layerLoc, 1); 
-
+			program3dData->uniform(&uniformBlock);
 			mainScene->draw3dSolid();
 			mainScene->draw3dLiquid();
 
 			glPolygonMode(GL_FRONT, GL_FILL);
-
-			//glUseProgram(program3d);
-
 		} else {
-			glUniform1i(programVegetationData->layerLoc, 1); 
+			uniformBlock.triplanarEnabled = 0;
+			programVegetationData->uniform(&uniformBlock);
 			mainScene->drawVegetation();
 
 			glUseProgram(program3d);
-			glUniform1i(program3dData->layerLoc, 1);
+			uniformBlock.triplanarEnabled = 1;
+			program3dData->uniform(&uniformBlock);
 			mainScene->draw3dSolid();
 
 			// Bind the source framebuffer (FBO you rendered to)

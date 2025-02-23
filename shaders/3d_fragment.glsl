@@ -8,17 +8,7 @@ uniform sampler2D depthTexture;
 uniform sampler2D underTexture;
 uniform sampler2DArray textures[25];
 
-uniform bool debugEnabled;
-uniform bool lightEnabled;
-uniform bool shadowEnabled;
-uniform bool triplanarEnabled;
-uniform bool parallaxEnabled;
 
-uniform vec3 lightDirection; 
-uniform vec3 cameraPosition; 
-uniform float time;
-uniform int layer;
-uniform mat4 model; 
 
 #include<functions.glsl>
 
@@ -36,8 +26,6 @@ out vec4 color;    // Final fragment color
 #include<functions_fragment.glsl>
 #include<parallax.glsl>
 #include<depth.glsl>
-
-
 
 void main() {
 
@@ -69,19 +57,19 @@ void main() {
     vec3 normal = normalize(normalMatrix * teNormal);
 
     float effectAmount = sin(time*3.14/4.0)*0.5 + 0.5;
-    float distance = length(cameraPosition - position);
+    float distance = length(cameraPosition.xyz - position);
     float distanceFactor = clamp(teProps.parallaxFade / distance, 0.0, 1.0); // Adjust these numbers to fit your scene
 
-    if(triplanarEnabled) {
+    if(triplanarEnabled == 1) {
         int plane = triplanarPlane(position, normal);
         uv = triplanarMapping(position, plane, teProps.textureScale) * 0.1;
     }
 
-    vec3 viewDirection = normalize(position-cameraPosition);
+    vec3 viewDirection = normalize(position-cameraPosition.xyz);
     mat3 TBN = getTBN(tePosition, teNormal, uv, model, false);
     vec3 viewDirectionTangent = normalize(transpose(TBN) * viewDirection);
 
-    if(parallaxEnabled && distanceFactor * teProps.parallaxScale > 0.0) {
+    if(parallaxEnabled == 1 && distanceFactor * teProps.parallaxScale > 0.0) {
        uv = parallaxMapping(teTextureWeights, teTextureIndices, uv, viewDirectionTangent, distanceFactor*teProps.parallaxScale , distanceFactor*teProps.parallaxMinLayers, distanceFactor*teProps.parallaxMaxLayers, int(ceil(distanceFactor*teProps.parallaxRefine)));
     }
   
@@ -90,7 +78,7 @@ void main() {
         discard;
     }
 
-    if(lightEnabled) {
+    if(lightEnabled == 1) {
         vec3 specularColor = vec3(1.0,1.0,1.0);
 
         vec3 normalMap = textureBlend(teTextureWeights, teTextureIndices, textures, uv, 1).rgb * 2.0 - 1.0;
@@ -98,18 +86,18 @@ void main() {
 
         vec3 worldNormal = normalize(TBN * normalMap);
 
-        vec3 reflection = reflect(-lightDirection, worldNormal);
+        vec3 reflection = reflect(-lightDirection.xyz, worldNormal);
 
         float phongSpec = pow(max(dot(reflection, viewDirection), 0.0), teProps.shininess);
-        float diffuse = clamp(max(dot(worldNormal, -lightDirection), 0.0), 0.2, 1.0);
+        float diffuse = clamp(max(dot(worldNormal, -lightDirection.xyz), 0.0), 0.2, 1.0);
 
         ShadowProperties shadow; 
         shadow.shadowAmount = 1.0;
         shadow.lightAmount = 1.0;
-        if(shadowEnabled) {
+        if(shadowEnabled == 1) {
             shadow = getShadow(shadowMap, noise, teLightViewPosition, position);
         }
-        if(debugEnabled) {
+        if(debugEnabled == 1) {
             color = vec4(worldNormal,1.0);
         }else {
             vec4 refractedColor = vec4(0.0,0.0,0.0,0.0);
@@ -125,7 +113,7 @@ void main() {
             color = refractedColor + vec4(((mixedColor).rgb*diffuse + specularColor * teProps.specularStrength * phongSpec *  shadow.lightAmount)*shadow.shadowAmount , mixedColor.a+teProps.specularStrength * phongSpec *  shadow.lightAmount); 
         }
     }else {
-        if(debugEnabled) {
+        if(debugEnabled == 1) {
             color = vec4(visual(normal), 1.0);
         }else {
             color = vec4(1.0,1.0,1.0,1.0);

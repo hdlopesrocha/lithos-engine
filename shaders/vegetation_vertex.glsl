@@ -16,9 +16,7 @@ out vec3 vNormal;
 out TextureProperties vProps;
 out vec4 vLightViewPosition;
 
-uniform mat4 modelViewProjection; 
 uniform TextureProperties brushes[25];
-uniform mat4 matrixShadow; 
 
 void main() {
     vTextureCoord = textureCoord;
