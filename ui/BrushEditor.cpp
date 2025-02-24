@@ -5,7 +5,7 @@
 BrushEditor::BrushEditor(Camera * camera, std::vector<Brush*> * brushes, std::vector<Texture*> * textures, GLuint program, GLuint previewProgram) {
     this->program = program;
     glUseProgram(program);
-    this->data = new ProgramData(program);
+    this->data = new ProgramData();
     this->camera = camera;
     this->textures = textures;
     this->brushes = brushes;
@@ -120,7 +120,6 @@ void BrushEditor::draw2d(){
     ImGui::End();
 }
 void BrushEditor::draw3d(UniformBlock * block){
-    glUseProgram(program);
     Brush::bindBrush(program, "brushes[" + std::to_string(selectedBrush) + "]" , "brushTextures["+std::to_string(selectedBrush) + "]", brush);
 
     glm::mat4 model2 = glm::scale(
@@ -133,9 +132,10 @@ void BrushEditor::draw3d(UniformBlock * block){
 
     block->modelViewProjection = camera->getMVP(model2);
     block->model = model2;
-    block->shadowEnabled = 0;
-    block->overrideTexture = selectedBrush;
-    block->overrideEnabled = 1;
+    block->set(0, SHADOW_FLAG, false);
+    block->set(0, OVERRIDE_FLAG, true);
+    block->data.w = (uint) selectedBrush;
+    UniformBlock::print(block);
     data->uniform(block);
     sphere->draw(GL_PATCHES);
 }

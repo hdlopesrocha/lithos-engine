@@ -21,6 +21,7 @@ out vec4 color;    // Final fragment color
 
 void main() {
 
+
     vec2 uv = vTextureCoord;
     vec4 opacity = texture(textures[1], vec3(uv, 3));
     if(opacity.r < 0.5) {
@@ -31,18 +32,18 @@ void main() {
     vec2 pixelUV = gl_FragCoord.xy / textureSize(depthTexture, 0);
     float d1 = linearizeDepth(texture(depthTexture, pixelUV).r, near, far);
     float d2 = linearizeDepth(gl_FragCoord.z, near, far);
-    if(depthEnabled != 0u) {
+    if(depthEnabled) {
        color = vec4(d2/far,0.0,0.0,1.0);
     }
     if(d1<d2) {
         discard;
     }
-    if(depthEnabled != 0u){
+    if(depthEnabled){
         return;
     }
 
 
-    if(debugEnabled != 0u) {
+    if(debugEnabled) {
         color = vec4(1.0,1.0,1.0,1.0);
         return;
     }

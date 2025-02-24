@@ -16,9 +16,7 @@ void UniformBlock::print(UniformBlock * block) {
 	std::cout << std::endl;
 }
 
-ProgramData::ProgramData(GLuint program) {
-    this->program = program;
-
+ProgramData::ProgramData() {
     ubo= 0;
     glGenBuffers(1, &ubo);  // Generate the buffer
     glBindBuffer(GL_UNIFORM_BUFFER, ubo);  // Bind it as a UBO

@@ -46,6 +46,14 @@
 #include <ranges>
 #include <initializer_list>
 
+#define PARALLAX_FLAG  0x01  
+#define SHADOW_FLAG    0x02  
+#define DEBUG_FLAG     0x04  
+#define LIGHT_FLAG     0x08  
+#define TRIPLANAR_FLAG 0x10  
+#define DEPTH_FLAG     0x20  
+#define OVERRIDE_FLAG  0x40  
+#define OVERRIDE_TEXTURE_FLAG 0xff000000
 
 #pragma pack(16)  // Ensure 16-byte alignment for UBO
 struct UniformBlock {
@@ -54,18 +62,18 @@ struct UniformBlock {
     glm::mat4 matrixShadow;      
     glm::vec4 lightDirection;   
     glm::vec4 cameraPosition;   
-    glm::vec4 timeAndPadding;      // 224  ->  16 bytes  (time + padding)
-    uint parallaxEnabled;        
-    uint shadowEnabled;          
-    uint debugEnabled;            
-    uint lightEnabled;            
-    uint triplanarEnabled;      
-    uint depthEnabled;            
-    uint overrideEnabled;
-    uint overrideTexture;
-    uint padding;
+    glm::vec4 timeAndPadding;  
+    glm::uvec4 data;      
 
+    public:
     static void print(UniformBlock * block);
+    void set(uint index, uint flag, bool value) {
+        if(value){
+            data[index] |= flag;
+        }else {
+            data[index] &= ~flag;
+        }
+    }
 };
 #pragma pack()  // Reset to default packing
 
@@ -73,9 +81,8 @@ struct UniformBlock {
 struct ProgramData {
 	public:
 	GLuint ubo;
-	GLuint program;
 
-	ProgramData(GLuint program);
+	ProgramData();
 	void uniform(UniformBlock * block);
 };
 
@@ -169,7 +176,7 @@ class DrawableInstanceGeometry {
 
 	DrawableInstanceGeometry(Geometry * t, std::vector<glm::mat4> * instances);
     ~DrawableInstanceGeometry();
-    void draw(uint mode, GLuint program, std::vector<glm::mat4> * instances);
+    void draw(uint mode, std::vector<glm::mat4> * instances);
     DrawableInstanceGeometry * getDrawable();
 };
 
@@ -202,28 +209,6 @@ class OctreeProcessor : public IteratorHandler{
 };
 
 
-class OctreeRenderer : public IteratorHandler{
-	Octree * tree;
-	Geometry chunk;
-	Frustum frustum;
-	int geometryType;
-    int drawableType;
-    glm::mat4 * model;
-    GLuint program;
-    public: 
-        uint mode;
-		int geometryLevel;
-        glm::vec3 cameraPosition;
-		OctreeRenderer(GLuint program, Octree * tree, int drawableType, int geometryLevel, glm::mat4 * model);
-
-		void update(glm::mat4 m);
-		void * before(int level, OctreeNode * node, BoundingCube cube, void * context);
-		void after(int level, OctreeNode * node, BoundingCube cube, void * context);
-		bool test(int level, OctreeNode * node, BoundingCube cube, void * context);
-        OctreeNode * getChild(OctreeNode * node, int index);
-		void getOrder(OctreeNode * node, BoundingCube cube, int * order);
-
-};
 
 
 class InstanceBuilder : public IteratorHandler{

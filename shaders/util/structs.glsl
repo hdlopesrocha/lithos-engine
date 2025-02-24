@@ -25,13 +25,23 @@ layout(std140, binding = 0) uniform UniformBlock {
 	vec4 lightDirection;
 	vec4 cameraPosition;
     vec4 timeAndPadding;
-	uint parallaxEnabled;
-	uint shadowEnabled;
-	uint debugEnabled;
-	uint lightEnabled;
-	uint triplanarEnabled;
-	uint depthEnabled;
-    uint overrideEnabled;
-    uint overrideTexture;
-    uint padding;
+    uvec4 data; 
 };
+
+
+#define PARALLAX_FLAG  0x01  
+#define SHADOW_FLAG    0x02  
+#define DEBUG_FLAG     0x04  
+#define LIGHT_FLAG     0x08  
+#define TRIPLANAR_FLAG 0x10  
+#define DEPTH_FLAG     0x20  
+#define OVERRIDE_FLAG  0x40  
+
+bool parallaxEnabled  = (data.x & uint(PARALLAX_FLAG)) != 0u;
+bool shadowEnabled    = (data.x & uint(SHADOW_FLAG)) != 0u;
+bool debugEnabled     = (data.x & uint(DEBUG_FLAG)) != 0u;
+bool lightEnabled     = (data.x & uint(LIGHT_FLAG)) != 0u;
+bool triplanarEnabled = (data.x & uint(TRIPLANAR_FLAG)) != 0u;
+bool depthEnabled     = (data.x & uint(DEPTH_FLAG)) != 0u;
+bool overrideEnabled  = (data.x & uint(OVERRIDE_FLAG)) != 0u;
+uint overrideTexture  = data.w;

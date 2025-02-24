@@ -28,7 +28,7 @@ void main() {
 
     tcPosition[gl_InvocationID] = vPosition[gl_InvocationID]; 
     
-    if(depthEnabled == 0u) {
+    if(!depthEnabled) {
         tcNormal[gl_InvocationID] = vNormal[gl_InvocationID];
         
         tcProps[gl_InvocationID] = vProps[gl_InvocationID];

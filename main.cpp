@@ -158,7 +158,6 @@ public:
 			compileShader(replaceIncludes(includes, readFile("shaders/shadow_vertex.glsl")),GL_VERTEX_SHADER), 
 			compileShader(replaceIncludes(includes,readFile("shaders/shadow_fragment.glsl")),GL_FRAGMENT_SHADER)
 		});
-		glUseProgram(programShadow);
 		modelViewProjectionShadowLoc = glGetUniformLocation(programShadow, "modelViewProjection");
 
 
@@ -199,8 +198,7 @@ public:
 			compileShader(replaceIncludes(includes,readFile("shaders/vegetation_vertex.glsl")),GL_VERTEX_SHADER), 
 			compileShader(replaceIncludes(includes,readFile("shaders/vegetation_fragment.glsl")),GL_FRAGMENT_SHADER)
 		});
-		glUseProgram(programVegetation);
-		programVegetationData = new ProgramData(programVegetation);
+		programVegetationData = new ProgramData();
 
 		program3d = createShaderProgram({
 			compileShader(replaceIncludes(includes,readFile("shaders/3d_vertex.glsl")),GL_VERTEX_SHADER), 
@@ -208,8 +206,7 @@ public:
 			compileShader(replaceIncludes(includes,readFile("shaders/3d_tessEvaluation.glsl")),GL_TESS_EVALUATION_SHADER),
 			compileShader(replaceIncludes(includes,readFile("shaders/3d_fragment.glsl")),GL_FRAGMENT_SHADER) 
 		});
-		glUseProgram(program3d);
-		program3dData = new ProgramData(program3d);
+		program3dData = new ProgramData();
 
 
 		renderBuffer = createRenderFrameBuffer(getWidth(), getHeight());
@@ -521,14 +518,15 @@ public:
 		block.lightDirection = glm::vec4(light.direction, 0.0f);
 		block.cameraPosition = glm::vec4(camera.position, 0.0f);
 		block.timeAndPadding = glm::vec4( time, 0.0, 0.0 ,0.0);
-        block.parallaxEnabled = settings->parallaxEnabled ? 1u : 0u;
-        block.shadowEnabled = settings->shadowEnabled ? 1u : 0u;
-        block.debugEnabled = settings->debugEnabled ? 1u : 0u;
-        block.lightEnabled = settings->lightEnabled ? 1u : 0u;
-		block.triplanarEnabled = 1u;
-		block.depthEnabled = 1u;
-		block.overrideTexture = 0u;
-		block.overrideEnabled = 0u;
+        block.data = glm::vec4(0);
+		block.set(0, PARALLAX_FLAG, settings->parallaxEnabled);
+		block.set(0, SHADOW_FLAG, settings->shadowEnabled);
+		block.set(0, DEBUG_FLAG, settings->debugEnabled);
+		block.set(0, LIGHT_FLAG, settings->lightEnabled);
+		block.set(0, TRIPLANAR_FLAG, true);
+		block.set(0, DEPTH_FLAG, true);
+		block.set(0, OVERRIDE_FLAG, false);
+        block.data.w = 0;
 
 		// =================
 		// First Pass: Depth
@@ -538,7 +536,6 @@ public:
 		glClearColor (1.0,1.0,1.0,1.0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glUseProgram(program3d);
-
 		program3dData->uniform(&block);
 		mainScene->draw3dSolid();
 
@@ -555,14 +552,14 @@ public:
 		glClearColor (0.1,0.1,0.1,1.0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glUseProgram(programVegetation);
-
-		block.depthEnabled=0u; 
+	
+		block.set(0,DEPTH_FLAG, false);
 
 		if(settings->wireFrameEnabled) {
-			block.lightEnabled=0u;
-			block.triplanarEnabled=0u;
-			block.parallaxEnabled= 0u;
-			block.debugEnabled=1u;
+			block.set(0, LIGHT_FLAG, false); 
+			block.set(0, TRIPLANAR_FLAG, false); 
+			block.set(0, PARALLAX_FLAG, false); 
+			block.set(0, DEBUG_FLAG, true);
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		} 
 
@@ -570,7 +567,6 @@ public:
 		mainScene->drawVegetation();
 
 		glUseProgram(program3d);
-		//UniformBlock::print(&block2);
 
 		program3dData->uniform(&block);
 		mainScene->draw3dSolid();
@@ -592,8 +588,10 @@ public:
 		glViewport(0, 0, renderBuffer.width, renderBuffer.height);
 
 		glUseProgram(program3d);
+		program3dData->uniform(&block);
 		mainScene->draw3dLiquid();
 
+		//glUseProgram(program3d);
 		brushEditor->draw3dIfOpen(&block);
 		
 		glPolygonMode(GL_FRONT, GL_FILL);

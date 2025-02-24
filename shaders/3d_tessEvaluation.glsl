@@ -26,10 +26,10 @@ uniform TextureProperties overrideProps;
 
 
 void main() {
-    if(depthEnabled == 0u) {
+    if(!depthEnabled) {
         teNormal = normalize(tcNormal[0] * gl_TessCoord[0] + tcNormal[1] * gl_TessCoord[1] + tcNormal[2] * gl_TessCoord[2]);
     
-        if(overrideEnabled > 0u) {
+        if(overrideEnabled) {
             teProps = overrideProps;
         } else {
             teProps.parallaxScale = tcProps[0].parallaxScale * gl_TessCoord[0] + 
@@ -73,7 +73,7 @@ void main() {
     }
     tePosition = gl_TessCoord[0] * tcPosition[0] + gl_TessCoord[1] * tcPosition[1] + gl_TessCoord[2] * tcPosition[2];
     
-    if(depthEnabled == 0u) {
+    if(!depthEnabled) {
         teLightViewPosition = matrixShadow * vec4(tePosition, 1.0);  
     }
 

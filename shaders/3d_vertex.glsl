@@ -22,7 +22,7 @@ uniform uint brushTextures[25];
 
 
 void main() {
-    if(depthEnabled ==  0u) {
+    if(!depthEnabled) {
         vTextureCoord = textureCoord;
         vTextureIndex = brushTextures[brushIndex];
         vProps = brushes[brushIndex];

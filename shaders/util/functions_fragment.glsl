@@ -72,7 +72,7 @@ ShadowProperties getShadow(sampler2D shadowMap, sampler2D noise, vec4 lightViewP
 
 
 vec4 textureBlend(vec3 ws, uvec3 ti, sampler2DArray ts[25], vec2 uv, int index) {
-    if(overrideEnabled > 0u) {
+    if(overrideEnabled) {
         return texture(ts[overrideTexture], vec3(uv, index));
     }
     

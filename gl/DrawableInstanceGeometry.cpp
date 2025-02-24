@@ -52,10 +52,10 @@ DrawableInstanceGeometry::~DrawableInstanceGeometry() {
 	glDeleteVertexArrays(1, &vao);
  }
 
-void DrawableInstanceGeometry::draw(uint mode, GLuint program, std::vector<glm::mat4> * instances) {
+void DrawableInstanceGeometry::draw(uint mode, std::vector<glm::mat4> * instances) {
 
 	if(this->indices && instances && instances->size()) {
-		//std::cout << "Rendering " << std::to_string(this->instances) << std::endl;
+		std::cout << "Rendering " << std::to_string(instances->size()) << std::endl;
 		glBindVertexArray(this->vao);
 		glDrawElementsInstanced(mode, this->indices, GL_UNSIGNED_INT, 0, instances->size());
 	}
