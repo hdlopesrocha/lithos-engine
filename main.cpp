@@ -108,6 +108,7 @@ class MainApplication : public LithosApplication {
 	ProgramData * programVegetationData;
 
 	UniformBlock block;
+	UniformBlock viewerBlock;
 
 
 	GLuint noiseTexture;
@@ -123,6 +124,7 @@ class MainApplication : public LithosApplication {
 	float time = 0.0f;
 
 	// UI
+	UniformBlockViewer * uniformBlockViewer;
 	BrushEditor * brushEditor;
 	AtlasPainter * atlasPainter;
 	AtlasViewer * atlasViewer;
@@ -376,7 +378,7 @@ public:
         light.direction = glm::normalize(glm::vec3(-1.0,-1.0,-1.0));
 
 		//tesselator->normalize();
-
+		uniformBlockViewer = new UniformBlockViewer(&viewerBlock);
 		atlasPainter = new AtlasPainter(&atlasTextures, &atlasDrawers, programAtlas, programTexture, 256,256);
 		atlasViewer = new AtlasViewer(&atlasTextures, programAtlas, programTexture, 256,256);
 		brushEditor = new BrushEditor(&camera, &brushes, &textures, program3d, programTexture);
@@ -517,8 +519,8 @@ public:
 		block.matrixShadow =ms;
 		block.lightDirection = glm::vec4(light.direction, 0.0f);
 		block.cameraPosition = glm::vec4(camera.position, 0.0f);
-		block.timeAndPadding = glm::vec4( time, 0.0, 0.0 ,0.0);
-        block.data = glm::vec4(0);
+		block.floatData = glm::vec4( time, 0.0, 0.0 ,0.0);
+        block.uintData = glm::vec4(0);
 		block.set(0, PARALLAX_FLAG, settings->parallaxEnabled);
 		block.set(0, SHADOW_FLAG, settings->shadowEnabled);
 		block.set(0, DEBUG_FLAG, settings->debugEnabled);
@@ -526,8 +528,9 @@ public:
 		block.set(0, TRIPLANAR_FLAG, true);
 		block.set(0, DEPTH_FLAG, true);
 		block.set(0, OVERRIDE_FLAG, false);
-        block.data.w = 0;
+        block.uintData.w = 0;
 
+		viewerBlock = block;
 		// =================
 		// First Pass: Depth
 		// =================
@@ -664,6 +667,9 @@ public:
 				if (ImGui::MenuItem("Texture Viewer", "Ctrl+M")) {
 					textureViewer->show();
 				}
+				if (ImGui::MenuItem("Uniform Viewer", "Ctrl+M")) {
+					uniformBlockViewer->show();
+				}
 				if (ImGui::MenuItem("Settings", "Ctrl+S")) {
 					settingsEditor->show();
 				}
@@ -705,6 +711,7 @@ public:
 
 		}
 
+		uniformBlockViewer->draw2dIfOpen();
 		animatedTextureEditor->draw2dIfOpen();
 		brushEditor->draw2dIfOpen();
 		shadowMapViewer->draw2dIfOpen();

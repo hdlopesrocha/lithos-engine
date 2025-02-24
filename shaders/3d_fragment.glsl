@@ -55,7 +55,7 @@ void main() {
     mat3 normalMatrix = transpose(inverse(mat3(model)));
     vec3 normal = normalize(normalMatrix * teNormal);
 
-    float effectAmount = sin(timeAndPadding.x*3.14/4.0)*0.5 + 0.5;
+    float effectAmount = sin(time*3.14/4.0)*0.5 + 0.5;
     float distance = length(cameraPosition.xyz - position);
     float distanceFactor = clamp(teProps.parallaxFade / distance, 0.0, 1.0); // Adjust these numbers to fit your scene
 

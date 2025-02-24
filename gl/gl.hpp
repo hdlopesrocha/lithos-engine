@@ -62,16 +62,16 @@ struct UniformBlock {
     glm::mat4 matrixShadow;      
     glm::vec4 lightDirection;   
     glm::vec4 cameraPosition;   
-    glm::vec4 timeAndPadding;  
-    glm::uvec4 data;      
+    glm::vec4 floatData;  
+    glm::uvec4 uintData;      
 
     public:
-    static void print(UniformBlock * block);
+    static std::string toString(UniformBlock * block);
     void set(uint index, uint flag, bool value) {
         if(value){
-            data[index] |= flag;
+            uintData[index] |= flag;
         }else {
-            data[index] &= ~flag;
+            uintData[index] &= ~flag;
         }
     }
 };

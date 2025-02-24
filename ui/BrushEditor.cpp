@@ -134,8 +134,7 @@ void BrushEditor::draw3d(UniformBlock * block){
     block->model = model2;
     block->set(0, SHADOW_FLAG, false);
     block->set(0, OVERRIDE_FLAG, true);
-    block->data.w = (uint) selectedBrush;
-    UniformBlock::print(block);
+    block->uintData.w = (uint) selectedBrush;
     data->uniform(block);
     sphere->draw(GL_PATCHES);
 }

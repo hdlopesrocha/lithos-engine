@@ -1,20 +1,24 @@
 #include "gl.hpp"
 #include <format>
 #include <iostream>
+#include <sstream>
 
-void UniformBlock::print(UniformBlock * block) {
+
+std::string UniformBlock::toString(UniformBlock * block) {
 	uint * data = (uint *) block;
 	size_t size = sizeof(UniformBlock)/sizeof(uint);
-	
-	std::cout << "UniformBlock: ";
+    std::stringstream ss;
+
 	for(int i=0; i < size ; ++i) {
         if(i%4 == 0) {
-            std::cout << std::endl << "\t";
+            ss << std::endl;
         }
-		std::cout << "0x"<< std::setw(8) << std::setfill('0')  << std::hex << data[i] << " ";
+		ss << "0x"<< std::setw(8) << std::setfill('0')  << std::hex << data[i] << " ";
 	}
-	std::cout << std::endl;
+	ss << std::endl;
+    return ss.str();
 }
+
 
 ProgramData::ProgramData() {
     ubo= 0;

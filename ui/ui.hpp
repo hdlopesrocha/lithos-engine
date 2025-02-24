@@ -58,6 +58,16 @@ class TextureViewer: public Closable {
     void draw3d(UniformBlock * block);
 };
 
+class UniformBlockViewer: public Closable {
+
+    public:
+    UniformBlock * block;
+    UniformBlockViewer(UniformBlock * block);
+    void draw2d();
+    void draw3d(UniformBlock * block);
+};
+
+
 class AtlasViewer: public Closable {
     std::vector<AtlasTexture*> * atlasTextures;
     TexturePreviewer * previewer;
