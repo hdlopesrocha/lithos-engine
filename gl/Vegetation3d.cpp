@@ -46,6 +46,6 @@ Vegetation3d::Vegetation3d() : Geometry(){
 }
 
 
-DrawableInstanceGeometry * Vegetation3d::createDrawable() {
-    return new DrawableInstanceGeometry(this);
+DrawableInstanceGeometry * Vegetation3d::createDrawable(std::vector<glm::mat4> * instances) {
+    return new DrawableInstanceGeometry(this, instances);
 }

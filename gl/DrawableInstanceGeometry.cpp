@@ -1,6 +1,6 @@
 #include "gl.hpp"
 
-DrawableInstanceGeometry::DrawableInstanceGeometry(Geometry * t){
+DrawableInstanceGeometry::DrawableInstanceGeometry(Geometry * t, std::vector<glm::mat4> * instances){
 
 	this->indices = t->indices.size();
 
@@ -24,8 +24,8 @@ DrawableInstanceGeometry::DrawableInstanceGeometry(Geometry * t){
 	glEnableVertexAttribArray(3);	
 	
 	// Instance data
-	//glBindBuffer(GL_ARRAY_BUFFER, ibo);
-	//glBufferData(GL_ARRAY_BUFFER, instances->size()*sizeof(glm::mat4), NULL, GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, ibo);
+	glBufferData(GL_ARRAY_BUFFER, instances->size()*sizeof(glm::mat4), instances, GL_STATIC_DRAW);
 
 	//glEnableVertexAttribArray(4);	
 	//glVertexAttribPointer(4, 16, GL_FLOAT, GL_FALSE,sizeof(glm::mat4), (void*) NULL);

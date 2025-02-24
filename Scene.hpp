@@ -18,11 +18,6 @@ class Scene {
 		OctreeProcessor * liquidProcessor;
 		OctreeProcessor * vegetationProcessor;
 
-
-		int solidTrianglesCount = 0;
-		int liquidTrianglesCount = 0;
-		int shadowTrianglesCount = 0;
-
 		int solidInstancesCount = 0;
 		int liquidInstancesCount = 0;
 		int shadowInstancesCount = 0;
@@ -38,10 +33,10 @@ class Scene {
 		shadowRenderer = new OctreeInstanceRenderer(program3dShadow, solidSpace, TYPE_INSTANCE_SHADOW_DRAWABLE, 6);
 		vegetationRenderer = new OctreeInstanceRenderer(programVegetation, solidSpace, TYPE_INSTANCE_VEGETATION_DRAWABLE, 5);
 
-		solidProcessor = new OctreeProcessor(solidSpace, &solidTrianglesCount, TYPE_INSTANCE_SOLID_DRAWABLE, 5, 0.9, 0.2, true, true);
-		liquidProcessor = new OctreeProcessor(liquidSpace, &liquidTrianglesCount, TYPE_INSTANCE_LIQUID_DRAWABLE, 5, 0.9, 0.2, true, true);
-		shadowProcessor = new OctreeProcessor(solidSpace, &shadowTrianglesCount, TYPE_INSTANCE_SHADOW_DRAWABLE, 6, 0.1, 4.0, false, true);
-		vegetationProcessor = new OctreeProcessor(solidSpace, &vegetationInstancesCount, TYPE_INSTANCE_VEGETATION_DRAWABLE, 5, 0.9, 0.2, true, true);
+		solidProcessor = new OctreeProcessor(solidSpace, &solidInstancesCount, TYPE_INSTANCE_SOLID_DRAWABLE, 5, 0.9, 0.2, true, true, 5);
+		liquidProcessor = new OctreeProcessor(liquidSpace, &liquidInstancesCount, TYPE_INSTANCE_LIQUID_DRAWABLE, 5, 0.9, 0.2, true, true, 5);
+		shadowProcessor = new OctreeProcessor(solidSpace, &shadowInstancesCount, TYPE_INSTANCE_SHADOW_DRAWABLE, 6, 0.1, 4.0, false, true, 6);
+		vegetationProcessor = new OctreeProcessor(solidSpace, &vegetationInstancesCount, TYPE_INSTANCE_VEGETATION_DRAWABLE, 5, 0.9, 0.2, false, true, 5);
 
     }
 

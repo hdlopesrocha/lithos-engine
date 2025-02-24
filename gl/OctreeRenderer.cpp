@@ -26,7 +26,10 @@ void * OctreeRenderer::before(int level, OctreeNode * node, BoundingCube cube, v
 			NodeInfo * info = &node->info[i];
 			// drawable geometry
 			if(info != NULL) {
-				if(info->type == TYPE_INSTANCE_VEGETATION_DRAWABLE || info->type == TYPE_INSTANCE_SOLID_DRAWABLE) {
+				if(info->type == TYPE_INSTANCE_VEGETATION_DRAWABLE 
+					|| info->type == TYPE_INSTANCE_SHADOW_DRAWABLE 
+					|| info->type == TYPE_INSTANCE_LIQUID_DRAWABLE
+					|| info->type == TYPE_INSTANCE_SOLID_DRAWABLE) {
 					DrawableInstanceGeometry * drawable = (DrawableInstanceGeometry*) info->data;
 					std::vector<glm::mat4> * instances = (std::vector<glm::mat4> *) info->temp;
 			

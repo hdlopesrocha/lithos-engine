@@ -167,7 +167,7 @@ class DrawableInstanceGeometry {
 	int indices;
     bool init = true;
 
-	DrawableInstanceGeometry(Geometry * t);
+	DrawableInstanceGeometry(Geometry * t, std::vector<glm::mat4> * instances);
     ~DrawableInstanceGeometry();
     void draw(uint mode, GLuint program, std::vector<glm::mat4> * instances);
     DrawableInstanceGeometry * getDrawable();
@@ -184,12 +184,13 @@ class OctreeProcessor : public IteratorHandler{
     float simplificationDistance;
     bool simplificationTexturing;
     bool createInstances;
+    int simplification;
     public: 
 		int loaded = 0;
 		int geometryLevel;
         glm::vec3 cameraPosition;
         int * triangles;
-		OctreeProcessor(Octree * tree, int * triangles, int drawableType, int geometryLevel, float simplificationAngle, float simplificationDistance, bool simplificationTexturing, bool createInstances);
+		OctreeProcessor(Octree * tree, int * triangles, int drawableType, int geometryLevel, float simplificationAngle, float simplificationDistance, bool simplificationTexturing, bool createInstances, int simplification);
 
 		void update(glm::mat4 m);
 		void * before(int level, OctreeNode * node, BoundingCube cube, void * context);
@@ -359,7 +360,7 @@ struct TileDraw {
 class Vegetation3d : public Geometry {
     public:
     Vegetation3d();
-    DrawableInstanceGeometry * createDrawable();
+    DrawableInstanceGeometry * createDrawable(std::vector<glm::mat4> * instances);
 };
 
 class AtlasTexture: public Texture {

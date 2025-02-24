@@ -3,8 +3,9 @@
 #include "gl.hpp"
 #include <glm/gtx/norm.hpp> 
 
-OctreeProcessor::OctreeProcessor(Octree * tree, int * triangles,  int drawableType, int geometryLevel, float simplificationAngle, float simplificationDistance, bool simplificationTexturing, bool createInstances) {
+OctreeProcessor::OctreeProcessor(Octree * tree, int * triangles,  int drawableType, int geometryLevel, float simplificationAngle, float simplificationDistance, bool simplificationTexturing, bool createInstances, int simplification) {
 	this->tree = tree;
+	this->simplification= simplification;
 	this->simplificationAngle = simplificationAngle;
 	this->simplificationDistance = simplificationDistance;
 	this->simplificationTexturing = simplificationTexturing;
@@ -21,7 +22,6 @@ void OctreeProcessor::update(glm::mat4 m) {
 OctreeNode * OctreeProcessor::getChild(OctreeNode * node, int index){
 	return node->children[index];
 }
-static int simplficationId = 0;
 
 void markNeighborsAsDirty(Octree * tree, BoundingCube cube, int level, int drawableType) {
 	for(int i=1; i < 7 ; ++i) {
@@ -71,33 +71,37 @@ void * OctreeProcessor::before(int level, OctreeNode * node, BoundingCube cube, 
 
 	if(tree->getHeight(cube)==geometryLevel){
 		if(createInstances && canGenerate && loaded == 0){
-			++simplficationId;
 			// Simplify
-			Simplifier simplifier(tree, simplificationAngle, simplificationDistance, simplificationTexturing, simplficationId); 
+			Simplifier simplifier(tree, simplificationAngle, simplificationDistance, simplificationTexturing, simplification); 
 			simplifier.iterate(level, node, cube, &cube);
 
 			// Tesselate
 			Geometry * loadable = new Geometry();
-			Tesselator tesselator(tree, loadable, simplficationId);
+			Tesselator tesselator(tree, loadable, simplification);
 			tesselator.iterate(level, node, cube, NULL);
 			
 			// Instances
-			*triangles += tesselator.triangles;
 
 			if(loaded ==0 && drawableType == TYPE_INSTANCE_VEGETATION_DRAWABLE) {
-				NodeInfo * vegetationInfo = node->getNodeInfo(TYPE_INSTANCE_VEGETATION_DRAWABLE);
+				NodeInfo * info = node->getNodeInfo(drawableType);
 
-				if(vegetationInfo == NULL) {
+				if(info == NULL) {
 					InstanceBuilder instanceBuilder(tree, drawableType, geometryLevel);
 					instanceBuilder.iterate(level, node, cube, NULL);
 					//instanceBuilder.matrices.back;//CXXX
+
 					if(instanceBuilder.instanceCount > 0) {
+						*triangles += instanceBuilder.instanceCount;
+						std::cout << "Create vegetation " << std::to_string(instanceBuilder.instanceCount)<< std::endl;
+						
 						std::vector<glm::mat4> * instances = new std::vector<glm::mat4>();
-						*instances = instanceBuilder.instances;
+						for(glm::mat4 m : instanceBuilder.instances){
+							instances->push_back(m);
+						}
 						Vegetation3d * vegetation = new Vegetation3d();
 						NodeInfo vi;
 						vi.type = drawableType;
-						vi.data = vegetation->createDrawable();
+						vi.data = vegetation->createDrawable(instances);
 						vi.temp = instances;
 						vi.dirty = false;
 						node->info.push_back(vi);
@@ -106,6 +110,7 @@ void * OctreeProcessor::before(int level, OctreeNode * node, BoundingCube cube, 
 				}
 			}
 			if(loaded ==0 && (drawableType == TYPE_INSTANCE_SOLID_DRAWABLE || drawableType == TYPE_INSTANCE_LIQUID_DRAWABLE  || drawableType == TYPE_INSTANCE_SHADOW_DRAWABLE)) {
+
 				NodeInfo * info = node->getNodeInfo(drawableType);
 
 				if(info == NULL) {
@@ -115,8 +120,9 @@ void * OctreeProcessor::before(int level, OctreeNode * node, BoundingCube cube, 
 
 					//instanceBuilder.matrices.back;//CXXX
 					if(instanceCount > 0) {
+						*triangles += instanceCount;
 						std::cout << "drawable " << std::to_string(instanceCount)<< std::endl;
-						DrawableInstanceGeometry * drawable = new DrawableInstanceGeometry(loadable);
+						DrawableInstanceGeometry * drawable = new DrawableInstanceGeometry(loadable, instances);
 						NodeInfo vi;
 						vi.type = drawableType;
 						vi.data = drawable;

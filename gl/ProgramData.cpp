@@ -19,39 +19,25 @@ void UniformBlock::print(UniformBlock * block) {
 ProgramData::ProgramData(GLuint program) {
     this->program = program;
 
-    ubo = 0;
-    // 1️⃣ Get the uniform block index
-    GLuint blockIndex = glGetUniformBlockIndex(program, "UniformBlock");
-
-    // 2️⃣ Bind uniform block index to a binding point (e.g., 0)
-    GLuint bindingPoint = 0;
-    glUniformBlockBinding(program, blockIndex, bindingPoint);
-
-    // 3️⃣ Generate and bind UBO
-    glGenBuffers(1, &ubo);
-    glBindBuffer(GL_UNIFORM_BUFFER, ubo);
-
-    // 4️⃣ Allocate memory for the UBO (NULL for now, will update later)
-    glBufferData(GL_UNIFORM_BUFFER, sizeof(UniformBlock), NULL, GL_DYNAMIC_DRAW);
-
-    // 5️⃣ Bind UBO to the same binding point
-    glBindBufferBase(GL_UNIFORM_BUFFER, bindingPoint, ubo);
+    ubo= 0;
+    glGenBuffers(1, &ubo);  // Generate the buffer
+    glBindBuffer(GL_UNIFORM_BUFFER, ubo);  // Bind it as a UBO
+    glBufferData(GL_UNIFORM_BUFFER, sizeof(UniformBlock), NULL, GL_DYNAMIC_DRAW);  // Allocate memory
+    glBindBufferBase(GL_UNIFORM_BUFFER, 0, ubo);  // Bind it to binding point 0
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);  // Unbind
 }
 
 
 void ProgramData::uniform(UniformBlock * block){
     //UniformBlock::print(block);
-    
-    // Bind UBO
+
     glBindBuffer(GL_UNIFORM_BUFFER, ubo);
-    
-    // Orphan the buffer (old data is discarded)
-    glBufferData(GL_UNIFORM_BUFFER, sizeof(UniformBlock), NULL, GL_DYNAMIC_DRAW);
-
-    // Upload new data
-    glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(UniformBlock), &block);
-
-    // Unbind UBO (optional)
+    void* ptr = glMapBufferRange(GL_UNIFORM_BUFFER, 0, sizeof(UniformBlock), 
+                                 GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT);
+    if (ptr) {
+        memcpy(ptr, block, sizeof(UniformBlock));
+        glUnmapBuffer(GL_UNIFORM_BUFFER);
+    }
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
     
 }

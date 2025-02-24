@@ -699,9 +699,9 @@ public:
 		
 			
 			ImGui::Text("%d FPS", framesPerSecond);
-			ImGui::Text("%d solid triangles", mainScene->solidTrianglesCount);
-			ImGui::Text("%d liquid triangles", mainScene->liquidTrianglesCount);
-			ImGui::Text("%d shadow triangles", mainScene->shadowTrianglesCount);
+			ImGui::Text("%d solid instances", mainScene->solidInstancesCount);
+			ImGui::Text("%d liquid instances", mainScene->liquidInstancesCount);
+			ImGui::Text("%d shadow instances", mainScene->shadowInstancesCount);
 			ImGui::Text("%d vegetation instances", mainScene->vegetationInstancesCount);
 			ImGui::End();
 
