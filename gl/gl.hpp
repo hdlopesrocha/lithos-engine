@@ -13,10 +13,12 @@
 #define DEBUG 1
 #define NDEBUG 1
 
-#define TYPE_SOLID_DRAWABLE 1
-#define TYPE_SHADOW_DRAWABLE 2
-#define TYPE_LIQUID_DRAWABLE 3
-#define TYPE_INSTANCE_DRAWABLE 4
+
+#define TYPE_INSTANCE_VEGETATION_DRAWABLE 1
+#define TYPE_INSTANCE_SOLID_DRAWABLE 2
+#define TYPE_INSTANCE_LIQUID_DRAWABLE 3
+#define TYPE_INSTANCE_SHADOW_DRAWABLE 4
+
 
 #include "../dependencies/imgui/imgui.h"
 #include "../dependencies/imgui/imgui_impl_glfw.h"
@@ -44,30 +46,41 @@
 #include <ranges>
 #include <initializer_list>
 
-struct InstanceData {
-	glm::mat4 model;
+
+#pragma pack(16)  // Ensure 16-byte alignment for UBO
+struct UniformBlock {
+    glm::mat4 model;          
+    glm::mat4 modelViewProjection;  
+    glm::mat4 matrixShadow;      
+    glm::vec4 lightDirection;   
+    glm::vec4 cameraPosition;   
+    glm::vec4 timeAndPadding;      // 224  ->  16 bytes  (time + padding)
+    uint parallaxEnabled;        
+    uint shadowEnabled;          
+    uint debugEnabled;            
+    uint lightEnabled;            
+    uint triplanarEnabled;      
+    uint depthEnabled;            
+    uint overrideEnabled;
+    uint overrideTexture;
+    uint padding;
+
+    static void print(UniformBlock * block);
 };
+#pragma pack()  // Reset to default packing
 
-struct UniformBufferObject {
-	glm::mat4 view;
-	glm::mat4 projection;
+
+struct ProgramData {
+	public:
+	GLuint ubo;
+	GLuint program;
+
+	ProgramData(GLuint program);
+	void uniform(UniformBlock * block);
 };
-
-
-struct IndexBufferObject {
-    std::vector<Vertex> vertices;
-    std::vector<uint16_t> indices;
-    std::vector<glm::vec3> offsets;
-    long indicesCount;
-};
-
 
 typedef GLuint TextureArray;
 typedef GLuint TextureImage;
-
-struct Model3D {
-     std::map<std::string, IndexBufferObject> buffers;
-};
 
 struct Camera {
     glm::mat4 projection;
@@ -147,13 +160,17 @@ class DrawableGeometry {
 
 class DrawableInstanceGeometry {
 	public:
-	GLuint vao, vbo, ebo, ibo;
+	GLuint vao = 0u;
+	GLuint vbo = 0u;
+	GLuint ebo = 0u;
+	GLuint ibo = 0u;
 	int indices;
-    int instances;
+    bool init = true;
 
-	DrawableInstanceGeometry(Geometry * t, std::vector<glm::mat4> * instances);
+	DrawableInstanceGeometry(Geometry * t);
     ~DrawableInstanceGeometry();
-    void draw(uint mode);
+    void draw(uint mode, GLuint program, std::vector<glm::mat4> * instances);
+    DrawableInstanceGeometry * getDrawable();
 };
 
 
@@ -190,12 +207,13 @@ class OctreeRenderer : public IteratorHandler{
 	Frustum frustum;
 	int geometryType;
     int drawableType;
-
+    glm::mat4 * model;
+    GLuint program;
     public: 
         uint mode;
 		int geometryLevel;
         glm::vec3 cameraPosition;
-		OctreeRenderer(Octree * tree, int drawableType, int geometryLevel);
+		OctreeRenderer(GLuint program, Octree * tree, int drawableType, int geometryLevel, glm::mat4 * model);
 
 		void update(glm::mat4 m);
 		void * before(int level, OctreeNode * node, BoundingCube cube, void * context);
@@ -213,9 +231,9 @@ class InstanceBuilder : public IteratorHandler{
 	int geometryType;
     int drawableType;
     public: 
-        int instances;
+        int instanceCount;
         uint mode;
-        std::vector<glm::mat4> matrices;
+        std::vector<glm::mat4> instances;
 		int geometryLevel;
 		InstanceBuilder(Octree * tree, int drawableType, int geometryLevel);
 
@@ -338,11 +356,10 @@ struct TileDraw {
 };
 
 
-class Vegetation3d {
+class Vegetation3d : public Geometry {
     public:
-    DrawableInstanceGeometry * drawable;
-
-    Vegetation3d(std::vector<glm::mat4> * instances);
+    Vegetation3d();
+    DrawableInstanceGeometry * createDrawable();
 };
 
 class AtlasTexture: public Texture {
@@ -379,13 +396,13 @@ class OctreeInstanceRenderer : public IteratorHandler{
 	Frustum frustum;
 	int geometryType;
     int drawableType;
-
+    GLuint program;
     public: 
         uint mode;
         int instances;
 		int geometryLevel;
         glm::vec3 cameraPosition;
-		OctreeInstanceRenderer(Octree * tree, int drawableType, int geometryLevel);
+		OctreeInstanceRenderer(GLuint program, Octree * tree, int drawableType, int geometryLevel);
 
 		void update(glm::mat4 m);
 		void * before(int level, OctreeNode * node, BoundingCube cube, void * context);

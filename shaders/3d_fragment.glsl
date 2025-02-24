@@ -1,5 +1,4 @@
 #version 460 core
-
 #include<structs.glsl>
 
 uniform sampler2D shadowMap;
@@ -8,9 +7,11 @@ uniform sampler2D depthTexture;
 uniform sampler2D underTexture;
 uniform sampler2DArray textures[25];
 
-
-
 #include<functions.glsl>
+#include<functions_fragment.glsl>
+#include<parallax.glsl>
+#include<depth.glsl>
+
 
 in vec2 teTextureCoord;
 in vec3 teTextureWeights;
@@ -23,9 +24,7 @@ in vec4 teLightViewPosition;
 
 out vec4 color;    // Final fragment color
 
-#include<functions_fragment.glsl>
-#include<parallax.glsl>
-#include<depth.glsl>
+
 
 void main() {
 
@@ -38,14 +37,14 @@ void main() {
     float d1 = linearizeDepth(texture(depthTexture, pixelUV).r, near, far);
     float d2 = linearizeDepth(gl_FragCoord.z, near, far);
     
-    if(layer == 0) {
+    if(depthEnabled > 0u) {
         color = vec4(d2/far,0.0,0.0,1.0);
     }
     if(d1<d2) {
         discard;
     }
 
-    if(layer == 0) {
+    if(depthEnabled > 0u) {
         return;
     }
 
@@ -56,11 +55,11 @@ void main() {
     mat3 normalMatrix = transpose(inverse(mat3(model)));
     vec3 normal = normalize(normalMatrix * teNormal);
 
-    float effectAmount = sin(time*3.14/4.0)*0.5 + 0.5;
+    float effectAmount = sin(timeAndPadding.x*3.14/4.0)*0.5 + 0.5;
     float distance = length(cameraPosition.xyz - position);
     float distanceFactor = clamp(teProps.parallaxFade / distance, 0.0, 1.0); // Adjust these numbers to fit your scene
 
-    if(triplanarEnabled == 1) {
+    if(triplanarEnabled > 0u) {
         int plane = triplanarPlane(position, normal);
         uv = triplanarMapping(position, plane, teProps.textureScale) * 0.1;
     }
@@ -69,7 +68,7 @@ void main() {
     mat3 TBN = getTBN(tePosition, teNormal, uv, model, false);
     vec3 viewDirectionTangent = normalize(transpose(TBN) * viewDirection);
 
-    if(parallaxEnabled == 1 && distanceFactor * teProps.parallaxScale > 0.0) {
+    if(parallaxEnabled > 0u && distanceFactor * teProps.parallaxScale > 0.0) {
        uv = parallaxMapping(teTextureWeights, teTextureIndices, uv, viewDirectionTangent, distanceFactor*teProps.parallaxScale , distanceFactor*teProps.parallaxMinLayers, distanceFactor*teProps.parallaxMaxLayers, int(ceil(distanceFactor*teProps.parallaxRefine)));
     }
   
@@ -78,7 +77,7 @@ void main() {
         discard;
     }
 
-    if(lightEnabled == 1) {
+    if(lightEnabled > 0u) {
         vec3 specularColor = vec3(1.0,1.0,1.0);
 
         vec3 normalMap = textureBlend(teTextureWeights, teTextureIndices, textures, uv, 1).rgb * 2.0 - 1.0;
@@ -94,10 +93,10 @@ void main() {
         ShadowProperties shadow; 
         shadow.shadowAmount = 1.0;
         shadow.lightAmount = 1.0;
-        if(shadowEnabled == 1) {
+        if(shadowEnabled > 0u) {
             shadow = getShadow(shadowMap, noise, teLightViewPosition, position);
         }
-        if(debugEnabled == 1) {
+        if(debugEnabled > 0u) {
             color = vec4(worldNormal,1.0);
         }else {
             vec4 refractedColor = vec4(0.0,0.0,0.0,0.0);
@@ -113,7 +112,7 @@ void main() {
             color = refractedColor + vec4(((mixedColor).rgb*diffuse + specularColor * teProps.specularStrength * phongSpec *  shadow.lightAmount)*shadow.shadowAmount , mixedColor.a+teProps.specularStrength * phongSpec *  shadow.lightAmount); 
         }
     }else {
-        if(debugEnabled == 1) {
+        if(debugEnabled > 0u) {
             color = vec4(visual(normal), 1.0);
         }else {
             color = vec4(1.0,1.0,1.0,1.0);

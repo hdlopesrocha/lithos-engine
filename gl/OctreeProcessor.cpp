@@ -52,15 +52,6 @@ void removeDirtyNodeInfo(OctreeNode * node, int drawableType) {
     node->info.erase(std::remove_if(node->info.begin(), node->info.end(), shouldRemove), node->info.end());
 }
 
-NodeInfo * getNodeInfo(OctreeNode * node, int infoType) {
-	for(int i=0; i < node->info.size(); ++i){
-		NodeInfo * info = &node->info[i];
-		if(info->type == infoType) {
-			return info;
-		}
-	}
-	return NULL;
-}
 
 void * OctreeProcessor::before(int level, OctreeNode * node, BoundingCube cube, void * context) {		
 	bool canGenerate = true;
@@ -79,13 +70,12 @@ void * OctreeProcessor::before(int level, OctreeNode * node, BoundingCube cube, 
 	}
 
 	if(tree->getHeight(cube)==geometryLevel){
-		if(canGenerate && loaded == 0){
-
+		if(createInstances && canGenerate && loaded == 0){
 			++simplficationId;
 			// Simplify
 			Simplifier simplifier(tree, simplificationAngle, simplificationDistance, simplificationTexturing, simplficationId); 
 			simplifier.iterate(level, node, cube, &cube);
-			
+
 			// Tesselate
 			Geometry * loadable = new Geometry();
 			Tesselator tesselator(tree, loadable, simplficationId);
@@ -94,43 +84,53 @@ void * OctreeProcessor::before(int level, OctreeNode * node, BoundingCube cube, 
 			// Instances
 			*triangles += tesselator.triangles;
 
+			if(loaded ==0 && drawableType == TYPE_INSTANCE_VEGETATION_DRAWABLE) {
+				NodeInfo * vegetationInfo = node->getNodeInfo(TYPE_INSTANCE_VEGETATION_DRAWABLE);
 
-			NodeInfo * existingInstanceInfo = getNodeInfo(node, TYPE_INSTANCE_DRAWABLE);
-
-			if(createInstances && existingInstanceInfo == NULL) {
-				InstanceBuilder instanceBuilder(tree, drawableType, geometryLevel);
-				instanceBuilder.iterate(level, node, cube, NULL);
-
-				if(instanceBuilder.instances > 0) {
-					//std::cout << "Matrices "<< std::to_string(instanceBuilder.matrices.size()) << std::endl;
-					Vegetation3d * vegetation = new Vegetation3d(&instanceBuilder.matrices);
-					NodeInfo vegetationInfo;
-					vegetationInfo.type = TYPE_INSTANCE_DRAWABLE;
-					vegetationInfo.data = vegetation;
-					vegetationInfo.dirty = false;
-					node->info.push_back(vegetationInfo);
+				if(vegetationInfo == NULL) {
+					InstanceBuilder instanceBuilder(tree, drawableType, geometryLevel);
+					instanceBuilder.iterate(level, node, cube, NULL);
+					//instanceBuilder.matrices.back;//CXXX
+					if(instanceBuilder.instanceCount > 0) {
+						std::vector<glm::mat4> * instances = new std::vector<glm::mat4>();
+						*instances = instanceBuilder.instances;
+						Vegetation3d * vegetation = new Vegetation3d();
+						NodeInfo vi;
+						vi.type = drawableType;
+						vi.data = vegetation->createDrawable();
+						vi.temp = instances;
+						vi.dirty = false;
+						node->info.push_back(vi);
+						++loaded;
+					}
 				}
 			}
+			if(loaded ==0 && (drawableType == TYPE_INSTANCE_SOLID_DRAWABLE || drawableType == TYPE_INSTANCE_LIQUID_DRAWABLE  || drawableType == TYPE_INSTANCE_SHADOW_DRAWABLE)) {
+				NodeInfo * info = node->getNodeInfo(drawableType);
 
-			// Send to GPU
-			NodeInfo * existingInfo = getNodeInfo(node, drawableType);
-			if(existingInfo== NULL) {
-				NodeInfo info;
-				info.temp = loadable;
-				info.data = NULL;
-				info.type = drawableType;
-				info.dirty = false;
+				if(info == NULL) {
+					int instanceCount = 1;
+					std::vector<glm::mat4> * instances = new std::vector<glm::mat4>();
+					instances->push_back(glm::mat4(1.0));
 
-				node->info.push_back(info);
-			}else {
-				if(existingInfo->temp != NULL) {
-					Geometry * c = (Geometry*) existingInfo->temp;
-					delete c;
+					//instanceBuilder.matrices.back;//CXXX
+					if(instanceCount > 0) {
+						std::cout << "drawable " << std::to_string(instanceCount)<< std::endl;
+						DrawableInstanceGeometry * drawable = new DrawableInstanceGeometry(loadable);
+						NodeInfo vi;
+						vi.type = drawableType;
+						vi.data = drawable;
+						vi.temp = instances;
+						vi.dirty = false;
+						node->info.push_back(vi);
+						++loaded;
+					}
 				}
-				existingInfo->temp = loadable;
-				existingInfo->dirty = false;
 			}
-			++loaded;
+		
+
+	
+
 		}
 	
 		return node;

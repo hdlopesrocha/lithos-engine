@@ -4,6 +4,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/quaternion.hpp>
+#include <format>
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -265,6 +266,7 @@ class OctreeNode {
 		void clear();
 		bool isEmpty();
 		void setChild(int i, OctreeNode * node);
+		NodeInfo * getNodeInfo(int infoType);
 };
 
 class IteratorHandler {

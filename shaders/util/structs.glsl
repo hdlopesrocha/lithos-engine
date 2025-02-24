@@ -1,3 +1,5 @@
+#define PI 3.1415926535897932384626433832795
+
 struct TextureProperties {
     float parallaxScale;
     float parallaxMinLayers;
@@ -22,12 +24,14 @@ layout(std140, binding = 0) uniform UniformBlock {
 	mat4 matrixShadow;
 	vec4 lightDirection;
 	vec4 cameraPosition;
-	float time;
-	int parallaxEnabled;
-	int shadowEnabled;
-	int debugEnabled;
-	int lightEnabled;
-	int triplanarEnabled;
-	int layer;
-	int padding; 
+    vec4 timeAndPadding;
+	uint parallaxEnabled;
+	uint shadowEnabled;
+	uint debugEnabled;
+	uint lightEnabled;
+	uint triplanarEnabled;
+	uint depthEnabled;
+    uint overrideEnabled;
+    uint overrideTexture;
+    uint padding;
 };

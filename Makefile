@@ -1,17 +1,40 @@
+# Compiler and flags
 CC=g++
+CFLAGS = -std=c++20 -lGLEW -lglfw -lGL -lz -I$(STB_INCLUDE_PATH)
+LDFLAGS = 
 
+# Directories for dependencies and includes
 STB_INCLUDE_PATH = dependencies/stb
-RAPID_JSON_PATH = dependencies/rapidjson
-TINYOBJ_INCLUDE_PATH = dependencies/tinyobjloader
 IMGUI_INCLUDE_PATH = dependencies/imgui
 
+# Source files
 SRC=*.cpp gl/*.cpp math/*.cpp ui/*.cpp tools/*.cpp $(IMGUI_INCLUDE_PATH)/*.cpp
 
-CFLAGS = -pg -g -std=c++17 -lGLEW -lglfw -lGL -lz -I$(STB_INCLUDE_PATH) -I$(RAPID_JSON_PATH)/include -I$(TINYOBJ_INCLUDE_PATH) 
+# Target executable name
+TARGET=bin/app
+CONVERTER=bin/converter
 
+# Default build type
+BUILD = debug
 
+# Debug Build Configuration
+debug: CFLAGS += -g
+debug: LDFLAGS +=
+debug: compile
 
+# Release Build Configuration (optimized)
+release: CFLAGS += -O2
+release: LDFLAGS +=
+release: compile
+
+# Profile Build Configuration (for profiling with gprof)
+profile: CFLAGS += -pg -g
+profile: LDFLAGS +=
+profile: compile
+
+# Compilation and linking
 compile:
+	# Prepare the directories
 	mkdir -p bin
 	mkdir -p bin/shaders
 	mkdir -p bin/models
@@ -19,17 +42,25 @@ compile:
 	cp -rf models bin
 	cp -rf shaders bin
 
-	$(CC) $(SRC) $(CFLAGS) -o bin/app  
+	# Compile the source files with the chosen flags
+	$(CC) $(SRC) $(CFLAGS) -o $(TARGET) $(LDFLAGS)
 
+# Run the program
 run:
-	cd bin;	./app
+	cd bin; ./app
 
-debug:
-	cd bin;	valgrind ./app
+# Debug the program with Valgrind
+debug_run:
+	cd bin; valgrind ./app
 
-
+# Tool for converting wavefront files
 tool:
-	$(CC) $(CFLAGS) -o bin/converter tools/wavefrontConverter.cpp
+	$(CC) $(CFLAGS) -o $(CONVERTER) tools/wavefrontConverter.cpp
 
+# Install dependencies (assuming Ubuntu-based system)
 install:
-	sudo apt-get install libimgui-dev 
+	sudo apt-get install libimgui-dev libglew 
+
+# Clean the build (remove binaries and object files)
+clean:
+	rm -rf bin

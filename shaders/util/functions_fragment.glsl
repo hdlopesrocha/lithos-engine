@@ -1,4 +1,3 @@
-#define PI 3.1415926535897932384626433832795
 
 mat3 getTBN(vec3 pos, vec3 normal, vec2 uv, mat4 model, bool rotateTBN) {
     vec3 dpdx = dFdx(pos);
@@ -71,6 +70,20 @@ ShadowProperties getShadow(sampler2D shadowMap, sampler2D noise, vec4 lightViewP
     return props;
 }
 
-vec3 visual(vec3 v) {
-    return v*0.5 + vec3(0.5);
+
+vec4 textureBlend(vec3 ws, uvec3 ti, sampler2DArray ts[25], vec2 uv, int index) {
+    if(overrideEnabled > 0u) {
+        return texture(ts[overrideTexture], vec3(uv, index));
+    }
+    
+    vec4 res = vec4(0.0);
+    for(int i=0 ; i < 3; ++i) {
+        float w = ws[i];
+        uint t = ti[i];
+        if(w>0.0) {
+            res += texture(ts[t], vec3(uv, index))*w;
+        }
+	}
+    return res;
 }
+

@@ -39,3 +39,12 @@ bool OctreeNode::isEmpty() {
 }
 
 
+NodeInfo * OctreeNode::getNodeInfo(int infoType) {
+	for(int i=0; i < info.size(); ++i){
+		NodeInfo * info = &info[i];
+		if(info->type == infoType) {
+			return info;
+		}
+	}
+	return NULL;
+}

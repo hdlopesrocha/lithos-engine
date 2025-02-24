@@ -1,9 +1,8 @@
 #include "gl.hpp"
 
-DrawableInstanceGeometry::DrawableInstanceGeometry(Geometry * t, std::vector<glm::mat4> * instances){
-	this->indices = t->indices.size();
-	this->instances = instances->size();
+DrawableInstanceGeometry::DrawableInstanceGeometry(Geometry * t){
 
+	this->indices = t->indices.size();
 
 	glGenVertexArrays(1, &vao);
 	glGenBuffers(1, &vbo);
@@ -25,8 +24,9 @@ DrawableInstanceGeometry::DrawableInstanceGeometry(Geometry * t, std::vector<glm
 	glEnableVertexAttribArray(3);	
 	
 	// Instance data
-	glBindBuffer(GL_ARRAY_BUFFER, ibo);
-	glBufferData(GL_ARRAY_BUFFER, instances->size()*sizeof(glm::mat4), instances->data(), GL_STATIC_DRAW);
+	//glBindBuffer(GL_ARRAY_BUFFER, ibo);
+	//glBufferData(GL_ARRAY_BUFFER, instances->size()*sizeof(glm::mat4), NULL, GL_STATIC_DRAW);
+
 	//glEnableVertexAttribArray(4);	
 	//glVertexAttribPointer(4, 16, GL_FLOAT, GL_FALSE,sizeof(glm::mat4), (void*) NULL);
 	//glVertexAttribDivisor(4,1);
@@ -52,11 +52,11 @@ DrawableInstanceGeometry::~DrawableInstanceGeometry() {
 	glDeleteVertexArrays(1, &vao);
  }
 
-void DrawableInstanceGeometry::draw(uint mode) {
-	if(this->indices && this->instances) {
+void DrawableInstanceGeometry::draw(uint mode, GLuint program, std::vector<glm::mat4> * instances) {
+
+	if(this->indices && instances && instances->size()) {
 		//std::cout << "Rendering " << std::to_string(this->instances) << std::endl;
 		glBindVertexArray(this->vao);
-		glDrawElementsInstanced(mode, this->indices, GL_UNSIGNED_INT, 0, instances);
+		glDrawElementsInstanced(mode, this->indices, GL_UNSIGNED_INT, 0, instances->size());
 	}
 }
-

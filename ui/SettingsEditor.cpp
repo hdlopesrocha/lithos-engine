@@ -18,6 +18,6 @@ void SettingsEditor::draw2d(){
 	ImGui::End();
 }
 
-void SettingsEditor::draw3d(){
+void SettingsEditor::draw3d(UniformBlock * block){
 
 }

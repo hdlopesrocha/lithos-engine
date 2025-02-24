@@ -1,5 +1,3 @@
-uniform bool overrideTextureEnabled;
-uniform uint overrideTexture;
 
 int triplanarPlane(vec3 position, vec3 normal) {
     vec3 absNormal = abs(normal);
@@ -24,20 +22,6 @@ vec2 triplanarMapping(vec3 position, int plane, vec2 scale) {
     }
 }
 
-
-vec4 textureBlend(vec3 ws, uvec3 ti, sampler2DArray ts[25], vec2 uv, int index) {
-    if(overrideTextureEnabled) {
-        return texture(ts[overrideTexture], vec3(uv, index));
-    }
-    
-    vec4 res = vec4(0.0);
-    for(int i=0 ; i < 3; ++i) {
-        float w = ws[i];
-        uint t = ti[i];
-        if(w>0.0) {
-            res += texture(ts[t], vec3(uv, index))*w;
-        }
-	}
-    return res;
+vec3 visual(vec3 v) {
+    return v*0.5 + vec3(0.5);
 }
-

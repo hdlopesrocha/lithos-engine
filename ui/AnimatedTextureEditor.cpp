@@ -57,6 +57,6 @@ float stepFast = 1.0f; // Faster step when holding Shift
 	ImGui::End();
 }
 
-void AnimatedTextureEditor::draw3d(){
+void AnimatedTextureEditor::draw3d(UniformBlock * block){
 
 }

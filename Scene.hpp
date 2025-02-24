@@ -9,16 +9,15 @@ class Scene {
     public: 
     	Octree * solidSpace;
 	    Octree * liquidSpace;
-		OctreeRenderer * solidRenderer;
-		OctreeRenderer * shadowRenderer;
-		OctreeRenderer * liquidRenderer;
+		OctreeInstanceRenderer * solidRenderer;
+		OctreeInstanceRenderer * shadowRenderer;
+		OctreeInstanceRenderer * liquidRenderer;
 		OctreeInstanceRenderer * vegetationRenderer;
 		OctreeProcessor * solidProcessor;
 		OctreeProcessor * shadowProcessor;
 		OctreeProcessor * liquidProcessor;
+		OctreeProcessor * vegetationProcessor;
 
-		Camera camera;
-		DirectionalLight light;
 
 		int solidTrianglesCount = 0;
 		int liquidTrianglesCount = 0;
@@ -27,27 +26,22 @@ class Scene {
 		int solidInstancesCount = 0;
 		int liquidInstancesCount = 0;
 		int shadowInstancesCount = 0;
+		int vegetationInstancesCount = 0;
 
-    void setup(	) {
-
-        camera.quaternion =   glm::angleAxis(glm::radians(180.0f), glm::vec3(0, 0, 1))
-   	    					* glm::angleAxis(glm::radians(145.0f), glm::vec3(1, 0, 0))
-   	    					* glm::angleAxis(glm::radians(135.0f), glm::vec3(0, 1, 0));  
-		camera.position = glm::vec3(48,48,48);
-        light.direction = glm::normalize(glm::vec3(-1.0,-1.0,-1.0));
-
+    void setup(GLuint program3d,GLuint programVegetation,GLuint program3dShadow) {
 
 		solidSpace = new Octree(BoundingCube(glm::vec3(0,0,0), 2.0));
 		liquidSpace = new Octree(BoundingCube(glm::vec3(0,20,0), 2.0));
   
-		solidRenderer = new OctreeRenderer(solidSpace, TYPE_SOLID_DRAWABLE, 5);
-		liquidRenderer = new OctreeRenderer(liquidSpace, TYPE_LIQUID_DRAWABLE, 5);
-		shadowRenderer = new OctreeRenderer(solidSpace, TYPE_SHADOW_DRAWABLE, 6);
-		vegetationRenderer = new OctreeInstanceRenderer(solidSpace, TYPE_INSTANCE_DRAWABLE, 5);
+		solidRenderer = new OctreeInstanceRenderer(program3d, solidSpace, TYPE_INSTANCE_SOLID_DRAWABLE, 5);
+		liquidRenderer = new OctreeInstanceRenderer(program3d, liquidSpace, TYPE_INSTANCE_LIQUID_DRAWABLE, 5);
+		shadowRenderer = new OctreeInstanceRenderer(program3dShadow, solidSpace, TYPE_INSTANCE_SHADOW_DRAWABLE, 6);
+		vegetationRenderer = new OctreeInstanceRenderer(programVegetation, solidSpace, TYPE_INSTANCE_VEGETATION_DRAWABLE, 5);
 
-		solidProcessor = new OctreeProcessor(solidSpace, &solidTrianglesCount, TYPE_SOLID_DRAWABLE, 5, 0.9, 0.2, true, true);
-		liquidProcessor = new OctreeProcessor(liquidSpace, &liquidTrianglesCount, TYPE_LIQUID_DRAWABLE, 5, 0.9, 0.2, true, false);
-		shadowProcessor = new OctreeProcessor(solidSpace, &shadowTrianglesCount, TYPE_SHADOW_DRAWABLE, 6, 0.1, 4.0, false, false);
+		solidProcessor = new OctreeProcessor(solidSpace, &solidTrianglesCount, TYPE_INSTANCE_SOLID_DRAWABLE, 5, 0.9, 0.2, true, true);
+		liquidProcessor = new OctreeProcessor(liquidSpace, &liquidTrianglesCount, TYPE_INSTANCE_LIQUID_DRAWABLE, 5, 0.9, 0.2, true, true);
+		shadowProcessor = new OctreeProcessor(solidSpace, &shadowTrianglesCount, TYPE_INSTANCE_SHADOW_DRAWABLE, 6, 0.1, 4.0, false, true);
+		vegetationProcessor = new OctreeProcessor(solidSpace, &vegetationInstancesCount, TYPE_INSTANCE_VEGETATION_DRAWABLE, 5, 0.9, 0.2, true, true);
 
     }
 
@@ -59,14 +53,15 @@ class Scene {
 		solidSpace->iterate(solidProcessor);
 		liquidSpace->iterate(liquidProcessor);
 		solidSpace->iterate(shadowProcessor);
+		solidSpace->iterate(vegetationProcessor);
 	}
 
 
-	void update3d(glm::mat4 mvp, glm::mat4 mlp) {
-
-		solidRenderer->cameraPosition = camera.position;
-		liquidRenderer->cameraPosition = camera.position;
-		shadowRenderer->cameraPosition = camera.position -light.direction*512.0f;
+	void update3d(glm::mat4 mvp, glm::mat4 mlp, Camera * camera, DirectionalLight * light) {
+		vegetationRenderer->cameraPosition = camera->position;
+		solidRenderer->cameraPosition = camera->position;
+		liquidRenderer->cameraPosition = camera->position;
+		shadowRenderer->cameraPosition = camera->position -light->direction*512.0f;
 	
 		solidRenderer->update(mvp);
 		solidProcessor->loaded = 0;
@@ -78,13 +73,17 @@ class Scene {
 		liquidProcessor->update(mvp);
 		liquidRenderer->mode = GL_PATCHES;
 
+		vegetationRenderer->update(mvp);
+		vegetationProcessor->loaded = 0;
+		vegetationProcessor->update(mvp);
+		vegetationRenderer->mode = GL_TRIANGLES;
+
 		shadowRenderer->update(mlp);
 		shadowProcessor->loaded = 0;
 		shadowProcessor->update(mlp);
 		shadowRenderer->mode = GL_TRIANGLES;
 
-		vegetationRenderer->update(mvp);
-		vegetationRenderer->mode = GL_TRIANGLES;
+	
 
 	
 		processSpace();

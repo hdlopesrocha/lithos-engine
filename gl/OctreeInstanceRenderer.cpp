@@ -3,10 +3,12 @@
 #include "gl.hpp"
 #include <glm/gtx/norm.hpp> 
 
-OctreeInstanceRenderer::OctreeInstanceRenderer(Octree * tree, int drawableType, int geometryLevel) {
+OctreeInstanceRenderer::OctreeInstanceRenderer(GLuint program, Octree * tree, int drawableType, int geometryLevel) {
 	this->tree = tree;
+	this->program = program;
 	this->drawableType = drawableType;
 	this->geometryLevel = geometryLevel;
+	this->instances = 0;
 }
 
 void OctreeInstanceRenderer::update(glm::mat4 m) {
@@ -21,11 +23,18 @@ void * OctreeInstanceRenderer::before(int level, OctreeNode * node, BoundingCube
 	for(int i=0; i < node->info.size(); ++i){
 		NodeInfo * info = &node->info[i];
 		// drawable geometry
-		if(info->type == drawableType){
-			Vegetation3d  * vegetation = (Vegetation3d  *) info->data;
-			vegetation->drawable->draw(mode);
-			instances += vegetation->drawable->instances;
+		if(info->type == TYPE_INSTANCE_VEGETATION_DRAWABLE
+			|| info->type == TYPE_INSTANCE_LIQUID_DRAWABLE
+			|| info->type == TYPE_INSTANCE_SOLID_DRAWABLE
+			|| info->type == TYPE_INSTANCE_SHADOW_DRAWABLE){
+			DrawableInstanceGeometry * drawable = (DrawableInstanceGeometry*) info->data;
+			std::vector<glm::mat4> * instances = (std::vector<glm::mat4> *) info->temp;
+	
+			drawable->draw(mode, program, instances);
+			instances += instances->size();
 		}
+	
+
 	}
 	if(tree->getHeight(cube)==geometryLevel){
 		return node;
@@ -44,14 +53,17 @@ bool OctreeInstanceRenderer::test(int level, OctreeNode * node, BoundingCube cub
 
 
 void OctreeInstanceRenderer::getOrder(OctreeNode * node, BoundingCube cube, int * order){
-	std::pair<glm::vec3, int> internalSortingVector[8];
+	std::pair<glm::vec3, int> internalSortingVector[8]={};
 	
 	for(int i =0; i< 8; ++i){
 		BoundingCube c = Octree::getChildCube(cube, i);
 		internalSortingVector[i] = std::pair<glm::vec3, int>(c.getCenter(), i);
 	}
 
-    std::sort(internalSortingVector, internalSortingVector+8, [&]( std::pair<glm::vec3, int>& a, std::pair<glm::vec3, int>& b) {
+
+
+    std::sort(std::begin(internalSortingVector), std::end(internalSortingVector), 
+		[&](const std::pair<glm::vec3, int>& a, const std::pair<glm::vec3, int>& b) {
 	    float distA = glm::distance2(a.first, cameraPosition);
         float distB = glm::distance2(b.first, cameraPosition);
         return distA < distB;
@@ -61,12 +73,3 @@ void OctreeInstanceRenderer::getOrder(OctreeNode * node, BoundingCube cube, int 
 		order[i] = internalSortingVector[i].second;
 	}
 }
-
-
-/*
-void OctreeRenderer::getOrder(OctreeNode * node, BoundingCube cube, int * order){
-	for(int i = 0 ; i < 8 ; ++i) {
-		order[i] = i;
-	}
-}
-*/

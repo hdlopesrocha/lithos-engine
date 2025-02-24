@@ -2,8 +2,10 @@
 #include <glm/gtc/type_ptr.hpp>
 
 
-BrushEditor::BrushEditor(Camera * camera, std::vector<Brush*> * brushes, std::vector<Texture*> * textures, GLuint program3d, GLuint previewProgram) {
-    this->program3d = program3d;
+BrushEditor::BrushEditor(Camera * camera, std::vector<Brush*> * brushes, std::vector<Texture*> * textures, GLuint program, GLuint previewProgram) {
+    this->program = program;
+    glUseProgram(program);
+    this->data = new ProgramData(program);
     this->camera = camera;
     this->textures = textures;
     this->brushes = brushes;
@@ -11,10 +13,6 @@ BrushEditor::BrushEditor(Camera * camera, std::vector<Brush*> * brushes, std::ve
     SphereGeometry sphereGeometry(40,80);
 	this->sphere = new DrawableGeometry(&sphereGeometry);
 
-    this->modelLoc = glGetUniformLocation(program3d, "model");
-    this->modelViewProjectionLoc = glGetUniformLocation(program3d, "modelViewProjection");
-    this->shadowEnabledLoc = glGetUniformLocation(program3d, "shadowEnabled");
-    this->overrideTextureEnabledLoc = glGetUniformLocation(program3d, "overrideTextureEnabled");
 
     this->brushPosition = glm::vec3(0);
     this->brushRadius = 2.0f;
@@ -121,7 +119,10 @@ void BrushEditor::draw2d(){
 
     ImGui::End();
 }
-void BrushEditor::draw3d(){
+void BrushEditor::draw3d(UniformBlock * block){
+    glUseProgram(program);
+    Brush::bindBrush(program, "brushes[" + std::to_string(selectedBrush) + "]" , "brushTextures["+std::to_string(selectedBrush) + "]", brush);
+
     glm::mat4 model2 = glm::scale(
         glm::translate(  
             glm::mat4(1.0f), 
@@ -129,16 +130,14 @@ void BrushEditor::draw3d(){
         ), 
         glm::vec3(brushRadius)
     );
-    glm::mat4 mvp2 = camera->getMVP(model2);
-    glUniformMatrix4fv(modelViewProjectionLoc, 1, GL_FALSE, glm::value_ptr(mvp2));
-    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model2));
-    glUniform1ui(shadowEnabledLoc, 0);
-    glUniform1ui(overrideTextureEnabledLoc, 1);
-    Brush::bindBrush(program3d, "overrideProps" , "overrideTexture", brush);
-    Brush::bindBrush(program3d, "brushes[" + std::to_string(selectedBrush) + "]" , "brushTextures["+std::to_string(selectedBrush) + "]", brush);
 
+    block->modelViewProjection = camera->getMVP(model2);
+    block->model = model2;
+    block->shadowEnabled = 0;
+    block->overrideTexture = selectedBrush;
+    block->overrideEnabled = 1;
+    data->uniform(block);
     sphere->draw(GL_PATCHES);
-    glUniform1ui(overrideTextureEnabledLoc, 0);
 }
 
 

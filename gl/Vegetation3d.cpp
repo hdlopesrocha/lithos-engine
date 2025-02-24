@@ -13,8 +13,7 @@ glm::vec3 rotate2(glm::vec3 point, glm::vec3 axis1, float angle1, glm::vec3 axis
     return result;
 }
 
-Vegetation3d::Vegetation3d(std::vector<glm::mat4> * instanceMatrices) {
-    Geometry * geometry = new Geometry();
+Vegetation3d::Vegetation3d() : Geometry(){
     int planes = 4;
         float PI = glm::pi<float>();
 
@@ -22,28 +21,31 @@ Vegetation3d::Vegetation3d(std::vector<glm::mat4> * instanceMatrices) {
     for (int i = 0; i < planes; ++i) {
         float angle = (i / (float) planes)* PI;
 
-        geometry->addVertex(Vertex(rotate(glm::vec3(-0.5,0,0), axis1, angle), glm::vec3(0,1,0), glm::vec2(1,1),2), false );
-        geometry->addVertex(Vertex(rotate(glm::vec3(-0.5,1,0), axis1, angle), glm::vec3(0,1,0), glm::vec2(1,0),2), false );
-        geometry->addVertex(Vertex(rotate(glm::vec3(0.5,1,0), axis1, angle), glm::vec3(0,1,0), glm::vec2(0,0),2), false );
+        addVertex(Vertex(rotate(glm::vec3(-0.5,0,0), axis1, angle), glm::vec3(0,1,0), glm::vec2(1,1),2), false );
+        addVertex(Vertex(rotate(glm::vec3(-0.5,1,0), axis1, angle), glm::vec3(0,1,0), glm::vec2(1,0),2), false );
+        addVertex(Vertex(rotate(glm::vec3(0.5,1,0), axis1, angle), glm::vec3(0,1,0), glm::vec2(0,0),2), false );
 
-        geometry->addVertex(Vertex(rotate(glm::vec3(-0.5,0,0), axis1, angle), glm::vec3(0,1,0), glm::vec2(1,1),2), false );
-        geometry->addVertex(Vertex(rotate(glm::vec3(0.5,0,0), axis1, angle), glm::vec3(0,1,0), glm::vec2(0,1),2), false );
-        geometry->addVertex(Vertex(rotate(glm::vec3(0.5,1,0), axis1, angle), glm::vec3(0,1,0), glm::vec2(0,0),2), false );
+        addVertex(Vertex(rotate(glm::vec3(-0.5,0,0), axis1, angle), glm::vec3(0,1,0), glm::vec2(1,1),2), false );
+        addVertex(Vertex(rotate(glm::vec3(0.5,0,0), axis1, angle), glm::vec3(0,1,0), glm::vec2(0,1),2), false );
+        addVertex(Vertex(rotate(glm::vec3(0.5,1,0), axis1, angle), glm::vec3(0,1,0), glm::vec2(0,0),2), false );
     }
 
     glm::vec3 axis2 = glm::vec3(1,0,0);
     for (int i = 0; i < planes; ++i) {
         float angle = (i / (float) planes)* PI * 2;
 
-        geometry->addVertex(Vertex(rotate2(glm::vec3(-0.5,0,0), axis1, angle, axis2, PI/4), glm::vec3(0,1,0), glm::vec2(1,1),2), false );
-        geometry->addVertex(Vertex(rotate2(glm::vec3(-0.5,1,0), axis1, angle, axis2, PI/4), glm::vec3(0,1,0), glm::vec2(1,0),2), false );
-        geometry->addVertex(Vertex(rotate2(glm::vec3(0.5,1,0), axis1, angle, axis2, PI/4), glm::vec3(0,1,0), glm::vec2(0,0),2), false );
+        addVertex(Vertex(rotate2(glm::vec3(-0.5,0,0), axis1, angle, axis2, PI/4), glm::vec3(0,1,0), glm::vec2(1,1),2), false );
+        addVertex(Vertex(rotate2(glm::vec3(-0.5,1,0), axis1, angle, axis2, PI/4), glm::vec3(0,1,0), glm::vec2(1,0),2), false );
+        addVertex(Vertex(rotate2(glm::vec3(0.5,1,0), axis1, angle, axis2, PI/4), glm::vec3(0,1,0), glm::vec2(0,0),2), false );
 
-        geometry->addVertex(Vertex(rotate2(glm::vec3(-0.5,0,0), axis1, angle, axis2, PI/4), glm::vec3(0,1,0), glm::vec2(1,1),2), false );
-        geometry->addVertex(Vertex(rotate2(glm::vec3(0.5,0,0), axis1, angle, axis2, PI/4), glm::vec3(0,1,0), glm::vec2(0,1),2), false );
-        geometry->addVertex(Vertex(rotate2(glm::vec3(0.5,1,0), axis1, angle, axis2, PI/4), glm::vec3(0,1,0), glm::vec2(0,0),2), false );
+        addVertex(Vertex(rotate2(glm::vec3(-0.5,0,0), axis1, angle, axis2, PI/4), glm::vec3(0,1,0), glm::vec2(1,1),2), false );
+        addVertex(Vertex(rotate2(glm::vec3(0.5,0,0), axis1, angle, axis2, PI/4), glm::vec3(0,1,0), glm::vec2(0,1),2), false );
+        addVertex(Vertex(rotate2(glm::vec3(0.5,1,0), axis1, angle, axis2, PI/4), glm::vec3(0,1,0), glm::vec2(0,0),2), false );
     }
 
-    this->drawable = new DrawableInstanceGeometry(geometry, instanceMatrices);
 }
 
+
+DrawableInstanceGeometry * Vegetation3d::createDrawable() {
+    return new DrawableInstanceGeometry(this);
+}

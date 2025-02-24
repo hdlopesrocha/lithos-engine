@@ -13,6 +13,6 @@ void ImageViewer::draw2d(){
 	ImGui::End();
 }
 
-void ImageViewer::draw3d(){
+void ImageViewer::draw3d(UniformBlock * block){
 
 }

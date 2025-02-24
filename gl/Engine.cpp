@@ -432,6 +432,48 @@ int LithosApplication::getHeight(){
 	return HEIGHT;
 }
 
+// Function to prepend a number to each line
+std::string prependNumberToEachLine(const std::string& input, int number) {
+    std::stringstream ss(input);
+    std::string line;
+    std::string result;
+
+    // Loop through each line
+    while (std::getline(ss, line)) {
+        std::ostringstream oss;
+        oss << std::setw(5) << std::setfill(' ') << number;  
+
+        result +=  oss.str() + " " + line + "\n";
+        number++;  // Increment the number for each line
+    }
+
+    return result;
+}
+
+std::string trim(const std::string& str) {
+    // Remove leading and trailing whitespaces
+    size_t first = str.find_first_not_of(" \t");
+    size_t last = str.find_last_not_of(" \t");
+
+    if (first == std::string::npos) {
+        return ""; // Return empty string if only whitespace
+    }
+    return str.substr(first, (last - first + 1));
+}
+std::string removeExtraSpaces(const std::string& str) {
+    std::istringstream iss(str);
+    std::string result;
+    std::string word;
+
+    // Remove extra spaces between words
+    while (iss >> word) {
+        if (!result.empty()) {
+            result += " ";
+        }
+        result += word;
+    }
+    return result;
+}
 
 std::string LithosApplication::readFile(const std::string& filePath) {
     std::ifstream shaderFile(filePath);
@@ -457,7 +499,7 @@ GLuint LithosApplication::compileShader(const std::string& shaderCode, GLenum sh
     if (!success) {
         char infoLog[512];
         glGetShaderInfoLog(shader, 512, nullptr, infoLog);
-        std::cerr << shaderCode << std::endl;
+        std::cerr << prependNumberToEachLine(shaderCode, 0) << std::endl;
         std::cerr << "Shader compilation failed: " << infoLog << std::endl;
     }
 

@@ -29,27 +29,16 @@ Brush::Brush(uint textureIndex, glm::vec2 textureScale,float parallaxScale, floa
 
 void Brush::bindBrush(GLuint program, std::string objectName, std::string textureMap, Brush * brush){
 
-    GLuint textureIndexLoc = glGetUniformLocation(program, (textureMap).c_str());
-    GLuint parallaxScaleLoc = glGetUniformLocation(program, (objectName +".parallaxScale").c_str() );
-    GLuint parallaxMinLayersLoc = glGetUniformLocation(program, (objectName +".parallaxMinLayers").c_str());
-    GLuint parallaxMaxLayersLoc = glGetUniformLocation(program, (objectName +".parallaxMaxLayers").c_str());
-    GLuint parallaxFadeLoc = glGetUniformLocation(program, (objectName +".parallaxFade").c_str());
-    GLuint parallaxRefineLoc = glGetUniformLocation(program, (objectName +".parallaxRefine").c_str());
-    GLuint shininessLoc = glGetUniformLocation(program, (objectName +".shininess").c_str());
-    GLuint specularStrengthLoc = glGetUniformLocation(program, (objectName +".specularStrength").c_str());
-    GLuint textureScaleLoc = glGetUniformLocation(program, (objectName +".textureScale").c_str());
-    GLuint refractiveIndexLoc = glGetUniformLocation(program, (objectName +".refractiveIndex").c_str());
-
-    glUniform1ui(textureIndexLoc, brush->textureIndex);
-    glUniform1f(parallaxScaleLoc, brush->parallaxScale);
-    glUniform1f(parallaxMinLayersLoc, brush->parallaxMinLayers);
-    glUniform1f(parallaxMaxLayersLoc, brush->parallaxMaxLayers);
-    glUniform1f(parallaxFadeLoc, brush->parallaxFade);
-    glUniform1f(parallaxRefineLoc, brush->parallaxRefine);
-    glUniform1f(shininessLoc, brush->shininess);
-    glUniform1f(specularStrengthLoc, brush->specularStrength);
-    glUniform1f(refractiveIndexLoc, brush->refractiveIndex);
-    glUniform2fv(textureScaleLoc, 1, glm::value_ptr(brush->textureScale));
+    glUniform1ui(glGetUniformLocation(program, (textureMap).c_str()), brush->textureIndex);
+    glUniform1f(glGetUniformLocation(program, (objectName +".parallaxScale").c_str() ), brush->parallaxScale);
+    glUniform1f(glGetUniformLocation(program, (objectName +".parallaxMinLayers").c_str()), brush->parallaxMinLayers);
+    glUniform1f(glGetUniformLocation(program, (objectName +".parallaxMaxLayers").c_str()), brush->parallaxMaxLayers);
+    glUniform1f(glGetUniformLocation(program, (objectName +".parallaxFade").c_str()), brush->parallaxFade);
+    glUniform1f(glGetUniformLocation(program, (objectName +".parallaxRefine").c_str()), brush->parallaxRefine);
+    glUniform1f(glGetUniformLocation(program, (objectName +".shininess").c_str()), brush->shininess);
+    glUniform1f(glGetUniformLocation(program, (objectName +".specularStrength").c_str()), brush->specularStrength);
+    glUniform1f(glGetUniformLocation(program, (objectName +".refractiveIndex").c_str()), brush->refractiveIndex);
+    glUniform2fv(glGetUniformLocation(program, (objectName +".textureScale").c_str()), 1, glm::value_ptr(brush->textureScale));
 }
 
 void Brush::bindBrushes(GLuint program, std::vector<Brush*> * brushes) {

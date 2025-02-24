@@ -1,13 +1,10 @@
 #version 460 core
-
 #include<structs.glsl>
 
 uniform sampler2DArray textures[25];
 uniform sampler2D depthTexture;
 uniform sampler2D shadowMap;
 uniform sampler2D noise;
-
-
 
 #include<functions.glsl>
 
@@ -34,18 +31,18 @@ void main() {
     vec2 pixelUV = gl_FragCoord.xy / textureSize(depthTexture, 0);
     float d1 = linearizeDepth(texture(depthTexture, pixelUV).r, near, far);
     float d2 = linearizeDepth(gl_FragCoord.z, near, far);
-    if(layer == 0) {
-        color = vec4(d2/far,0.0,0.0,1.0);
+    if(depthEnabled != 0u) {
+       color = vec4(d2/far,0.0,0.0,1.0);
     }
     if(d1<d2) {
         discard;
     }
-    if(layer == 0){
+    if(depthEnabled != 0u){
         return;
     }
 
 
-    if(debugEnabled == 1) {
+    if(debugEnabled != 0u) {
         color = vec4(1.0,1.0,1.0,1.0);
         return;
     }

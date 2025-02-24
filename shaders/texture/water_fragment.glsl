@@ -15,8 +15,7 @@ uniform vec4 color;
 in flat int Layer;
 
 #include<perlin.glsl>
-#include<structs.glsl>
-#include<functions_fragment.glsl>
+#include<functions.glsl>
 
 float applyBrightnessContrast(float factor) {
     return clamp((factor - 0.5) * contrast + 0.5 + brightness, 0.0, 1.0);

@@ -11,6 +11,6 @@ void ShadowMapViewer::draw2d(){
 	ImGui::End();
 }
 
-void ShadowMapViewer::draw3d(){
+void ShadowMapViewer::draw3d(UniformBlock * block){
 
 }

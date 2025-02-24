@@ -1,21 +1,21 @@
 #version 460 core
+#include<structs.glsl>
 
 layout(vertices = 3) out;
-
-#include<structs.glsl>
-#include<functions.glsl>
 
 in uint vTextureIndex[];
 in vec2 vTextureCoord[];
 in vec3 vPosition[];
 in vec3 vNormal[];
 in TextureProperties vProps[];
+#include<functions.glsl>
 
 flat out uvec3 tcTextureIndices[];
 out vec2 tcTextureCoord[];
 out vec3 tcNormal[];
 out vec3 tcPosition[];
 out TextureProperties tcProps[];
+
 
 void main() {
      vec3 patchCentroid = (vPosition[0] + vPosition[1] + vPosition[2]) / 3.0;
@@ -28,7 +28,7 @@ void main() {
 
     tcPosition[gl_InvocationID] = vPosition[gl_InvocationID]; 
     
-    if(layer > 0) {
+    if(depthEnabled == 0u) {
         tcNormal[gl_InvocationID] = vNormal[gl_InvocationID];
         
         tcProps[gl_InvocationID] = vProps[gl_InvocationID];

@@ -7,7 +7,7 @@ InstanceBuilder::InstanceBuilder(Octree * tree,  int drawableType, int geometryL
 	this->tree = tree;
 	this->drawableType = drawableType;
 	this->geometryLevel = geometryLevel;
-	this->instances = 0;
+	this->instanceCount = 0;
 }
 
 
@@ -25,7 +25,7 @@ void * InstanceBuilder::before(int level, OctreeNode * node, BoundingCube cube, 
 			OctreeNode ** cornersPointer = (OctreeNode **) corners;
 			tree->getNodeCorners(cube, level, 0, 1, corners);
 
-			QuadNodeInstanceBuilderHandler handler(&chunk, &instances,cornersPointer, &matrices);
+			QuadNodeInstanceBuilderHandler handler(&chunk, &instanceCount ,cornersPointer, &instances);
 			tree->handleQuadNodes(node, corners, &handler);
 
 		}
@@ -50,11 +50,3 @@ void InstanceBuilder::getOrder(OctreeNode * node, BoundingCube cube, int * order
 	}
 }
 
-
-/*
-void OctreeRenderer::getOrder(OctreeNode * node, BoundingCube cube, int * order){
-	for(int i = 0 ; i < 8 ; ++i) {
-		order[i] = i;
-	}
-}
-*/

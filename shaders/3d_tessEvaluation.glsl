@@ -1,8 +1,7 @@
 #version 460 core
+#include<structs.glsl>
 
 layout(triangles, equal_spacing, ccw) in; // Define primitive type and tessellation spacing
-#include<structs.glsl>
-#include<functions.glsl>
 
 
 in vec3 tcTextureWeights[];
@@ -12,6 +11,7 @@ in vec3 tcPosition[];
 in TextureProperties tcProps[];
 in uvec3 tcTextureIndices[];
 
+#include<functions.glsl>
 
 out vec3 teNormal;
 out vec2 teTextureCoord;
@@ -26,10 +26,10 @@ uniform TextureProperties overrideProps;
 
 
 void main() {
-    if(layer > 0) {
+    if(depthEnabled == 0u) {
         teNormal = normalize(tcNormal[0] * gl_TessCoord[0] + tcNormal[1] * gl_TessCoord[1] + tcNormal[2] * gl_TessCoord[2]);
     
-        if(overrideTextureEnabled) {
+        if(overrideEnabled > 0u) {
             teProps = overrideProps;
         } else {
             teProps.parallaxScale = tcProps[0].parallaxScale * gl_TessCoord[0] + 
@@ -73,7 +73,7 @@ void main() {
     }
     tePosition = gl_TessCoord[0] * tcPosition[0] + gl_TessCoord[1] * tcPosition[1] + gl_TessCoord[2] * tcPosition[2];
     
-    if(layer > 0) {
+    if(depthEnabled == 0u) {
         teLightViewPosition = matrixShadow * vec4(tePosition, 1.0);  
     }
 

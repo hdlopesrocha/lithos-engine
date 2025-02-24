@@ -2,13 +2,11 @@
 #include <math.h>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/integer.hpp>
-#include "DebugTesselator.hpp"
 #include "math/math.hpp"
 #include "ui/ui.hpp"
 #include "tools/tools.hpp"
 #include "HeightFunctions.hpp"
 #include "Scene.hpp"
-//#define DEBUG_GEO 0
 
 
 class OctreeContainmentHandler : public ContainmentHandler {
@@ -89,12 +87,11 @@ class MainApplication : public LithosApplication {
 	std::vector<AnimatedTexture*> animatedTextures;
 
 	Scene * mainScene;
-
-
 	Settings * settings = new Settings();
-	#ifdef DEBUG_GEO
-	DrawableGeometry * vaoDebug;
-	#endif
+	glm::mat4 worldModel = glm::mat4(1.0f); // Identity matrix
+
+	Camera camera;
+	DirectionalLight light;
 
 	GLuint programSwap;
 	GLuint program3d;
@@ -106,12 +103,11 @@ class MainApplication : public LithosApplication {
 	GLuint programWaterTexture;
 	GLuint programVegetation;
 
-
 	GLuint modelViewProjectionShadowLoc;
 	ProgramData * program3dData;
 	ProgramData * programVegetationData;
 
-	UniformBlock uniformBlock;
+	UniformBlock block;
 
 
 	GLuint noiseTexture;
@@ -162,6 +158,9 @@ public:
 			compileShader(replaceIncludes(includes, readFile("shaders/shadow_vertex.glsl")),GL_VERTEX_SHADER), 
 			compileShader(replaceIncludes(includes,readFile("shaders/shadow_fragment.glsl")),GL_FRAGMENT_SHADER)
 		});
+		glUseProgram(programShadow);
+		modelViewProjectionShadowLoc = glGetUniformLocation(programShadow, "modelViewProjection");
+
 
 		programAtlas = createShaderProgram({
 			compileShader(replaceIncludes(includes,readFile("shaders/texture/atlas_vertex.glsl")),GL_VERTEX_SHADER), 
@@ -200,6 +199,7 @@ public:
 			compileShader(replaceIncludes(includes,readFile("shaders/vegetation_vertex.glsl")),GL_VERTEX_SHADER), 
 			compileShader(replaceIncludes(includes,readFile("shaders/vegetation_fragment.glsl")),GL_FRAGMENT_SHADER)
 		});
+		glUseProgram(programVegetation);
 		programVegetationData = new ProgramData(programVegetation);
 
 		program3d = createShaderProgram({
@@ -208,9 +208,9 @@ public:
 			compileShader(replaceIncludes(includes,readFile("shaders/3d_tessEvaluation.glsl")),GL_TESS_EVALUATION_SHADER),
 			compileShader(replaceIncludes(includes,readFile("shaders/3d_fragment.glsl")),GL_FRAGMENT_SHADER) 
 		});
+		glUseProgram(program3d);
 		program3dData = new ProgramData(program3d);
 
-		modelViewProjectionShadowLoc = glGetUniformLocation(programShadow, "modelViewProjection");
 
 		renderBuffer = createRenderFrameBuffer(getWidth(), getHeight());
 		solidBuffer = createRenderFrameBuffer(getWidth(), getHeight());
@@ -354,14 +354,12 @@ public:
 			vegetationTextures.push_back(new Texture(ad->getTexture()));
 		}
 
-
-
 		noiseTexture = loadTextureImage("textures/noise.jpg");
-		Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, program3dData->depthTextureLoc, depthFrameBuffer.depthTexture);
-		activeTexture = Texture::bindTexture(programVegetation, GL_TEXTURE_2D, activeTexture, programVegetationData->depthTextureLoc, depthFrameBuffer.depthTexture);
-		activeTexture = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, program3dData->underTextureLoc, solidBuffer.colorTexture);
-		activeTexture = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, program3dData->shadowMapLoc, shadowFrameBuffer.depthTexture);
-		activeTexture = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, program3dData->noiseLoc, noiseTexture);
+		activeTexture = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture,  glGetUniformLocation(program3d, "depthTexture"), depthFrameBuffer.depthTexture);
+		activeTexture = Texture::bindTexture(programVegetation, GL_TEXTURE_2D, activeTexture,  glGetUniformLocation(programVegetation, "depthTexture"), depthFrameBuffer.depthTexture);
+		activeTexture = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, glGetUniformLocation(program3d, "underTexture"), solidBuffer.colorTexture);
+		activeTexture = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, glGetUniformLocation(program3d, "shadowMap"), shadowFrameBuffer.depthTexture);
+		activeTexture = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, glGetUniformLocation(program3d, "noise"), noiseTexture);
 		
 		activeTexture = Texture::bindTextures(programVegetation, GL_TEXTURE_2D_ARRAY, activeTexture, "textures", &vegetationTextures);
 		activeTexture = Texture::bindTextures(program3d, GL_TEXTURE_2D_ARRAY, activeTexture, "textures", &textures);
@@ -370,20 +368,21 @@ public:
 		Brush::bindBrushes(programVegetation, &vegetationBrushes);
 
 		mainScene = new Scene();
-		mainScene->setup();
+		mainScene->setup(program3d, programVegetation, programShadow);
 		mainScene->load();
 	
-		//tesselator->normalize();
+		
+		camera.quaternion =   glm::angleAxis(glm::radians(180.0f), glm::vec3(0, 0, 1))
+		* glm::angleAxis(glm::radians(145.0f), glm::vec3(1, 0, 0))
+		* glm::angleAxis(glm::radians(135.0f), glm::vec3(0, 1, 0));  
+		camera.position = glm::vec3(48,48,48);
+        light.direction = glm::normalize(glm::vec3(-1.0,-1.0,-1.0));
 
-		#ifdef DEBUG_GEO
-		DebugTesselator * debugTesselator = new DebugTesselator(liquidSpace);
-		liquidSpace->iterate(debugTesselator);
-		vaoDebug = new DrawableGeometry(&debugTesselator->chunk);
-		#endif
+		//tesselator->normalize();
 
 		atlasPainter = new AtlasPainter(&atlasTextures, &atlasDrawers, programAtlas, programTexture, 256,256);
 		atlasViewer = new AtlasViewer(&atlasTextures, programAtlas, programTexture, 256,256);
-		brushEditor = new BrushEditor(&mainScene->camera, &brushes, &textures, program3d, programTexture);
+		brushEditor = new BrushEditor(&camera, &brushes, &textures, program3d, programTexture);
 		shadowMapViewer = new ShadowMapViewer(shadowFrameBuffer.depthTexture);
 		textureMixerEditor = new TextureMixerEditor(&mixers, &textures, programTexture);
 		animatedTextureEditor = new AnimatedTextureEditor(&animatedTextures, &textures, programTexture, 256,256);
@@ -408,61 +407,49 @@ public:
 		   	close();
 		}
 
-        mainScene->camera.projection = glm::perspective(glm::radians(45.0f), getWidth() / (float) getHeight(), 0.1f, 512.0f);
 	//    camera.projection[1][1] *= -1;
 	 //   modelMatrix = glm::rotate(modelMatrix, deltaTime * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 
 	   	float rsense = 0.01;
 
 	   	if (getKeyboardStatus(GLFW_KEY_W) != GLFW_RELEASE) {
-	   	   	mainScene->camera.quaternion = glm::angleAxis(+rsense, glm::vec3(1,0,0))*mainScene->camera.quaternion;
+	   	   	camera.quaternion = glm::angleAxis(+rsense, glm::vec3(1,0,0))*camera.quaternion;
 		}
 	   	if (getKeyboardStatus(GLFW_KEY_S) != GLFW_RELEASE) {
-	   	   	mainScene->camera.quaternion = glm::angleAxis(-rsense, glm::vec3(1,0,0))*mainScene->camera.quaternion;
+	   	   	camera.quaternion = glm::angleAxis(-rsense, glm::vec3(1,0,0))*camera.quaternion;
 		}
    		if (getKeyboardStatus(GLFW_KEY_A) != GLFW_RELEASE) {
-	   	   	mainScene->camera.quaternion = glm::angleAxis(-rsense, glm::vec3(0,1,0))*mainScene->camera.quaternion;
+	   	   	camera.quaternion = glm::angleAxis(-rsense, glm::vec3(0,1,0))*camera.quaternion;
 		}
 	   	if (getKeyboardStatus(GLFW_KEY_D) != GLFW_RELEASE) {
-	   	   	mainScene->camera.quaternion = glm::angleAxis(+rsense, glm::vec3(0,1,0))*mainScene->camera.quaternion;
+	   	   	camera.quaternion = glm::angleAxis(+rsense, glm::vec3(0,1,0))*camera.quaternion;
 		}
 		if (getKeyboardStatus(GLFW_KEY_Q) != GLFW_RELEASE) {
-	   	   	mainScene->camera.quaternion = glm::angleAxis(+rsense, glm::vec3(0,0,1))*mainScene->camera.quaternion;
+	   	   	camera.quaternion = glm::angleAxis(+rsense, glm::vec3(0,0,1))*camera.quaternion;
 		}
 	   	if (getKeyboardStatus(GLFW_KEY_E) != GLFW_RELEASE) {
-	   	   	mainScene->camera.quaternion = glm::angleAxis(-rsense, glm::vec3(0,0,1))*mainScene->camera.quaternion;
+	   	   	camera.quaternion = glm::angleAxis(-rsense, glm::vec3(0,0,1))*camera.quaternion;
 		}
 
-		glm::vec3 xAxis = glm::vec3(1.0f, 0.0f, 0.0f)*mainScene->camera.quaternion;
-		glm::vec3 yAxis = glm::vec3(0.0f, 1.0f, 0.0f)*mainScene->camera.quaternion;
-		glm::vec3 zAxis = glm::vec3(0.0f, 0.0f, 1.0f)*mainScene->camera.quaternion;
+		glm::vec3 xAxis = glm::vec3(1.0f, 0.0f, 0.0f)*camera.quaternion;
+		glm::vec3 yAxis = glm::vec3(0.0f, 1.0f, 0.0f)*camera.quaternion;
+		glm::vec3 zAxis = glm::vec3(0.0f, 0.0f, 1.0f)*camera.quaternion;
 
 	   	float tsense = deltaTime*10;
 	   	if (getKeyboardStatus(GLFW_KEY_UP) != GLFW_RELEASE) {
-	   		mainScene->camera.position -= zAxis*tsense;
+	   		camera.position -= zAxis*tsense;
 		}
 	   	if (getKeyboardStatus(GLFW_KEY_DOWN) != GLFW_RELEASE) {
-	   		mainScene->camera.position += zAxis*tsense;
+	   		camera.position += zAxis*tsense;
 		}
 	   	if (getKeyboardStatus(GLFW_KEY_RIGHT) != GLFW_RELEASE) {
-	   		mainScene->camera.position += xAxis*tsense;
+	   		camera.position += xAxis*tsense;
 		}
    		if (getKeyboardStatus(GLFW_KEY_LEFT) != GLFW_RELEASE) {
-	   		mainScene->camera.position -= xAxis*tsense;
+	   		camera.position -= xAxis*tsense;
 		}
 
-		mainScene->camera.quaternion = glm::normalize(mainScene->camera.quaternion);
-		glm::vec3 cameraDirection = glm::vec3(0.0f, 0.0f, -1.0f)*mainScene->camera.quaternion;
 	
-		float far = 512.0f;
-		float dist = 32.0f;
-	   	glm::vec3 lookAtLightPosition = glm::round(mainScene->camera.position/16.0f)*16.0f; // + cameraDirection*far*0.5f;
-
-		//light.direction = glm::normalize(glm::vec3(glm::sin(time),-1.0,glm::cos(time)));
-
-		float orthoSize = 512.0f;  // Size of the orthographic box
-		mainScene->light.projection = glm::ortho(-orthoSize, orthoSize, -orthoSize, orthoSize, 0.1f, far);
-		mainScene->light.view = glm::lookAt(lookAtLightPosition - mainScene->light.direction*dist, lookAtLightPosition, glm::vec3(0,1,0));
 
 		for(int i=0; i<animatedTextures.size() ; ++i) {
 			AnimatedTexture * texture = animatedTextures[i];
@@ -473,34 +460,31 @@ public:
 
 
     virtual void draw3d() {
-		glm::mat4 model = glm::mat4(1.0f); // Identity matrix
+		float far = 512.0f;
+		float dist = 32.0f;
+		float near = 0.1f;
+		float orthoSize = 512.0f;  // Size of the orthographic box
 
-		glm::mat4 rotate = glm::mat4_cast(mainScene->camera.quaternion);
-		glm::mat4 translate = glm::translate(glm::mat4(1.0f), -mainScene->camera.position);
-	    mainScene->camera.view = rotate * translate;
-		glm::mat4 mvp = mainScene->camera.getMVP(model);
-		glm::mat4 mlp = mainScene->light.getMVP(model);
+
+
+		glm::mat4 rotate = glm::mat4_cast(camera.quaternion);
+		glm::mat4 translate = glm::translate(glm::mat4(1.0f), -camera.position);
+	   
+		camera.projection = glm::perspective(glm::radians(45.0f), getWidth() / (float) getHeight(), near, far);
+		camera.view = rotate * translate;
+		camera.quaternion = glm::normalize(camera.quaternion);
+		glm::vec3 cameraDirection = glm::vec3(0.0f, 0.0f, -1.0f)*camera.quaternion;
+
+		glm::vec3 lookAtLightPosition = glm::round(camera.position/16.0f)*16.0f; // + cameraDirection*far*0.5f;
+		light.projection = glm::ortho(-orthoSize, orthoSize, -orthoSize, orthoSize, near, far);
+		light.view = glm::lookAt(lookAtLightPosition - light.direction*dist, lookAtLightPosition, glm::vec3(0,1,0));
+
+		glm::mat4 mvp = camera.getMVP(worldModel);
+		glm::mat4 mlp = light.getMVP(worldModel);
 		glm::mat4 ms =  Math::getCanonicalMVP(mlp);
 
-		mainScene->update3d(mvp, mlp);
+		mainScene->update3d(mvp, mlp, &camera, &light);
 		glPolygonMode(GL_FRONT, GL_FILL);
-
-		// ================
-		// Shadow component
-		// ================
-		if(settings->shadowEnabled) {
-			glBindFramebuffer(GL_FRAMEBUFFER, shadowFrameBuffer.frameBuffer);
-			glViewport(0, 0, shadowFrameBuffer.width, shadowFrameBuffer.height);
-			glEnable(GL_DEPTH_TEST);
-			glClear(GL_DEPTH_BUFFER_BIT);
-			glUseProgram(programShadow);
-			glUniformMatrix4fv(modelViewProjectionShadowLoc, 1, GL_FALSE, glm::value_ptr(mlp));
-			mainScene->draw3dShadow();
-		}
-
-		// ============
-		// 3D component
-		// ============
 		glPatchParameteri(GL_PATCH_VERTICES, 3); // Define the number of control points per patch
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_BACK); // Or GL_FRONT
@@ -513,6 +497,39 @@ public:
 		glLineWidth(2.0);
 		glPointSize(4.0);	
 
+
+
+
+		// ================
+		// Shadow component
+		// ================
+		if(settings->shadowEnabled) {
+			glBindFramebuffer(GL_FRAMEBUFFER, shadowFrameBuffer.frameBuffer);
+			glViewport(0, 0, shadowFrameBuffer.width, shadowFrameBuffer.height);
+			glEnable(GL_DEPTH_TEST);
+			glClear(GL_DEPTH_BUFFER_BIT);
+			glUseProgram(programShadow);
+
+			glUniformMatrix4fv(modelViewProjectionShadowLoc, 1, GL_FALSE, glm::value_ptr(mlp));
+			mainScene->draw3dShadow();
+		}
+
+
+		block.modelViewProjection = mvp;
+		block.model = worldModel;
+		block.matrixShadow =ms;
+		block.lightDirection = glm::vec4(light.direction, 0.0f);
+		block.cameraPosition = glm::vec4(camera.position, 0.0f);
+		block.timeAndPadding = glm::vec4( time, 0.0, 0.0 ,0.0);
+        block.parallaxEnabled = settings->parallaxEnabled ? 1u : 0u;
+        block.shadowEnabled = settings->shadowEnabled ? 1u : 0u;
+        block.debugEnabled = settings->debugEnabled ? 1u : 0u;
+        block.lightEnabled = settings->lightEnabled ? 1u : 0u;
+		block.triplanarEnabled = 1u;
+		block.depthEnabled = 1u;
+		block.overrideTexture = 0u;
+		block.overrideEnabled = 0u;
+
 		// =================
 		// First Pass: Depth
 		// =================
@@ -520,30 +537,13 @@ public:
 		glViewport(0, 0, depthFrameBuffer.width, depthFrameBuffer.height);
 		glClearColor (1.0,1.0,1.0,1.0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-
-		uniformBlock.modelViewProjection = mvp;
-		uniformBlock.model = model;
-		uniformBlock.matrixShadow =ms;
-		uniformBlock.lightDirection = glm::vec4(mainScene->light.direction, 0.0f);
-		uniformBlock.cameraPosition = glm::vec4(mainScene->camera.position, 0.0f);
-		uniformBlock.time = time;
-        uniformBlock.parallaxEnabled = settings->parallaxEnabled ? 1 : 0;
-        uniformBlock.shadowEnabled = settings->shadowEnabled ? 1 : 0;
-        uniformBlock.debugEnabled = settings->debugEnabled ? 1 : 0;
-        uniformBlock.lightEnabled = settings->lightEnabled ? 1 : 0;
-		uniformBlock.triplanarEnabled = 1;
-		uniformBlock.layer = 0;
-
 		glUseProgram(program3d);
-		program3dData->wireFrameEnabled = settings->wireFrameEnabled;
-		program3dData->uniform(&uniformBlock);
+
+		program3dData->uniform(&block);
 		mainScene->draw3dSolid();
 
 		glUseProgram(programVegetation);
-        programVegetationData->wireFrameEnabled = settings->wireFrameEnabled;
-		programVegetationData->uniform(&uniformBlock);
-		
+		programVegetationData->uniform(&block);
 		mainScene->drawVegetation();
 
 
@@ -554,66 +554,49 @@ public:
 		glViewport(0, 0, renderBuffer.width, renderBuffer.height);
 		glClearColor (0.1,0.1,0.1,1.0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glUseProgram(programVegetation);
 
-		uniformBlock.layer=1; 
+		block.depthEnabled=0u; 
 
 		if(settings->wireFrameEnabled) {
-			uniformBlock.lightEnabled=0;
-			uniformBlock.triplanarEnabled=0;
-			uniformBlock.parallaxEnabled= 0;
-			uniformBlock.debugEnabled=1;
-
+			block.lightEnabled=0u;
+			block.triplanarEnabled=0u;
+			block.parallaxEnabled= 0u;
+			block.debugEnabled=1u;
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-			programVegetationData->uniform(&uniformBlock);
-			mainScene->drawVegetation();
+		} 
 
-			glUseProgram(program3d);
-			program3dData->uniform(&uniformBlock);
-			mainScene->draw3dSolid();
-			mainScene->draw3dLiquid();
+		programVegetationData->uniform(&block);
+		mainScene->drawVegetation();
 
+		glUseProgram(program3d);
+		//UniformBlock::print(&block2);
+
+		program3dData->uniform(&block);
+		mainScene->draw3dSolid();
+
+		if(settings->wireFrameEnabled) {
 			glPolygonMode(GL_FRONT, GL_FILL);
-		} else {
-			uniformBlock.triplanarEnabled = 0;
-			programVegetationData->uniform(&uniformBlock);
-			mainScene->drawVegetation();
-
-			glUseProgram(program3d);
-			uniformBlock.triplanarEnabled = 1;
-			program3dData->uniform(&uniformBlock);
-			mainScene->draw3dSolid();
-
-			// Bind the source framebuffer (FBO you rendered to)
-			glBindFramebuffer(GL_READ_FRAMEBUFFER, renderBuffer.frameBuffer);
-			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, solidBuffer.frameBuffer);
-			glBlitFramebuffer(
-				0, 0, renderBuffer.width, renderBuffer.height, // Source rectangle (x0, y0, x1, y1)
-				0, 0, solidBuffer.width, solidBuffer.height, 
-				GL_COLOR_BUFFER_BIT,  
-				GL_NEAREST           
-			);
-
-			glBindFramebuffer(GL_FRAMEBUFFER, renderBuffer.frameBuffer);
-			glViewport(0, 0, renderBuffer.width, renderBuffer.height);
-			
-			mainScene->draw3dLiquid();
 		}
+	
+		// Bind the source framebuffer (FBO you rendered to)
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, renderBuffer.frameBuffer);
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, solidBuffer.frameBuffer);
+		glBlitFramebuffer(
+			0, 0, renderBuffer.width, renderBuffer.height, // Source rectangle (x0, y0, x1, y1)
+			0, 0, solidBuffer.width, solidBuffer.height, 
+			GL_COLOR_BUFFER_BIT,  
+			GL_NEAREST           
+		);
+		glBindFramebuffer(GL_FRAMEBUFFER, renderBuffer.frameBuffer);
+		glViewport(0, 0, renderBuffer.width, renderBuffer.height);
 
-		brushEditor->draw3dIfOpen();
+		glUseProgram(program3d);
+		mainScene->draw3dLiquid();
+
+		brushEditor->draw3dIfOpen(&block);
 		
 		glPolygonMode(GL_FRONT, GL_FILL);
-
-		#ifdef DEBUG_GEO
-	
-		glUniform1ui(program3dLocs->lightEnabledLoc, 0);
-		glUniform1ui(program3dLocs->parallaxEnabledLoc, 0);
-    	glUniform1ui(program3dLocs->triplanarEnabledLoc, 0);
-	
-		glDisable(GL_CULL_FACE); 
-		vaoDebug->draw(GL_PATCHES);
-			
-		glPolygonMode(GL_FRONT, GL_FILL);
-		#endif
 
 		// ==========
 		// Final Pass
@@ -713,18 +696,13 @@ public:
 										ImGuiWindowFlags_NoNav);
 			
 			
-			#ifdef GL_ATI_meminfo
-				GLint vram_usage[4] = {0};
-				glGetIntegerv(GL_TEXTURE_FREE_MEMORY_ATI, vram_usage);
-
-				ImGui::Text("Available VRAM: %d MB", vram_usage[0] / 1024);
-			#endif
+		
 			
 			ImGui::Text("%d FPS", framesPerSecond);
 			ImGui::Text("%d solid triangles", mainScene->solidTrianglesCount);
 			ImGui::Text("%d liquid triangles", mainScene->liquidTrianglesCount);
 			ImGui::Text("%d shadow triangles", mainScene->shadowTrianglesCount);
-			ImGui::Text("%d vegetation instances", mainScene->vegetationRenderer->instances);
+			ImGui::Text("%d vegetation instances", mainScene->vegetationInstancesCount);
 			ImGui::End();
 
 		}

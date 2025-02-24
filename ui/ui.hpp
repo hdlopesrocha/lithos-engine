@@ -32,7 +32,7 @@ class Closable {
     bool isOpen();
     
     virtual void draw2d() = 0;
-    virtual void draw3d() = 0;
+    virtual void draw3d(UniformBlock * block) = 0;
 
     void draw2dIfOpen(){
         if(open) {
@@ -40,9 +40,9 @@ class Closable {
         }
     }
 
-    void draw3dIfOpen(){
+    void draw3dIfOpen(UniformBlock * block){
         if(open) {
-            draw3d();
+            draw3d(block);
         } 
     }
 };
@@ -55,7 +55,7 @@ class TextureViewer: public Closable {
     public:
     TextureViewer(std::vector<Texture*> * textures, GLuint previewProgram);
     void draw2d();
-    void draw3d();
+    void draw3d(UniformBlock * block);
 };
 
 class AtlasViewer: public Closable {
@@ -69,7 +69,7 @@ class AtlasViewer: public Closable {
     public:
     AtlasViewer(std::vector<AtlasTexture*> * atlasTextures, GLuint programAtlas, GLuint previewProgram, int width, int height);
     void draw2d();
-    void draw3d();
+    void draw3d(UniformBlock * block);
 };
 
 class AtlasPainter: public Closable {
@@ -83,19 +83,17 @@ class AtlasPainter: public Closable {
     public:
     AtlasPainter(std::vector<AtlasTexture*> * atlasTextures, std::vector<AtlasDrawer*> * atlasDrawers, GLuint programAtlas, GLuint previewProgram, int width, int height);
     void draw2d();
-    void draw3d();
+    void draw3d(UniformBlock * block);
 };
 
 class BrushEditor: public Closable {
     std::vector<Brush*> * brushes;
     std::vector<Texture*> * textures;
-    GLuint program3d;
+    GLuint program;
+    ProgramData * data;
 	DrawableGeometry * sphere;
     Camera * camera;
-	GLuint modelLoc;
-	GLuint modelViewProjectionLoc;
-	GLuint shadowEnabledLoc;
-	GLuint overrideTextureEnabledLoc;
+
   
     TexturePreviewer * previewer;
     BrushMode mode;
@@ -107,7 +105,7 @@ class BrushEditor: public Closable {
     public:
     BrushEditor(Camera * camera,std::vector<Brush*> * brushes, std::vector<Texture*> * textures, GLuint program3d, GLuint previewProgram);
     void draw2d();
-    void draw3d();
+    void draw3d(UniformBlock * block);
     int getSelectedBrush();
     void resetPosition();
 };
@@ -119,7 +117,7 @@ class ShadowMapViewer : public Closable{
     ShadowMapViewer(GLuint shadowTexture);
 
     void draw2d();
-    void draw3d();
+    void draw3d(UniformBlock * block);
 };
 
 
@@ -134,7 +132,7 @@ class DepthBufferViewer : public Closable{
     DepthBufferViewer(GLuint previewProgram, GLuint depthTexture, int width, int height);
 
     void draw2d();
-    void draw3d();
+    void draw3d(UniformBlock * block);
 };
 
 class TextureMixerEditor : public Closable{
@@ -146,7 +144,7 @@ class TextureMixerEditor : public Closable{
     public:
     TextureMixerEditor(std::vector<TextureMixer*> * mixers, std::vector<Texture*> * textures, GLuint previewProgram);
     void draw2d();
-    void draw3d();
+    void draw3d(UniformBlock * block);
 };
 
 class AnimatedTextureEditor : public Closable{
@@ -158,7 +156,7 @@ class AnimatedTextureEditor : public Closable{
     AnimatedTextureEditor(std::vector<AnimatedTexture*> * animatedTextures, std::vector<Texture*> * textures, GLuint previewProgram, int width, int height);
 
     void draw2d();
-    void draw3d();
+    void draw3d(UniformBlock * block);
 };
 
 class ImageViewer : public Closable{
@@ -170,7 +168,7 @@ class ImageViewer : public Closable{
     ImageViewer(GLuint texture, int width, int height);
 
     void draw2d();
-    void draw3d();
+    void draw3d(UniformBlock * block);
 };
 
 class SettingsEditor : public Closable {
@@ -180,7 +178,7 @@ class SettingsEditor : public Closable {
     SettingsEditor(Settings * settings);
 
     void draw2d();
-    void draw3d();
+    void draw3d(UniformBlock * block);
 };
 
 #endif

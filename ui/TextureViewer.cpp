@@ -28,7 +28,7 @@ void TextureViewer::draw2d(){
     ImGui::End();
 }
 
-void TextureViewer::draw3d(){
+void TextureViewer::draw3d(UniformBlock * block){
 
 }
 
