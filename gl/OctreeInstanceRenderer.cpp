@@ -20,6 +20,9 @@ OctreeNode * OctreeInstanceRenderer::getChild(OctreeNode * node, int index){
 }
 
 void * OctreeInstanceRenderer::before(int level, OctreeNode * node, BoundingCube cube, void * context) {		
+	if(tree->getHeight(cube)==geometryLevel){
+		return node;
+	}
 	for(int i=0; i < node->info.size(); ++i){
 		NodeInfo * info = &node->info[i];
 		// drawable geometry
@@ -29,16 +32,15 @@ void * OctreeInstanceRenderer::before(int level, OctreeNode * node, BoundingCube
 			|| info->type == TYPE_INSTANCE_SHADOW_DRAWABLE){
 			DrawableInstanceGeometry * drawable = (DrawableInstanceGeometry*) info->data;
 			std::vector<glm::mat4> * instances = (std::vector<glm::mat4> *) info->temp;
-	
+			std::cout << "Draw " << std::to_string(instances->size())<< std::endl;
+
 			drawable->draw(mode, program, instances);
 			instances += instances->size();
 		}
 	
 
 	}
-	if(tree->getHeight(cube)==geometryLevel){
-		return node;
-	}
+
 	return NULL;
 }
 

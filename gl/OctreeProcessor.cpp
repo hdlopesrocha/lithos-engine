@@ -121,7 +121,7 @@ void * OctreeProcessor::before(int level, OctreeNode * node, BoundingCube cube, 
 					//instanceBuilder.matrices.back;//CXXX
 					if(instanceCount > 0) {
 						*triangles += instanceCount;
-						std::cout << "drawable " << std::to_string(instanceCount)<< std::endl;
+						std::cout << "Create drawable " << std::to_string(instanceCount)<< std::endl;
 						DrawableInstanceGeometry * drawable = new DrawableInstanceGeometry(loadable, instances);
 						NodeInfo vi;
 						vi.type = drawableType;

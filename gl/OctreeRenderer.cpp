@@ -33,7 +33,7 @@ void * OctreeRenderer::before(int level, OctreeNode * node, BoundingCube cube, v
 					DrawableInstanceGeometry * drawable = (DrawableInstanceGeometry*) info->data;
 					std::vector<glm::mat4> * instances = (std::vector<glm::mat4> *) info->temp;
 			
-					
+					std::cout << "Draw " << std::to_string(instances->size())<< std::endl;
 					drawable->draw(mode, program, instances);
 				}
 			}	
