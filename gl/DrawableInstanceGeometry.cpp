@@ -35,7 +35,6 @@ DrawableInstanceGeometry::DrawableInstanceGeometry(Geometry * t, std::vector<glm
 		glBindBuffer(GL_ARRAY_BUFFER, instanceBuffer);
 		glBufferData(GL_ARRAY_BUFFER, instancesCount * sizeof(glm::mat4), instances->data(), GL_STATIC_DRAW);
 
-		glEnableVertexAttribArray(4);
 		for (int i = 0; i < 4; i++) {
 			glVertexAttribPointer(4 + i, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(sizeof(glm::vec4) * i));
 			glEnableVertexAttribArray(4 + i);
@@ -58,6 +57,11 @@ DrawableInstanceGeometry::~DrawableInstanceGeometry() {
 void DrawableInstanceGeometry::draw(uint mode) {
 
 	if(vertexArrayObject) {
+		if (instancesCount <= 0) {
+			std::cerr << "Error: instancesCount is " << instancesCount << std::endl;
+			return;
+		}
+
 		glBindVertexArray(this->vertexArrayObject);
 		glDrawElementsInstanced(mode, this->indicesCount, GL_UNSIGNED_INT, 0, instancesCount);
 	    glBindVertexArray(0);

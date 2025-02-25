@@ -26,7 +26,7 @@ void * OctreeInstanceRenderer::before(int level, OctreeNode * node, BoundingCube
 		// drawable geometry
 		if(info->type == drawableType){
 			DrawableInstanceGeometry * drawable = (DrawableInstanceGeometry*) info->data;
-			std::cout << "Draw " << std::to_string(drawable->instancesCount) << " | " << std::to_string(drawableType) << std::endl;
+			//std::cout << "Draw " << std::to_string(drawable->instancesCount) << " | " << std::to_string(drawableType) << std::endl;
 
 			drawable->draw(mode);
 			instances += drawable->instancesCount;

@@ -107,7 +107,6 @@ class MainApplication : public LithosApplication {
 	ProgramData * program3dData;
 	ProgramData * programVegetationData;
 
-	UniformBlock block;
 	UniformBlock viewerBlock;
 
 
@@ -512,41 +511,41 @@ public:
 			glUniformMatrix4fv(modelViewProjectionShadowLoc, 1, GL_FALSE, glm::value_ptr(mlp));
 			mainScene->draw3dShadow();
 		}
+		UniformBlock uniformBlock;
+        uniformBlock.uintData = glm::vec4(0);
+		uniformBlock.floatData = glm::vec4( time, 0.0, 0.0 ,0.0);
+		uniformBlock.modelViewProjection = mvp;
+		uniformBlock.model = worldModel;
+		uniformBlock.matrixShadow = ms;
+		uniformBlock.lightDirection = glm::vec4(light.direction, 0.0f);
+		uniformBlock.cameraPosition = glm::vec4(camera.position, 0.0f);
+		uniformBlock.set(0, PARALLAX_FLAG, settings->parallaxEnabled);
+		uniformBlock.set(0, SHADOW_FLAG, settings->shadowEnabled);
+		uniformBlock.set(0, DEBUG_FLAG, settings->debugEnabled);
+		uniformBlock.set(0, LIGHT_FLAG, settings->lightEnabled);
+		uniformBlock.set(0, TRIPLANAR_FLAG, true);
+		uniformBlock.set(0, DEPTH_FLAG, true);
+		uniformBlock.set(0, OVERRIDE_FLAG, false);
+		uniformBlock.set(0, TESSELATION_FLAG, true);
+        uniformBlock.uintData.w = 0;
 
-
-		block.modelViewProjection = mvp;
-		block.model = worldModel;
-		block.matrixShadow =ms;
-		block.lightDirection = glm::vec4(light.direction, 0.0f);
-		block.cameraPosition = glm::vec4(camera.position, 0.0f);
-		block.floatData = glm::vec4( time, 0.0, 0.0 ,0.0);
-        block.uintData = glm::vec4(0);
-		block.set(0, PARALLAX_FLAG, settings->parallaxEnabled);
-		block.set(0, SHADOW_FLAG, settings->shadowEnabled);
-		block.set(0, DEBUG_FLAG, settings->debugEnabled);
-		block.set(0, LIGHT_FLAG, settings->lightEnabled);
-		block.set(0, TRIPLANAR_FLAG, true);
-		block.set(0, DEPTH_FLAG, true);
-		block.set(0, OVERRIDE_FLAG, false);
-		block.set(0, TESSELATION_FLAG, true);
-        block.uintData.w = 0;
-
-		viewerBlock = block;
+		viewerBlock = uniformBlock;
 		// =================
 		// First Pass: Depth
 		// =================
 		glBindFramebuffer(GL_FRAMEBUFFER, depthFrameBuffer.frameBuffer);
 		glViewport(0, 0, depthFrameBuffer.width, depthFrameBuffer.height);
-		glClearColor (1.0,1.0,1.0,1.0);
+		glClearColor (0.0,0.0,0.0,0.0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glEnable(GL_DEPTH_TEST);
 		
 		glUseProgram(program3d);
-		program3dData->uniform(&block);
+		program3dData->uniform(&uniformBlock);
 		mainScene->draw3dSolid();
 
 		glUseProgram(programVegetation);
-		block.set(0, TESSELATION_FLAG, false);
-		programVegetationData->uniform(&block);
+		uniformBlock.set(0, TESSELATION_FLAG, false);
+		programVegetationData->uniform(&uniformBlock);
 		mainScene->drawVegetation();
 
 		// ==================
@@ -558,20 +557,20 @@ public:
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		
 		glUseProgram(programVegetation);
-		block.set(0,DEPTH_FLAG, false);
+		uniformBlock.set(0,DEPTH_FLAG, false);
 		if(settings->wireFrameEnabled) {
-			block.set(0, LIGHT_FLAG, false); 
-			block.set(0, TRIPLANAR_FLAG, false); 
-			block.set(0, PARALLAX_FLAG, false); 
-			block.set(0, DEBUG_FLAG, true);
+			uniformBlock.set(0, LIGHT_FLAG, false); 
+			uniformBlock.set(0, TRIPLANAR_FLAG, false); 
+			uniformBlock.set(0, PARALLAX_FLAG, false); 
+			uniformBlock.set(0, DEBUG_FLAG, true);
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		} 
-		programVegetationData->uniform(&block);
+		programVegetationData->uniform(&uniformBlock);
 		mainScene->drawVegetation();
 
 		glUseProgram(program3d);
-		block.set(0, TESSELATION_FLAG, true);
-		program3dData->uniform(&block);
+		uniformBlock.set(0, TESSELATION_FLAG, true);
+		program3dData->uniform(&uniformBlock);
 		mainScene->draw3dSolid();
 		if(settings->wireFrameEnabled) {
 			glPolygonMode(GL_FRONT, GL_FILL);
@@ -590,11 +589,11 @@ public:
 		glViewport(0, 0, renderBuffer.width, renderBuffer.height);
 
 		glUseProgram(program3d);
-		program3dData->uniform(&block);
+		program3dData->uniform(&uniformBlock);
 		mainScene->draw3dLiquid();
 
 		//glUseProgram(program3d);
-		brushEditor->draw3dIfOpen(&block);
+		brushEditor->draw3dIfOpen(&uniformBlock);
 		
 		glPolygonMode(GL_FRONT, GL_FILL);
 

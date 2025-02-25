@@ -24,27 +24,21 @@ in vec4 teLightViewPosition;
 
 out vec4 color;    // Final fragment color
 
-
-
 void main() {
 
-    vec2 pixelUV = gl_FragCoord.xy / textureSize(underTexture, 0);
+    vec2 pixelUV = gl_FragCoord.xy / textureSize(depthTexture, 0);
  
-  
-
     float near = 0.1;
     float far = 512.0;
     float d1 = linearizeDepth(texture(depthTexture, pixelUV).r, near, far);
     float d2 = linearizeDepth(gl_FragCoord.z, near, far);
     
-    if(depthEnabled) {
-        color = vec4(d2/far,0.0,0.0,1.0);
-    }
     if(d1<d2) {
         discard;
     }
 
     if(depthEnabled) {
+        color = vec4(d2/far,0.0,0.0,1.0);
         return;
     }
 
