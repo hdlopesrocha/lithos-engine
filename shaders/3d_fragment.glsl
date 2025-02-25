@@ -28,26 +28,27 @@ out vec4 color;    // Final fragment color
 
 void main() {
     vec2 uv = teTextureCoord;
-    vec2 pixelUV = gl_FragCoord.xy / textureSize(depthTexture, 0);
-    float near = 0.1;
-    float far = 512.0;
-    float d1 = linearizeDepth(texture(depthTexture, pixelUV).r, near, far);
-    float d2 = linearizeDepth(gl_FragCoord.z, near, far);
-
-    if(billboardEnabled) {
+    
+    if(billboardEnabled && !debugEnabled) {
         vec4 opacity = texture(billboards[1], vec3(uv, 3));
         if(opacity.r < 0.5) {
             discard;
         }
     }
 
-    if(d1<d2) {
-        discard;
-    }
+    float currentDepth = gl_FragCoord.z;
 
     if(depthEnabled) {
-        color = vec4(d2/far,0.0,0.0,1.0);
+        float near = 0.1;
+        float far = 512.0;
+        color = vec4(linearizeDepth(currentDepth, near, far)/far,0.0,0.0,1.0);
         return;
+    }
+
+    vec2 pixelUV = gl_FragCoord.xy / textureSize(depthTexture, 0);
+    float existingDepth = texture(depthTexture, pixelUV).r;
+    if(existingDepth < currentDepth) {
+        discard;
     }
 
     vec4 positionWorld = teModel * vec4(tePosition, 1.0);
@@ -77,14 +78,12 @@ void main() {
         discard;
     }
 
+    vec3 normalMap = textureBlend(teTextureWeights, teTextureIndices, uv, 1).rgb * 2.0 - 1.0;
+    normalMap = normalize(normalMap); // Convert to range [-1, 1]
+    vec3 worldNormal = normalize(TBN * normalMap);
+
     if(lightEnabled) {
         vec3 specularColor = vec3(1.0,1.0,1.0);
-
-        vec3 normalMap = textureBlend(teTextureWeights, teTextureIndices, uv, 1).rgb * 2.0 - 1.0;
-        normalMap = normalize(normalMap); // Convert to range [-1, 1]
-
-        vec3 worldNormal = normalize(TBN * normalMap);
-
         vec3 reflection = reflect(-lightDirection.xyz, worldNormal);
 
         float phongSpec = pow(max(dot(reflection, viewDirection), 0.0), teProps.shininess);
@@ -97,7 +96,7 @@ void main() {
             shadow = getShadow(shadowMap, noise, teLightViewPosition, position);
         }
         if(debugEnabled) {
-            color = vec4(worldNormal,1.0);
+            color = vec4(visual(worldNormal),1.0);
         }else {
             vec4 refractedColor = vec4(0.0,0.0,0.0,0.0);
 
@@ -113,9 +112,9 @@ void main() {
         }
     }else {
         if(debugEnabled) {
-            color = vec4(visual(normal), 1.0);
+            color = vec4(visual(worldNormal), 1.0);
         }else {
-            color = vec4(1.0,1.0,1.0,1.0);
+            color = mixedColor;
         }
     }
  }

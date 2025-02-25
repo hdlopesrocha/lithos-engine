@@ -142,10 +142,6 @@ public:
 	}
 
     virtual void setup() {
-		glEnable(GL_DEPTH_TEST);
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
 		std::vector<GlslInclude> includes;
 		includes.push_back(GlslInclude("#include<functions.glsl>" , readFile("shaders/util/functions.glsl")));
 		includes.push_back(GlslInclude("#include<perlin.glsl>" , readFile("shaders/util/perlin.glsl")));
@@ -483,7 +479,6 @@ public:
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glLineWidth(2.0);
 		glPointSize(4.0);	
 
@@ -496,7 +491,6 @@ public:
 		if(settings->shadowEnabled) {
 			glBindFramebuffer(GL_FRAMEBUFFER, shadowFrameBuffer.frameBuffer);
 			glViewport(0, 0, shadowFrameBuffer.width, shadowFrameBuffer.height);
-			glEnable(GL_DEPTH_TEST);
 			glClear(GL_DEPTH_BUFFER_BIT);
 			glUseProgram(programShadow);
 
@@ -530,7 +524,6 @@ public:
 		glViewport(0, 0, depthFrameBuffer.width, depthFrameBuffer.height);
 		glClearColor (0.0,0.0,0.0,0.0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		glEnable(GL_DEPTH_TEST);
 		glUseProgram(program3d);
 
 		program3dData->uniform(&uniformBlock);
@@ -556,7 +549,6 @@ public:
 
 		if(settings->wireFrameEnabled) {
 			uniformBlock.set(LIGHT_FLAG, false); 
-			uniformBlock.set(DEBUG_FLAG, true);
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		} 
 
