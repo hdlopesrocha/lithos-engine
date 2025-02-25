@@ -528,6 +528,7 @@ public:
 		block.set(0, TRIPLANAR_FLAG, true);
 		block.set(0, DEPTH_FLAG, true);
 		block.set(0, OVERRIDE_FLAG, false);
+		block.set(0, TESSELATION_FLAG, true);
         block.uintData.w = 0;
 
 		viewerBlock = block;
@@ -538,14 +539,15 @@ public:
 		glViewport(0, 0, depthFrameBuffer.width, depthFrameBuffer.height);
 		glClearColor (1.0,1.0,1.0,1.0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		
 		glUseProgram(program3d);
 		program3dData->uniform(&block);
 		mainScene->draw3dSolid();
 
 		glUseProgram(programVegetation);
+		block.set(0, TESSELATION_FLAG, false);
 		programVegetationData->uniform(&block);
 		mainScene->drawVegetation();
-
 
 		// ==================
 		// Second Pass: Solid
@@ -554,10 +556,9 @@ public:
 		glViewport(0, 0, renderBuffer.width, renderBuffer.height);
 		glClearColor (0.1,0.1,0.1,1.0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		
 		glUseProgram(programVegetation);
-	
 		block.set(0,DEPTH_FLAG, false);
-
 		if(settings->wireFrameEnabled) {
 			block.set(0, LIGHT_FLAG, false); 
 			block.set(0, TRIPLANAR_FLAG, false); 
@@ -565,15 +566,13 @@ public:
 			block.set(0, DEBUG_FLAG, true);
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		} 
-
 		programVegetationData->uniform(&block);
 		mainScene->drawVegetation();
 
 		glUseProgram(program3d);
-
+		block.set(0, TESSELATION_FLAG, true);
 		program3dData->uniform(&block);
 		mainScene->draw3dSolid();
-
 		if(settings->wireFrameEnabled) {
 			glPolygonMode(GL_FRONT, GL_FILL);
 		}

@@ -46,13 +46,14 @@
 #include <ranges>
 #include <initializer_list>
 
-#define PARALLAX_FLAG  0x01  
-#define SHADOW_FLAG    0x02  
-#define DEBUG_FLAG     0x04  
-#define LIGHT_FLAG     0x08  
-#define TRIPLANAR_FLAG 0x10  
-#define DEPTH_FLAG     0x20  
-#define OVERRIDE_FLAG  0x40  
+#define PARALLAX_FLAG       0x01  
+#define SHADOW_FLAG         0x02  
+#define DEBUG_FLAG          0x04  
+#define LIGHT_FLAG          0x08  
+#define TRIPLANAR_FLAG      0x10  
+#define DEPTH_FLAG          0x20  
+#define OVERRIDE_FLAG       0x40  
+#define TESSELATION_FLAG    0x80  
 #define OVERRIDE_TEXTURE_FLAG 0xff000000
 
 #pragma pack(16)  // Ensure 16-byte alignment for UBO
@@ -381,12 +382,12 @@ class OctreeInstanceRenderer : public IteratorHandler{
 	int geometryType;
     int drawableType;
     GLuint program;
+    uint mode;
     public: 
-        uint mode;
         int instances;
 		int geometryLevel;
         glm::vec3 cameraPosition;
-		OctreeInstanceRenderer(GLuint program, Octree * tree, int drawableType, int geometryLevel);
+		OctreeInstanceRenderer(GLuint program, Octree * tree, int mode, int drawableType, int geometryLevel);
 
 		void update(glm::mat4 m);
 		void * before(int level, OctreeNode * node, BoundingCube cube, void * context);

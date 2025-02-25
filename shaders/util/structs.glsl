@@ -36,6 +36,7 @@ layout(std140, binding = 0) uniform UniformBlock {
 #define TRIPLANAR_FLAG 0x10  
 #define DEPTH_FLAG     0x20  
 #define OVERRIDE_FLAG  0x40  
+#define TESSELATION_FLAG  0x80  
 
 bool parallaxEnabled  = (uintData.x & uint(PARALLAX_FLAG)) != 0u;
 bool shadowEnabled    = (uintData.x & uint(SHADOW_FLAG)) != 0u;
@@ -44,5 +45,6 @@ bool lightEnabled     = (uintData.x & uint(LIGHT_FLAG)) != 0u;
 bool triplanarEnabled = (uintData.x & uint(TRIPLANAR_FLAG)) != 0u;
 bool depthEnabled     = (uintData.x & uint(DEPTH_FLAG)) != 0u;
 bool overrideEnabled  = (uintData.x & uint(OVERRIDE_FLAG)) != 0u;
+bool tesselationEnabled  = (uintData.x & uint(TESSELATION_FLAG)) != 0u;
 uint overrideTexture  = uintData.w;
 float time = floatData.x;

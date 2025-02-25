@@ -27,21 +27,17 @@ class Scene {
 		solidSpace = new Octree(BoundingCube(glm::vec3(0,0,0), 2.0));
 		liquidSpace = new Octree(BoundingCube(glm::vec3(0,20,0), 2.0));
   
-		solidRenderer = new OctreeInstanceRenderer(program3d, solidSpace, TYPE_INSTANCE_SOLID_DRAWABLE, 5);
-		liquidRenderer = new OctreeInstanceRenderer(program3d, liquidSpace, TYPE_INSTANCE_LIQUID_DRAWABLE, 5);
-		shadowRenderer = new OctreeInstanceRenderer(program3dShadow, solidSpace, TYPE_INSTANCE_SHADOW_DRAWABLE, 6);
-		vegetationRenderer = new OctreeInstanceRenderer(programVegetation, solidSpace, TYPE_INSTANCE_VEGETATION_DRAWABLE, 5);
-
 		solidProcessor = new OctreeProcessor(solidSpace, &solidInstancesCount, TYPE_INSTANCE_SOLID_DRAWABLE, 5, 0.9, 0.2, true, true, 5);
 		liquidProcessor = new OctreeProcessor(liquidSpace, &liquidInstancesCount, TYPE_INSTANCE_LIQUID_DRAWABLE, 5, 0.9, 0.2, true, true, 5);
 		shadowProcessor = new OctreeProcessor(solidSpace, &shadowInstancesCount, TYPE_INSTANCE_SHADOW_DRAWABLE, 6, 0.1, 4.0, false, true, 6);
 		vegetationProcessor = new OctreeProcessor(solidSpace, &vegetationInstancesCount, TYPE_INSTANCE_VEGETATION_DRAWABLE, 5, 0.9, 0.2, false, true, 5);
 
-    }
+		solidRenderer = new OctreeInstanceRenderer(program3d, solidSpace, GL_PATCHES, TYPE_INSTANCE_SOLID_DRAWABLE, 5);
+		liquidRenderer = new OctreeInstanceRenderer(program3d, liquidSpace, GL_PATCHES, TYPE_INSTANCE_LIQUID_DRAWABLE, 5);
+		shadowRenderer = new OctreeInstanceRenderer(program3dShadow, solidSpace, GL_TRIANGLES, TYPE_INSTANCE_SHADOW_DRAWABLE, 6);
+		vegetationRenderer = new OctreeInstanceRenderer(programVegetation, solidSpace, GL_TRIANGLES, TYPE_INSTANCE_VEGETATION_DRAWABLE, 5);
 
-	void draw3dShadow() {
-		solidSpace->iterate(shadowRenderer);
-	}
+    }
 
 	void processSpace() {
 		solidSpace->iterate(solidProcessor);
@@ -60,24 +56,18 @@ class Scene {
 		solidRenderer->update(mvp);
 		solidProcessor->loaded = 0;
 		solidProcessor->update(mvp);
-		solidRenderer->mode = GL_PATCHES;
 
 		liquidRenderer->update(mvp);
 		liquidProcessor->loaded = 0;
 		liquidProcessor->update(mvp);
-		liquidRenderer->mode = GL_PATCHES;
 
 		vegetationRenderer->update(mvp);
 		vegetationProcessor->loaded = 0;
 		vegetationProcessor->update(mvp);
-		vegetationRenderer->mode = GL_TRIANGLES;
 
 		shadowRenderer->update(mlp);
 		shadowProcessor->loaded = 0;
 		shadowProcessor->update(mlp);
-		shadowRenderer->mode = GL_TRIANGLES;
-
-	
 
 	
 		processSpace();
@@ -86,7 +76,6 @@ class Scene {
 
 	void drawVegetation() {
 		vegetationRenderer->instances = 0;
-		vegetationRenderer->mode = GL_TRIANGLES;
 		solidSpace->iterate(vegetationRenderer);
 	}
 
@@ -97,6 +86,11 @@ class Scene {
 	void draw3dLiquid() {
 		liquidSpace->iterate(liquidRenderer);
 	}
+
+	void draw3dShadow() {
+		solidSpace->iterate(shadowRenderer);
+	}
+
 
 	void create(std::vector<Texture*> textures, std::vector<Brush*>  brushes) {
 

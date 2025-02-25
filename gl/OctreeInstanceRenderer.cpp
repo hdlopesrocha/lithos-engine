@@ -3,8 +3,9 @@
 #include "gl.hpp"
 #include <glm/gtx/norm.hpp> 
 
-OctreeInstanceRenderer::OctreeInstanceRenderer(GLuint program, Octree * tree, int drawableType, int geometryLevel) {
+OctreeInstanceRenderer::OctreeInstanceRenderer(GLuint program, Octree * tree, int mode, int drawableType, int geometryLevel) {
 	this->tree = tree;
+	this->mode = mode;
 	this->program = program;
 	this->drawableType = drawableType;
 	this->geometryLevel = geometryLevel;
@@ -20,24 +21,20 @@ OctreeNode * OctreeInstanceRenderer::getChild(OctreeNode * node, int index){
 }
 
 void * OctreeInstanceRenderer::before(int level, OctreeNode * node, BoundingCube cube, void * context) {		
-	if(tree->getHeight(cube)==geometryLevel){
-		return node;
-	}
 	for(int i=0; i < node->info.size(); ++i){
 		NodeInfo * info = &node->info[i];
 		// drawable geometry
-		if(info->type == TYPE_INSTANCE_VEGETATION_DRAWABLE
-			|| info->type == TYPE_INSTANCE_LIQUID_DRAWABLE
-			|| info->type == TYPE_INSTANCE_SOLID_DRAWABLE
-			|| info->type == TYPE_INSTANCE_SHADOW_DRAWABLE){
+		if(info->type == drawableType){
 			DrawableInstanceGeometry * drawable = (DrawableInstanceGeometry*) info->data;
+			std::cout << "Draw " << std::to_string(drawable->instancesCount) << " | " << std::to_string(drawableType) << std::endl;
+
 			drawable->draw(mode);
 			instances += drawable->instancesCount;
 		}
-	
-
 	}
-
+	if(tree->getHeight(cube)==geometryLevel){
+		return node;
+	}
 	return NULL;
 }
 
