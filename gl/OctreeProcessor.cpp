@@ -69,7 +69,6 @@ void * OctreeProcessor::before(int level, OctreeNode * node, BoundingCube cube, 
 
 			if(createInstances && drawableType == TYPE_INSTANCE_VEGETATION_DRAWABLE) {
 				NodeInfo * info = node->getNodeInfo(drawableType);
-
 				if(info == NULL) {
 					InstanceBuilder instanceBuilder(tree);
 					instanceBuilder.iterate(level, node, cube, NULL);
@@ -77,21 +76,12 @@ void * OctreeProcessor::before(int level, OctreeNode * node, BoundingCube cube, 
 					*instancesCount += instanceBuilder.instanceCount;
 					//std::cout << "Create vegetation " << std::to_string(instanceBuilder.instanceCount) << " | " << std::to_string(drawableType) << std::endl;
 					Vegetation3d * vegetation = new Vegetation3d();
-
-					NodeInfo vi;
-					vi.type = drawableType;
-					vi.data = vegetation->createDrawable(&instanceBuilder.instances);
-					vi.temp = NULL;
-					vi.dirty = false;
-					node->info.push_back(vi);
+					node->info.push_back(NodeInfo(drawableType, vegetation->createDrawable(&instanceBuilder.instances), NULL, false));
 					++loaded;
-					
 				}
 			}
 			if(createInstances && (drawableType == TYPE_INSTANCE_SOLID_DRAWABLE || drawableType == TYPE_INSTANCE_LIQUID_DRAWABLE  || drawableType == TYPE_INSTANCE_SHADOW_DRAWABLE)) {
-
 				NodeInfo * info = node->getNodeInfo(drawableType);
-
 				if(info == NULL) {
 					int instanceCount = 1;
 					std::vector<glm::mat4> instances;
@@ -100,17 +90,8 @@ void * OctreeProcessor::before(int level, OctreeNode * node, BoundingCube cube, 
 					*instancesCount += instanceCount;
 					//std::cout << "Create drawbale " << std::to_string(instanceCount) << " | " << std::to_string(drawableType) << std::endl;
 					DrawableInstanceGeometry * drawable = new DrawableInstanceGeometry(loadable, &instances);
-
-					NodeInfo vi;
-					vi.type = drawableType;
-					vi.data = drawable;
-					vi.temp = NULL;
-					vi.dirty = false;
-
-					node->info.push_back(vi);
+					node->info.push_back(NodeInfo(drawableType, drawable, NULL, false));
 					++loaded;
-
-					
 				}
 			}
 		

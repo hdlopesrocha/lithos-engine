@@ -251,6 +251,13 @@ struct NodeInfo {
 	void * temp;
 	int type;
 	bool dirty = false;
+
+	NodeInfo(int type, void * data, void * temp, bool dirty) {
+		this->type = type;
+		this->data = data;
+		this->temp = temp;
+		this->dirty = dirty;
+	}
 };
 
 class OctreeNode {
@@ -478,10 +485,10 @@ struct OctreeNodeSerialized {
     public:
     glm::vec3 position;
     glm::vec3 normal;
-    uint texIndex;
+    uint brushIndex;
     uint mask;
     ContainmentType solid;
-    uint children[8];
+    uint children[8] = {0,0,0,0,0,0,0,0};
 };
 
 struct OctreeSerialized {
