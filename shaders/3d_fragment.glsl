@@ -6,6 +6,7 @@ uniform sampler2D noise;
 uniform sampler2D depthTexture;
 uniform sampler2D underTexture;
 uniform sampler2DArray textures[25];
+uniform sampler2DArray billboards[5];
 
 #include<functions.glsl>
 #include<functions_fragment.glsl>
@@ -21,18 +22,25 @@ in TextureProperties teProps;
 in vec3 tePosition;
 in vec3 teNormal;
 in vec4 teLightViewPosition;
+in mat4 teModel;
 
 out vec4 color;    // Final fragment color
 
 void main() {
-
+    vec2 uv = teTextureCoord;
     vec2 pixelUV = gl_FragCoord.xy / textureSize(depthTexture, 0);
- 
     float near = 0.1;
     float far = 512.0;
     float d1 = linearizeDepth(texture(depthTexture, pixelUV).r, near, far);
     float d2 = linearizeDepth(gl_FragCoord.z, near, far);
-    
+
+    if(billboardEnabled) {
+        vec4 opacity = texture(billboards[1], vec3(uv, 3));
+        if(opacity.r < 0.5) {
+            discard;
+        }
+    }
+
     if(d1<d2) {
         discard;
     }
@@ -42,11 +50,9 @@ void main() {
         return;
     }
 
-    vec2 uv = teTextureCoord;
-
-    vec4 positionWorld = model * vec4(tePosition, 1.0);
+    vec4 positionWorld = teModel * vec4(tePosition, 1.0);
     vec3 position = positionWorld.xyz;    
-    mat3 normalMatrix = transpose(inverse(mat3(model)));
+    mat3 normalMatrix = transpose(inverse(mat3(teModel)));
     vec3 normal = normalize(normalMatrix * teNormal);
 
     float effectAmount = sin(time*3.14/4.0)*0.5 + 0.5;
@@ -59,14 +65,14 @@ void main() {
     }
 
     vec3 viewDirection = normalize(position-cameraPosition.xyz);
-    mat3 TBN = getTBN(tePosition, teNormal, uv, model, false);
+    mat3 TBN = getTBN(tePosition, teNormal, uv, teModel, false);
     vec3 viewDirectionTangent = normalize(transpose(TBN) * viewDirection);
 
     if(parallaxEnabled && distanceFactor * teProps.parallaxScale > 0.0) {
        uv = parallaxMapping(teTextureWeights, teTextureIndices, uv, viewDirectionTangent, distanceFactor*teProps.parallaxScale , distanceFactor*teProps.parallaxMinLayers, distanceFactor*teProps.parallaxMaxLayers, int(ceil(distanceFactor*teProps.parallaxRefine)));
     }
   
-    vec4 mixedColor = textureBlend(teTextureWeights, teTextureIndices, textures, uv, 0);
+    vec4 mixedColor = textureBlend(teTextureWeights, teTextureIndices, uv, 0);
     if(mixedColor.a == 0.0) {
         discard;
     }
@@ -74,7 +80,7 @@ void main() {
     if(lightEnabled) {
         vec3 specularColor = vec3(1.0,1.0,1.0);
 
-        vec3 normalMap = textureBlend(teTextureWeights, teTextureIndices, textures, uv, 1).rgb * 2.0 - 1.0;
+        vec3 normalMap = textureBlend(teTextureWeights, teTextureIndices, uv, 1).rgb * 2.0 - 1.0;
         normalMap = normalize(normalMap); // Convert to range [-1, 1]
 
         vec3 worldNormal = normalize(TBN * normalMap);

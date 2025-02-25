@@ -8,6 +8,7 @@ in vec2 vTextureCoord[];
 in vec3 vPosition[];
 in vec3 vNormal[];
 in TextureProperties vProps[];
+in mat4 vModel[];
 #include<functions.glsl>
 
 flat out uvec3 tcTextureIndices[];
@@ -15,6 +16,7 @@ out vec2 tcTextureCoord[];
 out vec3 tcNormal[];
 out vec3 tcPosition[];
 out TextureProperties tcProps[];
+out mat4 tcModel[];
 
 
 void main() {
@@ -27,6 +29,7 @@ void main() {
     gl_TessLevelInner[0] = tessellationFactor;
 
     tcPosition[gl_InvocationID] = vPosition[gl_InvocationID]; 
+    tcModel[gl_InvocationID] = vModel[gl_InvocationID]; 
     
     if(!depthEnabled) {
         tcNormal[gl_InvocationID] = vNormal[gl_InvocationID];

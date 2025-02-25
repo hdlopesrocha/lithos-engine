@@ -20,7 +20,7 @@ vec2 parallaxMapping(vec3 ws, uvec3 ti, vec2 uv, vec3 viewDir, float scale, floa
 
         currentUv -= deltaUv;
         currentDepth -= deltaDepth;
-        currentHeight = textureBlend(ws,ti, textures, currentUv, 2).r;
+        currentHeight = textureBlend(ws,ti, currentUv, 2).r;
 
         if(currentHeight > currentDepth) {
             break;
@@ -30,7 +30,7 @@ vec2 parallaxMapping(vec3 ws, uvec3 ti, vec2 uv, vec3 viewDir, float scale, floa
     for (int i = 0; i < approxCycles; ++i) {
         vec2 midUv = 0.5 * (currentUv + prevUv);
         float midDepth = 0.5 * (currentDepth + prevDepth);
-        float midHeight = textureBlend(ws, ti, textures, midUv, 2).r;
+        float midHeight = textureBlend(ws, ti, midUv, 2).r;
         
         if (midHeight > midDepth) {
             currentUv = midUv;

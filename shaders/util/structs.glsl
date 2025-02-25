@@ -19,8 +19,8 @@ struct ShadowProperties {
 
 
 layout(std140, binding = 0) uniform UniformBlock {
-	mat4 model;
-	mat4 modelViewProjection;
+	mat4 world;
+	mat4 viewProjection;
 	mat4 matrixShadow;
 	vec4 lightDirection;
 	vec4 cameraPosition;
@@ -38,6 +38,9 @@ layout(std140, binding = 0) uniform UniformBlock {
 #define OVERRIDE_FLAG  0x40  
 #define TESSELATION_FLAG  0x80  
 
+#define BILLBOARD_FLAG  0x01  
+
+
 bool parallaxEnabled  = (uintData.x & uint(PARALLAX_FLAG)) != 0u;
 bool shadowEnabled    = (uintData.x & uint(SHADOW_FLAG)) != 0u;
 bool debugEnabled     = (uintData.x & uint(DEBUG_FLAG)) != 0u;
@@ -46,5 +49,9 @@ bool triplanarEnabled = (uintData.x & uint(TRIPLANAR_FLAG)) != 0u;
 bool depthEnabled     = (uintData.x & uint(DEPTH_FLAG)) != 0u;
 bool overrideEnabled  = (uintData.x & uint(OVERRIDE_FLAG)) != 0u;
 bool tesselationEnabled  = (uintData.x & uint(TESSELATION_FLAG)) != 0u;
+
+bool billboardEnabled  = (uintData.y & uint(BILLBOARD_FLAG)) != 0u;
+
+
 uint overrideTexture  = uintData.w;
 float time = floatData.x;

@@ -7,4 +7,5 @@ Settings::Settings() {
     this->lightEnabled = true;
     this->debugEnabled = false;
     this->wireFrameEnabled = false;
+    this->tesselationEnabled = true;
 }

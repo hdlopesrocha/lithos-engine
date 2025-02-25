@@ -101,11 +101,9 @@ class MainApplication : public LithosApplication {
 	GLuint programDepth;
 	GLuint programMixTexture;
 	GLuint programWaterTexture;
-	GLuint programVegetation;
 
 	GLuint modelViewProjectionShadowLoc;
 	ProgramData * program3dData;
-	ProgramData * programVegetationData;
 
 	UniformBlock viewerBlock;
 
@@ -195,11 +193,7 @@ public:
 			compileShader(replaceIncludes(includes,readFile("shaders/texture/water_fragment.glsl")),GL_FRAGMENT_SHADER)
 		});
 
-		programVegetation = createShaderProgram({
-			compileShader(replaceIncludes(includes,readFile("shaders/vegetation_vertex.glsl")),GL_VERTEX_SHADER), 
-			compileShader(replaceIncludes(includes,readFile("shaders/vegetation_fragment.glsl")),GL_FRAGMENT_SHADER)
-		});
-		programVegetationData = new ProgramData();
+
 
 		program3d = createShaderProgram({
 			compileShader(replaceIncludes(includes,readFile("shaders/3d_vertex.glsl")),GL_VERTEX_SHADER), 
@@ -354,19 +348,17 @@ public:
 
 		noiseTexture = loadTextureImage("textures/noise.jpg");
 		activeTexture = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture,  glGetUniformLocation(program3d, "depthTexture"), depthFrameBuffer.depthTexture);
-		activeTexture = Texture::bindTexture(programVegetation, GL_TEXTURE_2D, activeTexture,  glGetUniformLocation(programVegetation, "depthTexture"), depthFrameBuffer.depthTexture);
 		activeTexture = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, glGetUniformLocation(program3d, "underTexture"), solidBuffer.colorTexture);
 		activeTexture = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, glGetUniformLocation(program3d, "shadowMap"), shadowFrameBuffer.depthTexture);
 		activeTexture = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, glGetUniformLocation(program3d, "noise"), noiseTexture);
 		
-		activeTexture = Texture::bindTextures(programVegetation, GL_TEXTURE_2D_ARRAY, activeTexture, "textures", &vegetationTextures);
+		activeTexture = Texture::bindTextures(program3d, GL_TEXTURE_2D_ARRAY, activeTexture, "billboards", &vegetationTextures);
 		activeTexture = Texture::bindTextures(program3d, GL_TEXTURE_2D_ARRAY, activeTexture, "textures", &textures);
 
 		Brush::bindBrushes(program3d, &brushes);
-		Brush::bindBrushes(programVegetation, &vegetationBrushes);
 
 		mainScene = new Scene();
-		mainScene->setup(program3d, programVegetation, programShadow);
+		mainScene->setup(program3d, programShadow);
 		mainScene->load();
 	
 		
@@ -477,11 +469,11 @@ public:
 		light.projection = glm::ortho(-orthoSize, orthoSize, -orthoSize, orthoSize, near, far);
 		light.view = glm::lookAt(lookAtLightPosition - light.direction*dist, lookAtLightPosition, glm::vec3(0,1,0));
 
-		glm::mat4 mvp = camera.getMVP(worldModel);
+		glm::mat4 vp = camera.getVP();
 		glm::mat4 mlp = light.getMVP(worldModel);
 		glm::mat4 ms =  Math::getCanonicalMVP(mlp);
 
-		mainScene->update3d(mvp, mlp, &camera, &light);
+		mainScene->update3d(vp, mlp, &camera, &light);
 		glPolygonMode(GL_FRONT, GL_FILL);
 		glPatchParameteri(GL_PATCH_VERTICES, 3); // Define the number of control points per patch
 		glEnable(GL_CULL_FACE);
@@ -514,19 +506,20 @@ public:
 		UniformBlock uniformBlock;
         uniformBlock.uintData = glm::vec4(0);
 		uniformBlock.floatData = glm::vec4( time, 0.0, 0.0 ,0.0);
-		uniformBlock.modelViewProjection = mvp;
-		uniformBlock.model = worldModel;
+		uniformBlock.world = worldModel;
+		uniformBlock.viewProjection = vp;
 		uniformBlock.matrixShadow = ms;
 		uniformBlock.lightDirection = glm::vec4(light.direction, 0.0f);
 		uniformBlock.cameraPosition = glm::vec4(camera.position, 0.0f);
-		uniformBlock.set(0, PARALLAX_FLAG, settings->parallaxEnabled);
-		uniformBlock.set(0, SHADOW_FLAG, settings->shadowEnabled);
-		uniformBlock.set(0, DEBUG_FLAG, settings->debugEnabled);
-		uniformBlock.set(0, LIGHT_FLAG, settings->lightEnabled);
-		uniformBlock.set(0, TRIPLANAR_FLAG, true);
-		uniformBlock.set(0, DEPTH_FLAG, true);
-		uniformBlock.set(0, OVERRIDE_FLAG, false);
-		uniformBlock.set(0, TESSELATION_FLAG, true);
+		uniformBlock.set(PARALLAX_FLAG, settings->parallaxEnabled);
+		uniformBlock.set(SHADOW_FLAG, settings->shadowEnabled);
+		uniformBlock.set(DEBUG_FLAG, settings->debugEnabled);
+		uniformBlock.set(LIGHT_FLAG, settings->lightEnabled);
+		uniformBlock.set(TESSELATION_FLAG, settings->tesselationEnabled);
+		uniformBlock.set(TRIPLANAR_FLAG, true);
+		uniformBlock.set(DEPTH_FLAG, true);
+		uniformBlock.set(OVERRIDE_FLAG, false);
+		uniformBlock.set(BILLBOARD_FLAG, false);
         uniformBlock.uintData.w = 0;
 
 		viewerBlock = uniformBlock;
@@ -538,14 +531,14 @@ public:
 		glClearColor (0.0,0.0,0.0,0.0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glEnable(GL_DEPTH_TEST);
-		
 		glUseProgram(program3d);
+
 		program3dData->uniform(&uniformBlock);
 		mainScene->draw3dSolid();
 
-		glUseProgram(programVegetation);
-		uniformBlock.set(0, TESSELATION_FLAG, false);
-		programVegetationData->uniform(&uniformBlock);
+		uniformBlock.set(TESSELATION_FLAG, false);
+		uniformBlock.set(BILLBOARD_FLAG, true);
+		program3dData->uniform(&uniformBlock);
 		mainScene->drawVegetation();
 
 		// ==================
@@ -555,21 +548,26 @@ public:
 		glViewport(0, 0, renderBuffer.width, renderBuffer.height);
 		glClearColor (0.1,0.1,0.1,1.0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		
-		glUseProgram(programVegetation);
-		uniformBlock.set(0,DEPTH_FLAG, false);
+		glUseProgram(program3d);
+
+		uniformBlock.set(DEPTH_FLAG, false);
+		uniformBlock.set(PARALLAX_FLAG, false);
+		uniformBlock.set(TRIPLANAR_FLAG, false); 
+
 		if(settings->wireFrameEnabled) {
-			uniformBlock.set(0, LIGHT_FLAG, false); 
-			uniformBlock.set(0, TRIPLANAR_FLAG, false); 
-			uniformBlock.set(0, PARALLAX_FLAG, false); 
-			uniformBlock.set(0, DEBUG_FLAG, true);
+			uniformBlock.set(LIGHT_FLAG, false); 
+			uniformBlock.set(DEBUG_FLAG, true);
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		} 
-		programVegetationData->uniform(&uniformBlock);
+
+		program3dData->uniform(&uniformBlock);
 		mainScene->drawVegetation();
 
-		glUseProgram(program3d);
-		uniformBlock.set(0, TESSELATION_FLAG, true);
+		uniformBlock.set(PARALLAX_FLAG, settings->parallaxEnabled);
+		uniformBlock.set(TESSELATION_FLAG, settings->tesselationEnabled);
+		uniformBlock.set(BILLBOARD_FLAG, false);
+		uniformBlock.set(TRIPLANAR_FLAG, true); 
+
 		program3dData->uniform(&uniformBlock);
 		mainScene->draw3dSolid();
 		if(settings->wireFrameEnabled) {

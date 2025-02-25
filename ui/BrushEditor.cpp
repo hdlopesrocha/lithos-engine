@@ -122,7 +122,7 @@ void BrushEditor::draw2d(){
 void BrushEditor::draw3d(UniformBlock * block){
     Brush::bindBrush(program, "brushes[" + std::to_string(selectedBrush) + "]" , "brushTextures["+std::to_string(selectedBrush) + "]", brush);
 
-    glm::mat4 model2 = glm::scale(
+    glm::mat4 model = glm::scale(
         glm::translate(  
             glm::mat4(1.0f), 
             brushPosition
@@ -130,10 +130,10 @@ void BrushEditor::draw3d(UniformBlock * block){
         glm::vec3(brushRadius)
     );
 
-    block->modelViewProjection = camera->getMVP(model2);
-    block->model = model2;
-    block->set(0, SHADOW_FLAG, false);
-    block->set(0, OVERRIDE_FLAG, true);
+    block->viewProjection = camera->getVP();
+    block->world = model;
+    block->set(SHADOW_FLAG, false);
+    block->set(OVERRIDE_FLAG, true);
     block->uintData.w = (uint) selectedBrush;
     data->uniform(block);
     sphere->draw(GL_PATCHES);

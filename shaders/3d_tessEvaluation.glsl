@@ -10,6 +10,7 @@ in vec3 tcNormal[];
 in vec3 tcPosition[];
 in TextureProperties tcProps[];
 in uvec3 tcTextureIndices[];
+in mat4 tcModel[];
 
 #include<functions.glsl>
 
@@ -20,6 +21,7 @@ out vec3 tePosition;
 out TextureProperties teProps;
 out vec4 teLightViewPosition;
 flat out uvec3 teTextureIndices;
+out mat4 teModel;
 
 
 uniform TextureProperties overrideProps;
@@ -72,11 +74,12 @@ void main() {
         teTextureCoord = tcTextureCoord[0] * gl_TessCoord[0] + tcTextureCoord[1] * gl_TessCoord[1] + tcTextureCoord[2] * gl_TessCoord[2];
     }
     tePosition = gl_TessCoord[0] * tcPosition[0] + gl_TessCoord[1] * tcPosition[1] + gl_TessCoord[2] * tcPosition[2];
+    teModel = tcModel[0];
     
     if(!depthEnabled) {
         teLightViewPosition = matrixShadow * vec4(tePosition, 1.0);  
     }
 
-    gl_Position = modelViewProjection * vec4(tePosition, 1.0);    
+    gl_Position = viewProjection * vec4(tePosition, 1.0);    
 
 }

@@ -22,7 +22,7 @@ class Scene {
 		int shadowInstancesCount = 0;
 		int vegetationInstancesCount = 0;
 
-    void setup(GLuint program3d,GLuint programVegetation,GLuint program3dShadow) {
+    void setup(GLuint program3d,GLuint program3dShadow) {
 
 		solidSpace = new Octree(BoundingCube(glm::vec3(0,0,0), 2.0));
 		liquidSpace = new Octree(BoundingCube(glm::vec3(0,20,0), 2.0));
@@ -35,7 +35,7 @@ class Scene {
 		solidRenderer = new OctreeInstanceRenderer(program3d, solidSpace, GL_PATCHES, TYPE_INSTANCE_SOLID_DRAWABLE, 5);
 		liquidRenderer = new OctreeInstanceRenderer(program3d, liquidSpace, GL_PATCHES, TYPE_INSTANCE_LIQUID_DRAWABLE, 5);
 		shadowRenderer = new OctreeInstanceRenderer(program3dShadow, solidSpace, GL_TRIANGLES, TYPE_INSTANCE_SHADOW_DRAWABLE, 6);
-		vegetationRenderer = new OctreeInstanceRenderer(programVegetation, solidSpace, GL_TRIANGLES, TYPE_INSTANCE_VEGETATION_DRAWABLE, 5);
+		vegetationRenderer = new OctreeInstanceRenderer(program3d, solidSpace, GL_PATCHES, TYPE_INSTANCE_VEGETATION_DRAWABLE, 5);
 
     }
 
@@ -47,23 +47,23 @@ class Scene {
 	}
 
 
-	void update3d(glm::mat4 mvp, glm::mat4 mlp, Camera * camera, DirectionalLight * light) {
+	void update3d(glm::mat4 vp, glm::mat4 mlp, Camera * camera, DirectionalLight * light) {
 		vegetationRenderer->cameraPosition = camera->position;
 		solidRenderer->cameraPosition = camera->position;
 		liquidRenderer->cameraPosition = camera->position;
 		shadowRenderer->cameraPosition = camera->position -light->direction*512.0f;
 	
-		solidRenderer->update(mvp);
+		solidRenderer->update(vp);
 		solidProcessor->loaded = 0;
-		solidProcessor->update(mvp);
+		solidProcessor->update(vp);
 
-		liquidRenderer->update(mvp);
+		liquidRenderer->update(vp);
 		liquidProcessor->loaded = 0;
-		liquidProcessor->update(mvp);
+		liquidProcessor->update(vp);
 
-		vegetationRenderer->update(mvp);
+		vegetationRenderer->update(vp);
 		vegetationProcessor->loaded = 0;
-		vegetationProcessor->update(mvp);
+		vegetationProcessor->update(vp);
 
 		shadowRenderer->update(mlp);
 		shadowProcessor->loaded = 0;
@@ -75,8 +75,10 @@ class Scene {
 	}
 
 	void drawVegetation() {
+		glDisable(GL_CULL_FACE);
 		vegetationRenderer->instances = 0;
 		solidSpace->iterate(vegetationRenderer);
+		glEnable(GL_CULL_FACE);
 	}
 
 	void draw3dSolid() {
