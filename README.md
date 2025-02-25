@@ -18,6 +18,10 @@ Current features:
 * Texture mixing
 * Edit brushes
 * UI with Dear ImGui
+* Atlas Drawer
+* Vegetation
+* Send UBOs to GPU
+* GPU instancing
 
 ## Screenshot
 ![Alt text](screenshot.png?raw=true "Screenshot")

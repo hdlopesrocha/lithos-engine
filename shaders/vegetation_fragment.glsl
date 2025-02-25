@@ -20,7 +20,10 @@ out vec4 color;    // Final fragment color
 #include<depth.glsl>
 
 void main() {
-
+    if(debugEnabled) {
+        color = vec4(1.0,1.0,1.0,1.0);
+        return;
+    }
 
     vec2 uv = vTextureCoord;
     vec4 opacity = texture(textures[1], vec3(uv, 3));
@@ -41,13 +44,6 @@ void main() {
     if(depthEnabled){
         return;
     }
-
-
-    if(debugEnabled) {
-        color = vec4(1.0,1.0,1.0,1.0);
-        return;
-    }
-
 
     vec4 positionWorld = model * vec4(vPosition, 1.0);
     vec3 position = positionWorld.xyz;    
