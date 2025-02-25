@@ -3,7 +3,7 @@
 #include "gl.hpp"
 #include <glm/gtx/norm.hpp> 
 
-OctreeProcessor::OctreeProcessor(Octree * tree, int * triangles,  int drawableType, int geometryLevel, float simplificationAngle, float simplificationDistance, bool simplificationTexturing, bool createInstances, int simplification) {
+OctreeProcessor::OctreeProcessor(Octree * tree, int * instancesCount,  int drawableType, int geometryLevel, float simplificationAngle, float simplificationDistance, bool simplificationTexturing, bool createInstances, int simplification) {
 	this->tree = tree;
 	this->simplification= simplification;
 	this->simplificationAngle = simplificationAngle;
@@ -11,7 +11,7 @@ OctreeProcessor::OctreeProcessor(Octree * tree, int * triangles,  int drawableTy
 	this->simplificationTexturing = simplificationTexturing;
 	this->drawableType = drawableType;
 	this->geometryLevel = geometryLevel;
-	this->triangles = triangles;
+	this->instancesCount = instancesCount;
 	this->createInstances = createInstances;
 }
 
@@ -38,21 +38,6 @@ void markNeighborsAsDirty(Octree * tree, BoundingCube cube, int level, int drawa
 	}
 }
 
-bool shouldRemove(const NodeInfo& item) {
-    return item.type == INFO_TYPE_REMOVE;
-}
-
-void removeDirtyNodeInfo(OctreeNode * node, int drawableType) {
-	for(int i=0; i < node->info.size(); ++i){
-		NodeInfo * info = &node->info[i];
-		if(info->type == drawableType && info->dirty) {
-			info->type = INFO_TYPE_REMOVE;
-		}
-	}
-    node->info.erase(std::remove_if(node->info.begin(), node->info.end(), shouldRemove), node->info.end());
-}
-
-
 void * OctreeProcessor::before(int level, OctreeNode * node, BoundingCube cube, void * context) {		
 	bool canGenerate = true;
 	
@@ -70,7 +55,7 @@ void * OctreeProcessor::before(int level, OctreeNode * node, BoundingCube cube, 
 	}
 
 	if(tree->getHeight(cube)==geometryLevel){
-		if(createInstances && canGenerate && loaded == 0){
+		if(canGenerate && loaded == 0){
 			// Simplify
 			Simplifier simplifier(tree, simplificationAngle, simplificationDistance, simplificationTexturing, simplification); 
 			simplifier.iterate(level, node, cube, &cube);
@@ -82,55 +67,52 @@ void * OctreeProcessor::before(int level, OctreeNode * node, BoundingCube cube, 
 			
 			// Instances
 
-			if(loaded ==0 && drawableType == TYPE_INSTANCE_VEGETATION_DRAWABLE) {
+			if(createInstances && drawableType == TYPE_INSTANCE_VEGETATION_DRAWABLE) {
 				NodeInfo * info = node->getNodeInfo(drawableType);
 
 				if(info == NULL) {
-					InstanceBuilder instanceBuilder(tree, drawableType, geometryLevel);
+					InstanceBuilder instanceBuilder(tree);
 					instanceBuilder.iterate(level, node, cube, NULL);
 					//instanceBuilder.matrices.back;//CXXX
 
 					if(instanceBuilder.instanceCount > 0) {
-						*triangles += instanceBuilder.instanceCount;
+						*instancesCount += instanceBuilder.instanceCount;
 						std::cout << "Create vegetation " << std::to_string(instanceBuilder.instanceCount)<< std::endl;
 						
-						std::vector<glm::mat4> * instances = new std::vector<glm::mat4>();
-						for(glm::mat4 m : instanceBuilder.instances){
-							instances->push_back(m);
-						}
 						Vegetation3d * vegetation = new Vegetation3d();
 						NodeInfo vi;
 						vi.type = drawableType;
-						vi.data = vegetation->createDrawable(instances);
-						vi.temp = instances;
+						vi.data = vegetation->createDrawable(&instanceBuilder.instances);
+						vi.temp = NULL;
 						vi.dirty = false;
 						node->info.push_back(vi);
 						++loaded;
 					}
 				}
 			}
-			if(loaded ==0 && (drawableType == TYPE_INSTANCE_SOLID_DRAWABLE || drawableType == TYPE_INSTANCE_LIQUID_DRAWABLE  || drawableType == TYPE_INSTANCE_SHADOW_DRAWABLE)) {
+			if(createInstances && (drawableType == TYPE_INSTANCE_SOLID_DRAWABLE || drawableType == TYPE_INSTANCE_LIQUID_DRAWABLE  || drawableType == TYPE_INSTANCE_SHADOW_DRAWABLE)) {
 
 				NodeInfo * info = node->getNodeInfo(drawableType);
 
 				if(info == NULL) {
 					int instanceCount = 1;
-					std::vector<glm::mat4> * instances = new std::vector<glm::mat4>();
-					instances->push_back(glm::mat4(1.0));
+					std::vector<glm::mat4> instances;
+					instances.push_back(glm::mat4(1.0));
 
 					//instanceBuilder.matrices.back;//CXXX
-					if(instanceCount > 0) {
-						*triangles += instanceCount;
-						std::cout << "Create drawable " << std::to_string(instanceCount)<< std::endl;
-						DrawableInstanceGeometry * drawable = new DrawableInstanceGeometry(loadable, instances);
-						NodeInfo vi;
-						vi.type = drawableType;
-						vi.data = drawable;
-						vi.temp = instances;
-						vi.dirty = false;
-						node->info.push_back(vi);
-						++loaded;
-					}
+					*instancesCount += instanceCount;
+					DrawableInstanceGeometry * drawable = new DrawableInstanceGeometry(loadable, &instances);
+
+					NodeInfo vi;
+					vi.type = drawableType;
+					vi.data = drawable;
+					vi.temp = NULL;
+					vi.dirty = false;
+
+					node->info.push_back(vi);
+					++loaded;
+
+					
 				}
 			}
 		

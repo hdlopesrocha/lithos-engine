@@ -45,4 +45,4 @@ bool triplanarEnabled = (uintData.x & uint(TRIPLANAR_FLAG)) != 0u;
 bool depthEnabled     = (uintData.x & uint(DEPTH_FLAG)) != 0u;
 bool overrideEnabled  = (uintData.x & uint(OVERRIDE_FLAG)) != 0u;
 uint overrideTexture  = uintData.w;
-float light = floatData.x;
+float time = floatData.x;

@@ -31,11 +31,8 @@ void * OctreeInstanceRenderer::before(int level, OctreeNode * node, BoundingCube
 			|| info->type == TYPE_INSTANCE_SOLID_DRAWABLE
 			|| info->type == TYPE_INSTANCE_SHADOW_DRAWABLE){
 			DrawableInstanceGeometry * drawable = (DrawableInstanceGeometry*) info->data;
-			std::vector<glm::mat4> * instances = (std::vector<glm::mat4> *) info->temp;
-			//std::cout << "Draw " << std::to_string(instances->size())<< std::endl;
-
-			drawable->draw(mode, instances);
-			instances += instances->size();
+			drawable->draw(mode);
+			instances += drawable->instancesCount;
 		}
 	
 

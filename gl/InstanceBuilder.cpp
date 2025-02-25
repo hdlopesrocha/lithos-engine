@@ -3,10 +3,8 @@
 #include "gl.hpp"
 #include <glm/gtx/norm.hpp> 
 
-InstanceBuilder::InstanceBuilder(Octree * tree,  int drawableType, int geometryLevel) {
+InstanceBuilder::InstanceBuilder(Octree * tree) {
 	this->tree = tree;
-	this->drawableType = drawableType;
-	this->geometryLevel = geometryLevel;
 	this->instanceCount = 0;
 }
 

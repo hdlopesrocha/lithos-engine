@@ -167,17 +167,17 @@ class DrawableGeometry {
 
 class DrawableInstanceGeometry {
 	public:
-	GLuint vao = 0u;
-	GLuint vbo = 0u;
-	GLuint ebo = 0u;
-	GLuint ibo = 0u;
-	int indices;
-    bool init = true;
+	GLuint vertexArrayObject = 0u;
+	GLuint vertexBuffer = 0u;
+	GLuint indexBuffer = 0u;
+	GLuint instanceBuffer = 0u;
+
+	int indicesCount;
+    int instancesCount;
 
 	DrawableInstanceGeometry(Geometry * t, std::vector<glm::mat4> * instances);
     ~DrawableInstanceGeometry();
-    void draw(uint mode, std::vector<glm::mat4> * instances);
-    DrawableInstanceGeometry * getDrawable();
+    void draw(uint mode);
 };
 
 
@@ -196,8 +196,8 @@ class OctreeProcessor : public IteratorHandler{
 		int loaded = 0;
 		int geometryLevel;
         glm::vec3 cameraPosition;
-        int * triangles;
-		OctreeProcessor(Octree * tree, int * triangles, int drawableType, int geometryLevel, float simplificationAngle, float simplificationDistance, bool simplificationTexturing, bool createInstances, int simplification);
+        int * instancesCount;
+		OctreeProcessor(Octree * tree, int * instancesCount, int drawableType, int geometryLevel, float simplificationAngle, float simplificationDistance, bool simplificationTexturing, bool createInstances, int simplification);
 
 		void update(glm::mat4 m);
 		void * before(int level, OctreeNode * node, BoundingCube cube, void * context);
@@ -214,14 +214,12 @@ class OctreeProcessor : public IteratorHandler{
 class InstanceBuilder : public IteratorHandler{
 	Octree * tree;
 	Geometry chunk;
-	int geometryType;
-    int drawableType;
+    uint mode;
+
     public: 
-        int instanceCount;
-        uint mode;
+        int instanceCount = 0;
         std::vector<glm::mat4> instances;
-		int geometryLevel;
-		InstanceBuilder(Octree * tree, int drawableType, int geometryLevel);
+		InstanceBuilder(Octree * tree);
 
 		void * before(int level, OctreeNode * node, BoundingCube cube, void * context);
 		void after(int level, OctreeNode * node, BoundingCube cube, void * context);

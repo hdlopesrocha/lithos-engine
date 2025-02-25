@@ -1,7 +1,6 @@
 
 #include "math/math.hpp"
 #include "tools/tools.hpp"
-#include <thread>
 #include "gl/gl.hpp"
 
 class Scene {

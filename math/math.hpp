@@ -298,7 +298,6 @@ class QuadNodeHandler {
 	public: 
 	Geometry * chunk;
 	int * count;
-	int quadAmount;
 	QuadNodeHandler(Geometry * chunk, int * count);
 	virtual void handle(OctreeNode* c0,OctreeNode* c1,OctreeNode* c2, bool sign) = 0;
 };
@@ -309,6 +308,7 @@ class QuadNodeInstanceBuilderHandler : public QuadNodeHandler {
 	public: 
 	OctreeNode ** corners;
 	std::vector<glm::mat4> * matrices;
+
 	using QuadNodeHandler::QuadNodeHandler;
 	QuadNodeInstanceBuilderHandler(Geometry * chunk, int * count,OctreeNode ** corners,std::vector<glm::mat4> * matrices);
 	void handle(OctreeNode* c0,OctreeNode* c1,OctreeNode* c2, bool sign);

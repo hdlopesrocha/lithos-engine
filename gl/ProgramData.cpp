@@ -31,15 +31,22 @@ ProgramData::ProgramData() {
 
 
 void ProgramData::uniform(UniformBlock * block){
-    //UniformBlock::print(block);
 
-    glBindBuffer(GL_UNIFORM_BUFFER, ubo);
+    // Bind the UBO to the correct binding point
+    glBindBufferBase(GL_UNIFORM_BUFFER, 0, ubo);  // Binding UBO to binding point 0
+
+    // Map the buffer for writing (invalidate previous contents)
     void* ptr = glMapBufferRange(GL_UNIFORM_BUFFER, 0, sizeof(UniformBlock), 
-                                 GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT);
+                                GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT);
     if (ptr) {
+        // Copy the data into the buffer
         memcpy(ptr, block, sizeof(UniformBlock));
+
+        // Unmap the buffer after writing
         glUnmapBuffer(GL_UNIFORM_BUFFER);
     }
+
+    // Unbind the UBO (if necessary)
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
     
 }
