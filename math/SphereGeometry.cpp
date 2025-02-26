@@ -26,14 +26,14 @@
                 float x1 = cos(lng1);
                 float y1 = sin(lng1);
 
-                addVertex(getVertex( x0 * zr0, y0 * zr0, z0 ), false);
-                addVertex(getVertex( x1 * zr1, y1 * zr1, z1 ), false);
-                addVertex(getVertex( x0 * zr1, y0 * zr1, z1 ), false);
+                addVertex(getVertex( x0 * zr0, y0 * zr0, z0 ));
+                addVertex(getVertex( x1 * zr1, y1 * zr1, z1 ));
+                addVertex(getVertex( x0 * zr1, y0 * zr1, z1 ));
 
 
-                addVertex(getVertex( x0 * zr0, y0 * zr0, z0 ), false);
-                addVertex(getVertex( x1 * zr0, y1 * zr0, z0 ), false);
-                addVertex(getVertex( x1 * zr1, y1 * zr1, z1 ), false);
+                addVertex(getVertex( x0 * zr0, y0 * zr0, z0 ));
+                addVertex(getVertex( x1 * zr0, y1 * zr0, z0 ));
+                addVertex(getVertex( x1 * zr1, y1 * zr1, z1 ));
 
 
 

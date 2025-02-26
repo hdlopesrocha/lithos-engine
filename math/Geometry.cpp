@@ -7,13 +7,18 @@ Geometry::~Geometry() {
 }
 
 
-Vertex * Geometry::addVertex(Vertex vertex, bool textureUnique){
-    std::string key = textureUnique ? vertex.toString() : vertex.toKey();
-    if(!compactMap.count(key)) {
-        compactMap[key] = compactMap.size();
+
+Vertex * Geometry::addVertex(Vertex vertex){
+    auto it = compactMap.find(vertex);
+    int idx = 0;
+
+    if (it != compactMap.end()) {
+        idx = it->second;
+    } else {
+        idx = compactMap.size();
+        compactMap.insert({vertex, idx});
         vertices.push_back(vertex); 
     }
-    int idx = compactMap[key];
     indices.push_back(idx);
     return &(vertices[idx]);
 }

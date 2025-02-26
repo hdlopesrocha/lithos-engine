@@ -244,41 +244,6 @@ void Octree::iterate(IteratorHandler * handler) {
 	iterateAux(handler, 0, root, cube, NULL);
 }
 
-void saveAux(std::ofstream * myfile, OctreeNode * node) {
-	if(node!= NULL) {
-		Vertex vertex = node->vertex;
-		*myfile << "\n{";
-		*myfile << "\"v\":" << node->vertex.toString() << ",";
-		*myfile << "\"m\":" << (uint) node->mask;
-		if(node->children != NULL) {
-			for(int i=0; i <8 ; ++i) {
-				OctreeNode * c = node->children[i];
-				if(c != NULL) {
-					*myfile << ",";
-					*myfile << "\"" << i << "\":";
-					saveAux(myfile, c);
-				}
-			}
-		}
-		*myfile << "}";
-	}else {
-	  	*myfile << "null";
-	}
-}
-
-void Octree::save(std::string filename) {
-	std::ofstream myfile;
-	myfile.open (filename);
-	myfile << "{";
-	myfile << "\"c\":[" << getMin()[0] << "," << getMin()[1] << "," << getMin()[2] << "],";
-	myfile << "\"m\":" << minSize << ",";
-	myfile << "\"l\":" << getLength() << ",";
-	myfile << "\"r\":";
-	saveAux(&myfile, root);
-	myfile << "\n}";
-	myfile.close();
-}
-
 glm::vec3 Octree::getShift(int i) {
 	return glm::vec3( ((i >> 2) % 2) , ((i >> 1) % 2) , ((i >> 0) % 2));
 }

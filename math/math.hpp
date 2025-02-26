@@ -59,21 +59,9 @@ struct Vertex {
     	this->brushIndex = texIndex;
     }
 
-
-    std::string toKey() {
-		std::stringstream ss;
-		ss << "[" << position.x <<  " " <<  position.y <<  " " <<  position.z << "]";
-		return ss.str();
-    }
-
-    std::string toString() {
-		std::stringstream ss;
-		ss  << position.x <<  "," <<  position.y <<  "," <<  position.z << ","
-			<< normal.x <<  "," <<  normal.y <<  "," <<  normal.z << ","
-		    << texCoord.x <<  "," <<  texCoord.y << ","
-			<< brushIndex;
-	
-		return ss.str();
+	bool operator<(const Vertex& other) const {
+        return std::tie(position.x, position.y, position.z, normal.x, normal.y, normal.z, texCoord.x, texCoord.y, brushIndex) 
+             < std::tie(other.position.x, other.position.y, other.position.z, other.normal.x, other.normal.y, other.normal.z, other.texCoord.x, other.texCoord.y, other.brushIndex);
     }
 };
 
@@ -291,13 +279,14 @@ class Geometry
 public:
 	std::vector<Vertex> vertices;
 	std::vector<uint> indices;
-	std::map <std::string, int> compactMap;
+	std::map <Vertex, int> compactMap;
 
 	Geometry(/* args */);
 	~Geometry();
 
-	Vertex * addVertex(Vertex vertex, bool textureUnique);
+	Vertex * addVertex(Vertex vertex);
 	static glm::vec3 getNormal(Vertex * a, Vertex * b, Vertex * c);
+
 };
 
 class QuadNodeHandler {

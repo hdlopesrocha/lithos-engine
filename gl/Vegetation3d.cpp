@@ -31,13 +31,13 @@ Vegetation3d::Vegetation3d() : Geometry(){
         c.normal = n;
         d.normal = n;
         
-        addVertex(a, true );
-        addVertex(b, true );
-        addVertex(d, true );
+        addVertex(a);
+        addVertex(b);
+        addVertex(d);
 
-        addVertex(a, true );
-        addVertex(d, true );
-        addVertex(c, true );
+        addVertex(a);
+        addVertex(d);
+        addVertex(c);
     }
 
     glm::vec3 axis2 = glm::vec3(1,0,0);
@@ -54,13 +54,13 @@ Vegetation3d::Vegetation3d() : Geometry(){
         c.normal = n;
         d.normal = n;
         
-        addVertex(a, true );
-        addVertex(b, true );
-        addVertex(d, true );
+        addVertex(a);
+        addVertex(b);
+        addVertex(d);
 
-        addVertex(a, true );
-        addVertex(d, true );
-        addVertex(c, true );
+        addVertex(a);
+        addVertex(d);
+        addVertex(c);
 
     }
 

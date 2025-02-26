@@ -60,9 +60,9 @@ int addTriangle(OctreeNode* c0, OctreeNode* c1, OctreeNode* c2, Geometry * chunk
         Vertex v2 = c2->vertex;
 
         if(c0!= c1 && c1 != c2 && c0!=c2 && c0->vertex.brushIndex>=0 && c1->vertex.brushIndex>=0 && c2->vertex.brushIndex>=0){
-            chunk->addVertex(reverse ? v2 : v0, true);
-            chunk->addVertex(reverse ? v1 : v1, true);
-            chunk->addVertex(reverse ? v0 : v2, true);
+            chunk->addVertex(reverse ? v2 : v0);
+            chunk->addVertex(reverse ? v1 : v1);
+            chunk->addVertex(reverse ? v0 : v2);
             ++count;
         }
     }
