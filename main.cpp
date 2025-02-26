@@ -494,9 +494,6 @@ public:
 		glCullFace(GL_BACK); // Or GL_FRONT
 		glFrontFace(GL_CCW); // Ensure this matches your vertex data
 		glEnable(GL_DEPTH_TEST);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-		glEnable(GL_BLEND);
 		glLineWidth(2.0);
 		glPointSize(4.0);	
 
@@ -555,6 +552,7 @@ public:
 		programBillboardData->uniform(&uniformBlock);
 		mainScene->drawVegetation();
 
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, depthFrameBuffer.frameBuffer);
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, tempDepthFrameBuffer.frameBuffer);

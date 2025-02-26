@@ -64,15 +64,10 @@ void main() {
                                 tcProps[1].refractiveIndex * gl_TessCoord[1] + 
                                 tcProps[2].refractiveIndex * gl_TessCoord[2];                                                
         }
-
-
-        teTextureWeights = gl_TessCoord;
-        teTextureIndices = tcTextureIndices[0];
-        
-
-        // Interpolate the triangle position using barycentric coordinates
-        teTextureCoord = tcTextureCoord[0] * gl_TessCoord[0] + tcTextureCoord[1] * gl_TessCoord[1] + tcTextureCoord[2] * gl_TessCoord[2];
     }
+    teTextureWeights = gl_TessCoord;
+    teTextureIndices = tcTextureIndices[0];
+    teTextureCoord = tcTextureCoord[0] * gl_TessCoord[0] + tcTextureCoord[1] * gl_TessCoord[1] + tcTextureCoord[2] * gl_TessCoord[2];
     tePosition = gl_TessCoord[0] * tcPosition[0] + gl_TessCoord[1] * tcPosition[1] + gl_TessCoord[2] * tcPosition[2];
     teModel = tcModel[0];
     

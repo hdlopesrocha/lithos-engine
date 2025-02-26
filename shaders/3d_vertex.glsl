@@ -24,12 +24,11 @@ uniform uint brushTextures[25];
 
 void main() {
     if(!depthEnabled) {
-        vTextureCoord = textureCoord;
-        vTextureIndex = brushTextures[brushIndex];
         vProps = brushes[brushIndex];
-
         vNormal = normal;
     }
+    vTextureIndex = brushTextures[brushIndex];
+    vTextureCoord = textureCoord;
     vModel = world*model;
     vPosition = (vModel*vec4(position, 1.0)).xyz;
     gl_Position = vec4(vPosition, 1.0);
