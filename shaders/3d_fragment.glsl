@@ -37,7 +37,7 @@ void main() {
         uv = triplanarMapping(position, plane, teProps.textureScale) * 0.1;
     }
 
-    if(billboardEnabled && !debugEnabled) {
+    if(opacityEnabled) {
         vec4 opacity = textureBlend(teTextureWeights, teTextureIndices, uv, 3);
         if(opacity.r < 0.5) {
             discard;
@@ -79,8 +79,9 @@ void main() {
     vec3 normalMap = textureBlend(teTextureWeights, teTextureIndices, uv, 1).rgb * 2.0 - 1.0;
     normalMap = normalize(normalMap); // Convert to range [-1, 1]
     vec3 worldNormal = normalize(TBN * normalMap);
-
-    if(lightEnabled) {
+    if(debugEnabled) {
+        color = vec4(visual(worldNormal),1.0);
+    } else if(lightEnabled) {
         vec3 specularColor = vec3(1.0,1.0,1.0);
         vec3 reflection = reflect(-lightDirection.xyz, worldNormal);
 
@@ -93,27 +94,18 @@ void main() {
         if(shadowEnabled) {
             shadow = getShadow(shadowMap, noise, teLightViewPosition, position);
         }
-        if(debugEnabled) {
-            color = vec4(visual(worldNormal),1.0);
-        }else {
-            vec4 refractedColor = vec4(0.0,0.0,0.0,0.0);
 
-            if(teProps.refractiveIndex > 0.0) {
-                // Compute refraction
-                float eta = 1.0 / teProps.refractiveIndex; // Air to water
-                vec3 refractedDir = refract(viewDirectionTangent, normalMap, eta);
-                vec2 refractedUV = pixelUV + refractedDir.xy * 0.1; // UV distortion
-                refractedColor = texture(underTexture, refractedUV);
-            }
-
-            color = refractedColor + vec4(((mixedColor).rgb*diffuse + specularColor * teProps.specularStrength * phongSpec *  shadow.lightAmount)*shadow.shadowAmount , mixedColor.a+teProps.specularStrength * phongSpec *  shadow.lightAmount); 
+        vec4 refractedColor = vec4(0.0,0.0,0.0,0.0);
+        if(teProps.refractiveIndex > 0.0) {
+            // Compute refraction
+            float eta = 1.0 / teProps.refractiveIndex; // Air to water
+            vec3 refractedDir = refract(viewDirectionTangent, normalMap, eta);
+            vec2 refractedUV = pixelUV + refractedDir.xy * 0.1; // UV distortion
+            refractedColor = texture(underTexture, refractedUV);
         }
+        color = refractedColor + vec4(((mixedColor).rgb*diffuse + specularColor * teProps.specularStrength * phongSpec *  shadow.lightAmount)*shadow.shadowAmount , mixedColor.a+teProps.specularStrength * phongSpec *  shadow.lightAmount); 
     }else {
-        if(debugEnabled) {
-            color = vec4(visual(worldNormal), 1.0);
-        }else {
-            color = mixedColor;
-        }
+        color = mixedColor;
     }
  }
 

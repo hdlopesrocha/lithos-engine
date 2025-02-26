@@ -55,7 +55,7 @@
 #define OVERRIDE_FLAG       0,0x40  
 #define TESSELATION_FLAG    0,0x80  
 
-#define BILLBOARD_FLAG      1,0x01  
+#define OPACITY_FLAG      1,0x01  
 
 #define OVERRIDE_TEXTURE_FLAG 0xff000000
 
@@ -320,6 +320,7 @@ class Settings {
         bool lightEnabled;
         bool wireFrameEnabled;
         bool tesselationEnabled;
+        bool opacityEnabled;
 
         Settings();
 

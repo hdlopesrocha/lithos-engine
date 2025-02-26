@@ -8,4 +8,5 @@ Settings::Settings() {
     this->debugEnabled = false;
     this->wireFrameEnabled = false;
     this->tesselationEnabled = true;
+    this->opacityEnabled = true;
 }

@@ -10,6 +10,7 @@ void SettingsEditor::draw2d(){
     ImGui::Begin("Settings", &open, ImGuiWindowFlags_AlwaysAutoResize);
     ImGui::Checkbox("Debug", &settings->debugEnabled);
     ImGui::Checkbox("Light", &settings->lightEnabled);
+    ImGui::Checkbox("Opacity", &settings->opacityEnabled);
     ImGui::Checkbox("Parallax", &settings->parallaxEnabled);
     ImGui::Checkbox("Shadow", &settings->shadowEnabled);
     ImGui::Checkbox("Tesselation", &settings->tesselationEnabled);

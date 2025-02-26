@@ -38,7 +38,7 @@ layout(std140, binding = 0) uniform UniformBlock {
 #define OVERRIDE_FLAG  0x40  
 #define TESSELATION_FLAG  0x80  
 
-#define BILLBOARD_FLAG  0x01  
+#define OPACITY_FLAG  0x01  
 
 
 bool parallaxEnabled  = (uintData.x & uint(PARALLAX_FLAG)) != 0u;
@@ -50,7 +50,7 @@ bool depthEnabled     = (uintData.x & uint(DEPTH_FLAG)) != 0u;
 bool overrideEnabled  = (uintData.x & uint(OVERRIDE_FLAG)) != 0u;
 bool tesselationEnabled  = (uintData.x & uint(TESSELATION_FLAG)) != 0u;
 
-bool billboardEnabled  = (uintData.y & uint(BILLBOARD_FLAG)) != 0u;
+bool opacityEnabled  = (uintData.y & uint(OPACITY_FLAG)) != 0u;
 
 
 uint overrideTexture  = uintData.w;

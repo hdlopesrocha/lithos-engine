@@ -511,6 +511,11 @@ public:
 			glUniformMatrix4fv(modelViewProjectionShadowLoc, 1, GL_FALSE, glm::value_ptr(mlp));
 			mainScene->draw3dShadow();
 		}
+
+		// =================
+		// First Pass: Depth
+		// =================
+
 		UniformBlock uniformBlock;
         uniformBlock.uintData = glm::vec4(0);
 		uniformBlock.floatData = glm::vec4( time, 0.0, 0.0 ,0.0);
@@ -519,15 +524,17 @@ public:
 		uniformBlock.matrixShadow = ms;
 		uniformBlock.lightDirection = glm::vec4(light.direction, 0.0f);
 		uniformBlock.cameraPosition = glm::vec4(camera.position, 0.0f);
-		uniformBlock.set(PARALLAX_FLAG, settings->parallaxEnabled);
-		uniformBlock.set(SHADOW_FLAG, settings->shadowEnabled);
 		uniformBlock.set(DEBUG_FLAG, settings->debugEnabled);
-		uniformBlock.set(LIGHT_FLAG, settings->lightEnabled);
 		uniformBlock.set(TESSELATION_FLAG, settings->tesselationEnabled);
-		uniformBlock.set(TRIPLANAR_FLAG, true);
+
+		uniformBlock.set(LIGHT_FLAG, false);
+		uniformBlock.set(SHADOW_FLAG, false);
+		uniformBlock.set(PARALLAX_FLAG, false);
 		uniformBlock.set(DEPTH_FLAG, true);
 		uniformBlock.set(OVERRIDE_FLAG, false);
-		uniformBlock.set(BILLBOARD_FLAG, false);
+		uniformBlock.set(OPACITY_FLAG, false);
+		uniformBlock.set(TRIPLANAR_FLAG, false); 
+
         uniformBlock.uintData.w = 0;
 
 		viewerBlock = uniformBlock;
@@ -543,9 +550,7 @@ public:
 		mainScene->draw3dSolid();
 
 		uniformBlock.set(TESSELATION_FLAG, false);
-		uniformBlock.set(BILLBOARD_FLAG, true);
-		uniformBlock.set(PARALLAX_FLAG, false);
-		uniformBlock.set(TRIPLANAR_FLAG, false); 
+		uniformBlock.set(OPACITY_FLAG, settings->opacityEnabled);
 
 		glUseProgram(programBillboard);
 		programBillboardData->uniform(&uniformBlock);
@@ -560,6 +565,7 @@ public:
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		uniformBlock.set(DEPTH_FLAG, false);
+		uniformBlock.set(LIGHT_FLAG, settings->lightEnabled);
 
 		if(settings->wireFrameEnabled) {
 			uniformBlock.set(LIGHT_FLAG, false); 
@@ -570,9 +576,10 @@ public:
 		programBillboardData->uniform(&uniformBlock);
 		mainScene->drawVegetation();
 
+		uniformBlock.set(SHADOW_FLAG, settings->shadowEnabled);
 		uniformBlock.set(PARALLAX_FLAG, settings->parallaxEnabled);
 		uniformBlock.set(TESSELATION_FLAG, settings->tesselationEnabled);
-		uniformBlock.set(BILLBOARD_FLAG, false);
+		uniformBlock.set(OPACITY_FLAG, false);
 		uniformBlock.set(TRIPLANAR_FLAG, true); 
 
 		glUseProgram(program3d);
