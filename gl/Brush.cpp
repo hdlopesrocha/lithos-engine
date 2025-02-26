@@ -3,11 +3,11 @@
 
 Brush::Brush(uint textureIndex){
     this->textureIndex = textureIndex;
-    this->parallaxScale = 0.2;
-    this->parallaxMinLayers = 8;
-    this->parallaxMaxLayers = 32;
-    this->parallaxFade = 32;
-    this->parallaxRefine = 5;
+    this->parallaxScale = 0.0;
+    this->parallaxMinLayers = 0;
+    this->parallaxMaxLayers = 0;
+    this->parallaxFade = 0;
+    this->parallaxRefine = 0;
     this->shininess = 32;
     this->specularStrength = 0.4;
     this->textureScale = glm::vec2(1.0);

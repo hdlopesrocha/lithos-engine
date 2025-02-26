@@ -96,14 +96,12 @@ class MainApplication : public LithosApplication {
 	GLuint programSwap;
 	GLuint program3d;
 	GLuint programBillboard;
-	GLuint programShadow;
 	GLuint programAtlas;
 	GLuint programTexture;
 	GLuint programDepth;
 	GLuint programMixTexture;
 	GLuint programWaterTexture;
 
-	GLuint modelViewProjectionShadowLoc;
 	ProgramData * program3dData;
 	ProgramData * programBillboardData;
 
@@ -113,7 +111,6 @@ class MainApplication : public LithosApplication {
 	GLuint noiseTexture;
 
 	RenderBuffer depthFrameBuffer;
-	RenderBuffer tempDepthFrameBuffer;
 	RenderBuffer renderBuffer;
 	RenderBuffer solidBuffer;
 	RenderBuffer shadowFrameBuffer;
@@ -152,12 +149,6 @@ public:
 		includes.push_back(GlslInclude("#include<structs.glsl>" , readFile("shaders/util/structs.glsl")));
 		includes.push_back(GlslInclude("#include<parallax.glsl>" , readFile("shaders/util/parallax.glsl")));
 		includes.push_back(GlslInclude("#include<depth.glsl>" , readFile("shaders/util/depth.glsl")));
-		programShadow = createShaderProgram({
-			compileShader(replaceIncludes(includes, readFile("shaders/shadow_vertex.glsl")),GL_VERTEX_SHADER), 
-			compileShader(replaceIncludes(includes,readFile("shaders/shadow_fragment.glsl")),GL_FRAGMENT_SHADER)
-		});
-		modelViewProjectionShadowLoc = glGetUniformLocation(programShadow, "modelViewProjection");
-
 
 		programAtlas = createShaderProgram({
 			compileShader(replaceIncludes(includes,readFile("shaders/texture/atlas_vertex.glsl")),GL_VERTEX_SHADER), 
@@ -211,7 +202,6 @@ public:
 		renderBuffer = createRenderFrameBuffer(getWidth(), getHeight());
 		solidBuffer = createRenderFrameBuffer(getWidth(), getHeight());
 		depthFrameBuffer = createDepthFrameBuffer(getWidth(), getHeight());
-		tempDepthFrameBuffer = createDepthFrameBuffer(getWidth(), getHeight());
 		shadowFrameBuffer = createDepthFrameBuffer(2048, 2048);
 
 		{
@@ -309,7 +299,7 @@ public:
 		}
 		{
 			Texture * t = new Texture(loadTextureArray({"textures/forest_color.jpg", "textures/forest_normal.jpg","textures/forest_bump.jpg"}));
-			brushes.push_back(new Brush(textures.size()));
+			brushes.push_back(new Brush(textures.size(), glm::vec2(1.0), 0.01, 4, 16, 8,4, 256, 0.2 , 0.0));
 			textures.push_back(t);
 		}
 		{
@@ -358,8 +348,8 @@ public:
 		Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, glGetUniformLocation(program3d, "noise"), noiseTexture);
 		activeTexture = Texture::bindTexture(programBillboard, GL_TEXTURE_2D, activeTexture, glGetUniformLocation(programBillboard, "noise"), noiseTexture);
 
-		Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture,  glGetUniformLocation(program3d, "depthTexture"), tempDepthFrameBuffer.depthTexture);
-		activeTexture = Texture::bindTexture(programBillboard, GL_TEXTURE_2D, activeTexture,  glGetUniformLocation(programBillboard, "depthTexture"), tempDepthFrameBuffer.depthTexture);
+		Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture,  glGetUniformLocation(program3d, "depthTexture"), depthFrameBuffer.depthTexture);
+		activeTexture = Texture::bindTexture(programBillboard, GL_TEXTURE_2D, activeTexture,  glGetUniformLocation(programBillboard, "depthTexture"), depthFrameBuffer.depthTexture);
 
 		Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, glGetUniformLocation(program3d, "underTexture"), solidBuffer.colorTexture);
 		activeTexture = Texture::bindTexture(programBillboard, GL_TEXTURE_2D, activeTexture, glGetUniformLocation(programBillboard, "underTexture"), solidBuffer.colorTexture);
@@ -392,7 +382,7 @@ public:
 		shadowMapViewer = new ShadowMapViewer(shadowFrameBuffer.depthTexture);
 		textureMixerEditor = new TextureMixerEditor(&mixers, &textures, programTexture);
 		animatedTextureEditor = new AnimatedTextureEditor(&animatedTextures, &textures, programTexture, 256,256);
-		depthBufferViewer = new DepthBufferViewer(programDepth,tempDepthFrameBuffer.depthTexture,256,256);
+		depthBufferViewer = new DepthBufferViewer(programDepth,depthFrameBuffer.depthTexture,256,256);
 		settingsEditor = new SettingsEditor(settings);
 		textureViewer = new TextureViewer(&textures, programTexture);
 
@@ -479,15 +469,15 @@ public:
 		camera.quaternion = glm::normalize(camera.quaternion);
 		glm::vec3 cameraDirection = glm::vec3(0.0f, 0.0f, -1.0f)*camera.quaternion;
 
-		glm::vec3 lookAtLightPosition = glm::round(camera.position/16.0f)*16.0f; // + cameraDirection*far*0.5f;
+		glm::vec3 lookAtLightPosition = glm::round(camera.position/32.0f)*32.0f; // + cameraDirection*far*0.5f;
 		light.projection = glm::ortho(-orthoSize, orthoSize, -orthoSize, orthoSize, near, far);
 		light.view = glm::lookAt(lookAtLightPosition - light.direction*dist, lookAtLightPosition, glm::vec3(0,1,0));
 
 		glm::mat4 vp = camera.getVP();
-		glm::mat4 mlp = light.getMVP(worldModel);
-		glm::mat4 ms =  Math::getCanonicalMVP(mlp);
+		glm::mat4 lp = light.getVP();
+		glm::mat4 ms =  Math::getCanonicalMVP(lp);
 
-		mainScene->update3d(vp, mlp, &camera, &light);
+		mainScene->update3d(vp, lp, &camera, &light);
 		glPolygonMode(GL_FRONT, GL_FILL);
 		glPatchParameteri(GL_PATCH_VERTICES, 3); // Define the number of control points per patch
 		glEnable(GL_CULL_FACE);
@@ -497,23 +487,6 @@ public:
 		glLineWidth(2.0);
 		glPointSize(4.0);	
 
-
-		// ================
-		// Shadow component
-		// ================
-		if(settings->shadowEnabled) {
-			glBindFramebuffer(GL_FRAMEBUFFER, shadowFrameBuffer.frameBuffer);
-			glViewport(0, 0, shadowFrameBuffer.width, shadowFrameBuffer.height);
-			glClear(GL_DEPTH_BUFFER_BIT);
-			glUseProgram(programShadow);
-
-			glUniformMatrix4fv(modelViewProjectionShadowLoc, 1, GL_FALSE, glm::value_ptr(mlp));
-			mainScene->draw3dShadow();
-		}
-
-		// =================
-		// First Pass: Depth
-		// =================
 
 		UniformBlock uniformBlock;
         uniformBlock.uintData = glm::vec4(0);
@@ -525,14 +498,35 @@ public:
 		uniformBlock.cameraPosition = glm::vec4(camera.position, 0.0f);
 		uniformBlock.set(DEBUG_FLAG, settings->debugEnabled);
 		uniformBlock.set(TESSELATION_FLAG, settings->tesselationEnabled);
-
-		uniformBlock.set(LIGHT_FLAG, false);
-		uniformBlock.set(SHADOW_FLAG, false);
-		uniformBlock.set(PARALLAX_FLAG, false);
+		uniformBlock.set(SHADOW_FLAG, settings->shadowEnabled);
+		uniformBlock.set(LIGHT_FLAG, settings->lightEnabled);
+		uniformBlock.set(PARALLAX_FLAG, settings->parallaxEnabled);
 		uniformBlock.set(DEPTH_FLAG, true);
 		uniformBlock.set(OVERRIDE_FLAG, false);
 		uniformBlock.set(OPACITY_FLAG, false);
 		uniformBlock.set(TRIPLANAR_FLAG, false); 
+
+		// ================
+		// Shadow component
+		// ================
+		if(settings->shadowEnabled) {
+			glBindFramebuffer(GL_FRAMEBUFFER, shadowFrameBuffer.frameBuffer);
+			glViewport(0, 0, shadowFrameBuffer.width, shadowFrameBuffer.height);
+			glClear(GL_DEPTH_BUFFER_BIT);
+
+			uniformBlock.viewProjection = lp;
+			glUseProgram(program3d);
+			program3dData->uniform(&uniformBlock);
+			mainScene->draw3dShadow();
+
+			uniformBlock.set(OPACITY_FLAG, true);
+			glUseProgram(programBillboard);
+			programBillboardData->uniform(&uniformBlock);
+			mainScene->drawVegetation();
+
+		}
+		uniformBlock.viewProjection = vp;
+		uniformBlock.set(OPACITY_FLAG, settings->opacityEnabled);
 
 		// =================
 		// First Pass: Depth
@@ -552,18 +546,6 @@ public:
 		programBillboardData->uniform(&uniformBlock);
 		mainScene->drawVegetation();
 
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-		glBindFramebuffer(GL_READ_FRAMEBUFFER, depthFrameBuffer.frameBuffer);
-		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, tempDepthFrameBuffer.frameBuffer);
-		glBlitFramebuffer(
-			0, 0, depthFrameBuffer.width, depthFrameBuffer.height, 
-			0, 0, tempDepthFrameBuffer.width, tempDepthFrameBuffer.height, 
-			GL_DEPTH_BUFFER_BIT,  
-			GL_NEAREST           
-		);
-
-		
 		// ==================
 		// Second Pass: Solid
 		//===================
@@ -573,7 +555,6 @@ public:
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		uniformBlock.set(DEPTH_FLAG, false);
-		uniformBlock.set(LIGHT_FLAG, settings->lightEnabled);
 
 		if(settings->wireFrameEnabled) {
 			uniformBlock.set(LIGHT_FLAG, false); 
@@ -584,8 +565,6 @@ public:
 		programBillboardData->uniform(&uniformBlock);
 		mainScene->drawVegetation();
 
-		uniformBlock.set(SHADOW_FLAG, settings->shadowEnabled);
-		uniformBlock.set(PARALLAX_FLAG, settings->parallaxEnabled);
 		uniformBlock.set(TESSELATION_FLAG, settings->tesselationEnabled);
 		uniformBlock.set(OPACITY_FLAG, false);
 		uniformBlock.set(TRIPLANAR_FLAG, true); 

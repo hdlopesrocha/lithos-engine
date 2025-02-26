@@ -110,8 +110,8 @@ struct DirectionalLight {
     glm::mat4 projection;
     glm::mat4 view;    
  
-    glm::mat4 getMVP(glm::mat4 m) {
-		return projection * view * m;
+    glm::mat4 getVP() {
+		return projection * view;
 	}
 };
 

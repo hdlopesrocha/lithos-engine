@@ -34,7 +34,7 @@ class Scene {
 
 		solidRenderer = new OctreeInstanceRenderer(solidSpace, GL_PATCHES, TYPE_INSTANCE_SOLID_DRAWABLE, 5);
 		liquidRenderer = new OctreeInstanceRenderer(liquidSpace, GL_PATCHES, TYPE_INSTANCE_LIQUID_DRAWABLE, 5);
-		shadowRenderer = new OctreeInstanceRenderer(solidSpace, GL_TRIANGLES, TYPE_INSTANCE_SHADOW_DRAWABLE, 6);
+		shadowRenderer = new OctreeInstanceRenderer(solidSpace, GL_PATCHES, TYPE_INSTANCE_SHADOW_DRAWABLE, 6);
 		vegetationRenderer = new OctreeInstanceRenderer(solidSpace, GL_PATCHES, TYPE_INSTANCE_VEGETATION_DRAWABLE, 5);
 
     }
@@ -47,7 +47,7 @@ class Scene {
 	}
 
 
-	void update3d(glm::mat4 vp, glm::mat4 mlp, Camera * camera, DirectionalLight * light) {
+	void update3d(glm::mat4 vp, glm::mat4 lp, Camera * camera, DirectionalLight * light) {
 		vegetationRenderer->cameraPosition = camera->position;
 		solidRenderer->cameraPosition = camera->position;
 		liquidRenderer->cameraPosition = camera->position;
@@ -65,11 +65,10 @@ class Scene {
 		vegetationProcessor->loaded = 0;
 		vegetationProcessor->update(vp);
 
-		shadowRenderer->update(mlp);
+		shadowRenderer->update(lp);
 		shadowProcessor->loaded = 0;
-		shadowProcessor->update(mlp);
+		shadowProcessor->update(lp);
 
-	
 		processSpace();
 
 	}
