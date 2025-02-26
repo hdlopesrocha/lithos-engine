@@ -43,10 +43,10 @@ Vegetation3d::Vegetation3d() : Geometry(){
     glm::vec3 axis2 = glm::vec3(1,0,0);
     for (int i = 0; i < planes; ++i) {
         float angle = (i / (float) planes)* PI * 2;
-        Vertex a = Vertex(rotate2(glm::vec3(-0.5,0,0), axis1, angle, axis2, PI/4), glm::vec3(0,1,0), glm::vec2(1,1),2);
-        Vertex b = Vertex(rotate2(glm::vec3(-0.5,1,0), axis1, angle, axis2, PI/4), glm::vec3(0,1,0), glm::vec2(1,0),2);
-        Vertex c = Vertex(rotate2(glm::vec3(0.5,0,0), axis1, angle, axis2, PI/4), glm::vec3(0,1,0), glm::vec2(0,1),2);
-        Vertex d = Vertex(rotate2(glm::vec3(0.5,1,0), axis1, angle, axis2, PI/4), glm::vec3(0,1,0), glm::vec2(0,0),2);
+        Vertex a = Vertex(rotate2(glm::vec3(-0.5,0,0), axis1, angle, axis2, PI/4), glm::vec3(0,1,0), glm::vec2(1,1),1);
+        Vertex b = Vertex(rotate2(glm::vec3(-0.5,1,0), axis1, angle, axis2, PI/4), glm::vec3(0,1,0), glm::vec2(1,0),1);
+        Vertex c = Vertex(rotate2(glm::vec3(0.5,0,0), axis1, angle, axis2, PI/4), glm::vec3(0,1,0), glm::vec2(0,1),1);
+        Vertex d = Vertex(rotate2(glm::vec3(0.5,1,0), axis1, angle, axis2, PI/4), glm::vec3(0,1,0), glm::vec2(0,0),1);
 
         glm::vec3 n = Geometry::getNormal(&a, &b, &c);
         a.normal = n;

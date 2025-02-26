@@ -9,5 +9,10 @@ uniform sampler2D textureSampler;
 
 void main() {
     float d = texture(textureSampler, TexCoord).r;
-    FragColor = vec4(d, d ,d ,1.0);
+
+    float near = 0.1;
+    float far = 512.0;
+    float d2 = linearizeDepth(d, near, far)/far;
+
+    FragColor = vec4(d2, d2 ,d2 ,1.0);
 }

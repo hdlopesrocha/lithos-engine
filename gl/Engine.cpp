@@ -262,25 +262,19 @@ RenderBuffer createDepthFrameBuffer(int width, int height) {
     RenderBuffer buffer;
     buffer.width = width;
     buffer.height = height;
-    
+    buffer.colorTexture = 0;
     // Create framebuffer
     glGenFramebuffers(1, &buffer.frameBuffer);        
     glGenTextures(1, &buffer.depthTexture);
-    glGenTextures(1, &buffer.colorTexture);
     glBindFramebuffer(GL_FRAMEBUFFER, buffer.frameBuffer);
 
-
     // Create frameTexture
-
     glBindTexture(GL_TEXTURE_2D, buffer.depthTexture);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
-
-    glBindTexture(GL_TEXTURE_2D, buffer.colorTexture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, width, height, 0, GL_RED, GL_UNSIGNED_BYTE, NULL);
     // Set filtering (no mipmaps)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -290,16 +284,11 @@ RenderBuffer createDepthFrameBuffer(int width, int height) {
     // Configure framebuffer
     glBindFramebuffer(GL_FRAMEBUFFER, buffer.frameBuffer);
     glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, buffer.depthTexture,0);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, buffer.colorTexture, 0);
 
-    GLenum drawBuffers[1] = {GL_COLOR_ATTACHMENT0 };
-    glDrawBuffers(1, drawBuffers);
-
-    //glDrawBuffer(GL_NONE);
-    //glReadBuffer(GL_NONE);
+    glDrawBuffer(GL_NONE);
+    glReadBuffer(GL_NONE);
     
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
     return buffer;
 }
 

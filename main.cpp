@@ -113,6 +113,7 @@ class MainApplication : public LithosApplication {
 	GLuint noiseTexture;
 
 	RenderBuffer depthFrameBuffer;
+	RenderBuffer tempDepthFrameBuffer;
 	RenderBuffer renderBuffer;
 	RenderBuffer solidBuffer;
 	RenderBuffer shadowFrameBuffer;
@@ -210,6 +211,7 @@ public:
 		renderBuffer = createRenderFrameBuffer(getWidth(), getHeight());
 		solidBuffer = createRenderFrameBuffer(getWidth(), getHeight());
 		depthFrameBuffer = createDepthFrameBuffer(getWidth(), getHeight());
+		tempDepthFrameBuffer = createDepthFrameBuffer(getWidth(), getHeight());
 		shadowFrameBuffer = createDepthFrameBuffer(2048, 2048);
 
 		{
@@ -352,12 +354,12 @@ public:
 		}
 
 		noiseTexture = loadTextureImage("textures/noise.jpg");
-		activeTexture = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture,  glGetUniformLocation(program3d, "depthTexture"), depthFrameBuffer.depthTexture);
+		activeTexture = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture,  glGetUniformLocation(program3d, "depthTexture"), tempDepthFrameBuffer.depthTexture);
 		activeTexture = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, glGetUniformLocation(program3d, "underTexture"), solidBuffer.colorTexture);
 		activeTexture = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, glGetUniformLocation(program3d, "shadowMap"), shadowFrameBuffer.depthTexture);
 		activeTexture = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, glGetUniformLocation(program3d, "noise"), noiseTexture);
 
-		activeTexture = Texture::bindTexture(programBillboard, GL_TEXTURE_2D, activeTexture,  glGetUniformLocation(programBillboard, "depthTexture"), depthFrameBuffer.depthTexture);
+		activeTexture = Texture::bindTexture(programBillboard, GL_TEXTURE_2D, activeTexture,  glGetUniformLocation(programBillboard, "depthTexture"), tempDepthFrameBuffer.depthTexture);
 		activeTexture = Texture::bindTexture(programBillboard, GL_TEXTURE_2D, activeTexture, glGetUniformLocation(programBillboard, "noise"), noiseTexture);
 		activeTexture = Texture::bindTexture(programBillboard, GL_TEXTURE_2D, activeTexture, glGetUniformLocation(programBillboard, "shadowMap"), shadowFrameBuffer.depthTexture);
 		activeTexture = Texture::bindTexture(programBillboard, GL_TEXTURE_2D, activeTexture, glGetUniformLocation(programBillboard, "underTexture"), solidBuffer.colorTexture);
@@ -387,7 +389,7 @@ public:
 		shadowMapViewer = new ShadowMapViewer(shadowFrameBuffer.depthTexture);
 		textureMixerEditor = new TextureMixerEditor(&mixers, &textures, programTexture);
 		animatedTextureEditor = new AnimatedTextureEditor(&animatedTextures, &textures, programTexture, 256,256);
-		depthBufferViewer = new DepthBufferViewer(programDepth,depthFrameBuffer.colorTexture,256,256);
+		depthBufferViewer = new DepthBufferViewer(programDepth,tempDepthFrameBuffer.depthTexture,256,256);
 		settingsEditor = new SettingsEditor(settings);
 		textureViewer = new TextureViewer(&textures, programTexture);
 
@@ -552,6 +554,16 @@ public:
 		mainScene->drawVegetation();
 
 
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, depthFrameBuffer.frameBuffer);
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, tempDepthFrameBuffer.frameBuffer);
+		glBlitFramebuffer(
+			0, 0, depthFrameBuffer.width, depthFrameBuffer.height, 
+			0, 0, tempDepthFrameBuffer.width, tempDepthFrameBuffer.height, 
+			GL_DEPTH_BUFFER_BIT,  
+			GL_NEAREST           
+		);
+
+		
 		// ==================
 		// Second Pass: Solid
 		//===================

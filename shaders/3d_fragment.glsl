@@ -48,9 +48,7 @@ void main() {
 
     float currentDepth = gl_FragCoord.z;
     if(depthEnabled) {
-        float near = 0.1;
-        float far = 512.0;
-        color = vec4(linearizeDepth(currentDepth, near, far)/far,0.0,0.0,1.0);
+        color = vec4(1.0);
         return;
     }
 
