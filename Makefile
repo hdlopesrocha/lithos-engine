@@ -1,14 +1,10 @@
 # Compiler and flags
 CC=g++
-CFLAGS = -std=c++20 -lGLEW -lglfw -lGL -lz -I$(STB_INCLUDE_PATH)
+CFLAGS = -std=c++20 -lGLEW -lglfw -lGL -lz -limgui -lstb -I/usr/include/imgui
 LDFLAGS = 
 
-# Directories for dependencies and includes
-STB_INCLUDE_PATH = dependencies/stb
-IMGUI_INCLUDE_PATH = dependencies/imgui
-
 # Source files
-SRC=*.cpp gl/*.cpp math/*.cpp ui/*.cpp tools/*.cpp $(IMGUI_INCLUDE_PATH)/*.cpp
+SRC=*.cpp gl/*.cpp math/*.cpp ui/*.cpp tools/*.cpp
 
 # Target executable name
 TARGET=bin/app
@@ -59,7 +55,7 @@ tool:
 
 # Install dependencies (assuming Ubuntu-based system)
 install:
-	sudo apt-get install libimgui-dev libglew 
+	sudo apt-get install libimgui-dev libglew libstb-dev
 
 # Clean the build (remove binaries and object files)
 clean:

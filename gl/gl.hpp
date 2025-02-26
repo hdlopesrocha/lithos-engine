@@ -20,9 +20,9 @@
 #define TYPE_INSTANCE_SHADOW_DRAWABLE 4
 
 
-#include "../dependencies/imgui/imgui.h"
-#include "../dependencies/imgui/imgui_impl_glfw.h"
-#include "../dependencies/imgui/imgui_impl_opengl3.h"
+#include <imgui/imgui.h>
+#include <imgui/backends/imgui_impl_glfw.h>
+#include <imgui/backends/imgui_impl_opengl3.h>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
