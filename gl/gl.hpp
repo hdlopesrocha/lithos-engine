@@ -321,6 +321,7 @@ class Settings {
         bool wireFrameEnabled;
         bool tesselationEnabled;
         bool opacityEnabled;
+        bool billboardEnabled;
 
         Settings();
 

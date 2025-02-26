@@ -11,7 +11,7 @@ class Scene {
 		OctreeInstanceRenderer * solidRenderer;
 		OctreeInstanceRenderer * shadowRenderer;
 		OctreeInstanceRenderer * liquidRenderer;
-		OctreeInstanceRenderer * vegetationRenderer;
+		OctreeInstanceRenderer * billboardRenderer;
 		OctreeProcessor * solidProcessor;
 		OctreeProcessor * shadowProcessor;
 		OctreeProcessor * liquidProcessor;
@@ -35,7 +35,7 @@ class Scene {
 		solidRenderer = new OctreeInstanceRenderer(solidSpace, GL_PATCHES, TYPE_INSTANCE_SOLID_DRAWABLE, 5);
 		liquidRenderer = new OctreeInstanceRenderer(liquidSpace, GL_PATCHES, TYPE_INSTANCE_LIQUID_DRAWABLE, 5);
 		shadowRenderer = new OctreeInstanceRenderer(solidSpace, GL_PATCHES, TYPE_INSTANCE_SHADOW_DRAWABLE, 6);
-		vegetationRenderer = new OctreeInstanceRenderer(solidSpace, GL_PATCHES, TYPE_INSTANCE_VEGETATION_DRAWABLE, 5);
+		billboardRenderer = new OctreeInstanceRenderer(solidSpace, GL_PATCHES, TYPE_INSTANCE_VEGETATION_DRAWABLE, 5);
 
     }
 
@@ -48,7 +48,7 @@ class Scene {
 
 
 	void update3d(glm::mat4 vp, glm::mat4 lp, Camera * camera, DirectionalLight * light) {
-		vegetationRenderer->cameraPosition = camera->position;
+		billboardRenderer->cameraPosition = camera->position;
 		solidRenderer->cameraPosition = camera->position;
 		liquidRenderer->cameraPosition = camera->position;
 		shadowRenderer->cameraPosition = camera->position -light->direction*512.0f;
@@ -61,7 +61,7 @@ class Scene {
 		liquidProcessor->loaded = 0;
 		liquidProcessor->update(vp);
 
-		vegetationRenderer->update(vp);
+		billboardRenderer->update(vp);
 		vegetationProcessor->loaded = 0;
 		vegetationProcessor->update(vp);
 
@@ -73,10 +73,10 @@ class Scene {
 
 	}
 
-	void drawVegetation() {
+	void drawBillboards() {
 		glDisable(GL_CULL_FACE);
-		vegetationRenderer->instances = 0;
-		solidSpace->iterate(vegetationRenderer);
+		billboardRenderer->instances = 0;
+		solidSpace->iterate(billboardRenderer);
 		glEnable(GL_CULL_FACE);
 	}
 

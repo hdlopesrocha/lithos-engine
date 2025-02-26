@@ -518,12 +518,12 @@ public:
 			glUseProgram(program3d);
 			program3dData->uniform(&uniformBlock);
 			mainScene->draw3dShadow();
-
-			uniformBlock.set(OPACITY_FLAG, true);
-			glUseProgram(programBillboard);
-			programBillboardData->uniform(&uniformBlock);
-			mainScene->drawVegetation();
-
+			if(settings->billboardEnabled) {
+				uniformBlock.set(OPACITY_FLAG, true);
+				glUseProgram(programBillboard);
+				programBillboardData->uniform(&uniformBlock);
+				mainScene->drawBillboards();
+			}
 		}
 		uniformBlock.viewProjection = vp;
 		uniformBlock.set(OPACITY_FLAG, settings->opacityEnabled);
@@ -540,12 +540,12 @@ public:
 
 		uniformBlock.set(TESSELATION_FLAG, false);
 		uniformBlock.set(OPACITY_FLAG, settings->opacityEnabled);
-
-		glUseProgram(programBillboard);
-		viewerBlock = uniformBlock;
-		programBillboardData->uniform(&uniformBlock);
-		mainScene->drawVegetation();
-
+		if(settings->billboardEnabled) {
+			glUseProgram(programBillboard);
+			viewerBlock = uniformBlock;
+			programBillboardData->uniform(&uniformBlock);
+			mainScene->drawBillboards();
+		}
 		// ==================
 		// Second Pass: Solid
 		//===================
@@ -560,11 +560,11 @@ public:
 			uniformBlock.set(LIGHT_FLAG, false); 
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		} 
-
-		glUseProgram(programBillboard);
-		programBillboardData->uniform(&uniformBlock);
-		mainScene->drawVegetation();
-
+		if(settings->billboardEnabled) {
+			glUseProgram(programBillboard);
+			programBillboardData->uniform(&uniformBlock);
+			mainScene->drawBillboards();
+		}
 		uniformBlock.set(TESSELATION_FLAG, settings->tesselationEnabled);
 		uniformBlock.set(OPACITY_FLAG, false);
 		uniformBlock.set(TRIPLANAR_FLAG, true); 
