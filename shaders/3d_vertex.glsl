@@ -27,18 +27,25 @@ void main() {
     vTextureCoord = textureCoord;
     vModel = world*model;
     vec3 iPosition = position;
+    vec3 iNormal = normal;
     float freq = 1.0/ PI;
 
     vec3 wPosition = (vModel*vec4(iPosition, 1.0)).xyz;
 
-    if(opacityEnabled && iPosition.y > 0.0) {
-        iPosition.x += sin(wPosition.x*freq + time);
-        iPosition.z += cos(wPosition.z*freq + time);
+    if(opacityEnabled) {
+        if(iPosition.y > 0.0) {
+            iPosition.x += sin(wPosition.x*freq + time);
+            iPosition.z += cos(wPosition.z*freq + time);
+        }
+        iNormal.x += sin(wPosition.x*freq + time);
+        iNormal.z += cos(wPosition.z*freq + time);
+
+        iNormal = normalize(iNormal);
     } 
 
     if(!depthEnabled) {
         vProps = brushes[brushIndex];
-        vNormal = normal;
+        vNormal = iNormal;
     }
     vPosition = (vModel*vec4(iPosition, 1.0)).xyz;
     gl_Position = vec4(vPosition, 1.0);
