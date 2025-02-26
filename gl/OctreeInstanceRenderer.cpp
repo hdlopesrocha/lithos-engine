@@ -3,12 +3,12 @@
 #include "gl.hpp"
 #include <glm/gtx/norm.hpp> 
 
-OctreeInstanceRenderer::OctreeInstanceRenderer(Octree * tree, int mode, int drawableType, int geometryLevel) {
+OctreeInstanceRenderer::OctreeInstanceRenderer(Octree * tree, int * instances, int mode, int drawableType, int geometryLevel) {
 	this->tree = tree;
 	this->mode = mode;
 	this->drawableType = drawableType;
 	this->geometryLevel = geometryLevel;
-	this->instances = 0;
+	this->instances = instances;
 }
 
 void OctreeInstanceRenderer::update(glm::mat4 m) {
@@ -28,7 +28,7 @@ void * OctreeInstanceRenderer::before(int level, OctreeNode * node, BoundingCube
 			//std::cout << "Draw " << std::to_string(drawable->instancesCount) << " | " << std::to_string(drawableType) << std::endl;
 
 			drawable->draw(mode);
-			instances += drawable->instancesCount;
+			*instances += drawable->instancesCount;
 		}
 	}
 	if(tree->getHeight(cube)==geometryLevel){

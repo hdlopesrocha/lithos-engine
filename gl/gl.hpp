@@ -389,10 +389,10 @@ class OctreeInstanceRenderer : public IteratorHandler{
     int drawableType;
     uint mode;
     public: 
-        int instances;
+        int * instances;
 		int geometryLevel;
         glm::vec3 cameraPosition;
-		OctreeInstanceRenderer(Octree * tree, int mode, int drawableType, int geometryLevel);
+		OctreeInstanceRenderer(Octree * tree, int * instances, int mode, int drawableType, int geometryLevel);
 
 		void update(glm::mat4 m);
 		void * before(int level, OctreeNode * node, BoundingCube cube, void * context);

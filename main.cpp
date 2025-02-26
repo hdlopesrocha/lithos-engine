@@ -701,10 +701,10 @@ public:
 		
 			
 			ImGui::Text("%d FPS", framesPerSecond);
-			ImGui::Text("%d solid instances", mainScene->solidInstancesCount);
-			ImGui::Text("%d liquid instances", mainScene->liquidInstancesCount);
-			ImGui::Text("%d shadow instances", mainScene->shadowInstancesCount);
-			ImGui::Text("%d vegetation instances", mainScene->vegetationInstancesCount);
+			ImGui::Text("%d/%d solid instances", mainScene->solidInstancesVisible, mainScene->solidInstancesCount);
+			ImGui::Text("%d/%d liquid instances", mainScene->liquidInstancesVisible, mainScene->liquidInstancesCount);
+			ImGui::Text("%d/%d shadow instances", mainScene->shadowInstancesVisible, mainScene->shadowInstancesCount);
+			ImGui::Text("%d/%d vegetation instances", mainScene->vegetationInstancesVisible, mainScene->vegetationInstancesCount);
 			ImGui::End();
 
 		}
