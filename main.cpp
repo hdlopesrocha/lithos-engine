@@ -526,7 +526,6 @@ public:
 			}
 		}
 		uniformBlock.viewProjection = vp;
-		uniformBlock.set(OPACITY_FLAG, settings->opacityEnabled);
 
 		// =================
 		// First Pass: Depth
@@ -534,7 +533,9 @@ public:
 		glBindFramebuffer(GL_FRAMEBUFFER, depthFrameBuffer.frameBuffer);
 		glViewport(0, 0, depthFrameBuffer.width, depthFrameBuffer.height);
 		glClear(GL_DEPTH_BUFFER_BIT);
+
 		glUseProgram(program3d);
+		uniformBlock.set(OPACITY_FLAG, false);
 		program3dData->uniform(&uniformBlock);
 		mainScene->draw3dSolid();
 
