@@ -110,7 +110,7 @@ void Octree::getNodeCorners(BoundingCube cube, int level, int simplification, in
 	}
 }
 
-void Octree::handleQuadNodes(OctreeNode * node,  OctreeNode** corners, QuadNodeHandler * handler) {
+void Octree::handleQuadNodes(OctreeNode * node,  OctreeNode** corners, OctreeNodeTriangleHandler * handler) {
 	for(int k =0 ; k < tessOrder.size(); ++k) {
 		glm::ivec2 edge = tessEdge[k];
 		uint mask = node->mask;

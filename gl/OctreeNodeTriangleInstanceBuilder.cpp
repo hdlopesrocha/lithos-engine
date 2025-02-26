@@ -1,10 +1,11 @@
-#include "math.hpp"
+#include "gl.hpp"
+
 #include <random>
 
 
 
 // Compute barycentric coordinates
-glm::vec3 ComputeBarycentric(const glm::vec3& A, const glm::vec3& B, const glm::vec3& C, const glm::vec3& P) {
+glm::vec3 computeBarycentric(const glm::vec3& A, const glm::vec3& B, const glm::vec3& C, const glm::vec3& P) {
     glm::vec3 v0 = B - A, v1 = C - A, v2 = P - A;
 
     float d00 = glm::dot(v0, v0);
@@ -21,17 +22,18 @@ glm::vec3 ComputeBarycentric(const glm::vec3& A, const glm::vec3& B, const glm::
 
     return glm::vec3(u, v, w);
 }
+
 // Generate random float in range [0,1]
-float RandomFloat() {
+float randomFloat() {
     static std::random_device rd;
     static std::mt19937 gen(rd());
     static std::uniform_real_distribution<float> dis(0.0f, 1.0f);
     return dis(gen);
 }
 // Generate a random point inside a triangle using barycentric interpolation
-glm::vec3 RandomPointInTriangle(const glm::vec3& A, const glm::vec3& B, const glm::vec3& C) {
-    float r1 = RandomFloat();
-    float r2 = RandomFloat();
+glm::vec3 randomPointInTriangle(const glm::vec3& A, const glm::vec3& B, const glm::vec3& C) {
+    float r1 = randomFloat();
+    float r2 = randomFloat();
 
     // Ensure uniform distribution within the triangle
     float sqrt_r1 = std::sqrt(r1);
@@ -43,17 +45,18 @@ glm::vec3 RandomPointInTriangle(const glm::vec3& A, const glm::vec3& B, const gl
     return lambda1 * A + lambda2 * B + lambda3 * C;
 }
 
-QuadNodeInstanceBuilderHandler::QuadNodeInstanceBuilderHandler(Geometry * chunk, int * count,OctreeNode ** corners,std::vector<glm::mat4> * matrices) : QuadNodeHandler(chunk, count){
+
+OctreeNodeTriangleInstanceBuilder::OctreeNodeTriangleInstanceBuilder(Geometry * chunk, int * count,OctreeNode ** corners,std::vector<glm::mat4> * matrices) : OctreeNodeTriangleHandler(chunk, count){
     this->corners = corners;
     this-> matrices = matrices;
 }
 
-void QuadNodeInstanceBuilderHandler::handle(OctreeNode* c0,OctreeNode* c1,OctreeNode* c2, bool sign){
+void OctreeNodeTriangleInstanceBuilder::handle(OctreeNode* c0,OctreeNode* c1,OctreeNode* c2, bool sign){
     GradientPerlinSurface fps(1.0, 1.0f/128.0f, 0);
 
     int numPoints = 2; // Number of scattered points
     for (int i = 0; i < numPoints; i++) {
-        glm::vec3 point = RandomPointInTriangle(c0->vertex.position,c1->vertex.position, c2->vertex.position);
+        glm::vec3 point = randomPointInTriangle(c0->vertex.position,c1->vertex.position, c2->vertex.position);
         float perlin = fps.getHeightAt(point.x, 0, point.z);
         float hMin = 0.06;
         float hMax = 0.10;

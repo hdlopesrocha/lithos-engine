@@ -289,34 +289,21 @@ public:
 
 };
 
-class QuadNodeHandler {
+class OctreeNodeTriangleHandler {
 
 	public: 
 	Geometry * chunk;
 	int * count;
-	QuadNodeHandler(Geometry * chunk, int * count);
+	OctreeNodeTriangleHandler(Geometry * chunk, int * count);
 	virtual void handle(OctreeNode* c0,OctreeNode* c1,OctreeNode* c2, bool sign) = 0;
 };
 
-
-class QuadNodeInstanceBuilderHandler : public QuadNodeHandler {
-
-	public: 
-	OctreeNode ** corners;
-	std::vector<glm::mat4> * matrices;
-
-	using QuadNodeHandler::QuadNodeHandler;
-	QuadNodeInstanceBuilderHandler(Geometry * chunk, int * count,OctreeNode ** corners,std::vector<glm::mat4> * matrices);
-	void handle(OctreeNode* c0,OctreeNode* c1,OctreeNode* c2, bool sign);
-
-};
-
-class QuadNodeTesselatorHandler : public QuadNodeHandler {
+class OctreeNodeTriangleTesselator : public OctreeNodeTriangleHandler {
 
 	public: 
-	using QuadNodeHandler::QuadNodeHandler;
+	using OctreeNodeTriangleHandler::OctreeNodeTriangleHandler;
 
-	QuadNodeTesselatorHandler(Geometry * chunk, int * count);
+	OctreeNodeTriangleTesselator(Geometry * chunk, int * count);
 	void handle(OctreeNode* c0,OctreeNode* c1,OctreeNode* c2, bool sign);
 };
 
@@ -332,7 +319,7 @@ class Octree: public BoundingCube {
 		void iterate(IteratorHandler * handler);
 		OctreeNode * getNodeAt(glm::vec3 pos, int level, int simplification);
 		void getNodeCorners(BoundingCube cube, int level, int simplification, int direction, OctreeNode ** out);
-		void handleQuadNodes(OctreeNode * node, OctreeNode** corners, QuadNodeHandler * handler);
+		void handleQuadNodes(OctreeNode * node, OctreeNode** corners, OctreeNodeTriangleHandler * handler);
 		void getNeighbors(BoundingCube cube, int level, OctreeNode ** out);
 
 		void save(std::string filename);

@@ -403,6 +403,18 @@ class OctreeInstanceRenderer : public IteratorHandler{
 
 };
 
+class OctreeNodeTriangleInstanceBuilder : public OctreeNodeTriangleHandler {
+
+	public: 
+	OctreeNode ** corners;
+	std::vector<glm::mat4> * matrices;
+
+	using OctreeNodeTriangleHandler::OctreeNodeTriangleHandler;
+	OctreeNodeTriangleInstanceBuilder(Geometry * chunk, int * count,OctreeNode ** corners,std::vector<glm::mat4> * matrices);
+	void handle(OctreeNode* c0,OctreeNode* c1,OctreeNode* c2, bool sign);
+
+};
+
 GLuint createTextureArray(int width, int height, int layers); 
 RenderBuffer createMultiLayerRenderFrameBuffer(int width, int height, int layers);
 RenderBuffer createDepthFrameBuffer(int width, int height);
