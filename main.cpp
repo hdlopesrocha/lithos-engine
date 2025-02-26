@@ -354,15 +354,18 @@ public:
 		}
 
 		noiseTexture = loadTextureImage("textures/noise.jpg");
-		activeTexture = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture,  glGetUniformLocation(program3d, "depthTexture"), tempDepthFrameBuffer.depthTexture);
-		activeTexture = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, glGetUniformLocation(program3d, "underTexture"), solidBuffer.colorTexture);
-		activeTexture = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, glGetUniformLocation(program3d, "shadowMap"), shadowFrameBuffer.depthTexture);
-		activeTexture = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, glGetUniformLocation(program3d, "noise"), noiseTexture);
 
-		activeTexture = Texture::bindTexture(programBillboard, GL_TEXTURE_2D, activeTexture,  glGetUniformLocation(programBillboard, "depthTexture"), tempDepthFrameBuffer.depthTexture);
+		Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, glGetUniformLocation(program3d, "noise"), noiseTexture);
 		activeTexture = Texture::bindTexture(programBillboard, GL_TEXTURE_2D, activeTexture, glGetUniformLocation(programBillboard, "noise"), noiseTexture);
-		activeTexture = Texture::bindTexture(programBillboard, GL_TEXTURE_2D, activeTexture, glGetUniformLocation(programBillboard, "shadowMap"), shadowFrameBuffer.depthTexture);
+
+		Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture,  glGetUniformLocation(program3d, "depthTexture"), tempDepthFrameBuffer.depthTexture);
+		activeTexture = Texture::bindTexture(programBillboard, GL_TEXTURE_2D, activeTexture,  glGetUniformLocation(programBillboard, "depthTexture"), tempDepthFrameBuffer.depthTexture);
+
+		Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, glGetUniformLocation(program3d, "underTexture"), solidBuffer.colorTexture);
 		activeTexture = Texture::bindTexture(programBillboard, GL_TEXTURE_2D, activeTexture, glGetUniformLocation(programBillboard, "underTexture"), solidBuffer.colorTexture);
+
+		Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, glGetUniformLocation(program3d, "shadowMap"), shadowFrameBuffer.depthTexture);
+		activeTexture = Texture::bindTexture(programBillboard, GL_TEXTURE_2D, activeTexture, glGetUniformLocation(programBillboard, "shadowMap"), shadowFrameBuffer.depthTexture);
 
 		activeTexture = Texture::bindTextures(programBillboard, GL_TEXTURE_2D_ARRAY, activeTexture, "textures", &billboardTextures);
 		activeTexture = Texture::bindTextures(program3d, GL_TEXTURE_2D_ARRAY, activeTexture, "textures", &textures);
@@ -539,8 +542,7 @@ public:
 		// =================
 		glBindFramebuffer(GL_FRAMEBUFFER, depthFrameBuffer.frameBuffer);
 		glViewport(0, 0, depthFrameBuffer.width, depthFrameBuffer.height);
-		glClearColor (0.0,0.0,0.0,0.0);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glClear(GL_DEPTH_BUFFER_BIT);
 		glUseProgram(program3d);
 		program3dData->uniform(&uniformBlock);
 		mainScene->draw3dSolid();

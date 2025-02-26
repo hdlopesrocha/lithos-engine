@@ -46,13 +46,12 @@ void main() {
         }
     }
 
-    float currentDepth = gl_FragCoord.z;
     if(depthEnabled) {
-        color = vec4(1.0);
         return;
     }
 
     vec2 pixelUV = gl_FragCoord.xy / textureSize(depthTexture, 0);
+    float currentDepth = gl_FragCoord.z;
     float existingDepth = texture(depthTexture, pixelUV).r;
     if(existingDepth < currentDepth) {
         discard;
