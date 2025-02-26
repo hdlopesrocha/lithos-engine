@@ -28,7 +28,9 @@ out vec4 color;    // Final fragment color
 
 void main() {
     vec2 uv = teTextureCoord;
-    
+    float near = 0.1;
+    float far = 512.0;
+
     if(billboardEnabled && !debugEnabled) {
         vec4 opacity = texture(billboards[1], vec3(uv, 3));
         if(opacity.r < 0.5) {
@@ -36,17 +38,15 @@ void main() {
         }
     }
 
-    float currentDepth = gl_FragCoord.z;
+    float currentDepth = linearizeDepth(gl_FragCoord.z, near, far);
 
     if(depthEnabled) {
-        float near = 0.1;
-        float far = 512.0;
-        color = vec4(linearizeDepth(currentDepth, near, far)/far,0.0,0.0,1.0);
+        color = vec4(currentDepth/far,0.0,0.0,1.0);
         return;
     }
 
     vec2 pixelUV = gl_FragCoord.xy / textureSize(depthTexture, 0);
-    float existingDepth = texture(depthTexture, pixelUV).r;
+    float existingDepth = linearizeDepth(texture(depthTexture, pixelUV).r, near, far);
     if(existingDepth < currentDepth) {
         discard;
     }

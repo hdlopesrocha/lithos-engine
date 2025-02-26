@@ -51,7 +51,7 @@ QuadNodeInstanceBuilderHandler::QuadNodeInstanceBuilderHandler(Geometry * chunk,
 void QuadNodeInstanceBuilderHandler::handle(OctreeNode* c0,OctreeNode* c1,OctreeNode* c2, bool sign){
     GradientPerlinSurface fps(1.0, 1.0f/128.0f, 0);
 
-    int numPoints = 6; // Number of scattered points
+    int numPoints = 1; // Number of scattered points
     for (int i = 0; i < numPoints; i++) {
         glm::vec3 point = RandomPointInTriangle(c0->vertex.position,c1->vertex.position, c2->vertex.position);
         float perlin = fps.getHeightAt(point.x, 0, point.z);

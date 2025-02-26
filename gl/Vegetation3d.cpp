@@ -20,27 +20,75 @@ Vegetation3d::Vegetation3d() : Geometry(){
     glm::vec3 axis1 = glm::vec3(0,1,0);
     for (int i = 0; i < planes; ++i) {
         float angle = (i / (float) planes)* PI;
+        Vertex a = Vertex(rotate(glm::vec3(-0.5,0,0), axis1, angle), glm::vec3(0), glm::vec2(1,1),1);
+        Vertex b = Vertex(rotate(glm::vec3(-0.5,1,0), axis1, angle), glm::vec3(0), glm::vec2(1,0),1);
+        Vertex c = Vertex(rotate(glm::vec3(0.5,0,0), axis1, angle), glm::vec3(0), glm::vec2(0,1),1);
+        Vertex d = Vertex(rotate(glm::vec3(0.5,1,0), axis1, angle), glm::vec3(0), glm::vec2(0,0),1);
 
-        addVertex(Vertex(rotate(glm::vec3(-0.5,0,0), axis1, angle), glm::vec3(0,1,0), glm::vec2(1,1),2), false );
-        addVertex(Vertex(rotate(glm::vec3(-0.5,1,0), axis1, angle), glm::vec3(0,1,0), glm::vec2(1,0),2), false );
-        addVertex(Vertex(rotate(glm::vec3(0.5,1,0), axis1, angle), glm::vec3(0,1,0), glm::vec2(0,0),2), false );
+        glm::vec3 n = Geometry::getNormal(&a, &b, &c);
+        a.normal = n;
+        b.normal = n;
+        c.normal = n;
+        d.normal = n;
+        
+        addVertex(a, true );
+        addVertex(b, true );
+        addVertex(d, true );
 
-        addVertex(Vertex(rotate(glm::vec3(-0.5,0,0), axis1, angle), glm::vec3(0,1,0), glm::vec2(1,1),2), false );
-        addVertex(Vertex(rotate(glm::vec3(0.5,0,0), axis1, angle), glm::vec3(0,1,0), glm::vec2(0,1),2), false );
-        addVertex(Vertex(rotate(glm::vec3(0.5,1,0), axis1, angle), glm::vec3(0,1,0), glm::vec2(0,0),2), false );
+        addVertex(a, true );
+        addVertex(d, true );
+        addVertex(c, true );
+
+        a.normal = -n;
+        b.normal = -n;
+        c.normal = -n;
+        d.normal = -n;
+        
+        addVertex(a, true );
+        addVertex(d, true );
+        addVertex(b, true );
+
+        addVertex(a, true );
+        addVertex(c, true );
+        addVertex(d, true );
+
     }
 
     glm::vec3 axis2 = glm::vec3(1,0,0);
     for (int i = 0; i < planes; ++i) {
         float angle = (i / (float) planes)* PI * 2;
+        Vertex a = Vertex(rotate2(glm::vec3(-0.5,0,0), axis1, angle, axis2, PI/4), glm::vec3(0,1,0), glm::vec2(1,1),2);
+        Vertex b = Vertex(rotate2(glm::vec3(-0.5,1,0), axis1, angle, axis2, PI/4), glm::vec3(0,1,0), glm::vec2(1,0),2);
+        Vertex c = Vertex(rotate2(glm::vec3(0.5,0,0), axis1, angle, axis2, PI/4), glm::vec3(0,1,0), glm::vec2(0,1),2);
+        Vertex d = Vertex(rotate2(glm::vec3(0.5,1,0), axis1, angle, axis2, PI/4), glm::vec3(0,1,0), glm::vec2(0,0),2);
 
-        addVertex(Vertex(rotate2(glm::vec3(-0.5,0,0), axis1, angle, axis2, PI/4), glm::vec3(0,1,0), glm::vec2(1,1),2), false );
-        addVertex(Vertex(rotate2(glm::vec3(-0.5,1,0), axis1, angle, axis2, PI/4), glm::vec3(0,1,0), glm::vec2(1,0),2), false );
-        addVertex(Vertex(rotate2(glm::vec3(0.5,1,0), axis1, angle, axis2, PI/4), glm::vec3(0,1,0), glm::vec2(0,0),2), false );
+        glm::vec3 n = Geometry::getNormal(&a, &b, &c);
+        a.normal = n;
+        b.normal = n;
+        c.normal = n;
+        d.normal = n;
+        
+        addVertex(a, true );
+        addVertex(b, true );
+        addVertex(d, true );
 
-        addVertex(Vertex(rotate2(glm::vec3(-0.5,0,0), axis1, angle, axis2, PI/4), glm::vec3(0,1,0), glm::vec2(1,1),2), false );
-        addVertex(Vertex(rotate2(glm::vec3(0.5,0,0), axis1, angle, axis2, PI/4), glm::vec3(0,1,0), glm::vec2(0,1),2), false );
-        addVertex(Vertex(rotate2(glm::vec3(0.5,1,0), axis1, angle, axis2, PI/4), glm::vec3(0,1,0), glm::vec2(0,0),2), false );
+        addVertex(a, true );
+        addVertex(d, true );
+        addVertex(c, true );
+
+        a.normal = -n;
+        b.normal = -n;
+        c.normal = -n;
+        d.normal = -n;
+
+        addVertex(a, true );
+        addVertex(d, true );
+        addVertex(b, true );
+
+        addVertex(a, true );
+        addVertex(c, true );
+        addVertex(d, true );
+  
     }
 
 }

@@ -68,12 +68,11 @@ struct Vertex {
 
     std::string toString() {
 		std::stringstream ss;
-		ss << "{"
-			<< "\"p\":" << "[" << position.x <<  "," <<  position.y <<  "," <<  position.z << "],"
-			<< "\"n\":" << "[" << normal.x <<  "," <<  normal.y <<  "," <<  normal.z << "],"
-			<< "\"c\":" << "[" << texCoord.x <<  "," <<  texCoord.y << "],"
-			<< "\"i\":" << brushIndex
-		<< "}";
+		ss  << position.x <<  "," <<  position.y <<  "," <<  position.z << ","
+			<< normal.x <<  "," <<  normal.y <<  "," <<  normal.z << ","
+		    << texCoord.x <<  "," <<  texCoord.y << ","
+			<< brushIndex;
+	
 		return ss.str();
     }
 };
@@ -298,6 +297,7 @@ public:
 	~Geometry();
 
 	Vertex * addVertex(Vertex vertex, bool textureUnique);
+	static glm::vec3 getNormal(Vertex * a, Vertex * b, Vertex * c);
 };
 
 class QuadNodeHandler {

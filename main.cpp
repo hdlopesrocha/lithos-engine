@@ -531,6 +531,9 @@ public:
 
 		uniformBlock.set(TESSELATION_FLAG, false);
 		uniformBlock.set(BILLBOARD_FLAG, true);
+		uniformBlock.set(PARALLAX_FLAG, false);
+		uniformBlock.set(TRIPLANAR_FLAG, false); 
+
 		program3dData->uniform(&uniformBlock);
 		mainScene->drawVegetation();
 
@@ -544,8 +547,6 @@ public:
 		glUseProgram(program3d);
 
 		uniformBlock.set(DEPTH_FLAG, false);
-		uniformBlock.set(PARALLAX_FLAG, false);
-		uniformBlock.set(TRIPLANAR_FLAG, false); 
 
 		if(settings->wireFrameEnabled) {
 			uniformBlock.set(LIGHT_FLAG, false); 
