@@ -70,7 +70,6 @@ void ensureFolderExists(const std::string& folder) {
     }
 }
 
-
 std::stringstream gzipDecompressFromIfstream(std::ifstream& inputFile) {
     if (!inputFile) {
         throw std::runtime_error("Failed to open input file.");
@@ -87,10 +86,13 @@ std::stringstream gzipDecompressFromIfstream(std::ifstream& inputFile) {
 
     int ret;
     do {
-        // Read compressed data in chunks
         inputFile.read(inBuffer.data(), inBuffer.size());
         strm.next_in = reinterpret_cast<Bytef*>(inBuffer.data());
-        strm.avail_in = inputFile.gcount();  // Number of bytes read
+        strm.avail_in = static_cast<uInt>(inputFile.gcount());
+
+        if (strm.avail_in == 0) {
+            break; 
+        }
 
         do {
             strm.next_out = reinterpret_cast<Bytef*>(outBuffer.data());
@@ -98,7 +100,7 @@ std::stringstream gzipDecompressFromIfstream(std::ifstream& inputFile) {
 
             ret = inflate(&strm, Z_NO_FLUSH);
 
-            if (ret < 0) {
+            if (ret == Z_STREAM_ERROR || ret == Z_DATA_ERROR || ret == Z_MEM_ERROR) {
                 inflateEnd(&strm);
                 throw std::runtime_error("Decompression failed: inflate() error " + std::to_string(ret));
             }
@@ -106,9 +108,14 @@ std::stringstream gzipDecompressFromIfstream(std::ifstream& inputFile) {
             decompressedStream.write(outBuffer.data(), outBuffer.size() - strm.avail_out);
         } while (strm.avail_out == 0);
 
-    } while (!inputFile.eof() && ret != Z_STREAM_END);
+    } while (ret != Z_STREAM_END);
 
     inflateEnd(&strm);
+
+    if (ret != Z_STREAM_END) {
+        throw std::runtime_error("Decompression finished unexpectedly. inflate() error " + std::to_string(ret));
+    }
+
     return decompressedStream;
 }
 
