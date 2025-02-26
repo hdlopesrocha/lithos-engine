@@ -26,17 +26,11 @@ in mat4 teModel;
 out vec4 color;    // Final fragment color
 
 void main() {
-    vec3 correctedNormal = gl_FrontFacing ? teNormal : -teNormal;
-    vec4 positionWorld = teModel * vec4(tePosition, 1.0);
-    vec3 position = positionWorld.xyz;    
-    mat3 normalMatrix = transpose(inverse(mat3(teModel)));
-    vec3 normal = normalize(normalMatrix * correctedNormal);
- 
-
     vec2 uv = teTextureCoord;
+    
     if(triplanarEnabled) {
-        int plane = triplanarPlane(position, normal);
-        uv = triplanarMapping(position, plane, teProps.textureScale) * 0.1;
+        int plane = triplanarPlane(tePosition, teNormal);
+        uv = triplanarMapping(tePosition, plane, teProps.textureScale) * 0.1;
     }
 
     if(opacityEnabled) {
@@ -57,11 +51,15 @@ void main() {
         discard;
     }
 
+    vec3 correctedNormal = gl_FrontFacing ? teNormal : -teNormal;
+    mat3 normalMatrix = transpose(inverse(mat3(teModel)));
+    vec3 normal = normalize(normalMatrix * correctedNormal);
+
     float effectAmount = sin(time*3.14/4.0)*0.5 + 0.5;
-    float distance = length(cameraPosition.xyz - position);
+    float distance = length(cameraPosition.xyz - tePosition);
     float distanceFactor = clamp(teProps.parallaxFade / distance, 0.0, 1.0); // Adjust these numbers to fit your scene
 
-    vec3 viewDirection = normalize(position-cameraPosition.xyz);
+    vec3 viewDirection = normalize(tePosition-cameraPosition.xyz);
     mat3 TBN = getTBN(tePosition, correctedNormal, uv, teModel, false);
     vec3 viewDirectionTangent = normalize(transpose(TBN) * viewDirection);
 
@@ -91,7 +89,7 @@ void main() {
         shadow.shadowAmount = 1.0;
         shadow.lightAmount = 1.0;
         if(shadowEnabled) {
-            shadow = getShadow(shadowMap, noise, teLightViewPosition, position);
+            shadow = getShadow(shadowMap, noise, teLightViewPosition, tePosition);
         }
 
         vec4 refractedColor = vec4(0.0,0.0,0.0,0.0);

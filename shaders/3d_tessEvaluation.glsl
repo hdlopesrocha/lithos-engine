@@ -70,7 +70,7 @@ void main() {
     teTextureCoord = tcTextureCoord[0] * gl_TessCoord[0] + tcTextureCoord[1] * gl_TessCoord[1] + tcTextureCoord[2] * gl_TessCoord[2];
     tePosition = gl_TessCoord[0] * tcPosition[0] + gl_TessCoord[1] * tcPosition[1] + gl_TessCoord[2] * tcPosition[2];
     teModel = tcModel[0];
-    
+
     if(!depthEnabled) {
         teLightViewPosition = matrixShadow * vec4(tePosition, 1.0);  
     }
