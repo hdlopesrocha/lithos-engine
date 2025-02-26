@@ -71,9 +71,9 @@ ShadowProperties getShadow(sampler2D shadowMap, sampler2D noise, vec4 lightViewP
 }
 
 
-vec4 textureBlend(vec3 ws, uvec3 ti, vec2 uv, int index) {
+vec4 textureBlend(sampler2DArray ts[25], vec3 ws, uvec3 ti, vec2 uv, int index) {
     if(overrideEnabled) {
-        return texture(textures[overrideTexture], vec3(uv, index));
+        return texture(ts[overrideTexture], vec3(uv, index));
     }
     
     vec4 res = vec4(0.0);
@@ -81,7 +81,7 @@ vec4 textureBlend(vec3 ws, uvec3 ti, vec2 uv, int index) {
         float w = ws[i];
         uint t = ti[i];
         if(w>0.0) {      
-            res += texture(textures[t], vec3(uv, index))*w;
+            res += texture(ts[t], vec3(uv, index))*w;
         }
 	}
     return res;

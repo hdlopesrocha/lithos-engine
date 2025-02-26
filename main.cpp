@@ -535,9 +535,6 @@ public:
 		uniformBlock.set(OPACITY_FLAG, false);
 		uniformBlock.set(TRIPLANAR_FLAG, false); 
 
-        uniformBlock.uintData.w = 0;
-
-		viewerBlock = uniformBlock;
 		// =================
 		// First Pass: Depth
 		// =================
@@ -553,8 +550,10 @@ public:
 		uniformBlock.set(OPACITY_FLAG, settings->opacityEnabled);
 
 		glUseProgram(programBillboard);
+		viewerBlock = uniformBlock;
 		programBillboardData->uniform(&uniformBlock);
 		mainScene->drawVegetation();
+
 
 		// ==================
 		// Second Pass: Solid

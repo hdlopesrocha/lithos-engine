@@ -29,7 +29,7 @@ void AtlasDrawer::draw(){
 
     glBindFramebuffer(GL_FRAMEBUFFER, renderBuffer.frameBuffer);
     glViewport(0, 0, renderBuffer.width, renderBuffer.height); 
-    glClearColor (0.0,0.0,0.0,0.0);    
+    glClearColor (0.0,0.0,0.0,1.0);    
     glClear(GL_COLOR_BUFFER_BIT);
     glDisable(GL_CULL_FACE);
     glDisable(GL_DEPTH_TEST);

@@ -26,10 +26,12 @@ in mat4 teModel;
 out vec4 color;    // Final fragment color
 
 void main() {
+    vec3 correctedNormal = gl_FrontFacing ? teNormal : -teNormal;
     vec4 positionWorld = teModel * vec4(tePosition, 1.0);
     vec3 position = positionWorld.xyz;    
     mat3 normalMatrix = transpose(inverse(mat3(teModel)));
-    vec3 normal = normalize(normalMatrix * teNormal);
+    vec3 normal = normalize(normalMatrix * correctedNormal);
+ 
 
     vec2 uv = teTextureCoord;
     if(triplanarEnabled) {
@@ -38,23 +40,23 @@ void main() {
     }
 
     if(opacityEnabled) {
-        vec4 opacity = textureBlend(teTextureWeights, teTextureIndices, uv, 3);
+        vec4 opacity = textureBlend(textures, teTextureWeights, teTextureIndices, uv, 3);
+        color = vec4(0.0);
         if(opacity.r < 0.5) {
             discard;
         }
     }
 
-    float near = 0.1;
-    float far = 512.0;
-    float currentDepth = linearizeDepth(gl_FragCoord.z, near, far);
-
+    float currentDepth = gl_FragCoord.z;
     if(depthEnabled) {
-        color = vec4(currentDepth/far,0.0,0.0,1.0);
+        float near = 0.1;
+        float far = 512.0;
+        color = vec4(linearizeDepth(currentDepth, near, far)/far,0.0,0.0,1.0);
         return;
     }
 
     vec2 pixelUV = gl_FragCoord.xy / textureSize(depthTexture, 0);
-    float existingDepth = linearizeDepth(texture(depthTexture, pixelUV).r, near, far);
+    float existingDepth = texture(depthTexture, pixelUV).r;
     if(existingDepth < currentDepth) {
         discard;
     }
@@ -64,21 +66,22 @@ void main() {
     float distanceFactor = clamp(teProps.parallaxFade / distance, 0.0, 1.0); // Adjust these numbers to fit your scene
 
     vec3 viewDirection = normalize(position-cameraPosition.xyz);
-    mat3 TBN = getTBN(tePosition, teNormal, uv, teModel, false);
+    mat3 TBN = getTBN(tePosition, correctedNormal, uv, teModel, false);
     vec3 viewDirectionTangent = normalize(transpose(TBN) * viewDirection);
 
     if(parallaxEnabled && distanceFactor * teProps.parallaxScale > 0.0) {
-       uv = parallaxMapping(teTextureWeights, teTextureIndices, uv, viewDirectionTangent, distanceFactor*teProps.parallaxScale , distanceFactor*teProps.parallaxMinLayers, distanceFactor*teProps.parallaxMaxLayers, int(ceil(distanceFactor*teProps.parallaxRefine)));
+       uv = parallaxMapping(textures, teTextureWeights, teTextureIndices, uv, viewDirectionTangent, distanceFactor*teProps.parallaxScale , distanceFactor*teProps.parallaxMinLayers, distanceFactor*teProps.parallaxMaxLayers, int(ceil(distanceFactor*teProps.parallaxRefine)));
     }
   
-    vec4 mixedColor = textureBlend(teTextureWeights, teTextureIndices, uv, 0);
+    vec4 mixedColor = textureBlend(textures, teTextureWeights, teTextureIndices, uv, 0);
     if(mixedColor.a == 0.0) {
         discard;
     }
 
-    vec3 normalMap = textureBlend(teTextureWeights, teTextureIndices, uv, 1).rgb * 2.0 - 1.0;
+    vec3 normalMap = textureBlend(textures, teTextureWeights, teTextureIndices, uv, 1).rgb * 2.0 - 1.0;
     normalMap = normalize(normalMap); // Convert to range [-1, 1]
     vec3 worldNormal = normalize(TBN * normalMap);
+
     if(debugEnabled) {
         color = vec4(visual(worldNormal),1.0);
     } else if(lightEnabled) {

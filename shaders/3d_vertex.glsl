@@ -30,7 +30,7 @@ void main() {
 
         vNormal = normal;
     }
-    vModel = model;
-    vPosition = (model*vec4(position, 1.0)).xyz;
+    vModel = world*model;
+    vPosition = (vModel*vec4(position, 1.0)).xyz;
     gl_Position = vec4(vPosition, 1.0);
 }
