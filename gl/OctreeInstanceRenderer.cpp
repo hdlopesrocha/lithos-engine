@@ -3,10 +3,9 @@
 #include "gl.hpp"
 #include <glm/gtx/norm.hpp> 
 
-OctreeInstanceRenderer::OctreeInstanceRenderer(GLuint program, Octree * tree, int mode, int drawableType, int geometryLevel) {
+OctreeInstanceRenderer::OctreeInstanceRenderer(Octree * tree, int mode, int drawableType, int geometryLevel) {
 	this->tree = tree;
 	this->mode = mode;
-	this->program = program;
 	this->drawableType = drawableType;
 	this->geometryLevel = geometryLevel;
 	this->instances = 0;

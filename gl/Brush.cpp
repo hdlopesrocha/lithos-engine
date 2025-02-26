@@ -41,13 +41,13 @@ void Brush::bindBrush(GLuint program, std::string objectName, std::string textur
     glUniform2fv(glGetUniformLocation(program, (objectName +".textureScale").c_str()), 1, glm::value_ptr(brush->textureScale));
 }
 
-void Brush::bindBrushes(GLuint program, std::vector<Brush*> * brushes) {
+void Brush::bindBrushes(GLuint program, std::string objectName, std::string mapName, std::vector<Brush*> * brushes) {
     glUseProgram(program);
 
     for(int i = 0; i < brushes->size() ; ++i) {
         Brush * brush = brushes->at(i);
-        std::string objectName = "brushes[" + std::to_string(i)  +"]";
+        std::string name = objectName + "[" + std::to_string(i)  +"]";
         brush->brushIndex = i;
-        bindBrush(program, objectName, "brushTextures["+std::to_string(i) + "]", brush);
+        bindBrush(program, name, mapName + "["+std::to_string(i) + "]", brush);
     }
 }

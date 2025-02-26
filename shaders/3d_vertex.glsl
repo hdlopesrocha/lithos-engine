@@ -27,6 +27,7 @@ void main() {
         vTextureCoord = textureCoord;
         vTextureIndex = brushTextures[brushIndex];
         vProps = brushes[brushIndex];
+
         vNormal = normal;
     }
     vModel = model;

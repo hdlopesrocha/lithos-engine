@@ -78,9 +78,9 @@ std::string replaceIncludes(std::vector<GlslInclude> includes, std::string code)
 
 class MainApplication : public LithosApplication {
 	std::vector<Texture*> textures;
-	std::vector<Texture*> vegetationTextures;
+	std::vector<Texture*> billboardTextures;
 	std::vector<Brush*> brushes;
-	std::vector<Brush*> vegetationBrushes;
+	std::vector<Brush*> billboardBrushes;
 	std::vector<AtlasTexture*> atlasTextures;
 	std::vector<AtlasDrawer*> atlasDrawers;
 	std::vector<TextureMixer*> mixers;
@@ -95,6 +95,7 @@ class MainApplication : public LithosApplication {
 
 	GLuint programSwap;
 	GLuint program3d;
+	GLuint programBillboard;
 	GLuint programShadow;
 	GLuint programAtlas;
 	GLuint programTexture;
@@ -104,6 +105,7 @@ class MainApplication : public LithosApplication {
 
 	GLuint modelViewProjectionShadowLoc;
 	ProgramData * program3dData;
+	ProgramData * programBillboardData;
 
 	UniformBlock viewerBlock;
 
@@ -198,6 +200,14 @@ public:
 			compileShader(replaceIncludes(includes,readFile("shaders/3d_fragment.glsl")),GL_FRAGMENT_SHADER) 
 		});
 		program3dData = new ProgramData();
+
+		programBillboard = createShaderProgram({
+			compileShader(replaceIncludes(includes,readFile("shaders/3d_vertex.glsl")),GL_VERTEX_SHADER), 
+			compileShader(replaceIncludes(includes,readFile("shaders/3d_tessControl.glsl")),GL_TESS_CONTROL_SHADER), 
+			compileShader(replaceIncludes(includes,readFile("shaders/3d_tessEvaluation.glsl")),GL_TESS_EVALUATION_SHADER),
+			compileShader(replaceIncludes(includes,readFile("shaders/3d_fragment.glsl")),GL_FRAGMENT_SHADER) 
+		});
+		programBillboardData = new ProgramData();
 
 
 		renderBuffer = createRenderFrameBuffer(getWidth(), getHeight());
@@ -325,7 +335,8 @@ public:
 			ad->draw(0, draws);
 
 			atlasDrawers.push_back(ad);
-			vegetationTextures.push_back(new Texture(ad->getTexture()));
+			billboardBrushes.push_back(new Brush(billboardTextures.size()));
+			billboardTextures.push_back(new Texture(ad->getTexture()));
 		}
 		{
 			AtlasTexture * at = new AtlasTexture(loadTextureArray({"textures/vegetation/grass_color.jpg", "textures/vegetation/grass_normal.jpg", "textures/vegetation/grass_bump.jpg", "textures/vegetation/grass_opacity.jpg"}));
@@ -339,7 +350,8 @@ public:
 			ad->draw(1, draws);
 
 			atlasDrawers.push_back(ad);
-			vegetationTextures.push_back(new Texture(ad->getTexture()));
+			billboardBrushes.push_back(new Brush(billboardTextures.size()));
+			billboardTextures.push_back(new Texture(ad->getTexture()));
 		}
 
 		noiseTexture = loadTextureImage("textures/noise.jpg");
@@ -347,14 +359,20 @@ public:
 		activeTexture = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, glGetUniformLocation(program3d, "underTexture"), solidBuffer.colorTexture);
 		activeTexture = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, glGetUniformLocation(program3d, "shadowMap"), shadowFrameBuffer.depthTexture);
 		activeTexture = Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, glGetUniformLocation(program3d, "noise"), noiseTexture);
-		
-		activeTexture = Texture::bindTextures(program3d, GL_TEXTURE_2D_ARRAY, activeTexture, "billboards", &vegetationTextures);
+
+		activeTexture = Texture::bindTexture(programBillboard, GL_TEXTURE_2D, activeTexture,  glGetUniformLocation(programBillboard, "depthTexture"), depthFrameBuffer.depthTexture);
+		activeTexture = Texture::bindTexture(programBillboard, GL_TEXTURE_2D, activeTexture, glGetUniformLocation(programBillboard, "noise"), noiseTexture);
+		activeTexture = Texture::bindTexture(programBillboard, GL_TEXTURE_2D, activeTexture, glGetUniformLocation(programBillboard, "shadowMap"), shadowFrameBuffer.depthTexture);
+		activeTexture = Texture::bindTexture(programBillboard, GL_TEXTURE_2D, activeTexture, glGetUniformLocation(programBillboard, "underTexture"), solidBuffer.colorTexture);
+
+		activeTexture = Texture::bindTextures(programBillboard, GL_TEXTURE_2D_ARRAY, activeTexture, "textures", &billboardTextures);
 		activeTexture = Texture::bindTextures(program3d, GL_TEXTURE_2D_ARRAY, activeTexture, "textures", &textures);
 
-		Brush::bindBrushes(program3d, &brushes);
+		Brush::bindBrushes(program3d,"brushes", "brushTextures", &brushes);
+		Brush::bindBrushes(programBillboard, "brushes", "brushTextures", &billboardBrushes);
 
 		mainScene = new Scene();
-		mainScene->setup(program3d, programShadow);
+		mainScene->setup();
 		mainScene->load();
 	
 		
@@ -451,8 +469,6 @@ public:
 		float near = 0.1f;
 		float orthoSize = 512.0f;  // Size of the orthographic box
 
-
-
 		glm::mat4 rotate = glm::mat4_cast(camera.quaternion);
 		glm::mat4 translate = glm::translate(glm::mat4(1.0f), -camera.position);
 	   
@@ -481,8 +497,6 @@ public:
 		glEnable(GL_BLEND);
 		glLineWidth(2.0);
 		glPointSize(4.0);	
-
-
 
 
 		// ================
@@ -525,7 +539,6 @@ public:
 		glClearColor (0.0,0.0,0.0,0.0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glUseProgram(program3d);
-
 		program3dData->uniform(&uniformBlock);
 		mainScene->draw3dSolid();
 
@@ -534,7 +547,8 @@ public:
 		uniformBlock.set(PARALLAX_FLAG, false);
 		uniformBlock.set(TRIPLANAR_FLAG, false); 
 
-		program3dData->uniform(&uniformBlock);
+		glUseProgram(programBillboard);
+		programBillboardData->uniform(&uniformBlock);
 		mainScene->drawVegetation();
 
 		// ==================
@@ -544,7 +558,6 @@ public:
 		glViewport(0, 0, renderBuffer.width, renderBuffer.height);
 		glClearColor (0.1,0.1,0.1,1.0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		glUseProgram(program3d);
 
 		uniformBlock.set(DEPTH_FLAG, false);
 
@@ -553,7 +566,8 @@ public:
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		} 
 
-		program3dData->uniform(&uniformBlock);
+		glUseProgram(programBillboard);
+		programBillboardData->uniform(&uniformBlock);
 		mainScene->drawVegetation();
 
 		uniformBlock.set(PARALLAX_FLAG, settings->parallaxEnabled);
@@ -561,6 +575,7 @@ public:
 		uniformBlock.set(BILLBOARD_FLAG, false);
 		uniformBlock.set(TRIPLANAR_FLAG, true); 
 
+		glUseProgram(program3d);
 		program3dData->uniform(&uniformBlock);
 		mainScene->draw3dSolid();
 		if(settings->wireFrameEnabled) {

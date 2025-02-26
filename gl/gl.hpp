@@ -266,7 +266,7 @@ class Brush {
     Brush(uint textureIndex);
     Brush(uint textureIndex, glm::vec2 textureScale,float parallaxScale, float parallaxMinLayers, float parallaxMaxLayers, float parallaxFade, float parallaxRefine, float shininess, float specularStrength, float refractiveIndex);
 
-    static void bindBrushes(GLuint program, std::vector<Brush*> * brushes);
+    static void bindBrushes(GLuint program, std::string objectName, std::string mapName, std::vector<Brush*> * brushes);
     static void bindBrush(GLuint program, std::string objectName, std::string textureMap, Brush * brush);
 
 };
@@ -385,13 +385,12 @@ class OctreeInstanceRenderer : public IteratorHandler{
 	Frustum frustum;
 	int geometryType;
     int drawableType;
-    GLuint program;
     uint mode;
     public: 
         int instances;
 		int geometryLevel;
         glm::vec3 cameraPosition;
-		OctreeInstanceRenderer(GLuint program, Octree * tree, int mode, int drawableType, int geometryLevel);
+		OctreeInstanceRenderer(Octree * tree, int mode, int drawableType, int geometryLevel);
 
 		void update(glm::mat4 m);
 		void * before(int level, OctreeNode * node, BoundingCube cube, void * context);
