@@ -1,21 +1,22 @@
 #version 460 core
-in vec2 TexCoord;
-out vec4 FragColor;
+in vec2 vTexCoord;
+layout(location = 0) out vec4 FragColor0; // color
+layout(location = 1) out vec4 FragColor1; // normal
+layout(location = 2) out vec4 FragColor2; // bump
+layout(location = 3) out vec4 FragColor3; // opacity
 
 uniform sampler2DArray textureSampler;
 uniform bool filterOpacity;
 
-in flat int Layer;
-
 void main() {    
-    vec4 opacity = texture(textureSampler, vec3(TexCoord,3));
+    vec4 opacity = texture(textureSampler, vec3(vTexCoord,3));
     if(filterOpacity && opacity.r == 0.0) {
         discard;
     }
 
-    if(Layer == 3) {
-        FragColor = opacity;
-    }else {
-        FragColor = texture(textureSampler, vec3(TexCoord,Layer));
-    }
+    FragColor0 = texture(textureSampler, vec3(vTexCoord,0));
+    FragColor1 = texture(textureSampler, vec3(vTexCoord,1));
+    FragColor2 = texture(textureSampler, vec3(vTexCoord,2));
+    FragColor3 = opacity;
+
 }

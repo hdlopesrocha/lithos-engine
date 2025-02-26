@@ -240,8 +240,14 @@ RenderBuffer createMultiLayerRenderFrameBuffer(int width, int height, int layers
 
     glBindFramebuffer(GL_FRAMEBUFFER, buffer.frameBuffer);
 
-    // Attach the entire texture array (for layered rendering)
-    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, buffer.colorTexture, 0);
+    // Attach texture array layers to framebuffer
+    std::vector<GLenum> buffers;
+    for(int layer = 0 ; layer < layers ; ++layer) {
+        GLenum attachment = GL_COLOR_ATTACHMENT0 + layer;
+        buffers.push_back(attachment);
+        glFramebufferTextureLayer(GL_FRAMEBUFFER, attachment, buffer.colorTexture, 0, layer); 
+    }
+    glDrawBuffers(layers, buffers.data()); 
 
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
         std::cerr << "Framebuffer is not complete!" << std::endl;

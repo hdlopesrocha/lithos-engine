@@ -1,7 +1,9 @@
 #version 460 core
-in vec2 TexCoord;
-out vec4 FragColor;
+in vec2 vTexCoord;
 
+layout(location = 0) out vec4 FragColor0; // First render target (color)
+layout(location = 1) out vec4 FragColor1; // Second render target (normals)
+layout(location = 2) out vec4 FragColor2; // Third render target (bump)
 
 uniform int perlinScale;
 uniform float perlinTime;
@@ -10,9 +12,6 @@ uniform int perlinLacunarity;
 uniform float brightness;
 uniform float contrast;
 uniform vec4 color;
-
-
-in flat int Layer;
 
 #include<perlin.glsl>
 #include<functions.glsl>
@@ -23,19 +22,15 @@ float applyBrightnessContrast(float factor) {
 
 
 void main() {    
-    if(Layer == 0) {
-        FragColor = color;
-    }
-    else {
-        vec3 n = fbmd(TexCoord, vec2(perlinScale), perlinIterations, 0, perlinTime, 0.5, perlinLacunarity, 0.5, 0.0, 0.0);
-       if(Layer == 1) {
-            vec3 normal = normalize(vec3(n.z,n.y, 1.0));
-            normal = visual(normal);
-            FragColor = vec4(normal, 1.0);
-       } else {
-            float factor = n.x;
-            factor = applyBrightnessContrast(factor);
-            FragColor = vec4(vec3(factor), 1.0);
-       }
-    }
+    FragColor0 = color;
+        
+    vec3 n = fbmd(vTexCoord, vec2(perlinScale), perlinIterations, 0, perlinTime, 0.5, perlinLacunarity, 0.5, 0.0, 0.0);
+
+    vec3 normal = normalize(vec3(n.z,n.y, 1.0));
+    normal = visual(normal);
+    FragColor1 = vec4(normal, 1.0);
+
+    float factor = n.x;
+    factor = applyBrightnessContrast(factor);
+    FragColor2 = vec4(vec3(factor), 1.0);   
 }
