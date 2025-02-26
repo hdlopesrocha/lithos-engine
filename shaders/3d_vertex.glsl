@@ -23,13 +23,23 @@ uniform uint brushTextures[25];
 
 
 void main() {
+    vTextureIndex = brushTextures[brushIndex];
+    vTextureCoord = textureCoord;
+    vModel = world*model;
+    vec3 iPosition = position;
+    float freq = 1.0/ PI;
+
+    vec3 wPosition = (vModel*vec4(iPosition, 1.0)).xyz;
+
+    if(opacityEnabled && iPosition.y > 0.0) {
+        iPosition.x += sin(wPosition.x*freq + time);
+        iPosition.z += cos(wPosition.z*freq + time);
+    } 
+
     if(!depthEnabled) {
         vProps = brushes[brushIndex];
         vNormal = normal;
     }
-    vTextureIndex = brushTextures[brushIndex];
-    vTextureCoord = textureCoord;
-    vModel = world*model;
-    vPosition = (vModel*vec4(position, 1.0)).xyz;
+    vPosition = (vModel*vec4(iPosition, 1.0)).xyz;
     gl_Position = vec4(vPosition, 1.0);
 }

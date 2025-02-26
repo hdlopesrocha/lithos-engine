@@ -18,6 +18,7 @@ Current features:
 * Texture mixing
 * Edit brushes
 * UI with Dear ImGui
+* Deferred depth test
 * Atlas Drawer
 * Vegetation
 * Send UBOs to GPU
