@@ -40,7 +40,6 @@ void markNeighborsAsDirty(Octree * tree, BoundingCube cube, int level, int drawa
 
 void * OctreeProcessor::before(int level, OctreeNode * node, BoundingCube cube, void * context) {		
 	bool canGenerate = true;
-	
 	for(int i=0; i < node->info.size(); ++i){
 		NodeInfo * info = &node->info[i];
 		if(info->type == INFO_TYPE_FILE && info->dirty) {
@@ -75,7 +74,7 @@ void * OctreeProcessor::before(int level, OctreeNode * node, BoundingCube cube, 
 
 
 	if(height==geometryLevel){
-		if(canGenerate && loaded == 0){
+		if(canGenerate){
 			// Simplify
 			Simplifier simplifier(tree, simplificationAngle, simplificationDistance, simplificationTexturing, simplification); 
 			simplifier.iterate(level, node, cube, &cube);
@@ -100,14 +99,10 @@ void * OctreeProcessor::before(int level, OctreeNode * node, BoundingCube cube, 
 					++loaded;
 				}
 			}
-		
-
-	
-
 		}
-	
 		return node;
 	}
+	
 	return NULL; 			 			
 }
 
@@ -117,7 +112,7 @@ void OctreeProcessor::after(int level, OctreeNode * node, BoundingCube cube, voi
 
 bool OctreeProcessor::test(int level, OctreeNode * node, BoundingCube cube, void * context) {	
 	BoundingBox box = BoundingBox(cube.getMin()-tree->minSize, cube.getMax());
-	return frustum.isBoxVisible(box) && context == NULL;
+	return frustum.isBoxVisible(box) && context == NULL && loaded == 0;
 }
 
 
