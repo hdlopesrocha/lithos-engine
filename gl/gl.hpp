@@ -58,7 +58,7 @@
 #define OPACITY_FLAG      1,0x01  
 
 #define OVERRIDE_TEXTURE_FLAG 0xff000000
-#define SHADOW_MATRIX_COUNT 2
+#define SHADOW_MATRIX_COUNT 3
 
 #pragma pack(16)  // Ensure 16-byte alignment for UBO
 struct UniformBlock {
@@ -116,9 +116,9 @@ struct DirectionalLight {
 	}
 
     void update(Camera * camera, float orthoSize, float near, float far) {
-        glm::vec3 lookAtLightPosition = glm::round(camera->position); // + cameraDirection*far*0.5f;
+        float dist = far/2.0;
 		projection = glm::ortho(-orthoSize, orthoSize, -orthoSize, orthoSize, near, far);
-		view = glm::lookAt(lookAtLightPosition - direction*orthoSize, lookAtLightPosition, glm::vec3(0,1,0));
+		view = glm::lookAt(camera->position - direction*dist, camera->position, glm::vec3(0,1,0));
     }
 };
 

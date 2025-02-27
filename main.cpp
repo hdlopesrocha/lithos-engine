@@ -202,8 +202,9 @@ public:
 		renderBuffer = createRenderFrameBuffer(getWidth(), getHeight());
 		solidBuffer = createRenderFrameBuffer(getWidth(), getHeight());
 		depthFrameBuffer = createDepthFrameBuffer(getWidth(), getHeight());
-		shadowFrameBuffers.push_back(std::pair(createDepthFrameBuffer(2048, 2048), 32));
-		shadowFrameBuffers.push_back(std::pair(createDepthFrameBuffer(2048, 2048), 512));
+		shadowFrameBuffers.push_back(std::pair(createDepthFrameBuffer(1024, 1024), 32));
+		shadowFrameBuffers.push_back(std::pair(createDepthFrameBuffer(1024, 1024), 128));
+		shadowFrameBuffers.push_back(std::pair(createDepthFrameBuffer(1024, 1024), 512));
 
 		{
 			AnimatedTexture * tm = new AnimatedTexture(1024,1024, programWaterTexture);
@@ -471,9 +472,9 @@ public:
 		//glm::vec3 cameraDirection = glm::vec3(0.0f, 0.0f, -1.0f)*camera.quaternion;
 
 
-		glm::mat4 vp = camera.getVP();
+		glm::mat4 viewProjection = camera.getVP();
 
-		mainScene->update3d(vp, &camera);
+		mainScene->update3d(viewProjection, &camera);
 		glPolygonMode(GL_FRONT, GL_FILL);
 		glPatchParameteri(GL_PATCH_VERTICES, 3); // Define the number of control points per patch
 		glEnable(GL_CULL_FACE);
@@ -508,31 +509,38 @@ public:
 		if(settings->shadowEnabled) {
 
 			for(int i=0 ; i < shadowFrameBuffers.size() ; ++i) {
-				int orthoSize = shadowFrameBuffers[i].second;
-				light.update(&camera, orthoSize, near, far);
-				glm::mat4 lp = light.getVP();
-				glm::mat4 ms =  Math::getCanonicalMVP(lp);
-				uniformBlock.matrixShadow[i] = ms;
-				mainScene->updateShadow(lp, &camera, &light);
+				std::pair<RenderBuffer, int> pair = shadowFrameBuffers[i];
+				RenderBuffer buffer = pair.first;
+				int orthoSize = pair.second;
 
-				glBindFramebuffer(GL_FRAMEBUFFER, shadowFrameBuffers[i].first.frameBuffer);
-				glViewport(0, 0, shadowFrameBuffers[i].first.width, shadowFrameBuffers[i].first.height);
+
+				glBindFramebuffer(GL_FRAMEBUFFER, buffer.frameBuffer);
+				glViewport(0, 0, buffer.width, buffer.height);
 				glClear(GL_DEPTH_BUFFER_BIT);
-
-				uniformBlock.viewProjection = lp;
+		
+		
+				light.update(&camera, orthoSize, near, far);
+				glm::mat4 lightProjection = light.getVP();
+				uniformBlock.matrixShadow[i] = Math::getCanonicalMVP(lightProjection);
+				uniformBlock.viewProjection = lightProjection;
+				
+				
+				mainScene->updateShadow(lightProjection, &camera, &light);
 				glUseProgram(program3d);
+				uniformBlock.set(OPACITY_FLAG, false);
 				program3dData->uniform(&uniformBlock);
-				mainScene->draw3dShadow(lp);
+				mainScene->draw3dShadow(lightProjection);
 				if(settings->billboardEnabled) {
-					uniformBlock.set(OPACITY_FLAG, true);
 					glUseProgram(programBillboard);
+					uniformBlock.set(OPACITY_FLAG, true);
 					programBillboardData->uniform(&uniformBlock);
-					mainScene->drawBillboards(lp);
+					mainScene->drawBillboards(lightProjection);
 				}
 			}
+			viewerBlock = uniformBlock;
 		}
 
-		uniformBlock.viewProjection = vp;
+		uniformBlock.viewProjection = viewProjection;
 
 		// =================
 		// First Pass: Depth
@@ -544,15 +552,14 @@ public:
 		glUseProgram(program3d);
 		uniformBlock.set(OPACITY_FLAG, false);
 		program3dData->uniform(&uniformBlock);
-		mainScene->draw3dSolid(vp);
+		mainScene->draw3dSolid(viewProjection);
 
 		uniformBlock.set(TESSELATION_FLAG, false);
 		uniformBlock.set(OPACITY_FLAG, settings->opacityEnabled);
 		if(settings->billboardEnabled) {
 			glUseProgram(programBillboard);
-			viewerBlock = uniformBlock;
 			programBillboardData->uniform(&uniformBlock);
-			mainScene->drawBillboards(vp);
+			mainScene->drawBillboards(viewProjection);
 		}
 		// ==================
 		// Second Pass: Solid
@@ -571,7 +578,7 @@ public:
 		if(settings->billboardEnabled) {
 			glUseProgram(programBillboard);
 			programBillboardData->uniform(&uniformBlock);
-			mainScene->drawBillboards(vp);
+			mainScene->drawBillboards(viewProjection);
 		}
 		uniformBlock.set(TESSELATION_FLAG, settings->tesselationEnabled);
 		uniformBlock.set(OPACITY_FLAG, false);
@@ -579,7 +586,7 @@ public:
 
 		glUseProgram(program3d);
 		program3dData->uniform(&uniformBlock);
-		mainScene->draw3dSolid(vp);
+		mainScene->draw3dSolid(viewProjection);
 		if(settings->wireFrameEnabled) {
 			glPolygonMode(GL_FRONT, GL_FILL);
 		}
@@ -598,7 +605,7 @@ public:
 
 		glUseProgram(program3d);
 		program3dData->uniform(&uniformBlock);
-		mainScene->draw3dLiquid(vp);
+		mainScene->draw3dLiquid(viewProjection);
 
 		//glUseProgram(program3d);
 		brushEditor->draw3dIfOpen(&uniformBlock);

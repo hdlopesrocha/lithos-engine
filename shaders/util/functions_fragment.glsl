@@ -27,19 +27,32 @@ mat3 getTBN(vec3 pos, vec3 normal, vec2 uv, mat4 model, bool rotateTBN) {
 
 
 ShadowProperties getShadow(sampler2D shadowMap[SHADOW_MATRIX_COUNT], sampler2D noise, vec4 lightViewPosition[SHADOW_MATRIX_COUNT], vec3 position) {
-    vec3 shadowPosition = lightViewPosition[0].xyz / lightViewPosition[0].w; 
-    float bias = 0.004;
-    float shadow = texture(shadowMap[0], shadowPosition.xy).r < shadowPosition.z-bias ? 0.0 : 1.0;
-    vec2 texelSize = 1.0/textureSize(shadowMap[0], 0);
+    int selectedMap = 0;
+    vec3 shadowPosition= lightViewPosition[selectedMap].xyz / lightViewPosition[selectedMap].w; 
+
+    for(int i=0; i < SHADOW_MATRIX_COUNT ; ++i) {
+        selectedMap = i;
+        shadowPosition = lightViewPosition[i].xyz / lightViewPosition[i].w; 
+        if(shadowPosition.x > 0.0 && shadowPosition.x < 1.0 && shadowPosition.y > 0.0 && shadowPosition.y < 1.0) {
+            break;
+        }
+    }
+
+    vec3 normal = normalize(cross(dFdx(position), dFdy(position))); // Approximate normal
+    vec3 lightDir = normalize(shadowPosition - position);
+    float bias = max(0.002 * (1.0 - dot(normal, lightDir)), 0.005);
+
+    vec2 texelSize = 1.0/textureSize(shadowMap[selectedMap], 0);
 
     vec2 noiseCoords = (position.xy)* PI;
-    float sumShadow = shadow;
-
-
-    int blurRadius = 3;
+    float sumShadow = texture(shadowMap[selectedMap], shadowPosition.xy).r + bias > shadowPosition.z ? 1.0 : 0.0;
     int totalSamples = 1;
-    int maxSamples = 3;
-    int stepSize = 1;
+
+
+
+    int blurRadius = 16;
+    int maxSamples = 6;
+    int stepSize = 2;
 
     for(int radius = blurRadius; radius > 0; radius-=stepSize) {
         for(int samples=0; samples < maxSamples ; ++samples) {
@@ -50,13 +63,11 @@ ShadowProperties getShadow(sampler2D shadowMap[SHADOW_MATRIX_COUNT], sampler2D n
             float sX = sRadius * cos(sAngle);
             float sY = sRadius * sin(sAngle);
             
-            vec2 shadowUV = shadowPosition.xy+vec2(sX,sY)*texelSize;
-            float shadowValue = texture(shadowMap[0], shadowUV).r;
-            
-            sumShadow += shadowValue < shadowPosition.z-bias ? 0.0 : 1.0;
+            vec2 shadowUV = clamp(shadowPosition.xy+vec2(sX,sY)*texelSize, 0.0, 1.0);
+            sumShadow += texture(shadowMap[selectedMap], shadowUV).r + bias > shadowPosition.z ? 1.0 : 0.0;
             ++totalSamples;
             
-            noiseCoords += noiseSample.xy;
+            noiseCoords = noiseSample.xy;
         }
         if(sumShadow == totalSamples || sumShadow == 0) {
             break;

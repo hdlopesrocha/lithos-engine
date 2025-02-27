@@ -71,7 +71,7 @@ void main() {
     tePosition = gl_TessCoord[0] * tcPosition[0] + gl_TessCoord[1] * tcPosition[1] + gl_TessCoord[2] * tcPosition[2];
     teModel = tcModel[0];
 
-    if(!depthEnabled && shadowEnabled) {
+    if(!depthEnabled) {
         for(int i = 0; i < SHADOW_MATRIX_COUNT ; ++i ) {
             teLightViewPosition[i] = matrixShadow[i] * vec4(tePosition, 1.0);  
         }

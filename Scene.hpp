@@ -74,13 +74,11 @@ class Scene {
 		shadowInstancesVisible = 0;
 		vegetationInstancesVisible = 0;
 
-
-		shadowProcessor->loaded = 0;
-
 	}
 
 	void updateShadow(glm::mat4 lp, Camera * camera, DirectionalLight * light) {
 		shadowRenderer->cameraPosition = camera->position -light->direction*512.0f;
+		shadowProcessor->loaded = 0;
 		shadowProcessor->update(lp);
 	}
 

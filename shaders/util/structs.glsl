@@ -17,7 +17,7 @@ struct ShadowProperties {
     float shadowAmount;
 };
 
-#define SHADOW_MATRIX_COUNT 2
+#define SHADOW_MATRIX_COUNT 3
 
 layout(std140, binding = 0) uniform UniformBlock {
 	mat4 world;
