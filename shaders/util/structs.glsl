@@ -17,11 +17,12 @@ struct ShadowProperties {
     float shadowAmount;
 };
 
+#define SHADOW_MATRIX_COUNT 2
 
 layout(std140, binding = 0) uniform UniformBlock {
 	mat4 world;
 	mat4 viewProjection;
-	mat4 matrixShadow;
+	mat4 matrixShadow[SHADOW_MATRIX_COUNT];
 	vec4 lightDirection;
 	vec4 cameraPosition;
     vec4 floatData;

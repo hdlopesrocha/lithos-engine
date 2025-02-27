@@ -1,6 +1,5 @@
 #include "math.hpp"
 
-
 PerlinSurface::PerlinSurface(float amplitude, float frequency, float offset) {
     this->amplitude = amplitude;
     this->frequency = frequency;
@@ -11,9 +10,6 @@ float PerlinSurface::getHeightAt(float x, float y, float z) {
     float noise = db::perlin(double(x) * frequency, double(y) * frequency ,double(z) *frequency);
     return offset + amplitude * noise;
 }
-
-
-
 
 FractalPerlinSurface::FractalPerlinSurface(float amplitude, float frequency, float offset) : PerlinSurface(amplitude, frequency, offset){
 }
@@ -36,9 +32,6 @@ float FractalPerlinSurface::getHeightAt(float x, float y, float z) {
 
     return offset + amplitude * noise;
 }
-
-
-
 
 GradientPerlinSurface::GradientPerlinSurface(float amplitude, float frequency, float offset) : PerlinSurface(amplitude, frequency, offset){
 

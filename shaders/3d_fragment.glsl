@@ -20,7 +20,7 @@ flat in uvec3 teTextureIndices;
 in TextureProperties teProps;
 in vec3 tePosition;
 in vec3 teNormal;
-in vec4 teLightViewPosition;
+in vec4 teLightViewPosition[SHADOW_MATRIX_COUNT];
 in mat4 teModel;
 
 out vec4 color;    // Final fragment color

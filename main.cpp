@@ -510,7 +510,7 @@ public:
 				light.update(&camera, orthoSize, near, far);
 				glm::mat4 lp = light.getVP();
 				glm::mat4 ms =  Math::getCanonicalMVP(lp);
-				uniformBlock.matrixShadow = ms;
+				uniformBlock.matrixShadow[i] = ms;
 				mainScene->updateShadow(lp, &camera, &light);
 
 				glBindFramebuffer(GL_FRAMEBUFFER, shadowFrameBuffer[0].first.frameBuffer);

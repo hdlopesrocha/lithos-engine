@@ -58,12 +58,13 @@
 #define OPACITY_FLAG      1,0x01  
 
 #define OVERRIDE_TEXTURE_FLAG 0xff000000
+#define SHADOW_MATRIX_COUNT 2
 
 #pragma pack(16)  // Ensure 16-byte alignment for UBO
 struct UniformBlock {
     glm::mat4 world;          
     glm::mat4 viewProjection;  
-    glm::mat4 matrixShadow;      
+    glm::mat4 matrixShadow[SHADOW_MATRIX_COUNT];      
     glm::vec4 lightDirection;   
     glm::vec4 cameraPosition;   
     glm::vec4 floatData;  
