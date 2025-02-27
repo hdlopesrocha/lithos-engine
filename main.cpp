@@ -469,12 +469,7 @@ public:
 		//glm::vec3 cameraDirection = glm::vec3(0.0f, 0.0f, -1.0f)*camera.quaternion;
 
 
-		light.update(&camera, 32, near, far);
-
-
 		glm::mat4 vp = camera.getVP();
-		glm::mat4 lp = light.getVP();
-		glm::mat4 ms =  Math::getCanonicalMVP(lp);
 
 		mainScene->update3d(vp, &camera);
 		glPolygonMode(GL_FRONT, GL_FILL);
@@ -491,7 +486,6 @@ public:
         uniformBlock.uintData = glm::vec4(0);
 		uniformBlock.floatData = glm::vec4( time, 0.0, 0.0 ,0.0);
 		uniformBlock.world = worldModel;
-		uniformBlock.matrixShadow = ms;
 		uniformBlock.lightDirection = glm::vec4(light.direction, 0.0f);
 		uniformBlock.cameraPosition = glm::vec4(camera.position, 0.0f);
 		uniformBlock.set(DEBUG_FLAG, settings->debugEnabled);
@@ -505,25 +499,34 @@ public:
 		uniformBlock.set(TRIPLANAR_FLAG, false); 
 
 
-		mainScene->updateShadow(lp, &camera, &light);
 
 		// ================
 		// Shadow component
 		// ================
 		if(settings->shadowEnabled) {
-			glBindFramebuffer(GL_FRAMEBUFFER, shadowFrameBuffer[0].first.frameBuffer);
-			glViewport(0, 0, shadowFrameBuffer[0].first.width, shadowFrameBuffer[0].first.height);
-			glClear(GL_DEPTH_BUFFER_BIT);
 
-			uniformBlock.viewProjection = lp;
-			glUseProgram(program3d);
-			program3dData->uniform(&uniformBlock);
-			mainScene->draw3dShadow();
-			if(settings->billboardEnabled) {
-				uniformBlock.set(OPACITY_FLAG, true);
-				glUseProgram(programBillboard);
-				programBillboardData->uniform(&uniformBlock);
-				mainScene->drawBillboards();
+			for(int i=0 ; i < 1 ; ++i) {
+				int orthoSize = shadowFrameBuffer[i].second;
+				light.update(&camera, orthoSize, near, far);
+				glm::mat4 lp = light.getVP();
+				glm::mat4 ms =  Math::getCanonicalMVP(lp);
+				uniformBlock.matrixShadow = ms;
+				mainScene->updateShadow(lp, &camera, &light);
+
+				glBindFramebuffer(GL_FRAMEBUFFER, shadowFrameBuffer[0].first.frameBuffer);
+				glViewport(0, 0, shadowFrameBuffer[0].first.width, shadowFrameBuffer[0].first.height);
+				glClear(GL_DEPTH_BUFFER_BIT);
+
+				uniformBlock.viewProjection = lp;
+				glUseProgram(program3d);
+				program3dData->uniform(&uniformBlock);
+				mainScene->draw3dShadow();
+				if(settings->billboardEnabled) {
+					uniformBlock.set(OPACITY_FLAG, true);
+					glUseProgram(programBillboard);
+					programBillboardData->uniform(&uniformBlock);
+					mainScene->drawBillboards();
+				}
 			}
 		}
 
