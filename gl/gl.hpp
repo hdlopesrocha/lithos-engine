@@ -169,22 +169,6 @@ class DrawableGeometry {
 
 };
 
-class DrawableInstanceGeometry {
-	public:
-	GLuint vertexArrayObject = 0u;
-	GLuint vertexBuffer = 0u;
-	GLuint indexBuffer = 0u;
-	GLuint instanceBuffer = 0u;
-
-	int indicesCount;
-    int instancesCount;
-
-	DrawableInstanceGeometry(Geometry * t, std::vector<glm::mat4> * instances);
-    ~DrawableInstanceGeometry();
-    void draw(uint mode);
-};
-
-
 class OctreeProcessor : public IteratorHandler{
 	Octree * tree;
 	Geometry chunk;
@@ -212,8 +196,38 @@ class OctreeProcessor : public IteratorHandler{
 
 };
 
+struct InstanceData {
+    public:
+    glm::mat4 matrix;
+};
 
 
+class OctreeNodeTriangleInstanceBuilder : public OctreeNodeTriangleHandler {
+
+	public: 
+	OctreeNode ** corners;
+	std::vector<InstanceData> * instances;
+
+	using OctreeNodeTriangleHandler::OctreeNodeTriangleHandler;
+	OctreeNodeTriangleInstanceBuilder(Geometry * chunk, int * count,OctreeNode ** corners,std::vector<InstanceData> * instances);
+	void handle(OctreeNode* c0,OctreeNode* c1,OctreeNode* c2, bool sign);
+
+};
+
+class DrawableInstanceGeometry {
+	public:
+	GLuint vertexArrayObject = 0u;
+	GLuint vertexBuffer = 0u;
+	GLuint indexBuffer = 0u;
+	GLuint instanceBuffer = 0u;
+
+	int indicesCount;
+    int instancesCount;
+
+	DrawableInstanceGeometry(Geometry * t, std::vector<InstanceData> * instances);
+    ~DrawableInstanceGeometry();
+    void draw(uint mode);
+};
 
 class InstanceBuilder : public IteratorHandler{
 	Octree * tree;
@@ -222,7 +236,7 @@ class InstanceBuilder : public IteratorHandler{
 
     public: 
         int instanceCount = 0;
-        std::vector<glm::mat4> instances;
+        std::vector<InstanceData> instances;
 		InstanceBuilder(Octree * tree);
 
 		void * before(int level, OctreeNode * node, BoundingCube cube, void * context);
@@ -350,7 +364,7 @@ struct TileDraw {
 class Vegetation3d : public Geometry {
     public:
     Vegetation3d();
-    DrawableInstanceGeometry * createDrawable(std::vector<glm::mat4> * instances);
+    DrawableInstanceGeometry * createDrawable(std::vector<InstanceData> * instances);
 };
 
 class AtlasTexture: public Texture {
@@ -400,18 +414,6 @@ class OctreeInstanceRenderer : public IteratorHandler{
 		bool test(int level, OctreeNode * node, BoundingCube cube, void * context);
         OctreeNode * getChild(OctreeNode * node, int index);
 		void getOrder(OctreeNode * node, BoundingCube cube, int * order);
-
-};
-
-class OctreeNodeTriangleInstanceBuilder : public OctreeNodeTriangleHandler {
-
-	public: 
-	OctreeNode ** corners;
-	std::vector<glm::mat4> * matrices;
-
-	using OctreeNodeTriangleHandler::OctreeNodeTriangleHandler;
-	OctreeNodeTriangleInstanceBuilder(Geometry * chunk, int * count,OctreeNode ** corners,std::vector<glm::mat4> * matrices);
-	void handle(OctreeNode* c0,OctreeNode* c1,OctreeNode* c2, bool sign);
 
 };
 

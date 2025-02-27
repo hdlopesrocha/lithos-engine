@@ -46,9 +46,9 @@ glm::vec3 randomPointInTriangle(const glm::vec3& A, const glm::vec3& B, const gl
 }
 
 
-OctreeNodeTriangleInstanceBuilder::OctreeNodeTriangleInstanceBuilder(Geometry * chunk, int * count,OctreeNode ** corners,std::vector<glm::mat4> * matrices) : OctreeNodeTriangleHandler(chunk, count){
+OctreeNodeTriangleInstanceBuilder::OctreeNodeTriangleInstanceBuilder(Geometry * chunk, int * count,OctreeNode ** corners,std::vector<InstanceData> * instances) : OctreeNodeTriangleHandler(chunk, count){
     this->corners = corners;
-    this-> matrices = matrices;
+    this->instances = instances;
 }
 
 void OctreeNodeTriangleInstanceBuilder::handle(OctreeNode* c0,OctreeNode* c1,OctreeNode* c2, bool sign){
@@ -80,8 +80,9 @@ void OctreeNodeTriangleInstanceBuilder::handle(OctreeNode* c0,OctreeNode* c1,Oct
             if(h*force > 1.0) {
                 model = glm::scale(model, glm::vec3(1.0, h*force, 1.0));
             }     
-
-            matrices->push_back(model);
+            InstanceData data;
+            data.matrix = model;
+            instances->push_back(data);
             ++*count;
         }
     }

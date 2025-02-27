@@ -55,7 +55,10 @@ tool:
 
 # Install dependencies (assuming Ubuntu-based system)
 install:
-	sudo apt-get install libimgui-dev libglew libstb-dev
+	sudo apt-get install libimgui-dev libglew libstb-dev cloc
+
+report:
+	cloc . --exclude-dir=bin
 
 # Clean the build (remove binaries and object files)
 clean:

@@ -1,6 +1,6 @@
 #include "gl.hpp"
 
-DrawableInstanceGeometry::DrawableInstanceGeometry(Geometry * t, std::vector<glm::mat4> * instances){
+DrawableInstanceGeometry::DrawableInstanceGeometry(Geometry * t, std::vector<InstanceData> * instances){
 
 	this->indicesCount = t ? t->indices.size() : 0;
 	this->instancesCount = instances ? instances->size() : 0;
