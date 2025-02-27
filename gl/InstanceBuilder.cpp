@@ -25,7 +25,7 @@ void * InstanceBuilder::before(int level, OctreeNode * node, BoundingCube cube, 
 			OctreeNode ** cornersPointer = (OctreeNode **) corners;
 			tree->getNodeCorners(cube, level, 0, 1, corners);
 
-			OctreeNodeTriangleInstanceBuilder handler(&chunk, &instanceCount ,cornersPointer, &instances, 1);
+			OctreeNodeTriangleInstanceBuilder handler(&chunk, &instanceCount ,cornersPointer, &instances, 3);
 			tree->handleQuadNodes(node, corners, &handler);
 
 		}

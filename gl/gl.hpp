@@ -234,6 +234,7 @@ class DrawableInstanceGeometry {
 	DrawableInstanceGeometry(Geometry * t, std::vector<InstanceData> * instances);
     ~DrawableInstanceGeometry();
     void draw(uint mode);
+    void draw(uint mode, float amount);
 };
 
 class InstanceBuilder : public IteratorHandler{

@@ -2,6 +2,12 @@
 #include "../math/math.hpp"
 #include "gl.hpp"
 #include <glm/gtx/norm.hpp> 
+#include <algorithm>
+#include <random>
+
+// Random number generator
+std::random_device rd;
+std::mt19937 g(rd());  // Mersenne Twister engine
 
 OctreeProcessor::OctreeProcessor(Octree * tree, int * instancesCount,  int drawableType, int geometryLevel, float simplificationAngle, float simplificationDistance, bool simplificationTexturing, bool createInstances, int simplification) {
 	this->tree = tree;
@@ -55,23 +61,6 @@ void * OctreeProcessor::before(int level, OctreeNode * node, BoundingCube cube, 
 	float height = tree->getHeight(cube);
 	int currentLod = height - geometryLevel;
 
-	if(currentLod>=0){
-		// Instances with LOD
-		if(createInstances && drawableType == TYPE_INSTANCE_VEGETATION_DRAWABLE) {
-			NodeInfo * info = node->getNodeInfo(drawableType);
-			if(info == NULL) {
-				InstanceBuilder instanceBuilder(tree, currentLod);
-				instanceBuilder.iterate(level, node, cube, NULL);
-
-				*instancesCount += instanceBuilder.instanceCount;
-				std::cout << "Create vegetation = { instances=" << std::to_string(instanceBuilder.instanceCount) << ", drawableType=" << std::to_string(drawableType) << ", lod=" << currentLod << "}" << std::endl;
-				Vegetation3d * vegetation = new Vegetation3d();
-				node->info.push_back(NodeInfo(drawableType, vegetation->createDrawable(&instanceBuilder.instances), NULL, false));
-				++loaded;
-			}
-		}
-	}
-
 
 	if(height==geometryLevel){
 		if(canGenerate){
@@ -84,6 +73,26 @@ void * OctreeProcessor::before(int level, OctreeNode * node, BoundingCube cube, 
 			Tesselator tesselator(tree, loadable, simplification);
 			tesselator.iterate(level, node, cube, NULL);
 			
+			// Instances with LOD
+			if(createInstances && drawableType == TYPE_INSTANCE_VEGETATION_DRAWABLE) {
+				NodeInfo * info = node->getNodeInfo(drawableType);
+				if(info == NULL) {
+					InstanceBuilder instanceBuilder(tree, currentLod);
+					instanceBuilder.iterate(level, node, cube, NULL);
+
+
+
+
+					// Shuffle the vector
+					std::shuffle(instanceBuilder.instances.begin(), instanceBuilder.instances.end(), g);
+
+					*instancesCount += instanceBuilder.instanceCount;
+					std::cout << "Create vegetation = { instances=" << std::to_string(instanceBuilder.instanceCount) << ", drawableType=" << std::to_string(drawableType) << ", lod=" << currentLod << "}" << std::endl;
+					Vegetation3d * vegetation = new Vegetation3d();
+					node->info.push_back(NodeInfo(drawableType, vegetation->createDrawable(&instanceBuilder.instances), NULL, false));
+					++loaded;
+				}
+			}
 
 			if(createInstances && (drawableType == TYPE_INSTANCE_SOLID_DRAWABLE || drawableType == TYPE_INSTANCE_LIQUID_DRAWABLE  || drawableType == TYPE_INSTANCE_SHADOW_DRAWABLE)) {
 				NodeInfo * info = node->getNodeInfo(drawableType);

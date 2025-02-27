@@ -58,7 +58,7 @@ DrawableInstanceGeometry::~DrawableInstanceGeometry() {
 	glDeleteVertexArrays(1, &vertexArrayObject);
  }
 
-void DrawableInstanceGeometry::draw(uint mode) {
+void DrawableInstanceGeometry::draw(uint mode, float amount) {
 
 	if(vertexArrayObject) {
 		if (instancesCount <= 0) {
@@ -67,7 +67,10 @@ void DrawableInstanceGeometry::draw(uint mode) {
 		}
 
 		glBindVertexArray(this->vertexArrayObject);
-		glDrawElementsInstanced(mode, this->indicesCount, GL_UNSIGNED_INT, 0, instancesCount);
+		glDrawElementsInstanced(mode, this->indicesCount, GL_UNSIGNED_INT, 0, instancesCount*amount);
 	    glBindVertexArray(0);
 	}
+}
+void DrawableInstanceGeometry::draw(uint mode) {
+	draw(mode, 1.0);
 }
