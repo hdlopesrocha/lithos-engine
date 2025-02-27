@@ -10,4 +10,5 @@ Settings::Settings() {
     this->tesselationEnabled = true;
     this->opacityEnabled = true;
     this->billboardEnabled = true;
+    this->billboardRange = 128;
 }

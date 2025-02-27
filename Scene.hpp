@@ -27,7 +27,7 @@ class Scene {
 		int shadowInstancesVisible = 0;
 		int vegetationInstancesVisible = 0;
 
-    void setup() {
+    void setup(Settings * settings) {
 
 		solidSpace = new Octree(BoundingCube(glm::vec3(0,0,0), 2.0));
 		liquidSpace = new Octree(BoundingCube(glm::vec3(0,20,0), 2.0));
@@ -37,10 +37,10 @@ class Scene {
 		shadowProcessor = new OctreeProcessor(solidSpace, &shadowInstancesCount, TYPE_INSTANCE_SHADOW_DRAWABLE, 6, 0.1, 4.0, false, true, 6);
 		vegetationProcessor = new OctreeProcessor(solidSpace, &vegetationInstancesCount, TYPE_INSTANCE_VEGETATION_DRAWABLE, 5, 0.9, 0.2, false, true, 5);
 
-		solidRenderer = new OctreeInstanceRenderer(solidSpace, &solidInstancesVisible, GL_PATCHES, TYPE_INSTANCE_SOLID_DRAWABLE, 5);
-		liquidRenderer = new OctreeInstanceRenderer(liquidSpace, &liquidInstancesVisible, GL_PATCHES, TYPE_INSTANCE_LIQUID_DRAWABLE, 5);
-		shadowRenderer = new OctreeInstanceRenderer(solidSpace, &shadowInstancesVisible, GL_PATCHES, TYPE_INSTANCE_SHADOW_DRAWABLE, 6);
-		billboardRenderer = new OctreeInstanceRenderer(solidSpace, &vegetationInstancesVisible, GL_PATCHES, TYPE_INSTANCE_VEGETATION_DRAWABLE, 5);
+		solidRenderer = new OctreeInstanceRenderer(solidSpace, &solidInstancesVisible, GL_PATCHES, TYPE_INSTANCE_SOLID_DRAWABLE, 5,settings);
+		liquidRenderer = new OctreeInstanceRenderer(liquidSpace, &liquidInstancesVisible, GL_PATCHES, TYPE_INSTANCE_LIQUID_DRAWABLE, 5,settings);
+		shadowRenderer = new OctreeInstanceRenderer(solidSpace, &shadowInstancesVisible, GL_PATCHES, TYPE_INSTANCE_SHADOW_DRAWABLE, 6,settings);
+		billboardRenderer = new OctreeInstanceRenderer(solidSpace, &vegetationInstancesVisible, GL_PATCHES, TYPE_INSTANCE_VEGETATION_DRAWABLE, 5,settings);
 
     }
 

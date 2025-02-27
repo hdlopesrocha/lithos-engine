@@ -3,12 +3,13 @@
 #include "gl.hpp"
 #include <glm/gtx/norm.hpp> 
 
-OctreeInstanceRenderer::OctreeInstanceRenderer(Octree * tree, int * instances, int mode, int drawableType, int geometryLevel) {
+OctreeInstanceRenderer::OctreeInstanceRenderer(Octree * tree, int * instances, int mode, int drawableType, int geometryLevel, Settings * settings) {
 	this->tree = tree;
 	this->mode = mode;
 	this->drawableType = drawableType;
 	this->geometryLevel = geometryLevel;
 	this->instances = instances;
+	this->settings = settings;
 }
 
 void OctreeInstanceRenderer::update(glm::mat4 m) {
@@ -22,7 +23,7 @@ OctreeNode * OctreeInstanceRenderer::getChild(OctreeNode * node, int index){
 void * OctreeInstanceRenderer::before(int level, OctreeNode * node, BoundingCube cube, void * context) {		
 	float height = tree->getHeight(cube);
 	int currentLod = height - geometryLevel;
-	float range = 128;
+	float range = settings->billboardRange;
 
 	float amount = Math::clamp(1.0- glm::distance2(cameraPosition, cube.getCenter())/(range * range), 0.0f, 1.0f); 
 	if(amount > 0.8) {

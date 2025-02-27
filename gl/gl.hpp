@@ -345,6 +345,7 @@ class Settings {
         bool tesselationEnabled;
         bool opacityEnabled;
         bool billboardEnabled;
+        int billboardRange;
 
         Settings();
 
@@ -411,13 +412,13 @@ class OctreeInstanceRenderer : public IteratorHandler{
 	int geometryType;
     int drawableType;
     uint mode;
-
+    Settings * settings;
     
     public: 
         int * instances;
 		int geometryLevel;
         glm::vec3 cameraPosition;
-		OctreeInstanceRenderer(Octree * tree, int * instances, int mode, int drawableType, int geometryLevel);
+		OctreeInstanceRenderer(Octree * tree, int * instances, int mode, int drawableType, int geometryLevel, Settings * settings);
 
 		void update(glm::mat4 m);
 		void * before(int level, OctreeNode * node, BoundingCube cube, void * context);

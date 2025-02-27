@@ -364,7 +364,7 @@ public:
 		Brush::bindBrushes(programBillboard, "brushes", "brushTextures", &billboardBrushes);
 
 		mainScene = new Scene();
-		mainScene->setup();
+		mainScene->setup(settings);
 		mainScene->load();
 	
 		

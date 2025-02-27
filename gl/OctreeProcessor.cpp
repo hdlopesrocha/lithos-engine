@@ -81,8 +81,6 @@ void * OctreeProcessor::before(int level, OctreeNode * node, BoundingCube cube, 
 					instanceBuilder.iterate(level, node, cube, NULL);
 
 
-
-
 					// Shuffle the vector
 					std::shuffle(instanceBuilder.instances.begin(), instanceBuilder.instances.end(), g);
 

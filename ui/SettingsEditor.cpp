@@ -9,6 +9,7 @@ SettingsEditor::SettingsEditor(Settings * settings) {
 void SettingsEditor::draw2d(){
     ImGui::Begin("Settings", &open, ImGuiWindowFlags_AlwaysAutoResize);
     ImGui::Checkbox("Billboards", &settings->billboardEnabled);
+    ImGui::DragInt("Billboard range", &settings->billboardRange, 1, 0, 1024, "%d");
     ImGui::Checkbox("Debug", &settings->debugEnabled);
     ImGui::Checkbox("Light", &settings->lightEnabled);
     ImGui::Checkbox("Opacity", &settings->opacityEnabled);
