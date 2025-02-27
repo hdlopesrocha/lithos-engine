@@ -213,9 +213,10 @@ class OctreeNodeTriangleInstanceBuilder : public OctreeNodeTriangleHandler {
 	public: 
 	OctreeNode ** corners;
 	std::vector<InstanceData> * instances;
+    int pointsPerTriangle;
 
 	using OctreeNodeTriangleHandler::OctreeNodeTriangleHandler;
-	OctreeNodeTriangleInstanceBuilder(Geometry * chunk, int * count,OctreeNode ** corners,std::vector<InstanceData> * instances);
+	OctreeNodeTriangleInstanceBuilder(Geometry * chunk, int * count,OctreeNode ** corners,std::vector<InstanceData> * instances, int pointsPerTriangle);
 	void handle(OctreeNode* c0,OctreeNode* c1,OctreeNode* c2, bool sign);
 
 };

@@ -46,16 +46,16 @@ glm::vec3 randomPointInTriangle(const glm::vec3& A, const glm::vec3& B, const gl
 }
 
 
-OctreeNodeTriangleInstanceBuilder::OctreeNodeTriangleInstanceBuilder(Geometry * chunk, int * count,OctreeNode ** corners,std::vector<InstanceData> * instances) : OctreeNodeTriangleHandler(chunk, count){
+OctreeNodeTriangleInstanceBuilder::OctreeNodeTriangleInstanceBuilder(Geometry * chunk, int * count,OctreeNode ** corners,std::vector<InstanceData> * instances, int pointsPerTriangle) : OctreeNodeTriangleHandler(chunk, count){
     this->corners = corners;
     this->instances = instances;
+    this->pointsPerTriangle = pointsPerTriangle;
 }
 
 void OctreeNodeTriangleInstanceBuilder::handle(OctreeNode* c0,OctreeNode* c1,OctreeNode* c2, bool sign){
     GradientPerlinSurface fps(1.0, 1.0f/128.0f, 0);
 
-    int numPoints = 2; // Number of scattered points
-    for (int i = 0; i < numPoints; i++) {
+    for (int i = 0; i < pointsPerTriangle; i++) {
         glm::vec3 point = randomPointInTriangle(c0->vertex.position,c1->vertex.position, c2->vertex.position);
         float perlin = fps.getHeightAt(point.x, 0, point.z);
         float hMin = 0.06;
