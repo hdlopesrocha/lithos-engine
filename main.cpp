@@ -520,12 +520,12 @@ public:
 				uniformBlock.viewProjection = lp;
 				glUseProgram(program3d);
 				program3dData->uniform(&uniformBlock);
-				mainScene->draw3dShadow();
+				mainScene->draw3dShadow(lp);
 				if(settings->billboardEnabled) {
 					uniformBlock.set(OPACITY_FLAG, true);
 					glUseProgram(programBillboard);
 					programBillboardData->uniform(&uniformBlock);
-					mainScene->drawBillboards();
+					mainScene->drawBillboards(lp);
 				}
 			}
 		}
@@ -542,7 +542,7 @@ public:
 		glUseProgram(program3d);
 		uniformBlock.set(OPACITY_FLAG, false);
 		program3dData->uniform(&uniformBlock);
-		mainScene->draw3dSolid();
+		mainScene->draw3dSolid(vp);
 
 		uniformBlock.set(TESSELATION_FLAG, false);
 		uniformBlock.set(OPACITY_FLAG, settings->opacityEnabled);
@@ -550,7 +550,7 @@ public:
 			glUseProgram(programBillboard);
 			viewerBlock = uniformBlock;
 			programBillboardData->uniform(&uniformBlock);
-			mainScene->drawBillboards();
+			mainScene->drawBillboards(vp);
 		}
 		// ==================
 		// Second Pass: Solid
@@ -569,7 +569,7 @@ public:
 		if(settings->billboardEnabled) {
 			glUseProgram(programBillboard);
 			programBillboardData->uniform(&uniformBlock);
-			mainScene->drawBillboards();
+			mainScene->drawBillboards(vp);
 		}
 		uniformBlock.set(TESSELATION_FLAG, settings->tesselationEnabled);
 		uniformBlock.set(OPACITY_FLAG, false);
@@ -577,7 +577,7 @@ public:
 
 		glUseProgram(program3d);
 		program3dData->uniform(&uniformBlock);
-		mainScene->draw3dSolid();
+		mainScene->draw3dSolid(vp);
 		if(settings->wireFrameEnabled) {
 			glPolygonMode(GL_FRONT, GL_FILL);
 		}
@@ -596,7 +596,7 @@ public:
 
 		glUseProgram(program3d);
 		program3dData->uniform(&uniformBlock);
-		mainScene->draw3dLiquid();
+		mainScene->draw3dLiquid(vp);
 
 		//glUseProgram(program3d);
 		brushEditor->draw3dIfOpen(&uniformBlock);

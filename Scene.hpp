@@ -57,15 +57,12 @@ class Scene {
 		solidRenderer->cameraPosition = camera->position;
 		liquidRenderer->cameraPosition = camera->position;
 	
-		solidRenderer->update(vp);
 		solidProcessor->loaded = 0;
 		solidProcessor->update(vp);
 
-		liquidRenderer->update(vp);
 		liquidProcessor->loaded = 0;
 		liquidProcessor->update(vp);
 
-		billboardRenderer->update(vp);
 		vegetationProcessor->loaded = 0;
 		vegetationProcessor->update(vp);
 
@@ -77,32 +74,35 @@ class Scene {
 		shadowInstancesVisible = 0;
 		vegetationInstancesVisible = 0;
 
+
+		shadowProcessor->loaded = 0;
+
 	}
 
 	void updateShadow(glm::mat4 lp, Camera * camera, DirectionalLight * light) {
 		shadowRenderer->cameraPosition = camera->position -light->direction*512.0f;
-
-
-		shadowRenderer->update(lp);
-		shadowProcessor->loaded = 0;
 		shadowProcessor->update(lp);
 	}
 
-	void drawBillboards() {
+	void drawBillboards(glm::mat4 viewProjection) {
+		billboardRenderer->update(viewProjection);
 		glDisable(GL_CULL_FACE);
 		solidSpace->iterate(billboardRenderer);
 		glEnable(GL_CULL_FACE);
 	}
 
-	void draw3dSolid() {
+	void draw3dSolid(glm::mat4 viewProjection) {
+		solidRenderer->update(viewProjection);
 		solidSpace->iterate(solidRenderer);
 	}
 
-	void draw3dLiquid() {
+	void draw3dLiquid(glm::mat4 viewProjection) {
+		liquidRenderer->update(viewProjection);
 		liquidSpace->iterate(liquidRenderer);
 	}
 
-	void draw3dShadow() {
+	void draw3dShadow(glm::mat4 viewProjection) {
+		shadowRenderer->update(viewProjection);
 		solidSpace->iterate(shadowRenderer);
 	}
 
