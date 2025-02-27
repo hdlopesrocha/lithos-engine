@@ -52,11 +52,10 @@ class Scene {
 	}
 
 
-	void update3d(glm::mat4 vp, glm::mat4 lp, Camera * camera, DirectionalLight * light) {
+	void update3d(glm::mat4 vp, Camera * camera) {
 		billboardRenderer->cameraPosition = camera->position;
 		solidRenderer->cameraPosition = camera->position;
 		liquidRenderer->cameraPosition = camera->position;
-		shadowRenderer->cameraPosition = camera->position -light->direction*512.0f;
 	
 		solidRenderer->update(vp);
 		solidProcessor->loaded = 0;
@@ -70,9 +69,7 @@ class Scene {
 		vegetationProcessor->loaded = 0;
 		vegetationProcessor->update(vp);
 
-		shadowRenderer->update(lp);
-		shadowProcessor->loaded = 0;
-		shadowProcessor->update(lp);
+
 
 		processSpace();
 		solidInstancesVisible = 0;
@@ -80,6 +77,15 @@ class Scene {
 		shadowInstancesVisible = 0;
 		vegetationInstancesVisible = 0;
 
+	}
+
+	void updateShadow(glm::mat4 lp, Camera * camera, DirectionalLight * light) {
+		shadowRenderer->cameraPosition = camera->position -light->direction*512.0f;
+
+
+		shadowRenderer->update(lp);
+		shadowProcessor->loaded = 0;
+		shadowProcessor->update(lp);
 	}
 
 	void drawBillboards() {

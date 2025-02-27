@@ -113,6 +113,12 @@ struct DirectionalLight {
     glm::mat4 getVP() {
 		return projection * view;
 	}
+
+    void update(Camera * camera, float orthoSize, float near, float far) {
+        glm::vec3 lookAtLightPosition = glm::round(camera->position); // + cameraDirection*far*0.5f;
+		projection = glm::ortho(-orthoSize, orthoSize, -orthoSize, orthoSize, near, far);
+		view = glm::lookAt(lookAtLightPosition - direction*orthoSize, lookAtLightPosition, glm::vec3(0,1,0));
+    }
 };
 
 struct RenderBuffer {

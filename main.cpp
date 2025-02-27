@@ -113,7 +113,7 @@ class MainApplication : public LithosApplication {
 	RenderBuffer depthFrameBuffer;
 	RenderBuffer renderBuffer;
 	RenderBuffer solidBuffer;
-	RenderBuffer shadowFrameBuffer;
+	std::vector<std::pair<RenderBuffer, int>> shadowFrameBuffer;
 
 	int activeTexture = 5; // To avoid rebinding other textures
 
@@ -202,7 +202,8 @@ public:
 		renderBuffer = createRenderFrameBuffer(getWidth(), getHeight());
 		solidBuffer = createRenderFrameBuffer(getWidth(), getHeight());
 		depthFrameBuffer = createDepthFrameBuffer(getWidth(), getHeight());
-		shadowFrameBuffer = createDepthFrameBuffer(2048, 2048);
+		shadowFrameBuffer.push_back(std::pair(createDepthFrameBuffer(2048, 2048), 32));
+		shadowFrameBuffer.push_back(std::pair(createDepthFrameBuffer(2048, 2048), 512));
 
 		{
 			AnimatedTexture * tm = new AnimatedTexture(1024,1024, programWaterTexture);
@@ -354,8 +355,8 @@ public:
 		Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, glGetUniformLocation(program3d, "underTexture"), solidBuffer.colorTexture);
 		activeTexture = Texture::bindTexture(programBillboard, GL_TEXTURE_2D, activeTexture, glGetUniformLocation(programBillboard, "underTexture"), solidBuffer.colorTexture);
 
-		Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, glGetUniformLocation(program3d, "shadowMap"), shadowFrameBuffer.depthTexture);
-		activeTexture = Texture::bindTexture(programBillboard, GL_TEXTURE_2D, activeTexture, glGetUniformLocation(programBillboard, "shadowMap"), shadowFrameBuffer.depthTexture);
+		Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, glGetUniformLocation(program3d, "shadowMap"), shadowFrameBuffer[0].first.depthTexture);
+		activeTexture = Texture::bindTexture(programBillboard, GL_TEXTURE_2D, activeTexture, glGetUniformLocation(programBillboard, "shadowMap"), shadowFrameBuffer[0].first.depthTexture);
 
 		activeTexture = Texture::bindTextures(programBillboard, GL_TEXTURE_2D_ARRAY, activeTexture, "textures", &billboardTextures);
 		activeTexture = Texture::bindTextures(program3d, GL_TEXTURE_2D_ARRAY, activeTexture, "textures", &textures);
@@ -379,7 +380,7 @@ public:
 		atlasPainter = new AtlasPainter(&atlasTextures, &atlasDrawers, programAtlas, programTexture, 256,256);
 		atlasViewer = new AtlasViewer(&atlasTextures, programAtlas, programTexture, 256,256);
 		brushEditor = new BrushEditor(&camera, &brushes, &textures, program3d, programTexture);
-		shadowMapViewer = new ShadowMapViewer(shadowFrameBuffer.depthTexture);
+		shadowMapViewer = new ShadowMapViewer(shadowFrameBuffer[0].first.depthTexture);
 		textureMixerEditor = new TextureMixerEditor(&mixers, &textures, programTexture);
 		animatedTextureEditor = new AnimatedTextureEditor(&animatedTextures, &textures, programTexture, 256,256);
 		depthBufferViewer = new DepthBufferViewer(programDepth,depthFrameBuffer.depthTexture,256,256);
@@ -457,9 +458,7 @@ public:
 
     virtual void draw3d() {
 		float far = 512.0f;
-		float dist = 32.0f;
 		float near = 0.1f;
-		float orthoSize = 32.0f;  // Size of the orthographic box
 
 		glm::mat4 rotate = glm::mat4_cast(camera.quaternion);
 		glm::mat4 translate = glm::translate(glm::mat4(1.0f), -camera.position);
@@ -467,17 +466,17 @@ public:
 		camera.projection = glm::perspective(glm::radians(45.0f), getWidth() / (float) getHeight(), near, far);
 		camera.view = rotate * translate;
 		camera.quaternion = glm::normalize(camera.quaternion);
-		glm::vec3 cameraDirection = glm::vec3(0.0f, 0.0f, -1.0f)*camera.quaternion;
+		//glm::vec3 cameraDirection = glm::vec3(0.0f, 0.0f, -1.0f)*camera.quaternion;
 
-		glm::vec3 lookAtLightPosition = glm::round(camera.position); // + cameraDirection*far*0.5f;
-		light.projection = glm::ortho(-orthoSize, orthoSize, -orthoSize, orthoSize, near, far);
-		light.view = glm::lookAt(lookAtLightPosition - light.direction*dist, lookAtLightPosition, glm::vec3(0,1,0));
+
+		light.update(&camera, 32, near, far);
+
 
 		glm::mat4 vp = camera.getVP();
 		glm::mat4 lp = light.getVP();
 		glm::mat4 ms =  Math::getCanonicalMVP(lp);
 
-		mainScene->update3d(vp, lp, &camera, &light);
+		mainScene->update3d(vp, &camera);
 		glPolygonMode(GL_FRONT, GL_FILL);
 		glPatchParameteri(GL_PATCH_VERTICES, 3); // Define the number of control points per patch
 		glEnable(GL_CULL_FACE);
@@ -492,7 +491,6 @@ public:
         uniformBlock.uintData = glm::vec4(0);
 		uniformBlock.floatData = glm::vec4( time, 0.0, 0.0 ,0.0);
 		uniformBlock.world = worldModel;
-		uniformBlock.viewProjection = vp;
 		uniformBlock.matrixShadow = ms;
 		uniformBlock.lightDirection = glm::vec4(light.direction, 0.0f);
 		uniformBlock.cameraPosition = glm::vec4(camera.position, 0.0f);
@@ -506,12 +504,15 @@ public:
 		uniformBlock.set(OPACITY_FLAG, false);
 		uniformBlock.set(TRIPLANAR_FLAG, false); 
 
+
+		mainScene->updateShadow(lp, &camera, &light);
+
 		// ================
 		// Shadow component
 		// ================
 		if(settings->shadowEnabled) {
-			glBindFramebuffer(GL_FRAMEBUFFER, shadowFrameBuffer.frameBuffer);
-			glViewport(0, 0, shadowFrameBuffer.width, shadowFrameBuffer.height);
+			glBindFramebuffer(GL_FRAMEBUFFER, shadowFrameBuffer[0].first.frameBuffer);
+			glViewport(0, 0, shadowFrameBuffer[0].first.width, shadowFrameBuffer[0].first.height);
 			glClear(GL_DEPTH_BUFFER_BIT);
 
 			uniformBlock.viewProjection = lp;
@@ -525,6 +526,7 @@ public:
 				mainScene->drawBillboards();
 			}
 		}
+
 		uniformBlock.viewProjection = vp;
 
 		// =================
