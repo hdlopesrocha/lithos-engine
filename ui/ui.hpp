@@ -121,10 +121,11 @@ class BrushEditor: public Closable {
 };
 
 class ShadowMapViewer : public Closable{
-    GLuint shadowTexture;
+	std::vector<std::pair<RenderBuffer, int>> * shadowBuffers;
+  	int selectedBuffer;
 
     public:
-    ShadowMapViewer(GLuint shadowTexture);
+    ShadowMapViewer(std::vector<std::pair<RenderBuffer, int>> * shadowBuffers);
 
     void draw2d();
     void draw3d(UniformBlock * block);
