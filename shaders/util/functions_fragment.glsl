@@ -28,7 +28,7 @@ mat3 getTBN(vec3 pos, vec3 normal, vec2 uv, mat4 model, bool rotateTBN) {
 
 ShadowProperties getShadow(sampler2D shadowMap, sampler2D noise, vec4 lightViewPosition, vec3 position) {
     vec3 shadowPosition = lightViewPosition.xyz / lightViewPosition.w; 
-    float bias = 0.004;
+    float bias = 0.00004;
     float shadow = texture(shadowMap, shadowPosition.xy).r < shadowPosition.z-bias ? 0.0 : 1.0;
     vec2 texelSize = 1.0/textureSize(shadowMap, 0);
 

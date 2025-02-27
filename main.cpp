@@ -459,7 +459,7 @@ public:
 		float far = 512.0f;
 		float dist = 32.0f;
 		float near = 0.1f;
-		float orthoSize = 512.0f;  // Size of the orthographic box
+		float orthoSize = 32.0f;  // Size of the orthographic box
 
 		glm::mat4 rotate = glm::mat4_cast(camera.quaternion);
 		glm::mat4 translate = glm::translate(glm::mat4(1.0f), -camera.position);
@@ -469,7 +469,7 @@ public:
 		camera.quaternion = glm::normalize(camera.quaternion);
 		glm::vec3 cameraDirection = glm::vec3(0.0f, 0.0f, -1.0f)*camera.quaternion;
 
-		glm::vec3 lookAtLightPosition = glm::round(camera.position/32.0f)*32.0f; // + cameraDirection*far*0.5f;
+		glm::vec3 lookAtLightPosition = glm::round(camera.position); // + cameraDirection*far*0.5f;
 		light.projection = glm::ortho(-orthoSize, orthoSize, -orthoSize, orthoSize, near, far);
 		light.view = glm::lookAt(lookAtLightPosition - light.direction*dist, lookAtLightPosition, glm::vec3(0,1,0));
 
