@@ -85,9 +85,7 @@ void * OctreeProcessor::before(int level, OctreeNode * node, BoundingCube cube, 
 				if(info == NULL) {
 					int instanceCount = 1;
 					std::vector<InstanceData> instances;
-					InstanceData data;
-					data.matrix = glm::mat4(1.0);
-					instances.push_back(data);
+					instances.push_back(InstanceData(glm::mat4(1.0), 0.0f));
 
 					*instancesCount += instanceCount;
 					//std::cout << "Create drawbale " << std::to_string(instanceCount) << " | " << std::to_string(drawableType) << std::endl;

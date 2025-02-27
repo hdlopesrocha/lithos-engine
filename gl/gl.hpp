@@ -199,6 +199,12 @@ class OctreeProcessor : public IteratorHandler{
 struct InstanceData {
     public:
     glm::mat4 matrix;
+    float shift;
+
+    InstanceData(glm::mat4 matrix,  float shift) {
+        this->matrix = matrix;
+        this->shift = shift;
+    }
 };
 
 

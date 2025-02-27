@@ -27,7 +27,10 @@ out vec4 color;    // Final fragment color
 
 void main() {
     vec2 uv = teTextureCoord;
-    
+    if(uv.y < 0.0) {
+        discard;
+    } 
+
     if(triplanarEnabled) {
         int plane = triplanarPlane(tePosition, teNormal);
         uv = triplanarMapping(tePosition, plane, teProps.textureScale) * 0.1;

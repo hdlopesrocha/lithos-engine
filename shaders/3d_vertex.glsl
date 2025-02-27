@@ -7,6 +7,7 @@ layout(location = 1) in vec3 normal;
 layout(location = 2) in vec2 textureCoord;    
 layout(location = 3) in uint brushIndex;     
 layout(location = 4) in mat4 model; 
+layout(location = 8) in float shift; 
 
 #include<functions.glsl>
 
@@ -25,6 +26,8 @@ uniform uint brushTextures[25];
 void main() {
     vTextureIndex = brushTextures[brushIndex];
     vTextureCoord = textureCoord;
+    vTextureCoord.y -= shift;
+
     vModel = world*model;
     vec3 iPosition = position;
     vec3 iNormal = normal;

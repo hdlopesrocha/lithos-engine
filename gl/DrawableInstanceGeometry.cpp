@@ -33,13 +33,17 @@ DrawableInstanceGeometry::DrawableInstanceGeometry(Geometry * t, std::vector<Ins
 
 		// Instance data (matrices for instancing)
 		glBindBuffer(GL_ARRAY_BUFFER, instanceBuffer);
-		glBufferData(GL_ARRAY_BUFFER, instancesCount * sizeof(glm::mat4), instances->data(), GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, instancesCount * sizeof(InstanceData), instances->data(), GL_STATIC_DRAW);
 
 		for (int i = 0; i < 4; i++) {
-			glVertexAttribPointer(4 + i, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(sizeof(glm::vec4) * i));
+			glVertexAttribPointer(4 + i, 4, GL_FLOAT, GL_FALSE, sizeof(InstanceData), (void*)(sizeof(glm::vec4) * i));
 			glEnableVertexAttribArray(4 + i);
 			glVertexAttribDivisor(4 + i, 1); // Use for instancing
 		}
+		glVertexAttribPointer(8, 1, GL_FLOAT, GL_FALSE, sizeof(InstanceData), (void*) offsetof(InstanceData, shift));
+		glEnableVertexAttribArray(8);
+		glVertexAttribDivisor(8, 1); // Use for instancing
+
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 		// Unbind VAO
