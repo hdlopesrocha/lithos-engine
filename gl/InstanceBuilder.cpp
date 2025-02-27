@@ -3,9 +3,10 @@
 #include "gl.hpp"
 #include <glm/gtx/norm.hpp> 
 
-InstanceBuilder::InstanceBuilder(Octree * tree) {
+InstanceBuilder::InstanceBuilder(Octree * tree, int lod) {
 	this->tree = tree;
 	this->instanceCount = 0;
+	this->lod = lod;
 }
 
 
@@ -14,7 +15,8 @@ OctreeNode * InstanceBuilder::getChild(OctreeNode * node, int index){
 }
 
 void * InstanceBuilder::before(int level, OctreeNode * node, BoundingCube cube, void * context) {		
-	if(tree->getHeight(cube)==0){
+	int height = tree->getHeight(cube);
+	if(height==lod){
 		
 		Vertex * v = &node->vertex;
 		if(v->brushIndex == 2) { 

@@ -239,11 +239,12 @@ class InstanceBuilder : public IteratorHandler{
 	Octree * tree;
 	Geometry chunk;
     uint mode;
+    int lod;
 
     public: 
         int instanceCount = 0;
         std::vector<InstanceData> instances;
-		InstanceBuilder(Octree * tree);
+		InstanceBuilder(Octree * tree, int lod);
 
 		void * before(int level, OctreeNode * node, BoundingCube cube, void * context);
 		void after(int level, OctreeNode * node, BoundingCube cube, void * context);
@@ -408,6 +409,8 @@ class OctreeInstanceRenderer : public IteratorHandler{
 	int geometryType;
     int drawableType;
     uint mode;
+
+    
     public: 
         int * instances;
 		int geometryLevel;

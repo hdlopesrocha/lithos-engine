@@ -53,8 +53,28 @@ void * OctreeProcessor::before(int level, OctreeNode * node, BoundingCube cube, 
 			canGenerate = false;
 		}
 	}
+	float height = tree->getHeight(cube);
+	int currentLod = height - geometryLevel;
 
-	if(tree->getHeight(cube)==geometryLevel){
+	if(currentLod>=0){
+		// Instances with LOD
+		if(createInstances && drawableType == TYPE_INSTANCE_VEGETATION_DRAWABLE) {
+			NodeInfo * info = node->getNodeInfo(drawableType);
+			if(info == NULL) {
+				InstanceBuilder instanceBuilder(tree, currentLod);
+				instanceBuilder.iterate(level, node, cube, NULL);
+
+				*instancesCount += instanceBuilder.instanceCount;
+				std::cout << "Create vegetation = { instances=" << std::to_string(instanceBuilder.instanceCount) << ", drawableType=" << std::to_string(drawableType) << ", lod=" << currentLod << "}" << std::endl;
+				Vegetation3d * vegetation = new Vegetation3d();
+				node->info.push_back(NodeInfo(drawableType, vegetation->createDrawable(&instanceBuilder.instances), NULL, false));
+				++loaded;
+			}
+		}
+	}
+
+
+	if(height==geometryLevel){
 		if(canGenerate && loaded == 0){
 			// Simplify
 			Simplifier simplifier(tree, simplificationAngle, simplificationDistance, simplificationTexturing, simplification); 
@@ -65,21 +85,7 @@ void * OctreeProcessor::before(int level, OctreeNode * node, BoundingCube cube, 
 			Tesselator tesselator(tree, loadable, simplification);
 			tesselator.iterate(level, node, cube, NULL);
 			
-			// Instances
 
-			if(createInstances && drawableType == TYPE_INSTANCE_VEGETATION_DRAWABLE) {
-				NodeInfo * info = node->getNodeInfo(drawableType);
-				if(info == NULL) {
-					InstanceBuilder instanceBuilder(tree);
-					instanceBuilder.iterate(level, node, cube, NULL);
-
-					*instancesCount += instanceBuilder.instanceCount;
-					//std::cout << "Create vegetation " << std::to_string(instanceBuilder.instanceCount) << " | " << std::to_string(drawableType) << std::endl;
-					Vegetation3d * vegetation = new Vegetation3d();
-					node->info.push_back(NodeInfo(drawableType, vegetation->createDrawable(&instanceBuilder.instances), NULL, false));
-					++loaded;
-				}
-			}
 			if(createInstances && (drawableType == TYPE_INSTANCE_SOLID_DRAWABLE || drawableType == TYPE_INSTANCE_LIQUID_DRAWABLE  || drawableType == TYPE_INSTANCE_SHADOW_DRAWABLE)) {
 				NodeInfo * info = node->getNodeInfo(drawableType);
 				if(info == NULL) {
