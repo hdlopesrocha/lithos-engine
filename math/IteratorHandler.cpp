@@ -9,8 +9,7 @@ void IteratorHandler::iterate(int level, OctreeNode * node, BoundingCube cube, v
                 internalOrder[i] = 0;
             }
 
-
-            getOrder(node, cube, &internalOrder[0]);
+            getOrder(node, cube, internalOrder);
             for(int i=0; i <8 ; ++i) {
                 int j = internalOrder[i];
                 OctreeNode * child = getChild(node, j);
