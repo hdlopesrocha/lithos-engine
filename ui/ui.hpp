@@ -123,9 +123,11 @@ class BrushEditor: public Closable {
 class ShadowMapViewer : public Closable{
 	std::vector<std::pair<RenderBuffer, int>> * shadowBuffers;
   	int selectedBuffer;
+    int width;
+    int height;
 
     public:
-    ShadowMapViewer(std::vector<std::pair<RenderBuffer, int>> * shadowBuffers);
+    ShadowMapViewer(std::vector<std::pair<RenderBuffer, int>> * shadowBuffers, int width, int height);
 
     void draw2d();
     void draw3d(UniformBlock * block);

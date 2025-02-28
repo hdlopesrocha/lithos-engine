@@ -1,9 +1,11 @@
 #include "ui.hpp"
 
 
-ShadowMapViewer::ShadowMapViewer(std::vector<std::pair<RenderBuffer, int>> * shadowBuffers) {
+ShadowMapViewer::ShadowMapViewer(std::vector<std::pair<RenderBuffer, int>> * shadowBuffers, int width, int height) {
     this->shadowBuffers = shadowBuffers;
     this->selectedBuffer = 0;
+    this->width = width;
+    this->height = height;
 }
 
 void ShadowMapViewer::draw2d(){
@@ -22,7 +24,7 @@ void ShadowMapViewer::draw2d(){
     selectedBuffer = Math::mod(selectedBuffer, shadowBuffers->size());
 
 
-	ImGui::Image((ImTextureID)(intptr_t)shadowBuffers->at(selectedBuffer).first.depthTexture, ImVec2(512, 512));
+	ImGui::Image((ImTextureID)(intptr_t)shadowBuffers->at(selectedBuffer).first.depthTexture, ImVec2(width, height));
 	ImGui::End();
 }
 

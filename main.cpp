@@ -383,10 +383,10 @@ public:
 		atlasPainter = new AtlasPainter(&atlasTextures, &atlasDrawers, programAtlas, programTexture, 256,256);
 		atlasViewer = new AtlasViewer(&atlasTextures, programAtlas, programTexture, 256,256);
 		brushEditor = new BrushEditor(&camera, &brushes, &textures, program3d, programTexture);
-		shadowMapViewer = new ShadowMapViewer(&shadowFrameBuffers);
+		shadowMapViewer = new ShadowMapViewer(&shadowFrameBuffers, 512, 512);
 		textureMixerEditor = new TextureMixerEditor(&mixers, &textures, programTexture);
 		animatedTextureEditor = new AnimatedTextureEditor(&animatedTextures, &textures, programTexture, 256,256);
-		depthBufferViewer = new DepthBufferViewer(programDepth,depthFrameBuffer.depthTexture,256,256);
+		depthBufferViewer = new DepthBufferViewer(programDepth,depthFrameBuffer.depthTexture,512,512);
 		settingsEditor = new SettingsEditor(settings);
 		textureViewer = new TextureViewer(&textures, programTexture);
 
