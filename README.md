@@ -12,7 +12,7 @@ Current features:
 * GPU Tesselation with LOD
 * Triplanar Mapping
 * Parallax Occlusion Mapping 
-* Shadow Mapping
+* Shadow Mapping with LoD
 * Soft Shadows
 * Gradient Perlin Noise Land Generator
 * Texture mixing
@@ -20,7 +20,7 @@ Current features:
 * UI with Dear ImGui
 * Deferred depth test
 * Atlas Drawer
-* Vegetation
+* Vegetation with LoD
 * Send UBOs to GPU
 * GPU instancing
 

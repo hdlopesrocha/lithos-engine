@@ -92,7 +92,7 @@ void * OctreeProcessor::before(int level, OctreeNode * node, BoundingCube cube, 
 				}
 			}
 
-			if(createInstances && (drawableType == TYPE_INSTANCE_SOLID_DRAWABLE || drawableType == TYPE_INSTANCE_LIQUID_DRAWABLE  || drawableType == TYPE_INSTANCE_SHADOW_DRAWABLE)) {
+			if(createInstances && (drawableType == TYPE_INSTANCE_SOLID_DRAWABLE || drawableType == TYPE_INSTANCE_LIQUID_DRAWABLE)) {
 				NodeInfo * info = node->getNodeInfo(drawableType);
 				if(info == NULL) {
 					int instanceCount = 1;
