@@ -499,12 +499,12 @@ class OctreeNodeFile {
 
 
 class OctreeVisibilityChecker : public IteratorHandler{
-	Octree * tree;
 	Geometry chunk;
 	Frustum frustum;
 	int geometryType;
-    std::vector<OctreeNode*> * visibleNodes;
     public: 
+		Octree * tree;
+	    std::vector<OctreeNode*> * visibleNodes;
 		int geometryLevel;
         glm::vec3 cameraPosition;
         glm::vec3 sortPosition;

@@ -525,7 +525,7 @@ public:
 				glm::mat4 lightProjection = light.getVP();
 				uniformBlock.matrixShadow[i] = Math::getCanonicalMVP(lightProjection);
 				uniformBlock.viewProjection = lightProjection;
-				mainScene->setVisibleNodes(lightProjection, fakeLightPosition);
+				mainScene->setVisibleNodes(lightProjection, fakeLightPosition, mainScene->shadowRenderer[i]);
 
 
 				glUseProgram(program3d);
@@ -553,8 +553,8 @@ public:
 		glViewport(0, 0, depthFrameBuffer.width, depthFrameBuffer.height);
 		glClear(GL_DEPTH_BUFFER_BIT);
 
-		mainScene->setVisibleNodes(viewProjection, camera.position);
-		mainScene->setVisibleLiquidNodes(viewProjection, camera.position);
+		mainScene->setVisibleNodes(viewProjection, camera.position, mainScene->solidRenderer);
+		mainScene->setVisibleNodes(viewProjection, camera.position, mainScene->liquidRenderer);
 
 
 

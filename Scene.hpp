@@ -10,6 +10,7 @@ class Scene {
 	    Octree * liquidSpace;
 		OctreeVisibilityChecker * solidRenderer;
 		OctreeVisibilityChecker * liquidRenderer;
+		OctreeVisibilityChecker * shadowRenderer[SHADOW_MATRIX_COUNT];
 		OctreeProcessor * solidProcessor;
 		OctreeProcessor * liquidProcessor;
 		OctreeProcessor * vegetationProcessor;
@@ -23,6 +24,7 @@ class Scene {
 		int vegetationInstancesVisible = 0;
 		std::vector<OctreeNode*> visibleSolidNodes;
 		std::vector<OctreeNode*> visibleLiquidNodes;
+		std::vector<OctreeNode*> visibleShadowNodes[SHADOW_MATRIX_COUNT];
 
 
     void setup(Settings * settings) {
@@ -36,6 +38,9 @@ class Scene {
 
 		solidRenderer = new OctreeVisibilityChecker(solidSpace, 5, &visibleSolidNodes);
 		liquidRenderer = new OctreeVisibilityChecker(liquidSpace, 5, &visibleLiquidNodes);
+		shadowRenderer[0] = new OctreeVisibilityChecker(liquidSpace, 5, &visibleShadowNodes[0]);
+		shadowRenderer[1] = new OctreeVisibilityChecker(liquidSpace, 5, &visibleShadowNodes[1]);
+		shadowRenderer[2] = new OctreeVisibilityChecker(liquidSpace, 5, &visibleShadowNodes[2]);
 
     }
 
@@ -107,19 +112,13 @@ void draw (int drawableType, int mode, Settings * settings, glm::vec3 cameraPosi
 
 	}
 
-	void setVisibleNodes(glm::mat4 viewProjection, glm::vec3 sortPosition) {
-		visibleSolidNodes.clear();
-		solidRenderer->sortPosition = sortPosition;
-		solidRenderer->update(viewProjection);
-		solidSpace->iterate(solidRenderer);
+	void setVisibleNodes(glm::mat4 viewProjection, glm::vec3 sortPosition, OctreeVisibilityChecker * checker) {
+		checker->visibleNodes->clear();
+		checker->sortPosition = sortPosition;
+		checker->update(viewProjection);
+		checker->tree->iterate(checker);
 	}
 
-	void setVisibleLiquidNodes(glm::mat4 viewProjection, glm::vec3 sortPosition) {
-		visibleLiquidNodes.clear();
-		liquidRenderer->sortPosition = sortPosition;
-		liquidRenderer->update(viewProjection);
-		liquidSpace->iterate(liquidRenderer);
-	}
 	
 	void drawBillboards(glm::mat4 viewProjection, glm::vec3 cameraPosition, Settings * settings) {
 
