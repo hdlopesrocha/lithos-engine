@@ -9,11 +9,6 @@ InstanceBuilder::InstanceBuilder(Octree * tree, int lod) {
 	this->lod = lod;
 }
 
-
-OctreeNode * InstanceBuilder::getChild(OctreeNode * node, int index){
-	return node->children[index];
-}
-
 void * InstanceBuilder::before(int level, OctreeNode * node, BoundingCube cube, void * context) {		
 	int height = tree->getHeight(cube);
 	if(height==lod){

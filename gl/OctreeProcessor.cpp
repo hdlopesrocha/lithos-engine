@@ -25,10 +25,6 @@ void OctreeProcessor::update(glm::mat4 m) {
 	frustum = Frustum(m);
 }
 
-OctreeNode * OctreeProcessor::getChild(OctreeNode * node, int index){
-	return node->children[index];
-}
-
 void markNeighborsAsDirty(Octree * tree, BoundingCube cube, int level, int drawableType) {
 	for(int i=1; i < 7 ; ++i) {
 		glm::vec3 p = cube.getCenter() - cube.getLength()* Octree::getShift(i);

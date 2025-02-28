@@ -69,11 +69,6 @@ void Simplifier::simplify(Octree * tree, OctreeNode * node, BoundingCube cube, B
 
 }
 
-OctreeNode * Simplifier::getChild(OctreeNode * node, int index){
-	OctreeNode * child = node->children[index];
-	return child != NULL ? child : NULL;
-}
-
 void * Simplifier::before(int level, OctreeNode * node, BoundingCube cube, void * context) {		
 	return context; 			 			
 }

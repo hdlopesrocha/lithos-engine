@@ -196,7 +196,6 @@ class OctreeProcessor : public IteratorHandler{
 		void * before(int level, OctreeNode * node, BoundingCube cube, void * context);
 		void after(int level, OctreeNode * node, BoundingCube cube, void * context);
 		bool test(int level, OctreeNode * node, BoundingCube cube, void * context);
-        OctreeNode * getChild(OctreeNode * node, int index);
 		void getOrder(OctreeNode * node, BoundingCube cube, int * order);
 
 };
@@ -257,7 +256,6 @@ class InstanceBuilder : public IteratorHandler{
 		void * before(int level, OctreeNode * node, BoundingCube cube, void * context);
 		void after(int level, OctreeNode * node, BoundingCube cube, void * context);
 		bool test(int level, OctreeNode * node, BoundingCube cube, void * context);
-        OctreeNode * getChild(OctreeNode * node, int index);
 		void getOrder(OctreeNode * node, BoundingCube cube, int * order);
 
 };

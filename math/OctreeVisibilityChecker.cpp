@@ -12,9 +12,7 @@ void OctreeVisibilityChecker::update(glm::mat4 m) {
 	frustum = Frustum(m);
 }
 
-OctreeNode * OctreeVisibilityChecker::getChild(OctreeNode * node, int index){
-	return node->children[index];
-}
+
 
 void * OctreeVisibilityChecker::before(int level, OctreeNode * node, BoundingCube cube, void * context) {		
 	float height = tree->getHeight(cube);

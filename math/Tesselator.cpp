@@ -19,11 +19,6 @@ Tesselator::Tesselator(Octree * tree, Geometry * chunk, int simplification) {
 
 }
 
-OctreeNode * Tesselator::getChild(OctreeNode * node, int index) {
-	OctreeNode * child = node->children[index];
-	return child != NULL ? child : NULL;
-}
-
 void * Tesselator::before(int level, OctreeNode * node, BoundingCube cube, void * context) {		
 	if(tree->getHeight(cube)==0){
 		OctreeNode * corners[8];
