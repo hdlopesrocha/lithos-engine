@@ -75,8 +75,8 @@ void OctreeInstanceRenderer::getOrder(OctreeNode * node, BoundingCube cube, int 
 
     std::sort(std::begin(internalSortingVector), std::end(internalSortingVector), 
 		[&](const std::pair<glm::vec3, int>& a, const std::pair<glm::vec3, int>& b) {
-	    float distA = glm::distance2(a.first, cameraPosition);
-        float distB = glm::distance2(b.first, cameraPosition);
+	    float distA = glm::distance2(a.first, sortPosition);
+        float distB = glm::distance2(b.first, sortPosition);
         return distA < distB;
     });
 

@@ -72,19 +72,22 @@ class Scene {
 		solidRenderer->cameraPosition = camera->position -light->direction*512.0f;
 	}
 
-	void drawBillboards(glm::mat4 viewProjection) {
+	void drawBillboards(glm::mat4 viewProjection, glm::vec3 sortPosition) {
+		billboardRenderer->sortPosition = sortPosition;
 		billboardRenderer->update(viewProjection);
 		glDisable(GL_CULL_FACE);
 		solidSpace->iterate(billboardRenderer);
 		glEnable(GL_CULL_FACE);
 	}
 
-	void draw3dSolid(glm::mat4 viewProjection) {
+	void draw3dSolid(glm::mat4 viewProjection, glm::vec3 sortPosition) {
+		solidRenderer->sortPosition = sortPosition;
 		solidRenderer->update(viewProjection);
 		solidSpace->iterate(solidRenderer);
 	}
 
-	void draw3dLiquid(glm::mat4 viewProjection) {
+	void draw3dLiquid(glm::mat4 viewProjection, glm::vec3 sortPosition) {
+		liquidRenderer->sortPosition = sortPosition;
 		liquidRenderer->update(viewProjection);
 		liquidSpace->iterate(liquidRenderer);
 	}

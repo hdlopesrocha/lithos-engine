@@ -424,6 +424,8 @@ class OctreeInstanceRenderer : public IteratorHandler{
         int * instances;
 		int geometryLevel;
         glm::vec3 cameraPosition;
+        glm::vec3 sortPosition;
+
 		OctreeInstanceRenderer(Octree * tree, int * instances, int mode, int drawableType, int geometryLevel, Settings * settings);
 
 		void update(glm::mat4 m);
