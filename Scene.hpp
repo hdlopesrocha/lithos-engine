@@ -27,7 +27,7 @@ class Scene {
 		std::vector<IteratorData> visibleShadowNodes[SHADOW_MATRIX_COUNT];
 
 
-    void setup(Settings * settings) {
+    void setup() {
 
 		solidSpace = new Octree(BoundingCube(glm::vec3(0,0,0), 2.0));
 		liquidSpace = new Octree(BoundingCube(glm::vec3(0,20,0), 2.0));
@@ -38,18 +38,15 @@ class Scene {
 
 		solidRenderer = new OctreeVisibilityChecker(solidSpace, 5, &visibleSolidNodes);
 		liquidRenderer = new OctreeVisibilityChecker(liquidSpace, 5, &visibleLiquidNodes);
-		shadowRenderer[0] = new OctreeVisibilityChecker(liquidSpace, 5, &visibleShadowNodes[0]);
-		shadowRenderer[1] = new OctreeVisibilityChecker(liquidSpace, 5, &visibleShadowNodes[1]);
-		shadowRenderer[2] = new OctreeVisibilityChecker(liquidSpace, 5, &visibleShadowNodes[2]);
+		shadowRenderer[0] = new OctreeVisibilityChecker(solidSpace, 5, &visibleShadowNodes[0]);
+		shadowRenderer[1] = new OctreeVisibilityChecker(solidSpace, 5, &visibleShadowNodes[1]);
+		shadowRenderer[2] = new OctreeVisibilityChecker(solidSpace, 5, &visibleShadowNodes[2]);
 
     }
 
-void draw (int drawableType, int mode, Settings * settings, glm::vec3 cameraPosition) {
-	std::vector<IteratorData> * list = (drawableType == TYPE_INSTANCE_LIQUID_DRAWABLE) ? &visibleLiquidNodes : &visibleSolidNodes;
-
-
-	for(int j=0 ; j < list->size() ; ++j) {
-		IteratorData data = list->at(j);
+void draw (int drawableType, int mode, Settings * settings, glm::vec3 cameraPosition, OctreeVisibilityChecker * checker) {
+	for(int j=0 ; j < checker->visibleNodes->size() ; ++j) {
+		IteratorData data = checker->visibleNodes->at(j);
 		OctreeNode * node = data.node;
 		for(int i = 0 ; i < node->info.size() ; ++i) {
 			NodeInfo * info = &node->info[i];
@@ -123,20 +120,18 @@ void draw (int drawableType, int mode, Settings * settings, glm::vec3 cameraPosi
 	}
 
 	
-	void drawBillboards(glm::mat4 viewProjection, glm::vec3 cameraPosition, Settings * settings) {
-
+	void drawBillboards(glm::mat4 viewProjection, glm::vec3 cameraPosition, Settings * settings, OctreeVisibilityChecker * checker) {
 		glDisable(GL_CULL_FACE);
-		draw(TYPE_INSTANCE_VEGETATION_DRAWABLE, GL_PATCHES, settings, cameraPosition);
+		draw(TYPE_INSTANCE_VEGETATION_DRAWABLE, GL_PATCHES, settings, cameraPosition, checker);
 		glEnable(GL_CULL_FACE);
 	}
 
-	void draw3dSolid(glm::mat4 viewProjection, glm::vec3 cameraPosition, Settings * settings) {
-		draw(TYPE_INSTANCE_SOLID_DRAWABLE, GL_PATCHES, settings, cameraPosition);
-
+	void draw3dSolid(glm::mat4 viewProjection, glm::vec3 cameraPosition, Settings * settings, OctreeVisibilityChecker * checker) {
+		draw(TYPE_INSTANCE_SOLID_DRAWABLE, GL_PATCHES, settings, cameraPosition, checker);
 	}
 
-	void draw3dLiquid(glm::mat4 viewProjection, glm::vec3 cameraPosition, Settings * settings) {
-		draw(TYPE_INSTANCE_LIQUID_DRAWABLE, GL_PATCHES, settings, cameraPosition);
+	void draw3dLiquid(glm::mat4 viewProjection, glm::vec3 cameraPosition, Settings * settings, OctreeVisibilityChecker * checker) {
+		draw(TYPE_INSTANCE_LIQUID_DRAWABLE, GL_PATCHES, settings, cameraPosition, checker);
 	}
 
 	void create(std::vector<Texture*> textures, std::vector<Brush*>  brushes) {

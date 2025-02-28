@@ -516,7 +516,6 @@ class OctreeNodeFile {
 class OctreeVisibilityChecker : public IteratorHandler{
 	Geometry chunk;
 	Frustum frustum;
-	int geometryType;
     public: 
 		Octree * tree;
 	    std::vector<IteratorData> * visibleNodes;
