@@ -234,10 +234,11 @@ class DrawableInstanceGeometry {
 	GLuint indexBuffer = 0u;
 	GLuint instanceBuffer = 0u;
 
+    glm::vec3 center;
 	int indicesCount;
     int instancesCount;
 
-	DrawableInstanceGeometry(Geometry * t, std::vector<InstanceData> * instances);
+	DrawableInstanceGeometry(Geometry * t, std::vector<InstanceData> * instances, glm::vec3 center);
     ~DrawableInstanceGeometry();
     void draw(uint mode);
     void draw(uint mode, float amount);
@@ -380,7 +381,7 @@ struct TileDraw {
 class Vegetation3d : public Geometry {
     public:
     Vegetation3d();
-    DrawableInstanceGeometry * createDrawable(std::vector<InstanceData> * instances);
+    DrawableInstanceGeometry * createDrawable(std::vector<InstanceData> * instances, glm::vec3 center);
 };
 
 class AtlasTexture: public Texture {
@@ -411,31 +412,6 @@ class AtlasDrawer {
     void draw();
 };
 
-class OctreeInstanceRenderer : public IteratorHandler{
-	Octree * tree;
-	Geometry chunk;
-	Frustum frustum;
-	int geometryType;
-    int drawableType;
-    uint mode;
-    Settings * settings;
-    
-    public: 
-        int * instances;
-		int geometryLevel;
-        glm::vec3 cameraPosition;
-        glm::vec3 sortPosition;
-
-		OctreeInstanceRenderer(Octree * tree, int * instances, int mode, int drawableType, int geometryLevel, Settings * settings);
-
-		void update(glm::mat4 m);
-		void * before(int level, OctreeNode * node, BoundingCube cube, void * context);
-		void after(int level, OctreeNode * node, BoundingCube cube, void * context);
-		bool test(int level, OctreeNode * node, BoundingCube cube, void * context);
-        OctreeNode * getChild(OctreeNode * node, int index);
-		void getOrder(OctreeNode * node, BoundingCube cube, int * order);
-
-};
 
 GLuint createTextureArray(int width, int height, int layers); 
 RenderBuffer createMultiLayerRenderFrameBuffer(int width, int height, int layers);

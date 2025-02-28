@@ -67,6 +67,6 @@ Vegetation3d::Vegetation3d() : Geometry(){
 }
 
 
-DrawableInstanceGeometry * Vegetation3d::createDrawable(std::vector<InstanceData> * instances) {
-    return new DrawableInstanceGeometry(this, instances);
+DrawableInstanceGeometry * Vegetation3d::createDrawable(std::vector<InstanceData> * instances, glm::vec3 center) {
+    return new DrawableInstanceGeometry(this, instances, center);
 }

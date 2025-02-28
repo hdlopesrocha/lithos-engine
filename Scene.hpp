@@ -2,15 +2,14 @@
 #include "math/math.hpp"
 #include "tools/tools.hpp"
 #include "gl/gl.hpp"
-
+#include <glm/gtx/norm.hpp> 
 class Scene {
 
     public: 
     	Octree * solidSpace;
 	    Octree * liquidSpace;
-		OctreeInstanceRenderer * solidRenderer;
-		OctreeInstanceRenderer * liquidRenderer;
-		OctreeInstanceRenderer * billboardRenderer;
+		OctreeVisibilityChecker * solidRenderer;
+		OctreeVisibilityChecker * liquidRenderer;
 		OctreeProcessor * solidProcessor;
 		OctreeProcessor * liquidProcessor;
 		OctreeProcessor * vegetationProcessor;
@@ -22,6 +21,9 @@ class Scene {
 		int solidInstancesVisible = 0;
 		int liquidInstancesVisible = 0;
 		int vegetationInstancesVisible = 0;
+		std::vector<OctreeNode*> visibleSolidNodes;
+		std::vector<OctreeNode*> visibleLiquidNodes;
+
 
     void setup(Settings * settings) {
 
@@ -32,11 +34,49 @@ class Scene {
 		liquidProcessor = new OctreeProcessor(liquidSpace, &liquidInstancesCount, TYPE_INSTANCE_LIQUID_DRAWABLE, 5, 0.9, 0.2, true, true, 5);
 		vegetationProcessor = new OctreeProcessor(solidSpace, &vegetationInstancesCount, TYPE_INSTANCE_VEGETATION_DRAWABLE, 5, 0.9, 0.2, false, true, 5);
 
-		solidRenderer = new OctreeInstanceRenderer(solidSpace, &solidInstancesVisible, GL_PATCHES, TYPE_INSTANCE_SOLID_DRAWABLE, 5,settings);
-		liquidRenderer = new OctreeInstanceRenderer(liquidSpace, &liquidInstancesVisible, GL_PATCHES, TYPE_INSTANCE_LIQUID_DRAWABLE, 5,settings);
-		billboardRenderer = new OctreeInstanceRenderer(solidSpace, &vegetationInstancesVisible, GL_PATCHES, TYPE_INSTANCE_VEGETATION_DRAWABLE, 5,settings);
+		solidRenderer = new OctreeVisibilityChecker(solidSpace, 5, &visibleSolidNodes);
+		liquidRenderer = new OctreeVisibilityChecker(liquidSpace, 5, &visibleLiquidNodes);
 
     }
+
+void draw (int drawableType, int mode, Settings * settings, glm::vec3 cameraPosition) {
+	std::vector<OctreeNode*> * list = (drawableType == TYPE_INSTANCE_LIQUID_DRAWABLE) ? &visibleLiquidNodes : &visibleSolidNodes;
+
+
+	for(int j=0 ; j < list->size() ; ++j) {
+		OctreeNode * node = list->at(j);
+		
+		for(int i = 0 ; i < node->info.size() ; ++i) {
+			NodeInfo * info = &node->info[i];
+			// drawable geometry
+			if(info->type == drawableType){
+				DrawableInstanceGeometry * drawable = (DrawableInstanceGeometry*) info->data;
+				//std::cout << "Current LOD " << std::to_string(currentLod) << " | " << std::to_string(selectedLod) << std::endl;
+
+				//std::cout << "Draw " << std::to_string(drawable->instancesCount) << " | " << std::to_string(drawableType) << std::endl;
+				if(drawableType == TYPE_INSTANCE_VEGETATION_DRAWABLE) {
+					float range = settings->billboardRange;
+
+					float amount = Math::clamp(1.0- glm::distance2(cameraPosition, drawable->center)/(range * range), 0.0f, 1.0f); 
+					if(amount > 0.8) {
+						amount = 1.0;
+					}
+					
+					drawable->draw(mode, amount);
+					vegetationInstancesVisible += drawable->instancesCount*amount;
+				} else {
+					drawable->draw(mode);
+					if(drawableType == TYPE_INSTANCE_SOLID_DRAWABLE) {
+						solidInstancesVisible += drawable->instancesCount;
+					}else if(drawableType == TYPE_INSTANCE_LIQUID_DRAWABLE) {
+						liquidInstancesVisible += drawable->instancesCount;
+					}
+				}
+			}
+		}
+	}
+}
+
 
 	void processSpace() {
 		solidSpace->iterate(solidProcessor);
@@ -46,7 +86,6 @@ class Scene {
 
 
 	void update3d(glm::mat4 vp, Camera * camera) {
-		billboardRenderer->cameraPosition = camera->position;
 		solidRenderer->cameraPosition = camera->position;
 		liquidRenderer->cameraPosition = camera->position;
 	
@@ -68,28 +107,34 @@ class Scene {
 
 	}
 
-	void update3dRenderer(glm::mat4 lp, Camera * camera, DirectionalLight * light) {
-		solidRenderer->cameraPosition = camera->position -light->direction*512.0f;
-	}
-
-	void drawBillboards(glm::mat4 viewProjection, glm::vec3 sortPosition) {
-		billboardRenderer->sortPosition = sortPosition;
-		billboardRenderer->update(viewProjection);
-		glDisable(GL_CULL_FACE);
-		solidSpace->iterate(billboardRenderer);
-		glEnable(GL_CULL_FACE);
-	}
-
-	void draw3dSolid(glm::mat4 viewProjection, glm::vec3 sortPosition) {
+	void setVisibleNodes(glm::mat4 viewProjection, glm::vec3 sortPosition) {
+		visibleSolidNodes.clear();
 		solidRenderer->sortPosition = sortPosition;
 		solidRenderer->update(viewProjection);
 		solidSpace->iterate(solidRenderer);
 	}
 
-	void draw3dLiquid(glm::mat4 viewProjection, glm::vec3 sortPosition) {
+	void setVisibleLiquidNodes(glm::mat4 viewProjection, glm::vec3 sortPosition) {
+		visibleLiquidNodes.clear();
 		liquidRenderer->sortPosition = sortPosition;
 		liquidRenderer->update(viewProjection);
 		liquidSpace->iterate(liquidRenderer);
+	}
+	
+	void drawBillboards(glm::mat4 viewProjection, glm::vec3 cameraPosition, Settings * settings) {
+
+		glDisable(GL_CULL_FACE);
+		draw(TYPE_INSTANCE_VEGETATION_DRAWABLE, GL_PATCHES, settings, cameraPosition);
+		glEnable(GL_CULL_FACE);
+	}
+
+	void draw3dSolid(glm::mat4 viewProjection, glm::vec3 cameraPosition, Settings * settings) {
+		draw(TYPE_INSTANCE_SOLID_DRAWABLE, GL_PATCHES, settings, cameraPosition);
+
+	}
+
+	void draw3dLiquid(glm::mat4 viewProjection, glm::vec3 cameraPosition, Settings * settings) {
+		draw(TYPE_INSTANCE_LIQUID_DRAWABLE, GL_PATCHES, settings, cameraPosition);
 	}
 
 	void create(std::vector<Texture*> textures, std::vector<Brush*>  brushes) {

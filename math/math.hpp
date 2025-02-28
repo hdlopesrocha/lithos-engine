@@ -12,6 +12,7 @@
 #include <vector>
 #include <map>
 #include <filesystem>
+#include <algorithm>
 #define DB_PERLIN_IMPL
 #include "../lib/db_perlin.hpp"
 #define INFO_TYPE_FILE 99
@@ -494,6 +495,29 @@ class OctreeNodeFile {
 		OctreeNodeFile(OctreeNode * node, std::string filename);
         void save();
         void load();
+};
+
+
+class OctreeVisibilityChecker : public IteratorHandler{
+	Octree * tree;
+	Geometry chunk;
+	Frustum frustum;
+	int geometryType;
+    std::vector<OctreeNode*> * visibleNodes;
+    public: 
+		int geometryLevel;
+        glm::vec3 cameraPosition;
+        glm::vec3 sortPosition;
+
+		OctreeVisibilityChecker(Octree * tree, int geometryLevel, std::vector<OctreeNode*> * visibleNodes);
+
+		void update(glm::mat4 m);
+		void * before(int level, OctreeNode * node, BoundingCube cube, void * context);
+		void after(int level, OctreeNode * node, BoundingCube cube, void * context);
+		bool test(int level, OctreeNode * node, BoundingCube cube, void * context);
+        OctreeNode * getChild(OctreeNode * node, int index);
+		void getOrder(OctreeNode * node, BoundingCube cube, int * order);
+
 };
 
 class Math
