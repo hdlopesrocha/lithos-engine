@@ -525,11 +525,11 @@ public:
 				uniformBlock.viewProjection = lightProjection;
 				
 				
-				mainScene->updateShadow(lightProjection, &camera, &light);
+				mainScene->update3dRenderer(lightProjection, &camera, &light);
 				glUseProgram(program3d);
 				uniformBlock.set(OPACITY_FLAG, false);
 				program3dData->uniform(&uniformBlock);
-				mainScene->draw3dShadow(lightProjection);
+				mainScene->draw3dSolid(lightProjection);
 				if(settings->billboardEnabled) {
 					glUseProgram(programBillboard);
 					uniformBlock.set(OPACITY_FLAG, true);
@@ -718,7 +718,6 @@ public:
 			ImGui::Text("%d FPS", framesPerSecond);
 			ImGui::Text("%d/%d solid instances", mainScene->solidInstancesVisible, mainScene->solidInstancesCount);
 			ImGui::Text("%d/%d liquid instances", mainScene->liquidInstancesVisible, mainScene->liquidInstancesCount);
-			ImGui::Text("%d/%d shadow instances", mainScene->shadowInstancesVisible, mainScene->shadowInstancesCount);
 			ImGui::Text("%d/%d vegetation instances", mainScene->vegetationInstancesVisible, mainScene->vegetationInstancesCount);
 			ImGui::End();
 

@@ -9,22 +9,18 @@ class Scene {
     	Octree * solidSpace;
 	    Octree * liquidSpace;
 		OctreeInstanceRenderer * solidRenderer;
-		OctreeInstanceRenderer * shadowRenderer;
 		OctreeInstanceRenderer * liquidRenderer;
 		OctreeInstanceRenderer * billboardRenderer;
 		OctreeProcessor * solidProcessor;
-		OctreeProcessor * shadowProcessor;
 		OctreeProcessor * liquidProcessor;
 		OctreeProcessor * vegetationProcessor;
 
 		int solidInstancesCount = 0;
 		int liquidInstancesCount = 0;
-		int shadowInstancesCount = 0;
 		int vegetationInstancesCount = 0;
 
 		int solidInstancesVisible = 0;
 		int liquidInstancesVisible = 0;
-		int shadowInstancesVisible = 0;
 		int vegetationInstancesVisible = 0;
 
     void setup(Settings * settings) {
@@ -34,12 +30,10 @@ class Scene {
   
 		solidProcessor = new OctreeProcessor(solidSpace, &solidInstancesCount, TYPE_INSTANCE_SOLID_DRAWABLE, 5, 0.9, 0.2, true, true, 5);
 		liquidProcessor = new OctreeProcessor(liquidSpace, &liquidInstancesCount, TYPE_INSTANCE_LIQUID_DRAWABLE, 5, 0.9, 0.2, true, true, 5);
-		shadowProcessor = new OctreeProcessor(solidSpace, &shadowInstancesCount, TYPE_INSTANCE_SHADOW_DRAWABLE, 6, 0.1, 4.0, false, true, 6);
 		vegetationProcessor = new OctreeProcessor(solidSpace, &vegetationInstancesCount, TYPE_INSTANCE_VEGETATION_DRAWABLE, 5, 0.9, 0.2, false, true, 5);
 
 		solidRenderer = new OctreeInstanceRenderer(solidSpace, &solidInstancesVisible, GL_PATCHES, TYPE_INSTANCE_SOLID_DRAWABLE, 5,settings);
 		liquidRenderer = new OctreeInstanceRenderer(liquidSpace, &liquidInstancesVisible, GL_PATCHES, TYPE_INSTANCE_LIQUID_DRAWABLE, 5,settings);
-		shadowRenderer = new OctreeInstanceRenderer(solidSpace, &shadowInstancesVisible, GL_PATCHES, TYPE_INSTANCE_SHADOW_DRAWABLE, 6,settings);
 		billboardRenderer = new OctreeInstanceRenderer(solidSpace, &vegetationInstancesVisible, GL_PATCHES, TYPE_INSTANCE_VEGETATION_DRAWABLE, 5,settings);
 
     }
@@ -47,7 +41,6 @@ class Scene {
 	void processSpace() {
 		solidSpace->iterate(solidProcessor);
 		liquidSpace->iterate(liquidProcessor);
-		solidSpace->iterate(shadowProcessor);
 		solidSpace->iterate(vegetationProcessor);
 	}
 
@@ -71,15 +64,12 @@ class Scene {
 		processSpace();
 		solidInstancesVisible = 0;
 		liquidInstancesVisible = 0;
-		shadowInstancesVisible = 0;
 		vegetationInstancesVisible = 0;
 
 	}
 
-	void updateShadow(glm::mat4 lp, Camera * camera, DirectionalLight * light) {
-		shadowRenderer->cameraPosition = camera->position -light->direction*512.0f;
-		shadowProcessor->loaded = 0;
-		shadowProcessor->update(lp);
+	void update3dRenderer(glm::mat4 lp, Camera * camera, DirectionalLight * light) {
+		solidRenderer->cameraPosition = camera->position -light->direction*512.0f;
 	}
 
 	void drawBillboards(glm::mat4 viewProjection) {
@@ -98,12 +88,6 @@ class Scene {
 		liquidRenderer->update(viewProjection);
 		liquidSpace->iterate(liquidRenderer);
 	}
-
-	void draw3dShadow(glm::mat4 viewProjection) {
-		shadowRenderer->update(viewProjection);
-		solidSpace->iterate(shadowRenderer);
-	}
-
 
 	void create(std::vector<Texture*> textures, std::vector<Brush*>  brushes) {
 

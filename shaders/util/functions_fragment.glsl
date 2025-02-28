@@ -38,38 +38,46 @@ ShadowProperties getShadow(sampler2D shadowMap[SHADOW_MATRIX_COUNT], sampler2D n
         }
     }
 
+    vec2 texelSize = 1.0/textureSize(shadowMap[selectedMap], 0);
+    vec2 noiseCoords = (position.xy)* PI;
+    float shadowDepth = texture(shadowMap[selectedMap], shadowPosition.xy).r; 
     vec3 normal = normalize(cross(dFdx(position), dFdy(position))); // Approximate normal
     vec3 lightDir = normalize(shadowPosition - position);
-    float bias = max(0.002 * (1.0 - dot(normal, lightDir)), 0.005);
 
-    vec2 texelSize = 1.0/textureSize(shadowMap[selectedMap], 0);
 
-    vec2 noiseCoords = (position.xy)* PI;
-    float sumShadow = texture(shadowMap[selectedMap], shadowPosition.xy).r + bias > shadowPosition.z ? 1.0 : 0.0;
+    // Angle-based bias (prevents self-shadowing at shallow angles)
+    float angleBias = max(0.0005 * (1.0 - dot(normal, lightDir)), 0.001);
+
+    // Blocker distance bias (avoids false shadows in corners)
+    float blockerDistance = abs(texture(shadowMap[selectedMap], shadowPosition.xy).r - shadowPosition.z);
+    float distanceBias = 0.0001 * log2(1.0 + blockerDistance); // Logarithmic scaling
+
+    float bias = angleBias + distanceBias; // Combine both biases
+
+    float blurFactor = smoothstep(0.0, 0.1, blockerDistance); 
+    int blurRadius = int(clamp(mix(1.0, 128.0, blurFactor), 1.0, 16.0)); 
+
+
+    int maxSamples = blurRadius;
+    int stepSize = 1;
+    float sumShadow = shadowDepth + bias > shadowPosition.z ? 1.0 : 0.0;
     int totalSamples = 1;
 
 
-
-    int blurRadius = 16;
-    int maxSamples = 6;
-    int stepSize = 2;
-
-    for(int radius = blurRadius; radius > 0; radius-=stepSize) {
-        for(int samples=0; samples < maxSamples ; ++samples) {
-
-            vec4 noiseSample = texture(noise, noiseCoords);
-            float sAngle = noiseSample.r * 2.0 * PI;
-            float sRadius = radius;
-            float sX = sRadius * cos(sAngle);
-            float sY = sRadius * sin(sAngle);
+    for (int radius = blurRadius; radius > 0; radius -= stepSize) {
+        for (int samples = 0; samples < maxSamples; ++samples) {
             
-            vec2 shadowUV = clamp(shadowPosition.xy+vec2(sX,sY)*texelSize, 0.0, 1.0);
+            vec4 noiseSample = texture(noise, noiseCoords);
+            float randomAngle = noiseSample.r * 2.0 * PI;
+            vec2 randomOffset = vec2(cos(randomAngle), sin(randomAngle)) * noiseSample.g; 
+            noiseCoords += randomOffset * 0.1; // Small offset to vary noise sampling
+         
+            
+            vec2 shadowUV = clamp(shadowPosition.xy + randomOffset*radius * texelSize, 0.0, 1.0);
             sumShadow += texture(shadowMap[selectedMap], shadowUV).r + bias > shadowPosition.z ? 1.0 : 0.0;
             ++totalSamples;
-            
-            noiseCoords = noiseSample.xy;
         }
-        if(sumShadow == totalSamples || sumShadow == 0) {
+        if (sumShadow == totalSamples || sumShadow == 0) {
             break;
         }
     }
