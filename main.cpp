@@ -482,7 +482,7 @@ public:
 		}
 
 		glm::mat4 viewProjection = camera.getVP();
-		mainScene->update3d(viewProjection, &camera);
+		mainScene->processSpace();
 		mainScene->setVisibleNodes(viewProjection, camera.position, mainScene->solidRenderer);
 		mainScene->setVisibleNodes(viewProjection, camera.position, mainScene->liquidRenderer);
 		if(settings->shadowEnabled) {

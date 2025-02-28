@@ -85,6 +85,10 @@ void draw (int drawableType, int mode, Settings * settings, glm::vec3 cameraPosi
 		liquidProcessor->loaded = 0;
 		vegetationProcessor->loaded = 0;
 
+		solidInstancesVisible = 0;
+		liquidInstancesVisible = 0;
+		vegetationInstancesVisible = 0;
+
 		for(IteratorData data: visibleSolidNodes){
 			solidProcessor->before(data.level, data.node, data.cube, NULL);
 			vegetationProcessor->before(data.level, data.node, data.cube, NULL);
@@ -92,24 +96,6 @@ void draw (int drawableType, int mode, Settings * settings, glm::vec3 cameraPosi
 		for(IteratorData data: visibleLiquidNodes){
 			liquidProcessor->before(data.level, data.node, data.cube, NULL);
 		}
-	}
-
-
-	void update3d(glm::mat4 vp, Camera * camera) {
-		solidRenderer->cameraPosition = camera->position;
-		liquidRenderer->cameraPosition = camera->position;
-	
-		solidProcessor->update(vp);
-		liquidProcessor->update(vp);
-		vegetationProcessor->update(vp);
-
-
-
-		processSpace();
-		solidInstancesVisible = 0;
-		liquidInstancesVisible = 0;
-		vegetationInstancesVisible = 0;
-
 	}
 
 	void setVisibleNodes(glm::mat4 viewProjection, glm::vec3 sortPosition, OctreeVisibilityChecker * checker) {

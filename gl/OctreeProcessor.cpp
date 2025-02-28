@@ -21,9 +21,6 @@ OctreeProcessor::OctreeProcessor(Octree * tree, int * instancesCount,  int drawa
 	this->createInstances = createInstances;
 }
 
-void OctreeProcessor::update(glm::mat4 m) {
-	frustum = Frustum(m);
-}
 
 void markNeighborsAsDirty(Octree * tree, BoundingCube cube, int level, int drawableType) {
 	for(int i=1; i < 7 ; ++i) {
@@ -112,11 +109,7 @@ void OctreeProcessor::after(int level, OctreeNode * node, BoundingCube cube, voi
 }
 
 bool OctreeProcessor::test(int level, OctreeNode * node, BoundingCube cube, void * context) {	
-	if(context != NULL || loaded) {
-		return false;
-	}
-	BoundingBox box = BoundingBox(cube.getMin()-tree->minSize, cube.getMax());
-	return frustum.isBoxVisible(box);
+	return context == NULL && loaded == 0;
 }
 
 void OctreeProcessor::getOrder(OctreeNode * node, BoundingCube cube, int * order){

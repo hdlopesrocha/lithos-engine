@@ -517,7 +517,6 @@ class OctreeVisibilityChecker : public IteratorHandler{
 		Octree * tree;
 	    std::vector<IteratorData> * visibleNodes;
 		int geometryLevel;
-        glm::vec3 cameraPosition;
         glm::vec3 sortPosition;
 
 		OctreeVisibilityChecker(Octree * tree, int geometryLevel, std::vector<IteratorData> * visibleNodes);

@@ -173,7 +173,7 @@ class DrawableGeometry {
 class OctreeProcessor : public IteratorHandler{
 	Octree * tree;
 	Geometry chunk;
-	Frustum frustum;
+
     int drawableType;
 	float simplificationAngle;
     float simplificationDistance;
@@ -187,7 +187,6 @@ class OctreeProcessor : public IteratorHandler{
         int * instancesCount;
 		OctreeProcessor(Octree * tree, int * instancesCount, int drawableType, int geometryLevel, float simplificationAngle, float simplificationDistance, bool simplificationTexturing, bool createInstances, int simplification);
 
-		void update(glm::mat4 m);
 		void * before(int level, OctreeNode * node, BoundingCube cube, void * context);
 		void after(int level, OctreeNode * node, BoundingCube cube, void * context);
 		bool test(int level, OctreeNode * node, BoundingCube cube, void * context);
