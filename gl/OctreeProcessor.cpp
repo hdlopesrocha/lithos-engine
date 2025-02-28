@@ -118,8 +118,11 @@ void OctreeProcessor::after(int level, OctreeNode * node, BoundingCube cube, voi
 }
 
 bool OctreeProcessor::test(int level, OctreeNode * node, BoundingCube cube, void * context) {	
+	if(context != NULL || loaded) {
+		return false;
+	}
 	BoundingBox box = BoundingBox(cube.getMin()-tree->minSize, cube.getMax());
-	return frustum.isBoxVisible(box) && context == NULL && loaded == 0;
+	return frustum.isBoxVisible(box);
 }
 
 

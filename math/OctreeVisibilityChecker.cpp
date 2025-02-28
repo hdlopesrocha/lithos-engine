@@ -21,9 +21,7 @@ void * OctreeVisibilityChecker::before(int level, OctreeNode * node, BoundingCub
 	int currentLod = height - geometryLevel;
 
 	if(currentLod <= 0){
-		if(node->info.size()){
-			visibleNodes->push_back(IteratorData(level, node, cube));
-		}
+		visibleNodes->push_back(IteratorData(level, node, cube));
 		return node;
 	}
 	return NULL;

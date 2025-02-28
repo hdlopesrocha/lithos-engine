@@ -179,7 +179,6 @@ class OctreeProcessor : public IteratorHandler{
 	Octree * tree;
 	Geometry chunk;
 	Frustum frustum;
-	int geometryType;
     int drawableType;
 	float simplificationAngle;
     float simplificationDistance;

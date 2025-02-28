@@ -473,8 +473,10 @@ public:
 
 
 		glm::mat4 viewProjection = camera.getVP();
-
 		mainScene->update3d(viewProjection, &camera);
+		mainScene->setVisibleNodes(viewProjection, camera.position, mainScene->solidRenderer);
+		mainScene->setVisibleNodes(viewProjection, camera.position, mainScene->liquidRenderer);
+
 		glPolygonMode(GL_FRONT, GL_FILL);
 		glPatchParameteri(GL_PATCH_VERTICES, 3); // Define the number of control points per patch
 		glEnable(GL_CULL_FACE);
@@ -553,10 +555,7 @@ public:
 		glViewport(0, 0, depthFrameBuffer.width, depthFrameBuffer.height);
 		glClear(GL_DEPTH_BUFFER_BIT);
 
-		mainScene->setVisibleNodes(viewProjection, camera.position, mainScene->solidRenderer);
-		mainScene->setVisibleNodes(viewProjection, camera.position, mainScene->liquidRenderer);
-
-
+	
 
 		glUseProgram(program3d);
 		uniformBlock.set(OPACITY_FLAG, false);

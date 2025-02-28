@@ -84,9 +84,17 @@ void draw (int drawableType, int mode, Settings * settings, glm::vec3 cameraPosi
 
 
 	void processSpace() {
-		solidSpace->iterate(solidProcessor);
-		liquidSpace->iterate(liquidProcessor);
-		solidSpace->iterate(vegetationProcessor);
+		solidProcessor->loaded = 0;
+		liquidProcessor->loaded = 0;
+		vegetationProcessor->loaded = 0;
+
+		for(IteratorData data: visibleSolidNodes){
+			solidProcessor->before(data.level, data.node, data.cube, NULL);
+			vegetationProcessor->before(data.level, data.node, data.cube, NULL);
+		}
+		for(IteratorData data: visibleLiquidNodes){
+			liquidProcessor->before(data.level, data.node, data.cube, NULL);
+		}
 	}
 
 
@@ -94,13 +102,8 @@ void draw (int drawableType, int mode, Settings * settings, glm::vec3 cameraPosi
 		solidRenderer->cameraPosition = camera->position;
 		liquidRenderer->cameraPosition = camera->position;
 	
-		solidProcessor->loaded = 0;
 		solidProcessor->update(vp);
-
-		liquidProcessor->loaded = 0;
 		liquidProcessor->update(vp);
-
-		vegetationProcessor->loaded = 0;
 		vegetationProcessor->update(vp);
 
 
