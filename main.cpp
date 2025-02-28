@@ -471,11 +471,26 @@ public:
 		camera.quaternion = glm::normalize(camera.quaternion);
 		//glm::vec3 cameraDirection = glm::vec3(0.0f, 0.0f, -1.0f)*camera.quaternion;
 
+		std::vector<glm::mat4> shadowMatrices;
+		if(settings->shadowEnabled) {
+			for(int i=0 ; i < shadowFrameBuffers.size() ; ++i) {
+				std::pair<RenderBuffer, int> pair = shadowFrameBuffers[i];
+				RenderBuffer buffer = pair.first;
+				int orthoSize = pair.second;
+				shadowMatrices.push_back(light.getVP(&camera, orthoSize, near, far));	
+			}
+		}
 
 		glm::mat4 viewProjection = camera.getVP();
 		mainScene->update3d(viewProjection, &camera);
 		mainScene->setVisibleNodes(viewProjection, camera.position, mainScene->solidRenderer);
 		mainScene->setVisibleNodes(viewProjection, camera.position, mainScene->liquidRenderer);
+		if(settings->shadowEnabled) {
+			glm::vec3 fakeLightPosition = camera.position - light.direction * far;
+			for(int i=0 ; i < shadowMatrices.size() ; ++i) {
+				mainScene->setVisibleNodes(shadowMatrices[i], fakeLightPosition, mainScene->shadowRenderer[i]);
+			}
+		}
 
 		glPolygonMode(GL_FRONT, GL_FILL);
 		glPatchParameteri(GL_PATCH_VERTICES, 3); // Define the number of control points per patch
@@ -509,38 +524,29 @@ public:
 		// Shadow component
 		// ================
 		if(settings->shadowEnabled) {
-
-
-			glm::vec3 fakeLightPosition = camera.position - light.direction * far;
 			for(int i=0 ; i < shadowFrameBuffers.size() ; ++i) {
 				std::pair<RenderBuffer, int> pair = shadowFrameBuffers[i];
 				RenderBuffer buffer = pair.first;
-				int orthoSize = pair.second;
-
 
 				glBindFramebuffer(GL_FRAMEBUFFER, buffer.frameBuffer);
 				glViewport(0, 0, buffer.width, buffer.height);
 				glClear(GL_DEPTH_BUFFER_BIT);
 		
-		
-				light.update(&camera, orthoSize, near, far);
-				glm::mat4 lightProjection = light.getVP();
+				glm::mat4 lightProjection = shadowMatrices[i];
 				uniformBlock.matrixShadow[i] = Math::getCanonicalMVP(lightProjection);
 				uniformBlock.viewProjection = lightProjection;
-				mainScene->setVisibleNodes(lightProjection, fakeLightPosition, mainScene->shadowRenderer[i]);
-
 
 				glUseProgram(program3d);
 				uniformBlock.set(OPACITY_FLAG, false);
 				program3dData->uniform(&uniformBlock);
 
-				mainScene->draw3dSolid(lightProjection, camera.position, settings, mainScene->shadowRenderer[i]);
+				mainScene->draw3dSolid(camera.position, settings, mainScene->shadowRenderer[i]);
 				
 				if(settings->billboardEnabled) {
 					glUseProgram(programBillboard);
 					uniformBlock.set(OPACITY_FLAG, true);
 					programBillboardData->uniform(&uniformBlock);
-					mainScene->drawBillboards(lightProjection, camera.position, settings, mainScene->shadowRenderer[i]);
+					mainScene->drawBillboards(camera.position, settings, mainScene->shadowRenderer[i]);
 				}
 			}
 			viewerBlock = uniformBlock;
@@ -560,14 +566,14 @@ public:
 		glUseProgram(program3d);
 		uniformBlock.set(OPACITY_FLAG, false);
 		program3dData->uniform(&uniformBlock);
-		mainScene->draw3dSolid(viewProjection, camera.position, settings, mainScene->solidRenderer);
+		mainScene->draw3dSolid(camera.position, settings, mainScene->solidRenderer);
 
 		uniformBlock.set(TESSELATION_FLAG, false);
 		uniformBlock.set(OPACITY_FLAG, settings->opacityEnabled);
 		if(settings->billboardEnabled) {
 			glUseProgram(programBillboard);
 			programBillboardData->uniform(&uniformBlock);
-			mainScene->drawBillboards(viewProjection, camera.position, settings, mainScene->solidRenderer);
+			mainScene->drawBillboards(camera.position, settings, mainScene->solidRenderer);
 		}
 		// ==================
 		// Second Pass: Solid
@@ -586,7 +592,7 @@ public:
 		if(settings->billboardEnabled) {
 			glUseProgram(programBillboard);
 			programBillboardData->uniform(&uniformBlock);
-			mainScene->drawBillboards(viewProjection, camera.position, settings, mainScene->solidRenderer);
+			mainScene->drawBillboards(camera.position, settings, mainScene->solidRenderer);
 		}
 		uniformBlock.set(TESSELATION_FLAG, settings->tesselationEnabled);
 		uniformBlock.set(OPACITY_FLAG, false);
@@ -594,7 +600,7 @@ public:
 
 		glUseProgram(program3d);
 		program3dData->uniform(&uniformBlock);
-		mainScene->draw3dSolid(viewProjection, camera.position, settings, mainScene->solidRenderer);
+		mainScene->draw3dSolid(camera.position, settings, mainScene->solidRenderer);
 		if(settings->wireFrameEnabled) {
 			glPolygonMode(GL_FRONT, GL_FILL);
 		}
@@ -613,7 +619,7 @@ public:
 
 		glUseProgram(program3d);
 		program3dData->uniform(&uniformBlock);
-		mainScene->draw3dLiquid(viewProjection, camera.position, settings, mainScene->liquidRenderer);
+		mainScene->draw3dLiquid(camera.position, settings, mainScene->liquidRenderer);
 
 		//glUseProgram(program3d);
 		brushEditor->draw3dIfOpen(&uniformBlock);

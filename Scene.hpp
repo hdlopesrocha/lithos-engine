@@ -120,17 +120,17 @@ void draw (int drawableType, int mode, Settings * settings, glm::vec3 cameraPosi
 	}
 
 	
-	void drawBillboards(glm::mat4 viewProjection, glm::vec3 cameraPosition, Settings * settings, OctreeVisibilityChecker * checker) {
+	void drawBillboards(glm::vec3 cameraPosition, Settings * settings, OctreeVisibilityChecker * checker) {
 		glDisable(GL_CULL_FACE);
 		draw(TYPE_INSTANCE_VEGETATION_DRAWABLE, GL_PATCHES, settings, cameraPosition, checker);
 		glEnable(GL_CULL_FACE);
 	}
 
-	void draw3dSolid(glm::mat4 viewProjection, glm::vec3 cameraPosition, Settings * settings, OctreeVisibilityChecker * checker) {
+	void draw3dSolid(glm::vec3 cameraPosition, Settings * settings, OctreeVisibilityChecker * checker) {
 		draw(TYPE_INSTANCE_SOLID_DRAWABLE, GL_PATCHES, settings, cameraPosition, checker);
 	}
 
-	void draw3dLiquid(glm::mat4 viewProjection, glm::vec3 cameraPosition, Settings * settings, OctreeVisibilityChecker * checker) {
+	void draw3dLiquid(glm::vec3 cameraPosition, Settings * settings, OctreeVisibilityChecker * checker) {
 		draw(TYPE_INSTANCE_LIQUID_DRAWABLE, GL_PATCHES, settings, cameraPosition, checker);
 	}
 

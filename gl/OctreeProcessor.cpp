@@ -76,12 +76,10 @@ void * OctreeProcessor::before(int level, OctreeNode * node, BoundingCube cube, 
 					InstanceBuilder instanceBuilder(tree, currentLod);
 					instanceBuilder.iterate(level, node, cube, NULL);
 
-
 					// Shuffle the vector
 					std::shuffle(instanceBuilder.instances.begin(), instanceBuilder.instances.end(), g);
-
 					*instancesCount += instanceBuilder.instanceCount;
-					std::cout << "Create vegetation = { instances=" << std::to_string(instanceBuilder.instanceCount) << ", drawableType=" << std::to_string(drawableType) << ", lod=" << currentLod << "}" << std::endl;
+					//std::cout << "Create vegetation = { instances=" << std::to_string(instanceBuilder.instanceCount) << ", drawableType=" << std::to_string(drawableType) << ", lod=" << currentLod << "}" << std::endl;
 					Vegetation3d * vegetation = new Vegetation3d();
 					node->info.push_back(NodeInfo(drawableType, vegetation->createDrawable(&instanceBuilder.instances, cube.getCenter()), NULL, false));
 					++loaded;

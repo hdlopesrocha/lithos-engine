@@ -107,17 +107,12 @@ struct Camera {
 
 struct DirectionalLight {
     glm::vec3 direction;
-    glm::mat4 projection;
-    glm::mat4 view;    
- 
-    glm::mat4 getVP() {
-		return projection * view;
-	}
 
-    void update(Camera * camera, float orthoSize, float near, float far) {
+    glm::mat4 getVP(Camera * camera, float orthoSize, float near, float far) {
         float dist = far/2.0;
-		projection = glm::ortho(-orthoSize, orthoSize, -orthoSize, orthoSize, near, far);
-		view = glm::lookAt(camera->position - direction*dist, camera->position, glm::vec3(0,1,0));
+		glm::mat4 projection = glm::ortho(-orthoSize, orthoSize, -orthoSize, orthoSize, near, far);
+		glm::mat4 view = glm::lookAt(camera->position - direction*dist, camera->position, glm::vec3(0,1,0));
+		return projection * view;
     }
 };
 
