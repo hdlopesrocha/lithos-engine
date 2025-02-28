@@ -1,5 +1,9 @@
 #include "math.hpp"
 
+BoundingCube::BoundingCube() {
+	this->min = glm::vec3(0);
+	this->length = 0;
+}
 
 BoundingCube::BoundingCube(glm::vec3 min, float length) {
 	this->min = min;

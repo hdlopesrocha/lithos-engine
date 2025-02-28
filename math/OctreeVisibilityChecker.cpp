@@ -2,7 +2,7 @@
 #include "math.hpp"
 #include <glm/gtx/norm.hpp> 
 
-OctreeVisibilityChecker::OctreeVisibilityChecker(Octree * tree, int geometryLevel, std::vector<OctreeNode*> * visibleNodes) {
+OctreeVisibilityChecker::OctreeVisibilityChecker(Octree * tree, int geometryLevel, std::vector<IteratorData> * visibleNodes) {
 	this->tree = tree;
 	this->visibleNodes = visibleNodes;
 	this->geometryLevel = geometryLevel;
@@ -22,7 +22,7 @@ void * OctreeVisibilityChecker::before(int level, OctreeNode * node, BoundingCub
 
 	if(currentLod <= 0){
 		if(node->info.size()){
-			visibleNodes->push_back(node);
+			visibleNodes->push_back(IteratorData(level, node, cube));
 		}
 		return node;
 	}

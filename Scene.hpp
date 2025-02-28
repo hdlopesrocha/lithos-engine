@@ -22,9 +22,9 @@ class Scene {
 		int solidInstancesVisible = 0;
 		int liquidInstancesVisible = 0;
 		int vegetationInstancesVisible = 0;
-		std::vector<OctreeNode*> visibleSolidNodes;
-		std::vector<OctreeNode*> visibleLiquidNodes;
-		std::vector<OctreeNode*> visibleShadowNodes[SHADOW_MATRIX_COUNT];
+		std::vector<IteratorData> visibleSolidNodes;
+		std::vector<IteratorData> visibleLiquidNodes;
+		std::vector<IteratorData> visibleShadowNodes[SHADOW_MATRIX_COUNT];
 
 
     void setup(Settings * settings) {
@@ -45,12 +45,12 @@ class Scene {
     }
 
 void draw (int drawableType, int mode, Settings * settings, glm::vec3 cameraPosition) {
-	std::vector<OctreeNode*> * list = (drawableType == TYPE_INSTANCE_LIQUID_DRAWABLE) ? &visibleLiquidNodes : &visibleSolidNodes;
+	std::vector<IteratorData> * list = (drawableType == TYPE_INSTANCE_LIQUID_DRAWABLE) ? &visibleLiquidNodes : &visibleSolidNodes;
 
 
 	for(int j=0 ; j < list->size() ; ++j) {
-		OctreeNode * node = list->at(j);
-		
+		IteratorData data = list->at(j);
+		OctreeNode * node = data.node;
 		for(int i = 0 ; i < node->info.size() ; ++i) {
 			NodeInfo * info = &node->info[i];
 			// drawable geometry

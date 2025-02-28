@@ -97,6 +97,7 @@ class BoundingCube {
 		float length;
 
 	public: 
+		BoundingCube();
 		BoundingCube(glm::vec3 min, float length);
 		float getMaxX();
 		float getMaxY();
@@ -263,6 +264,20 @@ class OctreeNode {
 		void setChild(int i, OctreeNode * node);
 		NodeInfo * getNodeInfo(int infoType);
 };
+
+struct IteratorData {
+	public:
+	int level;
+	OctreeNode * node;
+	BoundingCube cube;
+
+	IteratorData(int level, OctreeNode * node, BoundingCube cube) {
+		this->level = level;
+		this->node = node;
+		this->cube = cube;
+	}
+};
+
 
 class IteratorHandler {
 	public: 
@@ -504,12 +519,12 @@ class OctreeVisibilityChecker : public IteratorHandler{
 	int geometryType;
     public: 
 		Octree * tree;
-	    std::vector<OctreeNode*> * visibleNodes;
+	    std::vector<IteratorData> * visibleNodes;
 		int geometryLevel;
         glm::vec3 cameraPosition;
         glm::vec3 sortPosition;
 
-		OctreeVisibilityChecker(Octree * tree, int geometryLevel, std::vector<OctreeNode*> * visibleNodes);
+		OctreeVisibilityChecker(Octree * tree, int geometryLevel, std::vector<IteratorData> * visibleNodes);
 
 		void update(glm::mat4 m);
 		void * before(int level, OctreeNode * node, BoundingCube cube, void * context);
