@@ -121,7 +121,6 @@ bool OctreeProcessor::test(int level, OctreeNode * node, BoundingCube cube, void
 	return frustum.isBoxVisible(box);
 }
 
-
 void OctreeProcessor::getOrder(OctreeNode * node, BoundingCube cube, int * order){
 	for(int i = 0 ; i < 8 ; ++i) {
 		order[i] = i;

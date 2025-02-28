@@ -30,20 +30,21 @@ void OctreeVisibilityChecker::after(int level, OctreeNode * node, BoundingCube c
 }
 
 bool OctreeVisibilityChecker::test(int level, OctreeNode * node, BoundingCube cube, void * context) {	
+	if(context != NULL) {
+		return false;
+	}
 	BoundingBox box = BoundingBox(cube.getMin()-tree->minSize, cube.getMax());
-	return frustum.isBoxVisible(box) && context == NULL;
+	return frustum.isBoxVisible(box);
 }
 
 
 void OctreeVisibilityChecker::getOrder(OctreeNode * node, BoundingCube cube, int * order){
-	std::pair<glm::vec3, int> internalSortingVector[8]={};
+	static std::pair<glm::vec3, int> internalSortingVector[8]={};
 	
 	for(int i =0; i< 8; ++i){
 		BoundingCube c = Octree::getChildCube(cube, i);
 		internalSortingVector[i] = std::pair<glm::vec3, int>(c.getCenter(), i);
 	}
-
-
 
     std::sort(std::begin(internalSortingVector), std::end(internalSortingVector), 
 		[&](const std::pair<glm::vec3, int>& a, const std::pair<glm::vec3, int>& b) {
