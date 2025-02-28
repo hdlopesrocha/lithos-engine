@@ -41,10 +41,11 @@ void * OctreeInstanceRenderer::before(int level, OctreeNode * node, BoundingCube
 				//std::cout << "Draw " << std::to_string(drawable->instancesCount) << " | " << std::to_string(drawableType) << std::endl;
 				if(drawableType == TYPE_INSTANCE_VEGETATION_DRAWABLE) {
 					drawable->draw(mode, amount);
+					*instances += drawable->instancesCount*amount;
 				} else {
 					drawable->draw(mode);
+					*instances += drawable->instancesCount;
 				}
-				*instances += drawable->instancesCount*amount;
 			}
 		}
 		return node;
