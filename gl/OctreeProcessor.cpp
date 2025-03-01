@@ -40,7 +40,7 @@ void markNeighborsAsDirty(Octree * tree, BoundingCube * cube, int level, int dra
 void * OctreeProcessor::before(int level, OctreeNode * node, BoundingCube * cube, void * context) {		
 	if(loadCount > 0) {
 		bool canGenerate = true;
-		for(int i=0; i < node->info.size(); ++i){
+		for(int i=0; i < node->info.size(); ++i) {
 			NodeInfo * info = &node->info[i];
 			if(info->type == INFO_TYPE_FILE && info->dirty) {
 				OctreeNodeFile *f = (OctreeNodeFile*) info->data;
