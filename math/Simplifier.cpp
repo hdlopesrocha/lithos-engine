@@ -2,8 +2,9 @@
 #include "math.hpp"
 #include <bits/stdc++.h>
 
-Simplifier::Simplifier(Octree * tree, float angle, float distance, bool texturing, int simplification) {
+Simplifier::Simplifier(Octree * tree, BoundingCube chunkCube, float angle, float distance, bool texturing, int simplification) {
 	this->tree = tree;
+	this->chunkCube = chunkCube;
 	this->simplification = simplification;
 	this->angle = angle;
 	this->distance = distance;
@@ -14,7 +15,7 @@ bool isBorder(BoundingCube chunk, BoundingCube c) {
 	return chunk.getMinX() == c.getMinX() || chunk.getMinY() == c.getMinY() || chunk.getMinZ() == c.getMinZ();
 }
 
-void Simplifier::simplify(Octree * tree, OctreeNode * node, BoundingCube cube, BoundingCube * chunkCube, int level) {
+void Simplifier::simplify(Octree * tree, OctreeNode * node, BoundingCube cube, int level) {
 	// The parentNode plane
 	Plane parentPlane(node->vertex.normal, node->vertex.position); 
 	Vertex parentVertex = node->vertex;
@@ -23,7 +24,7 @@ void Simplifier::simplify(Octree * tree, OctreeNode * node, BoundingCube cube, B
 		BoundingCube cc(cube.getMin() - cube.getLength()*Octree::getShift(i), cube.getLength());
 		OctreeNode * c = tree->getNodeAt(cc.getCenter(), level, 0);
 		if(c!=NULL && c->solid == ContainmentType::Intersects) {
-			if(!chunkCube->contains(cc)){
+			if(!chunkCube.contains(cc)){
 				return;
 			}
 
@@ -75,10 +76,7 @@ void * Simplifier::before(int level, OctreeNode * node, BoundingCube cube, void 
 
 void Simplifier::after(int level, OctreeNode * node, BoundingCube cube, void * context) {
 	int height = tree->getHeight(cube);
-	BoundingCube * chunkCube = (BoundingCube*) context;
-	if(chunkCube != NULL) {
-		simplify(tree, node, cube, chunkCube, level);	
-	}
+	simplify(tree, node, cube, level);	
 	return;
 }
 

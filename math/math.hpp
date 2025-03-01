@@ -374,9 +374,10 @@ class Simplifier : public IteratorHandler{
 		float distance;
 	    bool texturing;
 		int simplification;
-		Simplifier(Octree * tree, float angle, float distance, bool texturing, int simplification);
+		BoundingCube chunkCube;
+		Simplifier(Octree * tree, BoundingCube chunkCube, float angle, float distance, bool texturing, int simplification);
 
-		void simplify(Octree * tree, OctreeNode * node, BoundingCube cube, BoundingCube * chunkCube, int level);
+		void simplify(Octree * tree, OctreeNode * node, BoundingCube cube, int level);
 
 		void * before(int level, OctreeNode * node, BoundingCube cube, void * context);
 		void after(int level, OctreeNode * node, BoundingCube cube, void * context);

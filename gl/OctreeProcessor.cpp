@@ -61,8 +61,8 @@ void * OctreeProcessor::before(int level, OctreeNode * node, BoundingCube cube, 
 				if(drawableType == TYPE_INSTANCE_SOLID_DRAWABLE || drawableType == TYPE_INSTANCE_LIQUID_DRAWABLE) {
 
 					// Simplify
-					Simplifier simplifier(tree, simplificationAngle, simplificationDistance, simplificationTexturing, simplification); 
-					simplifier.iterate(level, node, cube, &cube);
+					Simplifier simplifier(tree, cube, simplificationAngle, simplificationDistance, simplificationTexturing, simplification); 
+					simplifier.iterate(level, node, cube, NULL);
 
 					// Tesselate
 					Geometry * geometry = new Geometry();
