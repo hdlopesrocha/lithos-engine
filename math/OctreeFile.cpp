@@ -28,7 +28,7 @@ OctreeNode * loadRecursive(int i, std::vector<OctreeNodeSerialized> * nodes, int
 		for(int j=0 ; j <8 ; ++j){
 			int index = serialized.children[j];
 			if(index != 0) {
-				BoundingCube c = Octree::getChildCube(cube, j);
+				BoundingCube c = Octree::getChildCube(&cube, j);
 				node->setChild(j , loadRecursive(index, nodes, height -1, filename, c));
 			}
 		}
@@ -70,7 +70,7 @@ void OctreeFile::load() {
 	tree->setMin(octreeSerialized.min);
 	tree->setLength(octreeSerialized.length);
 
-	int height = tree->getHeight(*tree);
+	int height = tree->getHeight(tree);
 	tree->root = loadRecursive(0,&nodes, height - chunkHeight, filename, *tree);
 
     file.close();
@@ -92,7 +92,7 @@ uint saveRecursive(OctreeNode * node, std::vector<OctreeNodeSerialized*> * nodes
 
 		if(height>0) {
 			for(int i=0; i < 8; ++i) {
-				BoundingCube c = Octree::getChildCube(cube, i);
+				BoundingCube c = Octree::getChildCube(&cube, i);
 				n->children[i] = saveRecursive(node->children[i], nodes, height -1, filename, c);
 			}
 		} else {
@@ -115,7 +115,7 @@ void OctreeFile::save(){
         return;
     }
 
-	int height = tree->getHeight(*tree);
+	int height = tree->getHeight(tree);
 	saveRecursive(tree->root, &nodes, height - chunkHeight, filename, *tree);
 
 	OctreeSerialized  octreeSerialized;

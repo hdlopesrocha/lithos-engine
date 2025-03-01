@@ -22,9 +22,9 @@ OctreeProcessor::OctreeProcessor(Octree * tree, int * instancesCount,  int drawa
 }
 
 
-void markNeighborsAsDirty(Octree * tree, BoundingCube cube, int level, int drawableType) {
+void markNeighborsAsDirty(Octree * tree, BoundingCube * cube, int level, int drawableType) {
 	for(int i=1; i < 7 ; ++i) {
-		glm::vec3 p = cube.getCenter() - cube.getLength()* Octree::getShift(i);
+		glm::vec3 p = cube->getCenter() - cube->getLength()* Octree::getShift(i);
 		OctreeNode * n = tree->getNodeAt(p, level, 0);
 		if(n!=NULL) {
 			for(int j=0; j < n->info.size(); ++j){
@@ -37,7 +37,7 @@ void markNeighborsAsDirty(Octree * tree, BoundingCube cube, int level, int drawa
 	}
 }
 
-void * OctreeProcessor::before(int level, OctreeNode * node, BoundingCube cube, void * context) {		
+void * OctreeProcessor::before(int level, OctreeNode * node, BoundingCube * cube, void * context) {		
 	if(loadCount > 0) {
 		bool canGenerate = true;
 		for(int i=0; i < node->info.size(); ++i){
@@ -61,18 +61,18 @@ void * OctreeProcessor::before(int level, OctreeNode * node, BoundingCube cube, 
 				if(drawableType == TYPE_INSTANCE_SOLID_DRAWABLE || drawableType == TYPE_INSTANCE_LIQUID_DRAWABLE) {
 
 					// Simplify
-					Simplifier simplifier(tree, cube, simplificationAngle, simplificationDistance, simplificationTexturing, simplification); 
-					simplifier.iterate(level, node, cube, NULL);
+					Simplifier simplifier(tree, *cube, simplificationAngle, simplificationDistance, simplificationTexturing, simplification); 
+					simplifier.iterate(level, node, *cube, &cube);
 
 					// Tesselate
 					Geometry * geometry = new Geometry();
 					Tesselator tesselator(tree, geometry, simplification);
-					tesselator.iterate(level, node, cube, NULL);
+					tesselator.iterate(level, node, *cube, NULL);
 
 					NodeInfo * info = node->getNodeInfo(drawableType);
 					if(info == NULL) {
 						PreLoadedGeometry * pre = new PreLoadedGeometry();
-						pre->center = cube.getCenter();
+						pre->center = cube->getCenter();
 						pre->instances.push_back(InstanceData(glm::mat4(1.0), 0.0f));
 						pre->geometry = geometry;
 
@@ -88,11 +88,11 @@ void * OctreeProcessor::before(int level, OctreeNode * node, BoundingCube cube, 
 					NodeInfo * info = node->getNodeInfo(drawableType);
 					if(info == NULL) {
 						PreLoadedGeometry * pre = new PreLoadedGeometry();
-						pre->center = cube.getCenter();
+						pre->center = cube->getCenter();
 						pre->geometry = new Vegetation3d();
 
 						InstanceBuilder instanceBuilder(tree, currentLod, &pre->instances);
-						instanceBuilder.iterate(level, node, cube, NULL);
+						instanceBuilder.iterate(level, node, *cube, NULL);
 
 						// Shuffle the vector
 						std::shuffle(pre->instances.begin(), pre->instances.end(), g);
@@ -110,15 +110,15 @@ void * OctreeProcessor::before(int level, OctreeNode * node, BoundingCube cube, 
 	return NULL; 			 			
 }
 
-void OctreeProcessor::after(int level, OctreeNode * node, BoundingCube cube, void * context) {			
+void OctreeProcessor::after(int level, OctreeNode * node, BoundingCube * cube, void * context) {			
 	return;
 }
 
-bool OctreeProcessor::test(int level, OctreeNode * node, BoundingCube cube, void * context) {	
+bool OctreeProcessor::test(int level, OctreeNode * node, BoundingCube * cube, void * context) {	
 	return loadCount > 0;
 }
 
-void OctreeProcessor::getOrder(OctreeNode * node, BoundingCube cube, int * order){
+void OctreeProcessor::getOrder(OctreeNode * node, BoundingCube * cube, int * order){
 	for(int i = 0 ; i < 8 ; ++i) {
 		order[i] = i;
 	}

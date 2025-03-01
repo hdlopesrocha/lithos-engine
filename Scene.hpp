@@ -100,12 +100,12 @@ void draw (int drawableType, int mode, Settings * settings, glm::vec3 cameraPosi
 
 		for(int i =0; i < visibleSolidNodes.size() ; ++i){
 			IteratorData * data = &visibleSolidNodes[i];
-			solidProcessor->before(data->level, data->node, data->cube, NULL);
-			vegetationProcessor->before(data->level, data->node, data->cube, NULL);
+			solidProcessor->before(data->level, data->node, &data->cube, NULL);
+			vegetationProcessor->before(data->level, data->node, &data->cube, NULL);
 		}
 		for(int i =0; i < visibleLiquidNodes.size() ; ++i){
 			IteratorData * data = &visibleSolidNodes[i];
-			liquidProcessor->before(data->level, data->node, data->cube, NULL);
+			liquidProcessor->before(data->level, data->node, &data->cube, NULL);
 		}
 	}
 

@@ -19,8 +19,8 @@ Tesselator::Tesselator(Octree * tree, Geometry * chunk, int simplification) {
 
 }
 
-void * Tesselator::before(int level, OctreeNode * node, BoundingCube cube, void * context) {		
-	OctreeNode * corners[8];
+void * Tesselator::before(int level, OctreeNode * node, BoundingCube * cube, void * context) {		
+	static OctreeNode * corners[7];
 
 	if(tree->getHeight(cube)==0){
 		tree->getNodeNeighbors(cube, level, simplification, 1, corners, 0, 8);
@@ -32,15 +32,15 @@ void * Tesselator::before(int level, OctreeNode * node, BoundingCube cube, void 
 	return context;
 }
 
-void Tesselator::after(int level, OctreeNode * node, BoundingCube cube, void * context) {
+void Tesselator::after(int level, OctreeNode * node, BoundingCube * cube, void * context) {
 	return;
 }
 
-bool Tesselator::test(int level, OctreeNode * node, BoundingCube cube, void * context) {			
+bool Tesselator::test(int level, OctreeNode * node, BoundingCube * cube, void * context) {			
 	return node->solid != ContainmentType::Contains && tree->getHeight(cube) >= 0;
 }
 
-void Tesselator::getOrder(OctreeNode * node, BoundingCube cube, int * order){
+void Tesselator::getOrder(OctreeNode * node, BoundingCube * cube, int * order){
 	for(int i = 7 ; i >= 0 ; --i) {
 		order[i] = i;
 	}
