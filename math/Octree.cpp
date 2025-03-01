@@ -100,10 +100,10 @@ void Octree::getNeighbors(BoundingCube cube, int level, OctreeNode ** out) {
 	}
 }
 
-void Octree::getNodeCorners(BoundingCube cube, int level, int simplification, int direction, OctreeNode ** out) {
+void Octree::getNodeNeighbors(BoundingCube cube, int level, int simplification, int direction, OctreeNode ** out, int initialIndex, int finalIndex) {
 	// Get corners
 	//corners.push_back(node);
-	for(int i=0; i < 8; ++i) {
+	for(int i=initialIndex; i < finalIndex; ++i) {
 		glm::vec3 pos = cube.getCenter() + direction * cube.getLength() * Octree::getShift(i);
 		OctreeNode * n = getNodeAt(pos, level, simplification);
 		out[i] = n;

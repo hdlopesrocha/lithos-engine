@@ -11,17 +11,17 @@ InstanceBuilder::InstanceBuilder(Octree * tree, int lod) {
 
 void * InstanceBuilder::before(int level, OctreeNode * node, BoundingCube cube, void * context) {		
 	int height = tree->getHeight(cube);
+	static OctreeNode * neighbors[7];
+
 	if(height==lod){
 		
 		Vertex * v = &node->vertex;
 		if(v->brushIndex == 2) { 
-			OctreeNode * corners[8];
+			neighbors[0] = node;
+			tree->getNodeNeighbors(cube, level, 0, 1, neighbors, 1, 7);
 
-			OctreeNode ** cornersPointer = (OctreeNode **) corners;
-			tree->getNodeCorners(cube, level, 0, 1, corners);
-
-			OctreeNodeTriangleInstanceBuilder handler(&chunk, &instanceCount ,cornersPointer, &instances, 3);
-			tree->handleQuadNodes(node, corners, &handler);
+			OctreeNodeTriangleInstanceBuilder handler(&chunk, &instanceCount , (OctreeNode**)&neighbors, &instances, 3);
+			tree->handleQuadNodes(node, neighbors, &handler);
 
 		}
 		

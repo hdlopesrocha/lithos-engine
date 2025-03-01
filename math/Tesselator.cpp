@@ -20,9 +20,10 @@ Tesselator::Tesselator(Octree * tree, Geometry * chunk, int simplification) {
 }
 
 void * Tesselator::before(int level, OctreeNode * node, BoundingCube cube, void * context) {		
+	static OctreeNode * corners[7];
+
 	if(tree->getHeight(cube)==0){
-		OctreeNode * corners[8];
-		tree->getNodeCorners(cube, level, simplification, 1, corners);
+		tree->getNodeNeighbors(cube, level, simplification, 1, corners, 0, 7);
 		
 		// Tesselate
 		OctreeNodeTriangleTesselator handler(chunk, &triangles);
