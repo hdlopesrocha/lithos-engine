@@ -194,6 +194,7 @@ class OctreeProcessor : public IteratorHandler{
 
 };
 
+
 struct InstanceData {
     public:
     glm::mat4 matrix;
@@ -205,6 +206,12 @@ struct InstanceData {
     }
 };
 
+struct PreLoadedGeometry {
+    public:
+    Geometry * geometry;
+    std::vector<InstanceData> instances;
+    glm::vec3 center;
+};
 
 class OctreeNodeTriangleInstanceBuilder : public OctreeNodeTriangleHandler {
 
@@ -244,8 +251,8 @@ class InstanceBuilder : public IteratorHandler{
 
     public: 
         int instanceCount = 0;
-        std::vector<InstanceData> instances;
-		InstanceBuilder(Octree * tree, int lod);
+        std::vector<InstanceData> * instances;
+		InstanceBuilder(Octree * tree, int lod, std::vector<InstanceData> * instances);
 
 		void * before(int level, OctreeNode * node, BoundingCube cube, void * context);
 		void after(int level, OctreeNode * node, BoundingCube cube, void * context);
@@ -372,7 +379,6 @@ struct TileDraw {
 class Vegetation3d : public Geometry {
     public:
     Vegetation3d();
-    DrawableInstanceGeometry * createDrawable(std::vector<InstanceData> * instances, glm::vec3 center);
 };
 
 class AtlasTexture: public Texture {

@@ -26,9 +26,9 @@ class Scene {
 		std::vector<IteratorData> visibleLiquidNodes;
 		std::vector<IteratorData> visibleShadowNodes[SHADOW_MATRIX_COUNT];
 
-		std::vector<NodeInfo> drawableSolidNodes;
-		std::vector<NodeInfo> drawableLiquidNodes;
-		std::vector<NodeInfo> drawableShadowNodes[SHADOW_MATRIX_COUNT];
+		std::vector<NodeInfo*> drawableSolidNodes;
+		std::vector<NodeInfo*> drawableLiquidNodes;
+		std::vector<NodeInfo*> drawableShadowNodes[SHADOW_MATRIX_COUNT];
 
     void setup() {
 
@@ -47,11 +47,20 @@ class Scene {
 
     }
 
-void draw (int drawableType, int mode, Settings * settings, glm::vec3 cameraPosition, std::vector<NodeInfo> * list) {
+void draw (int drawableType, int mode, Settings * settings, glm::vec3 cameraPosition, std::vector<NodeInfo*> * list) {
 	for(int i=0 ; i < list->size() ; ++i) {
-		NodeInfo * info = &(*list)[i];
+		NodeInfo * info = list->at(i);
 		// drawable geometry
 		if(info->type == drawableType){
+			if(info->temp != NULL) {
+				PreLoadedGeometry * pre = (PreLoadedGeometry *) info->temp;
+				DrawableInstanceGeometry * geo = new DrawableInstanceGeometry(pre->geometry, &pre->instances, pre->center);
+				info->data = geo;
+				info->temp = NULL;
+				delete pre->geometry;
+				delete pre;
+			}
+
 			DrawableInstanceGeometry * drawable = (DrawableInstanceGeometry*) info->data;
 			//std::cout << "Current LOD " << std::to_string(currentLod) << " | " << std::to_string(selectedLod) << std::endl;
 
@@ -98,6 +107,19 @@ void draw (int drawableType, int mode, Settings * settings, glm::vec3 cameraPosi
 		}
 	}
 
+
+	void setVisibility(glm::mat4 viewProjection, std::vector<glm::mat4> shadowMatrices ,Camera * camera, DirectionalLight * light, Settings * settings) {
+		float far = 512.0;
+		setVisibleNodes(viewProjection, camera->position, solidRenderer);
+		setVisibleNodes(viewProjection, camera->position, liquidRenderer);
+		if(settings->shadowEnabled) {
+			glm::vec3 fakeLightPosition = camera->position - light->direction * far;
+			for(int i=0 ; i < shadowMatrices.size() ; ++i) {
+				setVisibleNodes(shadowMatrices[i], fakeLightPosition, shadowRenderer[i]);
+			}
+		}
+	}
+
 	void setVisibleNodes(glm::mat4 viewProjection, glm::vec3 sortPosition, OctreeVisibilityChecker * checker) {
 		checker->visibleNodes->clear();
 		checker->sortPosition = sortPosition;
@@ -108,14 +130,16 @@ void draw (int drawableType, int mode, Settings * settings, glm::vec3 cameraPosi
 	void flush() {
 		drawableLiquidNodes.clear();
 		for(IteratorData data : visibleLiquidNodes){
-			for(NodeInfo info : data.node->info) {
+			for(int i=0; i < data.node->info.size() ; ++i) {
+				NodeInfo * info = &data.node->info[i];
 				drawableLiquidNodes.push_back(info);
 			}
 		}
 
 		drawableSolidNodes.clear();
 		for(IteratorData data : visibleSolidNodes){
-			for(NodeInfo info : data.node->info) {
+			for(int i=0; i < data.node->info.size() ; ++i) {
+				NodeInfo * info = &data.node->info[i];
 				drawableSolidNodes.push_back(info);
 			}
 		}
@@ -123,24 +147,25 @@ void draw (int drawableType, int mode, Settings * settings, glm::vec3 cameraPosi
 		for(int i=0 ; i < SHADOW_MATRIX_COUNT ; ++i) {
 			drawableShadowNodes[i].clear();
 			for(IteratorData data : visibleShadowNodes[i]){
-				for(NodeInfo info : data.node->info) {
+				for(int i=0; i < data.node->info.size() ; ++i) {
+					NodeInfo * info = &data.node->info[i];
 					drawableShadowNodes[i].push_back(info);
 				}
 			}
 		}
 	}
 
-	void drawBillboards(glm::vec3 cameraPosition, Settings * settings, std::vector<NodeInfo> * list) {
+	void drawBillboards(glm::vec3 cameraPosition, Settings * settings, std::vector<NodeInfo*> * list) {
 		glDisable(GL_CULL_FACE);
 		draw(TYPE_INSTANCE_VEGETATION_DRAWABLE, GL_PATCHES, settings, cameraPosition, list);
 		glEnable(GL_CULL_FACE);
 	}
 
-	void draw3dSolid(glm::vec3 cameraPosition, Settings * settings, std::vector<NodeInfo> * list) {
+	void draw3dSolid(glm::vec3 cameraPosition, Settings * settings, std::vector<NodeInfo*> * list) {
 		draw(TYPE_INSTANCE_SOLID_DRAWABLE, GL_PATCHES, settings, cameraPosition, list);
 	}
 
-	void draw3dLiquid(glm::vec3 cameraPosition, Settings * settings, std::vector<NodeInfo> * list) {
+	void draw3dLiquid(glm::vec3 cameraPosition, Settings * settings, std::vector<NodeInfo*> * list) {
 		draw(TYPE_INSTANCE_LIQUID_DRAWABLE, GL_PATCHES, settings, cameraPosition, list);
 	}
 

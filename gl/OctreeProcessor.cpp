@@ -57,47 +57,52 @@ void * OctreeProcessor::before(int level, OctreeNode * node, BoundingCube cube, 
 
 
 		if(height==geometryLevel){
-			if(canGenerate){
-				// Simplify
-				Simplifier simplifier(tree, simplificationAngle, simplificationDistance, simplificationTexturing, simplification); 
-				simplifier.iterate(level, node, cube, &cube);
+			if(canGenerate && createInstances) {
+				if(drawableType == TYPE_INSTANCE_SOLID_DRAWABLE || drawableType == TYPE_INSTANCE_LIQUID_DRAWABLE) {
 
-				// Tesselate
-				Geometry * loadable = new Geometry();
-				Tesselator tesselator(tree, loadable, simplification);
-				tesselator.iterate(level, node, cube, NULL);
-				
-				// Instances with LOD
-				if(createInstances && drawableType == TYPE_INSTANCE_VEGETATION_DRAWABLE) {
+					// Simplify
+					Simplifier simplifier(tree, simplificationAngle, simplificationDistance, simplificationTexturing, simplification); 
+					simplifier.iterate(level, node, cube, &cube);
+
+					// Tesselate
+					Geometry * geometry = new Geometry();
+					Tesselator tesselator(tree, geometry, simplification);
+					tesselator.iterate(level, node, cube, NULL);
+
 					NodeInfo * info = node->getNodeInfo(drawableType);
 					if(info == NULL) {
-						InstanceBuilder instanceBuilder(tree, currentLod);
+						PreLoadedGeometry * pre = new PreLoadedGeometry();
+						pre->center = cube.getCenter();
+						pre->instances.push_back(InstanceData(glm::mat4(1.0), 0.0f));
+						pre->geometry = geometry;
+
+						node->info.push_back(NodeInfo(drawableType, NULL, pre, false));
+						*instancesCount += 1;
+						--loadCount;
+					}
+				}
+
+
+				// Instances with LOD
+				if(drawableType == TYPE_INSTANCE_VEGETATION_DRAWABLE) {
+					NodeInfo * info = node->getNodeInfo(drawableType);
+					if(info == NULL) {
+						PreLoadedGeometry * pre = new PreLoadedGeometry();
+						pre->center = cube.getCenter();
+						pre->geometry = new Vegetation3d();
+
+						InstanceBuilder instanceBuilder(tree, currentLod, &pre->instances);
 						instanceBuilder.iterate(level, node, cube, NULL);
 
 						// Shuffle the vector
-						std::shuffle(instanceBuilder.instances.begin(), instanceBuilder.instances.end(), g);
+						std::shuffle(pre->instances.begin(), pre->instances.end(), g);
+						
+						node->info.push_back(NodeInfo(drawableType, NULL, pre, false));
 						*instancesCount += instanceBuilder.instanceCount;
-						//std::cout << "Create vegetation = { instances=" << std::to_string(instanceBuilder.instanceCount) << ", drawableType=" << std::to_string(drawableType) << ", lod=" << currentLod << "}" << std::endl;
-						Vegetation3d * vegetation = new Vegetation3d();
-						node->info.push_back(NodeInfo(drawableType, vegetation->createDrawable(&instanceBuilder.instances, cube.getCenter()), NULL, false));
 						--loadCount;
 					}
 				}
 
-				if(createInstances && (drawableType == TYPE_INSTANCE_SOLID_DRAWABLE || drawableType == TYPE_INSTANCE_LIQUID_DRAWABLE)) {
-					NodeInfo * info = node->getNodeInfo(drawableType);
-					if(info == NULL) {
-						int instanceCount = 1;
-						std::vector<InstanceData> instances;
-						instances.push_back(InstanceData(glm::mat4(1.0), 0.0f));
-
-						*instancesCount += instanceCount;
-						//std::cout << "Create drawbale " << std::to_string(instanceCount) << " | " << std::to_string(drawableType) << std::endl;
-						DrawableInstanceGeometry * drawable = new DrawableInstanceGeometry(loadable, &instances, cube.getCenter());
-						node->info.push_back(NodeInfo(drawableType, drawable, NULL, false));
-						--loadCount;
-					}
-				}
 			}
 			return node;
 		}

@@ -3,10 +3,11 @@
 #include "gl.hpp"
 #include <glm/gtx/norm.hpp> 
 
-InstanceBuilder::InstanceBuilder(Octree * tree, int lod) {
+InstanceBuilder::InstanceBuilder(Octree * tree, int lod, std::vector<InstanceData> * instances) {
 	this->tree = tree;
 	this->instanceCount = 0;
 	this->lod = lod;
+	this->instances = instances;
 }
 
 void * InstanceBuilder::before(int level, OctreeNode * node, BoundingCube cube, void * context) {		
@@ -20,7 +21,7 @@ void * InstanceBuilder::before(int level, OctreeNode * node, BoundingCube cube, 
 			neighbors[0] = node;
 			tree->getNodeNeighbors(cube, level, 0, 1, neighbors, 1, 7);
 
-			OctreeNodeTriangleInstanceBuilder handler(&chunk, &instanceCount , (OctreeNode**)&neighbors, &instances, 3);
+			OctreeNodeTriangleInstanceBuilder handler(&chunk, &instanceCount , (OctreeNode**)&neighbors, instances, 3);
 			tree->handleQuadNodes(node, neighbors, &handler);
 
 		}

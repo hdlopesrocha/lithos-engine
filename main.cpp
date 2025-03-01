@@ -7,6 +7,7 @@
 #include "tools/tools.hpp"
 #include "HeightFunctions.hpp"
 #include "Scene.hpp"
+#include <thread>
 
 
 class OctreeContainmentHandler : public ContainmentHandler {
@@ -457,6 +458,11 @@ public:
 		}
     }
 
+	void process(glm::mat4 viewProjection, std::vector<glm::mat4> shadowMatrices, Camera camera, DirectionalLight light) {
+		mainScene->processSpace();
+		mainScene->setVisibility(viewProjection, shadowMatrices, &camera, &light, settings);
+		mainScene->flush();
+	}
 
 
     virtual void draw3d() {
@@ -482,17 +488,11 @@ public:
 		}
 
 		glm::mat4 viewProjection = camera.getVP();
-		mainScene->processSpace();
-		mainScene->setVisibleNodes(viewProjection, camera.position, mainScene->solidRenderer);
-		mainScene->setVisibleNodes(viewProjection, camera.position, mainScene->liquidRenderer);
-		if(settings->shadowEnabled) {
-			glm::vec3 fakeLightPosition = camera.position - light.direction * far;
-			for(int i=0 ; i < shadowMatrices.size() ; ++i) {
-				mainScene->setVisibleNodes(shadowMatrices[i], fakeLightPosition, mainScene->shadowRenderer[i]);
-			}
-		}
 
-		mainScene->flush();
+
+	    //std::thread t(&MainApplication::process, this, viewProjection, shadowMatrices, camera, light);
+		//t.join();
+		process(viewProjection, shadowMatrices, camera, light);
 
 		glPolygonMode(GL_FRONT, GL_FILL);
 		glPatchParameteri(GL_PATCH_VERTICES, 3); // Define the number of control points per patch
@@ -640,6 +640,7 @@ public:
 			GL_NEAREST           
 		);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
 
     }
 	bool demo = false;
