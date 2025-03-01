@@ -38,69 +38,70 @@ void markNeighborsAsDirty(Octree * tree, BoundingCube cube, int level, int drawa
 }
 
 void * OctreeProcessor::before(int level, OctreeNode * node, BoundingCube cube, void * context) {		
-	bool canGenerate = true;
-	for(int i=0; i < node->info.size(); ++i){
-		NodeInfo * info = &node->info[i];
-		if(info->type == INFO_TYPE_FILE && info->dirty) {
-			OctreeNodeFile *f = (OctreeNodeFile*) info->data;
-			f->load();
-			markNeighborsAsDirty(tree, cube, level, drawableType);
-			info->dirty = false;
-		}
-		if(info->type == drawableType && !info->dirty) {
-			canGenerate = false;
-		}
-	}
-	float height = tree->getHeight(cube);
-	int currentLod = height - geometryLevel;
-
-
-	if(height==geometryLevel){
-		if(canGenerate){
-			// Simplify
-			Simplifier simplifier(tree, simplificationAngle, simplificationDistance, simplificationTexturing, simplification); 
-			simplifier.iterate(level, node, cube, &cube);
-
-			// Tesselate
-			Geometry * loadable = new Geometry();
-			Tesselator tesselator(tree, loadable, simplification);
-			tesselator.iterate(level, node, cube, NULL);
-			
-			// Instances with LOD
-			if(createInstances && drawableType == TYPE_INSTANCE_VEGETATION_DRAWABLE) {
-				NodeInfo * info = node->getNodeInfo(drawableType);
-				if(info == NULL) {
-					InstanceBuilder instanceBuilder(tree, currentLod);
-					instanceBuilder.iterate(level, node, cube, NULL);
-
-					// Shuffle the vector
-					std::shuffle(instanceBuilder.instances.begin(), instanceBuilder.instances.end(), g);
-					*instancesCount += instanceBuilder.instanceCount;
-					//std::cout << "Create vegetation = { instances=" << std::to_string(instanceBuilder.instanceCount) << ", drawableType=" << std::to_string(drawableType) << ", lod=" << currentLod << "}" << std::endl;
-					Vegetation3d * vegetation = new Vegetation3d();
-					node->info.push_back(NodeInfo(drawableType, vegetation->createDrawable(&instanceBuilder.instances, cube.getCenter()), NULL, false));
-					++loaded;
-				}
+	if(loadCount > 0) {
+		bool canGenerate = true;
+		for(int i=0; i < node->info.size(); ++i){
+			NodeInfo * info = &node->info[i];
+			if(info->type == INFO_TYPE_FILE && info->dirty) {
+				OctreeNodeFile *f = (OctreeNodeFile*) info->data;
+				f->load();
+				markNeighborsAsDirty(tree, cube, level, drawableType);
+				info->dirty = false;
 			}
-
-			if(createInstances && (drawableType == TYPE_INSTANCE_SOLID_DRAWABLE || drawableType == TYPE_INSTANCE_LIQUID_DRAWABLE)) {
-				NodeInfo * info = node->getNodeInfo(drawableType);
-				if(info == NULL) {
-					int instanceCount = 1;
-					std::vector<InstanceData> instances;
-					instances.push_back(InstanceData(glm::mat4(1.0), 0.0f));
-
-					*instancesCount += instanceCount;
-					//std::cout << "Create drawbale " << std::to_string(instanceCount) << " | " << std::to_string(drawableType) << std::endl;
-					DrawableInstanceGeometry * drawable = new DrawableInstanceGeometry(loadable, &instances, cube.getCenter());
-					node->info.push_back(NodeInfo(drawableType, drawable, NULL, false));
-					++loaded;
-				}
+			if(info->type == drawableType && !info->dirty) {
+				canGenerate = false;
 			}
 		}
-		return node;
+		float height = tree->getHeight(cube);
+		int currentLod = height - geometryLevel;
+
+
+		if(height==geometryLevel){
+			if(canGenerate){
+				// Simplify
+				Simplifier simplifier(tree, simplificationAngle, simplificationDistance, simplificationTexturing, simplification); 
+				simplifier.iterate(level, node, cube, &cube);
+
+				// Tesselate
+				Geometry * loadable = new Geometry();
+				Tesselator tesselator(tree, loadable, simplification);
+				tesselator.iterate(level, node, cube, NULL);
+				
+				// Instances with LOD
+				if(createInstances && drawableType == TYPE_INSTANCE_VEGETATION_DRAWABLE) {
+					NodeInfo * info = node->getNodeInfo(drawableType);
+					if(info == NULL) {
+						InstanceBuilder instanceBuilder(tree, currentLod);
+						instanceBuilder.iterate(level, node, cube, NULL);
+
+						// Shuffle the vector
+						std::shuffle(instanceBuilder.instances.begin(), instanceBuilder.instances.end(), g);
+						*instancesCount += instanceBuilder.instanceCount;
+						//std::cout << "Create vegetation = { instances=" << std::to_string(instanceBuilder.instanceCount) << ", drawableType=" << std::to_string(drawableType) << ", lod=" << currentLod << "}" << std::endl;
+						Vegetation3d * vegetation = new Vegetation3d();
+						node->info.push_back(NodeInfo(drawableType, vegetation->createDrawable(&instanceBuilder.instances, cube.getCenter()), NULL, false));
+						--loadCount;
+					}
+				}
+
+				if(createInstances && (drawableType == TYPE_INSTANCE_SOLID_DRAWABLE || drawableType == TYPE_INSTANCE_LIQUID_DRAWABLE)) {
+					NodeInfo * info = node->getNodeInfo(drawableType);
+					if(info == NULL) {
+						int instanceCount = 1;
+						std::vector<InstanceData> instances;
+						instances.push_back(InstanceData(glm::mat4(1.0), 0.0f));
+
+						*instancesCount += instanceCount;
+						//std::cout << "Create drawbale " << std::to_string(instanceCount) << " | " << std::to_string(drawableType) << std::endl;
+						DrawableInstanceGeometry * drawable = new DrawableInstanceGeometry(loadable, &instances, cube.getCenter());
+						node->info.push_back(NodeInfo(drawableType, drawable, NULL, false));
+						--loadCount;
+					}
+				}
+			}
+			return node;
+		}
 	}
-	
 	return NULL; 			 			
 }
 
@@ -109,7 +110,7 @@ void OctreeProcessor::after(int level, OctreeNode * node, BoundingCube cube, voi
 }
 
 bool OctreeProcessor::test(int level, OctreeNode * node, BoundingCube cube, void * context) {	
-	return context == NULL && loaded == 0;
+	return loadCount > 0;
 }
 
 void OctreeProcessor::getOrder(OctreeNode * node, BoundingCube cube, int * order){

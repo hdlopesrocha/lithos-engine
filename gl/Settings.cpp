@@ -9,6 +9,6 @@ Settings::Settings() {
     this->wireFrameEnabled = false;
     this->tesselationEnabled = true;
     this->opacityEnabled = true;
-    this->billboardEnabled = true;
+    this->billboardEnabled = false;
     this->billboardRange = 128;
 }

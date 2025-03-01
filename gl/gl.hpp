@@ -181,7 +181,7 @@ class OctreeProcessor : public IteratorHandler{
     bool createInstances;
     int simplification;
     public: 
-		int loaded = 0;
+		int loadCount = 0;
 		int geometryLevel;
         glm::vec3 cameraPosition;
         int * instancesCount;

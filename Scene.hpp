@@ -81,9 +81,9 @@ void draw (int drawableType, int mode, Settings * settings, glm::vec3 cameraPosi
 
 
 	void processSpace() {
-		solidProcessor->loaded = 0;
-		liquidProcessor->loaded = 0;
-		vegetationProcessor->loaded = 0;
+		solidProcessor->loadCount = 1;
+		liquidProcessor->loadCount = 1;
+		vegetationProcessor->loadCount = 1;
 
 		solidInstancesVisible = 0;
 		liquidInstancesVisible = 0;
