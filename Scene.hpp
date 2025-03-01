@@ -104,7 +104,7 @@ void draw (int drawableType, int mode, Settings * settings, glm::vec3 cameraPosi
 			vegetationProcessor->before(data->level, data->node, &data->cube, NULL);
 		}
 		for(int i =0; i < visibleLiquidNodes.size() ; ++i){
-			IteratorData * data = &visibleSolidNodes[i];
+			IteratorData * data = &visibleLiquidNodes[i];
 			liquidProcessor->before(data->level, data->node, &data->cube, NULL);
 		}
 	}
