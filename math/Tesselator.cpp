@@ -40,7 +40,7 @@ bool Tesselator::test(int level, OctreeNode * node, BoundingCube * cube, void * 
 	return node->solid != ContainmentType::Contains && tree->getHeight(cube) >= 0;
 }
 
-void Tesselator::getOrder(OctreeNode * node, BoundingCube * cube, int * order){
+void Tesselator::getOrder(BoundingCube * cube, int * order){
 	for(int i = 7 ; i >= 0 ; --i) {
 		order[i] = i;
 	}

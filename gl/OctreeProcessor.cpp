@@ -118,7 +118,7 @@ bool OctreeProcessor::test(int level, OctreeNode * node, BoundingCube * cube, vo
 	return loadCount > 0;
 }
 
-void OctreeProcessor::getOrder(OctreeNode * node, BoundingCube * cube, int * order){
+void OctreeProcessor::getOrder(BoundingCube * cube, int * order){
 	for(int i = 0 ; i < 8 ; ++i) {
 		order[i] = i;
 	}

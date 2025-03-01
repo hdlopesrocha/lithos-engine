@@ -38,7 +38,7 @@ bool OctreeVisibilityChecker::test(int level, OctreeNode * node, BoundingCube * 
 }
 
 
-void OctreeVisibilityChecker::getOrder(OctreeNode * node, BoundingCube * cube, int * order){
+void OctreeVisibilityChecker::getOrder(BoundingCube * cube, int * order){
 	static std::pair<glm::vec3, int> internalSortingVector[8]={};
 	
 	for(int i =0; i< 8; ++i){

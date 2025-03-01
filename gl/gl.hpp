@@ -187,10 +187,10 @@ class OctreeProcessor : public IteratorHandler{
         int * instancesCount;
 		OctreeProcessor(Octree * tree, int * instancesCount, int drawableType, int geometryLevel, float simplificationAngle, float simplificationDistance, bool simplificationTexturing, bool createInstances, int simplification);
 
-		void * before(int level, OctreeNode * node, BoundingCube * cube, void * context);
-		void after(int level, OctreeNode * node, BoundingCube * cube, void * context);
-		bool test(int level, OctreeNode * node, BoundingCube * cube, void * context);
-		void getOrder(OctreeNode * node, BoundingCube * cube, int * order);
+		void * before(int level, OctreeNode * node, BoundingCube * cube, void * context) override;
+		void after(int level, OctreeNode * node, BoundingCube * cube, void * context) override;
+		bool test(int level, OctreeNode * node, BoundingCube * cube, void * context) override;
+		void getOrder(BoundingCube * cube, int * order) override;
 
 };
 
@@ -254,10 +254,10 @@ class InstanceBuilder : public IteratorHandler{
         std::vector<InstanceData> * instances;
 		InstanceBuilder(Octree * tree, int lod, std::vector<InstanceData> * instances);
 
-		void * before(int level, OctreeNode * node, BoundingCube * cube, void * context);
-		void after(int level, OctreeNode * node, BoundingCube * cube, void * context);
-		bool test(int level, OctreeNode * node, BoundingCube * cube, void * context);
-		void getOrder(OctreeNode * node, BoundingCube * cube, int * order);
+		void * before(int level, OctreeNode * node, BoundingCube * cube, void * context) override;
+		void after(int level, OctreeNode * node, BoundingCube * cube, void * context) override;
+		bool test(int level, OctreeNode * node, BoundingCube * cube, void * context) override;
+		void getOrder(BoundingCube * cube, int * order) override;
 
 };
 

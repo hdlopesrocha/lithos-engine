@@ -40,7 +40,7 @@ bool InstanceBuilder::test(int level, OctreeNode * node, BoundingCube * cube, vo
 }
 
 
-void InstanceBuilder::getOrder(OctreeNode * node, BoundingCube * cube, int * order){
+void InstanceBuilder::getOrder(BoundingCube * cube, int * order){
 	for(int i = 0 ; i < 8 ; ++i) {
 		order[i] = i;
 	}
