@@ -12,14 +12,14 @@ InstanceBuilder::InstanceBuilder(Octree * tree, int lod, std::vector<InstanceDat
 
 void * InstanceBuilder::before(int level, OctreeNode * node, BoundingCube cube, void * context) {		
 	int height = tree->getHeight(cube);
-	static OctreeNode * neighbors[7];
+	OctreeNode * neighbors[8];
 
 	if(height==lod){
 		
 		Vertex * v = &node->vertex;
 		if(v->brushIndex == 2) { 
-			neighbors[0] = node;
-			tree->getNodeNeighbors(cube, level, 0, 1, neighbors, 1, 7);
+			//neighbors[0] = node;
+			tree->getNodeNeighbors(cube, level, 0, 1, neighbors, 0, 8);
 
 			OctreeNodeTriangleInstanceBuilder handler(&chunk, &instanceCount , (OctreeNode**)&neighbors, instances, 3);
 			tree->handleQuadNodes(node, neighbors, &handler);
