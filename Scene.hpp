@@ -98,12 +98,14 @@ void draw (int drawableType, int mode, Settings * settings, glm::vec3 cameraPosi
 		liquidInstancesVisible = 0;
 		vegetationInstancesVisible = 0;
 
-		for(IteratorData data: visibleSolidNodes){
-			solidProcessor->before(data.level, data.node, data.cube, NULL);
-			vegetationProcessor->before(data.level, data.node, data.cube, NULL);
+		for(int i =0; i < visibleSolidNodes.size() ; ++i){
+			IteratorData * data = &visibleSolidNodes[i];
+			solidProcessor->before(data->level, data->node, data->cube, NULL);
+			vegetationProcessor->before(data->level, data->node, data->cube, NULL);
 		}
-		for(IteratorData data: visibleLiquidNodes){
-			liquidProcessor->before(data.level, data.node, data.cube, NULL);
+		for(int i =0; i < visibleLiquidNodes.size() ; ++i){
+			IteratorData * data = &visibleSolidNodes[i];
+			liquidProcessor->before(data->level, data->node, data->cube, NULL);
 		}
 	}
 
@@ -129,26 +131,29 @@ void draw (int drawableType, int mode, Settings * settings, glm::vec3 cameraPosi
 
 	void flush() {
 		drawableLiquidNodes.clear();
-		for(IteratorData data : visibleLiquidNodes){
-			for(int i=0; i < data.node->info.size() ; ++i) {
-				NodeInfo * info = &data.node->info[i];
+		for(int i =0; i < visibleLiquidNodes.size() ; ++i){
+			IteratorData * data = &visibleSolidNodes[i];
+			for(int j=0; j < data->node->info.size() ; ++j) {
+				NodeInfo * info = &data->node->info[j];
 				drawableLiquidNodes.push_back(info);
 			}
 		}
 
 		drawableSolidNodes.clear();
-		for(IteratorData data : visibleSolidNodes){
-			for(int i=0; i < data.node->info.size() ; ++i) {
-				NodeInfo * info = &data.node->info[i];
+		for(int i =0; i < visibleSolidNodes.size() ; ++i){
+			IteratorData * data = &visibleSolidNodes[i];
+			for(int j=0; j < data->node->info.size() ; ++j) {
+				NodeInfo * info = &data->node->info[j];
 				drawableSolidNodes.push_back(info);
 			}
 		}
 
 		for(int i=0 ; i < SHADOW_MATRIX_COUNT ; ++i) {
 			drawableShadowNodes[i].clear();
-			for(IteratorData data : visibleShadowNodes[i]){
-				for(int i=0; i < data.node->info.size() ; ++i) {
-					NodeInfo * info = &data.node->info[i];
+			for(int j =0; j < visibleShadowNodes[i].size() ; ++j){
+				IteratorData * data = &visibleShadowNodes[i][j];
+				for(int k=0; k < data->node->info.size() ; ++k) {
+					NodeInfo * info = &data->node->info[k];
 					drawableShadowNodes[i].push_back(info);
 				}
 			}
