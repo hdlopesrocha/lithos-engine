@@ -335,7 +335,6 @@ class Octree: public BoundingCube {
 		OctreeNode * getNodeAt(glm::vec3 pos, int level, int simplification);
 		void getNodeNeighbors(BoundingCube cube, int level, int simplification, int direction, OctreeNode ** out, int initialIndex, int finalIndex);
 		void handleQuadNodes(OctreeNode * node, OctreeNode** corners, OctreeNodeTriangleHandler * handler);
-		void getNeighbors(BoundingCube cube, int level, OctreeNode ** out);
 
 		void save(std::string filename);
 		static glm::vec3 getShift(int i);
