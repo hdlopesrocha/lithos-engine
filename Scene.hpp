@@ -3,6 +3,9 @@
 #include "tools/tools.hpp"
 #include "gl/gl.hpp"
 #include <glm/gtx/norm.hpp> 
+#include <mutex>
+#include <thread>
+
 class Scene {
 
     public: 
@@ -29,6 +32,11 @@ class Scene {
 		std::vector<NodeInfo*> drawableSolidNodes;
 		std::vector<NodeInfo*> drawableLiquidNodes;
 		std::vector<NodeInfo*> drawableShadowNodes[SHADOW_MATRIX_COUNT];
+
+		std::mutex mutexSolidNodes;
+		std::mutex mutexLiquidNodes;
+		std::mutex mutexShadowNodes[SHADOW_MATRIX_COUNT];
+
 
     void setup() {
 
@@ -130,25 +138,30 @@ void draw (int drawableType, int mode, Settings * settings, glm::vec3 cameraPosi
 	}
 
 	void flush() {
-		drawableLiquidNodes.clear();
-		for(int i =0; i < visibleLiquidNodes.size() ; ++i){
-			IteratorData * data = &visibleSolidNodes[i];
-			for(int j=0; j < data->node->info.size() ; ++j) {
-				NodeInfo * info = &data->node->info[j];
-				drawableLiquidNodes.push_back(info);
+		{
+			std::lock_guard<std::mutex> lock(mutexLiquidNodes); 
+			drawableLiquidNodes.clear();
+			for(int i =0; i < visibleLiquidNodes.size() ; ++i){
+				IteratorData * data = &visibleLiquidNodes[i];
+				for(int j=0; j < data->node->info.size() ; ++j) {
+					NodeInfo * info = &data->node->info[j];
+					drawableLiquidNodes.push_back(info);
+				}
 			}
 		}
-
-		drawableSolidNodes.clear();
-		for(int i =0; i < visibleSolidNodes.size() ; ++i){
-			IteratorData * data = &visibleSolidNodes[i];
-			for(int j=0; j < data->node->info.size() ; ++j) {
-				NodeInfo * info = &data->node->info[j];
-				drawableSolidNodes.push_back(info);
+		{
+			std::lock_guard<std::mutex> lock(mutexSolidNodes); 
+			drawableSolidNodes.clear();
+			for(int i =0; i < visibleSolidNodes.size() ; ++i){
+				IteratorData * data = &visibleSolidNodes[i];
+				for(int j=0; j < data->node->info.size() ; ++j) {
+					NodeInfo * info = &data->node->info[j];
+					drawableSolidNodes.push_back(info);
+				}
 			}
 		}
-
 		for(int i=0 ; i < SHADOW_MATRIX_COUNT ; ++i) {
+			std::lock_guard<std::mutex> lock(mutexShadowNodes[i]); 
 			drawableShadowNodes[i].clear();
 			for(int j =0; j < visibleShadowNodes[i].size() ; ++j){
 				IteratorData * data = &visibleShadowNodes[i][j];
@@ -160,17 +173,20 @@ void draw (int drawableType, int mode, Settings * settings, glm::vec3 cameraPosi
 		}
 	}
 
-	void drawBillboards(glm::vec3 cameraPosition, Settings * settings, std::vector<NodeInfo*> * list) {
+	void drawBillboards(glm::vec3 cameraPosition, Settings * settings, std::vector<NodeInfo*> * list, std::mutex * mutex) {
+		std::lock_guard<std::mutex> lock(*mutex); 
 		glDisable(GL_CULL_FACE);
 		draw(TYPE_INSTANCE_VEGETATION_DRAWABLE, GL_PATCHES, settings, cameraPosition, list);
 		glEnable(GL_CULL_FACE);
 	}
 
-	void draw3dSolid(glm::vec3 cameraPosition, Settings * settings, std::vector<NodeInfo*> * list) {
+	void draw3dSolid(glm::vec3 cameraPosition, Settings * settings, std::vector<NodeInfo*> * list, std::mutex * mutex) {
+		std::lock_guard<std::mutex> lock(*mutex); 
 		draw(TYPE_INSTANCE_SOLID_DRAWABLE, GL_PATCHES, settings, cameraPosition, list);
 	}
 
-	void draw3dLiquid(glm::vec3 cameraPosition, Settings * settings, std::vector<NodeInfo*> * list) {
+	void draw3dLiquid(glm::vec3 cameraPosition, Settings * settings, std::vector<NodeInfo*> * list, std::mutex * mutex) {
+		std::lock_guard<std::mutex> lock(*mutex); 
 		draw(TYPE_INSTANCE_LIQUID_DRAWABLE, GL_PATCHES, settings, cameraPosition, list);
 	}
 

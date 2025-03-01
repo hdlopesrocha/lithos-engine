@@ -490,9 +490,8 @@ public:
 		glm::mat4 viewProjection = camera.getVP();
 
 
-	    //std::thread t(&MainApplication::process, this, viewProjection, shadowMatrices, camera, light);
-		//t.join();
-		process(viewProjection, shadowMatrices, camera, light);
+	    std::thread t(&MainApplication::process, this, viewProjection, shadowMatrices, camera, light);
+		//process(viewProjection, shadowMatrices, camera, light);
 
 		glPolygonMode(GL_FRONT, GL_FILL);
 		glPatchParameteri(GL_PATCH_VERTICES, 3); // Define the number of control points per patch
@@ -542,13 +541,13 @@ public:
 				uniformBlock.set(OPACITY_FLAG, false);
 				program3dData->uniform(&uniformBlock);
 
-				mainScene->draw3dSolid(camera.position, settings, &mainScene->drawableShadowNodes[i]);
+				mainScene->draw3dSolid(camera.position, settings, &mainScene->drawableShadowNodes[i], &mainScene->mutexShadowNodes[i]);
 				
 				if(settings->billboardEnabled) {
 					glUseProgram(programBillboard);
 					uniformBlock.set(OPACITY_FLAG, true);
 					programBillboardData->uniform(&uniformBlock);
-					mainScene->drawBillboards(camera.position, settings, &mainScene->drawableShadowNodes[i]);
+					mainScene->drawBillboards(camera.position, settings, &mainScene->drawableShadowNodes[i], &mainScene->mutexShadowNodes[i]);
 				}
 			}
 			viewerBlock = uniformBlock;
@@ -563,19 +562,18 @@ public:
 		glViewport(0, 0, depthFrameBuffer.width, depthFrameBuffer.height);
 		glClear(GL_DEPTH_BUFFER_BIT);
 
-	
 
 		glUseProgram(program3d);
 		uniformBlock.set(OPACITY_FLAG, false);
 		program3dData->uniform(&uniformBlock);
-		mainScene->draw3dSolid(camera.position, settings, &mainScene->drawableSolidNodes);
+		mainScene->draw3dSolid(camera.position, settings, &mainScene->drawableSolidNodes, &mainScene->mutexSolidNodes);
 
 		uniformBlock.set(TESSELATION_FLAG, false);
 		uniformBlock.set(OPACITY_FLAG, settings->opacityEnabled);
 		if(settings->billboardEnabled) {
 			glUseProgram(programBillboard);
 			programBillboardData->uniform(&uniformBlock);
-			mainScene->drawBillboards(camera.position, settings, &mainScene->drawableSolidNodes);
+			mainScene->drawBillboards(camera.position, settings, &mainScene->drawableSolidNodes, &mainScene->mutexSolidNodes);
 		}
 		// ==================
 		// Second Pass: Solid
@@ -594,7 +592,7 @@ public:
 		if(settings->billboardEnabled) {
 			glUseProgram(programBillboard);
 			programBillboardData->uniform(&uniformBlock);
-			mainScene->drawBillboards(camera.position, settings, &mainScene->drawableSolidNodes);
+			mainScene->drawBillboards(camera.position, settings, &mainScene->drawableSolidNodes, &mainScene->mutexSolidNodes);
 		}
 		uniformBlock.set(TESSELATION_FLAG, settings->tesselationEnabled);
 		uniformBlock.set(OPACITY_FLAG, false);
@@ -602,7 +600,7 @@ public:
 
 		glUseProgram(program3d);
 		program3dData->uniform(&uniformBlock);
-		mainScene->draw3dSolid(camera.position, settings, &mainScene->drawableSolidNodes);
+		mainScene->draw3dSolid(camera.position, settings, &mainScene->drawableSolidNodes, &mainScene->mutexSolidNodes);
 		if(settings->wireFrameEnabled) {
 			glPolygonMode(GL_FRONT, GL_FILL);
 		}
@@ -621,7 +619,7 @@ public:
 
 		glUseProgram(program3d);
 		program3dData->uniform(&uniformBlock);
-		mainScene->draw3dLiquid(camera.position, settings, &mainScene->drawableLiquidNodes);
+		mainScene->draw3dLiquid(camera.position, settings, &mainScene->drawableLiquidNodes, &mainScene->mutexLiquidNodes);
 
 		//glUseProgram(program3d);
 		brushEditor->draw3dIfOpen(&uniformBlock);
@@ -641,6 +639,7 @@ public:
 		);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
+		t.join();
 
     }
 	bool demo = false;
