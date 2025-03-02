@@ -10,6 +10,7 @@
 #include <string>
 #include <fstream>
 #include <vector>
+#include <stack>
 #include <map>
 #include <filesystem>
 #include <algorithm>
@@ -272,24 +273,30 @@ struct IteratorData {
 	BoundingCube cube;
 	void * context;
 
-	IteratorData(int level, OctreeNode * node, BoundingCube cube, void * context) {
-		this->level = level;
-		this->node = node;
-		this->cube = cube;
-		this->context = context;
-	}
 };
 
+struct StackFrame {
+	int level;
+	OctreeNode* node;
+	BoundingCube cube;
+	void* context;
+	int childIndex; // Tracks which child we're processing
+	int internalOrder[8]; // Stores child processing order
+};
 
 class IteratorHandler {
+    std::stack<IteratorData> flatData;
+    std::stack<StackFrame> stack;
+
+
 	public: 
 		virtual bool test(int level, OctreeNode * node, BoundingCube &cube, void * context) = 0;
 		virtual void * before(int level, OctreeNode * node, BoundingCube &cube, void * context) = 0;
 		virtual void after(int level, OctreeNode * node, BoundingCube &cube, void * context) = 0;
 		virtual void getOrder(BoundingCube &cube, int * order) = 0;
 		void iterate(int level, OctreeNode * node, BoundingCube cube, void * context);
-		void iterateFlat(int level, OctreeNode * node, BoundingCube cube, void * context);
-		void iterateNonRecursive(int level, OctreeNode * root, BoundingCube cube, void * context);
+		void iterateFlatIn(int level, OctreeNode * node, BoundingCube cube, void * context);
+		void iterateFlat(int level, OctreeNode * root, BoundingCube cube, void * context);
 };
 
 

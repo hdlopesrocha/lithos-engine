@@ -61,12 +61,12 @@ void * OctreeProcessor::before(int level, OctreeNode * node, BoundingCube &cube,
 
 					// Simplify
 					Simplifier simplifier(tree, cube, simplificationAngle, simplificationDistance, simplificationTexturing, simplification); 
-					simplifier.iterateNonRecursive(level, node, cube, NULL);
+					simplifier.iterateFlat(level, node, cube, NULL);
 
 					// Tesselate
 					Geometry * geometry = new Geometry();
 					Tesselator tesselator(tree, geometry, simplification);
-					tesselator.iterateFlat(level, node, cube, NULL);
+					tesselator.iterateFlatIn(level, node, cube, NULL);
 
 					NodeInfo * info = node->getNodeInfo(drawableType);
 					if(info == NULL) {
@@ -91,7 +91,7 @@ void * OctreeProcessor::before(int level, OctreeNode * node, BoundingCube &cube,
 						pre->geometry = new Vegetation3d();
 
 						InstanceBuilder instanceBuilder(tree, currentLod, &pre->instances);
-						instanceBuilder.iterateFlat(level, node, cube, NULL);
+						instanceBuilder.iterateFlatIn(level, node, cube, NULL);
 
 						// Shuffle the vector
 						std::shuffle(pre->instances.begin(), pre->instances.end(), g);

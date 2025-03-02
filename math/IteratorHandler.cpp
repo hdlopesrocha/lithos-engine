@@ -1,5 +1,4 @@
 #include "math.hpp"
-#include <stack>
 void IteratorHandler::iterate(int level, OctreeNode * node, BoundingCube cube, void * context) {
     if(node != NULL) {
         context = before(level,node, cube, context);
@@ -18,24 +17,23 @@ void IteratorHandler::iterate(int level, OctreeNode * node, BoundingCube cube, v
     }
 }
 
-void IteratorHandler::iterateFlat(int level, OctreeNode * node, BoundingCube cube, void * context) {
-    std::vector<IteratorData> data;
+void IteratorHandler::iterateFlatIn(int level, OctreeNode * node, BoundingCube cube, void * context) {
+    int internalOrder[8];
  
-    data.push_back(IteratorData(level, node, cube, context));
-    while(data.size()) {
+    flatData.push({level, node, cube, context});
+    while(flatData.size()) {
         bool newData = false;
-        IteratorData d = data[data.size() -1];
-        data.pop_back();
+        IteratorData d = flatData.top();
+        flatData.pop();
 
         context = before(d.level,d.node, d.cube, d.context);
         if(test(d.level, d.node, d.cube, context)) {
-            int internalOrder[8];
             getOrder(d.cube, internalOrder);
             for(int i=7; i >= 0 ; --i) {
                 int j = internalOrder[i];
                 OctreeNode * child = d.node->children[j];
                 if(child != NULL) {
-                    data.push_back(IteratorData(d.level + 1, child, Octree::getChildCube(d.cube,j), context ));
+                    flatData.push({d.level + 1, child, Octree::getChildCube(d.cube,j), context });
                     newData = true;
                 }
             }
@@ -44,19 +42,9 @@ void IteratorHandler::iterateFlat(int level, OctreeNode * node, BoundingCube cub
     }
 }
 
-void IteratorHandler::iterateNonRecursive(int level, OctreeNode * root, BoundingCube cube, void * context) {
+void IteratorHandler::iterateFlat(int level, OctreeNode * root, BoundingCube cube, void * context) {
     if (!root) return;
 
-    struct StackFrame {
-        int level;
-        OctreeNode* node;
-        BoundingCube cube;
-        void* context;
-        int childIndex; // Tracks which child we're processing
-        int internalOrder[8]; // Stores child processing order
-    };
-
-    std::stack<StackFrame> stack;
     stack.push({level, root, cube, context, 0, {0}});
 
     while (!stack.empty()) {

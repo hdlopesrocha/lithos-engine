@@ -230,7 +230,7 @@ void Octree::iterate(IteratorHandler * handler) {
 
 void Octree::iterateFlat(IteratorHandler * handler) {
 	BoundingCube cube(glm::vec3(getMinX(),getMinY(),getMinZ()),getLength());
-	handler->iterateFlat(0, root, cube, NULL);
+	handler->iterateFlatIn(0, root, cube, NULL);
 }
 
 
