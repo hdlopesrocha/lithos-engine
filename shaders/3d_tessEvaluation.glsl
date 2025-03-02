@@ -40,6 +40,9 @@ void main() {
             teProps.parallaxMinLayers = tcProps[0].parallaxMinLayers * gl_TessCoord[0] + 
                                         tcProps[1].parallaxMinLayers * gl_TessCoord[1] + 
                                         tcProps[2].parallaxMinLayers * gl_TessCoord[2];
+            teProps.parallaxMaxLayers = tcProps[0].parallaxMaxLayers * gl_TessCoord[0] + 
+                                        tcProps[1].parallaxMaxLayers * gl_TessCoord[1] + 
+                                        tcProps[2].parallaxMaxLayers * gl_TessCoord[2];
             teProps.parallaxFade = tcProps[0].parallaxFade * gl_TessCoord[0] + 
                                         tcProps[1].parallaxFade * gl_TessCoord[1] + 
                                         tcProps[2].parallaxFade * gl_TessCoord[2];
@@ -47,9 +50,6 @@ void main() {
                                         tcProps[1].parallaxRefine * gl_TessCoord[1] + 
                                         tcProps[2].parallaxRefine * gl_TessCoord[2];
 
-            teProps.parallaxMaxLayers = tcProps[0].parallaxMaxLayers * gl_TessCoord[0] + 
-                                        tcProps[1].parallaxMaxLayers * gl_TessCoord[1] + 
-                                        tcProps[2].parallaxMaxLayers * gl_TessCoord[2];
             teProps.shininess = tcProps[0].shininess * gl_TessCoord[0] + 
                                         tcProps[1].shininess * gl_TessCoord[1] + 
                                         tcProps[2].shininess * gl_TessCoord[2];

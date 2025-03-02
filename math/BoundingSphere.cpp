@@ -111,7 +111,7 @@ Vertex SphereContainmentHandler::getVertex(BoundingCube &cube, ContainmentType s
     glm::vec3 n = glm::normalize(a-c);
     glm::vec3 p = c + n*r;
 
-    Vertex vertex(glm::clamp(p, cube.getMin(), cube.getMax()));
+    Vertex vertex(p);
     vertex.normal = getNormal(vertex.position);
 
     brush->paint(&vertex);

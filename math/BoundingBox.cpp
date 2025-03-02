@@ -133,13 +133,10 @@ ContainmentType BoxContainmentHandler::check(BoundingCube &cube) {
 }
 
 Vertex BoxContainmentHandler::getVertex(BoundingCube &cube, ContainmentType solid, glm::vec3 previousPoint) {
-    Vertex vertex(cube.getCenter());
 
     glm::vec3 min = this->box.getMin();
     glm::vec3 max = this->box.getMax();
-    glm::vec3 c = cube.getCenter();
-
-    vertex.position = glm::clamp(c, min, max);
+    Vertex vertex(glm::clamp(previousPoint, min, max));
     vertex.normal = Math::surfaceNormal(vertex.position, box);
     brush->paint(&vertex);	
     return vertex;

@@ -138,7 +138,7 @@ OctreeNode * addAux(Octree * tree, ContainmentHandler * handler, OctreeNode * no
 	}
 
 	if(check == ContainmentType::Intersects) {
-		node->vertex = handler->getVertex(cube, check, cube.getCenter());
+		node->vertex = handler->getVertex(cube, check, node->vertex.position);
 	}
 	node->mask |= buildMask(handler, cube);
 	node->solid = check;
