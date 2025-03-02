@@ -103,7 +103,12 @@ void main() {
             float eta = 1.0 / teProps.refractiveIndex; // Air to water
             vec3 refractedDir = refract(viewDirectionTangent, normalMap, eta);
             vec2 refractedUV = pixelUV + refractedDir.xy * 0.1; // UV distortion
-            refractedColor = texture(underTexture, refractedUV);
+        
+            float d2 = texture(depthTexture, refractedUV).r;
+
+
+
+            refractedColor = texture(underTexture, currentDepth < d2 ? refractedUV : pixelUV);
         }
         color = refractedColor + vec4(((mixedColor).rgb*diffuse + specularColor * teProps.specularStrength * phongSpec *  shadow.lightAmount)*shadow.shadowAmount , mixedColor.a+teProps.specularStrength * phongSpec *  shadow.lightAmount); 
     }else {
