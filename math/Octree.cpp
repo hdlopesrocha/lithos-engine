@@ -129,7 +129,6 @@ uint buildMask(ContainmentHandler * handler, BoundingCube &cube) {
 }
 
 OctreeNode * addAux(Octree * tree, ContainmentHandler * handler, OctreeNode * node, BoundingCube &cube, int level) {
-	int height = tree->getHeight(cube);
 	ContainmentType check = handler->check(cube);
 
 	if(check == ContainmentType::Disjoint) {
@@ -137,8 +136,7 @@ OctreeNode * addAux(Octree * tree, ContainmentHandler * handler, OctreeNode * no
 	}
 
 	if(node == NULL) {
-		Vertex vertex(cube.getCenter());
-		node = new OctreeNode(vertex);
+		node = new OctreeNode(Vertex(cube.getCenter()));
 	}
 	else if(node->solid == ContainmentType::Contains) {
 		return node;
@@ -153,7 +151,7 @@ OctreeNode * addAux(Octree * tree, ContainmentHandler * handler, OctreeNode * no
 	if(check == ContainmentType::Contains) {
 		node->clear();
 	}
-	else if(height != 0) {
+	else if(tree->getHeight(cube) != 0) {
 		for(int i=0; i <8 ; ++i) {
 			BoundingCube subCube = Octree::getChildCube(cube,i);
 			node->children[i] = addAux(tree, handler, node->children[i], subCube, level +1);
