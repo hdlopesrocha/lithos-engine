@@ -45,34 +45,35 @@ void IteratorHandler::iterateFlatIn(int level, OctreeNode * node, BoundingCube c
 void IteratorHandler::iterateFlat(int level, OctreeNode * root, BoundingCube cube, void * context) {
     if (!root) return;
 
-    stack.push({level, root, cube, context, 0, {0}});
+    stack.push({level, root, cube, context, 0, {0}, false});
 
     while (!stack.empty()) {
         StackFrame &frame = stack.top();
 
-        // When first visiting this node
-        if (frame.childIndex == 0) {
+        if (!frame.secondVisit) {
+            // First visit: Apply `before()`
             frame.context = before(frame.level, frame.node, frame.cube, frame.context);
+
             if (!test(frame.level, frame.node, frame.cube, frame.context)) {
                 stack.pop(); // Skip children, go back up
                 continue;
             }
-            getOrder(frame.cube, frame.internalOrder); // Get order only once per node
+
+            // Prepare to process children
+            getOrder(frame.cube, frame.internalOrder);
+            frame.secondVisit = true; // Mark this node for a second visit
         }
 
         // Process children in order
-        while (frame.childIndex < 8) {
+        if (frame.childIndex < 8) {
             int j = frame.internalOrder[frame.childIndex++];
             OctreeNode* child = frame.node->children[j];
 
             if (child) {
-                stack.push({frame.level + 1, child, Octree::getChildCube(frame.cube, j), frame.context, 0, {0}});
-                break; // Move to processing the child next iteration
+                stack.push({frame.level + 1, child, Octree::getChildCube(frame.cube, j), frame.context, 0, {0}, false});
             }
-        }
-
-        // If all children were processed, apply `after()` and go up
-        if (frame.childIndex == 8) {
+        } else {
+            // After all children are processed, apply `after()`
             after(frame.level, frame.node, frame.cube, frame.context);
             stack.pop();
         }

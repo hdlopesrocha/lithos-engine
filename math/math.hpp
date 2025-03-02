@@ -280,8 +280,9 @@ struct StackFrame {
 	OctreeNode* node;
 	BoundingCube cube;
 	void* context;
-	int childIndex; // Tracks which child we're processing
+	int childIndex; // Tracks which child is being processed
 	int internalOrder[8]; // Stores child processing order
+	bool secondVisit; // Tracks whether we are on the second visit
 };
 
 class IteratorHandler {

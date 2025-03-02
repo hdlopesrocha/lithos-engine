@@ -66,7 +66,7 @@ void * OctreeProcessor::before(int level, OctreeNode * node, BoundingCube &cube,
 					// Tesselate
 					Geometry * geometry = new Geometry();
 					Tesselator tesselator(tree, geometry, simplification);
-					tesselator.iterateFlatIn(level, node, cube, NULL);
+					tesselator.iterateFlat(level, node, cube, NULL);
 
 					NodeInfo * info = node->getNodeInfo(drawableType);
 					if(info == NULL) {
