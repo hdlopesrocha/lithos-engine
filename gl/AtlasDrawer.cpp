@@ -41,8 +41,7 @@ void AtlasDrawer::draw(){
         glUniform1ui(filterLoc, filterEnabled); 
         glBindVertexArray(viewVao);
         
-        for(int i=0 ; i < draws.size() ; ++i) {
-            TileDraw tileDraw = draws[i];
+        for(TileDraw tileDraw : draws) {
             uint tileIndex = Math::mod(tileDraw.index, atlas->tiles.size());
 
            /* std::cout << tileDraw.index << " -> " <<

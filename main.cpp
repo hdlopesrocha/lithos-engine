@@ -67,8 +67,7 @@ std::string replace(std::string input,  std::string replace_word, std::string re
 }
 
 std::string replaceIncludes(std::vector<GlslInclude> includes, std::string code){
-	for(int i=0; i< includes.size() ;++i) {
-		GlslInclude include = includes[i];
+	for(GlslInclude include : includes) {
 		code = replace(code, include.line, include.code);
 	}
 	return code;

@@ -40,15 +40,14 @@ void markNeighborsAsDirty(Octree * tree, BoundingCube &cube, int level, int draw
 void * OctreeProcessor::before(int level, OctreeNode * node, BoundingCube &cube, void * context) {		
 	if(loadCount > 0) {
 		bool canGenerate = true;
-		for(int i=0; i < node->info.size(); ++i) {
-			NodeInfo * info = &node->info[i];
-			if(info->type == INFO_TYPE_FILE && info->dirty) {
-				OctreeNodeFile *f = (OctreeNodeFile*) info->data;
+		for(NodeInfo &info : node->info) {
+			if(info.type == INFO_TYPE_FILE && info.dirty) {
+				OctreeNodeFile *f = (OctreeNodeFile*) info.data;
 				f->load();
 				markNeighborsAsDirty(tree, cube, level, drawableType);
-				info->dirty = false;
+				info.dirty = false;
 			}
-			if(info->type == drawableType && !info->dirty) {
+			if(info.type == drawableType && !info.dirty) {
 				canGenerate = false;
 			}
 		}
@@ -62,7 +61,7 @@ void * OctreeProcessor::before(int level, OctreeNode * node, BoundingCube &cube,
 
 					// Simplify
 					Simplifier simplifier(tree, cube, simplificationAngle, simplificationDistance, simplificationTexturing, simplification); 
-					simplifier.iterate(level, node, cube, &cube);
+					simplifier.iterate(level, node, cube, NULL);
 
 					// Tesselate
 					Geometry * geometry = new Geometry();

@@ -98,14 +98,12 @@ class Scene {
 		liquidInstancesVisible = 0;
 		vegetationInstancesVisible = 0;
 
-		for(int i =0; i < visibleSolidNodes.size() ; ++i){
-			IteratorData * data = &visibleSolidNodes[i];
-			solidProcessor->before(data->level, data->node, data->cube, NULL);
-			vegetationProcessor->before(data->level, data->node, data->cube, NULL);
+		for(IteratorData &data : visibleSolidNodes){
+			solidProcessor->before(data.level, data.node, data.cube, NULL);
+			vegetationProcessor->before(data.level, data.node, data.cube, NULL);
 		}
-		for(int i =0; i < visibleLiquidNodes.size() ; ++i){
-			IteratorData * data = &visibleLiquidNodes[i];
-			liquidProcessor->before(data->level, data->node, data->cube, NULL);
+		for(IteratorData &data : visibleLiquidNodes){
+			liquidProcessor->before(data.level, data.node, data.cube, NULL);
 		}
 	}
 
