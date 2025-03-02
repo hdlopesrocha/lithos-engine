@@ -132,7 +132,7 @@ ContainmentType BoxContainmentHandler::check(BoundingCube &cube) {
     return box.test(cube); 
 }
 
-Vertex BoxContainmentHandler::getVertex(BoundingCube &cube, ContainmentType solid) {
+Vertex BoxContainmentHandler::getVertex(BoundingCube &cube, ContainmentType solid, glm::vec3 previousPoint) {
     Vertex vertex(cube.getCenter());
 
     glm::vec3 min = this->box.getMin();

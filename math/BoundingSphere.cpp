@@ -104,14 +104,14 @@ ContainmentType SphereContainmentHandler::check(BoundingCube &cube) {
     return sphere.test(cube); 
 }
 
-Vertex SphereContainmentHandler::getVertex(BoundingCube &cube, ContainmentType solid) {
-    Vertex vertex(cube.getCenter());
+Vertex SphereContainmentHandler::getVertex(BoundingCube &cube, ContainmentType solid, glm::vec3 previousPoint) {
     glm::vec3 c = this->sphere.center;
     float r = this->sphere.radius;
-    glm::vec3 a = cube.getCenter();
+    glm::vec3 a = previousPoint;
     glm::vec3 n = glm::normalize(a-c);
     glm::vec3 p = c + n*r;
-    vertex.position = glm::clamp(p, cube.getMin(), cube.getMax());
+
+    Vertex vertex(glm::clamp(p, cube.getMin(), cube.getMax()));
     vertex.normal = getNormal(vertex.position);
 
     brush->paint(&vertex);

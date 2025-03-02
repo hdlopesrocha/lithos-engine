@@ -25,7 +25,7 @@ void Simplifier::after(int level, OctreeNode * node, BoundingCube &cube, void * 
 	Plane parentPlane(node->vertex.normal, node->vertex.position); 
 	Vertex parentVertex = node->vertex;
 	
-	for(int i=1; i < 7 ; ++i) {
+	for(int i=0; i < 7 ; ++i) {
 		BoundingCube cc(cube.getMin() - cube.getLength()*Octree::getShift(i), cube.getLength());
 		OctreeNode * c = tree->getNodeAt(cc.getCenter(), level, 0);
 		if(c!=NULL && c->solid == ContainmentType::Intersects) {

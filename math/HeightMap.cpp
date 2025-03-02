@@ -147,7 +147,7 @@ ContainmentType HeightMapContainmentHandler::check(BoundingCube &cube) {
     return map->test(cube); 
 }
 
-Vertex HeightMapContainmentHandler::getVertex(BoundingCube &cube, ContainmentType solid) {
+Vertex HeightMapContainmentHandler::getVertex(BoundingCube &cube, ContainmentType solid, glm::vec3 previousPoint) {
     Vertex vertex(cube.getCenter());
 
     if(map->hitsBoundary(cube)) {

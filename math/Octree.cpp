@@ -25,17 +25,15 @@ BoundingCube Octree::getCube3(BoundingCube &cube, int i) {
     return BoundingCube(cube.getMin() + cube.getLength() * Octree::getShift3(i), cube.getLength());
 }
 
-int getNodeIndex(const glm::vec3& vec, BoundingCube* cube, bool checkBounds) {
-    if (checkBounds && !cube->contains(vec)) {
-        return -1;
-    }
-
-    glm::vec3 diff = (vec - cube->getMin()) * (1.0f / cube->getLength()); // Multiply instead of divide
-    int px = static_cast<int>(diff.x + 0.5f); // More efficient rounding
-    int py = static_cast<int>(diff.y + 0.5f);
-    int pz = static_cast<int>(diff.z + 0.5f);
-
-    return (px << 2) | (py << 1) | pz; // Bitwise operations for efficiency
+int getNodeIndex(glm::vec3 vec, BoundingCube * cube, bool checkBounds) {
+	if(checkBounds && !cube->contains(vec)) {
+		return -1;
+	}
+	glm::vec3 diff = (vec - cube->getMin()) / cube->getLength();
+	int px = Math::clamp(round(diff[0]), 0, 1);
+	int py = Math::clamp(round(diff[1]), 0, 1);
+	int pz = Math::clamp(round(diff[2]), 0, 1);
+	return px * 4 + py * 2 + pz;
 }
 
 OctreeNode* Octree::getNodeAt(const glm::vec3 &pos, int level, int simplification) {
@@ -143,7 +141,7 @@ OctreeNode * addAux(Octree * tree, ContainmentHandler * handler, OctreeNode * no
 	}
 
 	if(check == ContainmentType::Intersects) {
-		node->vertex = handler->getVertex(cube, check);
+		node->vertex = handler->getVertex(cube, check, cube.getCenter());
 	}
 	node->mask |= buildMask(handler, cube);
 	node->solid = check;
@@ -191,9 +189,10 @@ OctreeNode * delAux(Octree * tree,  ContainmentHandler * handler, OctreeNode * n
 				split(node, cube);
 			}
 
-			if(node->solid != ContainmentType::Intersects && isIntersecting) {
-				node->vertex = handler->getVertex(cube, check);
-				node->vertex.normal = -node->vertex.normal;
+			if(isIntersecting) {
+				glm::vec3 previousNormal = node->vertex.normal;
+				node->vertex = handler->getVertex(cube, check, node->vertex.position);
+				node->vertex.normal = glm::normalize(previousNormal-node->vertex.normal);
 			}
 
 			node->mask &= buildMask(handler, cube) ^ 0xff; 

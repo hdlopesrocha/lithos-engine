@@ -229,7 +229,7 @@ class HeightMap: public BoundingBox  {
 class ContainmentHandler {
 	public: 
 		virtual ContainmentType check(BoundingCube &cube) = 0;
-		virtual Vertex getVertex(BoundingCube &cube, ContainmentType solid) = 0;
+		virtual Vertex getVertex(BoundingCube &cube, ContainmentType solid, glm::vec3 previousPoint) = 0;
 		virtual glm::vec3 getCenter() = 0;
 		virtual bool contains(glm::vec3 p) = 0;
 		virtual bool isContained(BoundingCube &cube) = 0;
@@ -463,7 +463,7 @@ class SphereContainmentHandler : public ContainmentHandler {
 	glm::vec3 getNormal(glm::vec3 pos);
 	bool isContained(BoundingCube &cube) override;
 	ContainmentType check(BoundingCube &cube) override;
-	Vertex getVertex(BoundingCube &cube, ContainmentType solid) override;
+	Vertex getVertex(BoundingCube &cube, ContainmentType solid, glm::vec3 previousPoint) override;
 };
 
 class BoxContainmentHandler : public ContainmentHandler {
@@ -476,7 +476,7 @@ class BoxContainmentHandler : public ContainmentHandler {
 	bool contains(glm::vec3 p);
 	bool isContained(BoundingCube &cube) override;
 	ContainmentType check(BoundingCube &cube) override;
-	Vertex getVertex(BoundingCube &cube, ContainmentType solid) override;
+	Vertex getVertex(BoundingCube &cube, ContainmentType solid, glm::vec3 previousPoint) override;
 };
 
 class HeightMapContainmentHandler : public ContainmentHandler {
@@ -491,7 +491,7 @@ class HeightMapContainmentHandler : public ContainmentHandler {
 	glm::vec3 getNormal(glm::vec3 pos);
 	bool isContained(BoundingCube &cube) override;
 	ContainmentType check(BoundingCube &cube) override;
-	Vertex getVertex(BoundingCube &cube, ContainmentType solid) override;
+	Vertex getVertex(BoundingCube &cube, ContainmentType solid, glm::vec3 previousPoint) override;
 };
 
 struct OctreeNodeSerialized {
