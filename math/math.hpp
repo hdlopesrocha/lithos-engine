@@ -227,11 +227,11 @@ class HeightMap: public BoundingBox  {
 
 class ContainmentHandler {
 	public: 
-		virtual ContainmentType check(BoundingCube cube) = 0;
-		virtual Vertex getVertex(BoundingCube cube, ContainmentType solid) = 0;
+		virtual ContainmentType check(BoundingCube &cube) = 0;
+		virtual Vertex getVertex(BoundingCube &cube, ContainmentType solid) = 0;
 		virtual glm::vec3 getCenter() = 0;
 		virtual bool contains(glm::vec3 p) = 0;
-		virtual bool isContained(BoundingCube cube) = 0;
+		virtual bool isContained(BoundingCube &cube) = 0;
 };
 
 struct NodeInfo {
@@ -435,10 +435,10 @@ class SphereContainmentHandler : public ContainmentHandler {
 	SphereContainmentHandler(BoundingSphere s, TextureBrush * b);
 	glm::vec3 getCenter();
 	bool contains(glm::vec3 p);
-	bool isContained(BoundingCube p);
 	glm::vec3 getNormal(glm::vec3 pos);
-	ContainmentType check(BoundingCube cube);
-	Vertex getVertex(BoundingCube cube, ContainmentType solid);
+	bool isContained(BoundingCube &cube) override;
+	ContainmentType check(BoundingCube &cube) override;
+	Vertex getVertex(BoundingCube &cube, ContainmentType solid) override;
 };
 
 class BoxContainmentHandler : public ContainmentHandler {
@@ -449,9 +449,9 @@ class BoxContainmentHandler : public ContainmentHandler {
 	BoxContainmentHandler(BoundingBox box, TextureBrush * b);
 	glm::vec3 getCenter();
 	bool contains(glm::vec3 p);
-	bool isContained(BoundingCube p);
-	ContainmentType check(BoundingCube cube);
-	Vertex getVertex(BoundingCube cube, ContainmentType solid);
+	bool isContained(BoundingCube &cube) override;
+	ContainmentType check(BoundingCube &cube) override;
+	Vertex getVertex(BoundingCube &cube, ContainmentType solid) override;
 };
 
 class HeightMapContainmentHandler : public ContainmentHandler {
@@ -462,11 +462,11 @@ class HeightMapContainmentHandler : public ContainmentHandler {
 	HeightMapContainmentHandler(HeightMap * m, TextureBrush * b);
 	glm::vec3 getCenter();
 	bool contains(glm::vec3 p);
-	bool isContained(BoundingCube p);
 	float intersection(glm::vec3 a, glm::vec3 b);
 	glm::vec3 getNormal(glm::vec3 pos);
-	ContainmentType check(BoundingCube cube);
-	Vertex getVertex(BoundingCube cube, ContainmentType solid);
+	bool isContained(BoundingCube &cube) override;
+	ContainmentType check(BoundingCube &cube) override;
+	Vertex getVertex(BoundingCube &cube, ContainmentType solid) override;
 };
 
 struct OctreeNodeSerialized {
@@ -539,7 +539,7 @@ public:
 	static int triplanarPlane(glm::vec3 position, glm::vec3 normal);
 	static int mod(int a, int b);
 	static glm::vec2 triplanarMapping(glm::vec3 position, int plane);
-	static glm::vec3 surfaceNormal(glm::vec3 point, BoundingBox box);
+	static glm::vec3 surfaceNormal(glm::vec3 point, BoundingBox &box);
 	static glm::mat4 getCanonicalMVP(glm::mat4 m);
 
 };

@@ -131,7 +131,7 @@ bool HeightMapContainmentHandler::contains(glm::vec3 p) {
     return map->contains(p);
 }
 
-bool HeightMapContainmentHandler::isContained(BoundingCube p) {
+bool HeightMapContainmentHandler::isContained(BoundingCube &p) {
     return map->isContained(p);
 }
 
@@ -143,11 +143,11 @@ glm::vec3 HeightMapContainmentHandler::getNormal(glm::vec3 pos) {
     return map->getNormalAt(pos.x, pos.z);
 }
 
-ContainmentType HeightMapContainmentHandler::check(BoundingCube cube) {
+ContainmentType HeightMapContainmentHandler::check(BoundingCube &cube) {
     return map->test(cube); 
 }
 
-Vertex HeightMapContainmentHandler::getVertex(BoundingCube cube, ContainmentType solid) {
+Vertex HeightMapContainmentHandler::getVertex(BoundingCube &cube, ContainmentType solid) {
     Vertex vertex(cube.getCenter());
 
     if(map->hitsBoundary(cube)) {

@@ -124,15 +124,15 @@ bool BoxContainmentHandler::contains(glm::vec3 p) {
     return box.contains(p);
 }
 
-bool BoxContainmentHandler::isContained(BoundingCube p) {
-    return p.contains(box);
+bool BoxContainmentHandler::isContained(BoundingCube &cube) {
+    return cube.contains(box);
 }
 
-ContainmentType BoxContainmentHandler::check(BoundingCube cube) {
+ContainmentType BoxContainmentHandler::check(BoundingCube &cube) {
     return box.test(cube); 
 }
 
-Vertex BoxContainmentHandler::getVertex(BoundingCube cube, ContainmentType solid) {
+Vertex BoxContainmentHandler::getVertex(BoundingCube &cube, ContainmentType solid) {
     Vertex vertex(cube.getCenter());
 
     glm::vec3 min = this->box.getMin();

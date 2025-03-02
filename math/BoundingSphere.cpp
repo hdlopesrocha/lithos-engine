@@ -92,19 +92,19 @@ bool SphereContainmentHandler::contains(glm::vec3 p) {
     return sphere.contains(p);
 }
 
-bool SphereContainmentHandler::isContained(BoundingCube p) {
-    return p.contains(sphere);
+bool SphereContainmentHandler::isContained(BoundingCube &cube) {
+    return cube.contains(sphere);
 }
 
 glm::vec3 SphereContainmentHandler::getNormal(glm::vec3 pos) {
     return glm::normalize( pos - sphere.center);
 }
 
-ContainmentType SphereContainmentHandler::check(BoundingCube cube) {
+ContainmentType SphereContainmentHandler::check(BoundingCube &cube) {
     return sphere.test(cube); 
 }
 
-Vertex SphereContainmentHandler::getVertex(BoundingCube cube, ContainmentType solid) {
+Vertex SphereContainmentHandler::getVertex(BoundingCube &cube, ContainmentType solid) {
     Vertex vertex(cube.getCenter());
     glm::vec3 c = this->sphere.center;
     float r = this->sphere.radius;

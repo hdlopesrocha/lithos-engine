@@ -41,7 +41,7 @@ glm::vec2 Math::triplanarMapping(glm::vec3 position, int plane) {
 }
 
 
-glm::vec3 Math::surfaceNormal(glm::vec3 point, BoundingBox box) {
+glm::vec3 Math::surfaceNormal(glm::vec3 point, BoundingBox &box) {
 
 
     glm::vec3 d = (point - box.getCenter())/box.getLength(); // Vector from center to the point
