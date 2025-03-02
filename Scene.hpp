@@ -100,12 +100,12 @@ class Scene {
 
 		for(int i =0; i < visibleSolidNodes.size() ; ++i){
 			IteratorData * data = &visibleSolidNodes[i];
-			solidProcessor->before(data->level, data->node, &data->cube, NULL);
-			vegetationProcessor->before(data->level, data->node, &data->cube, NULL);
+			solidProcessor->before(data->level, data->node, data->cube, NULL);
+			vegetationProcessor->before(data->level, data->node, data->cube, NULL);
 		}
 		for(int i =0; i < visibleLiquidNodes.size() ; ++i){
 			IteratorData * data = &visibleLiquidNodes[i];
-			liquidProcessor->before(data->level, data->node, &data->cube, NULL);
+			liquidProcessor->before(data->level, data->node, data->cube, NULL);
 		}
 	}
 

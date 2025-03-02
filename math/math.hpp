@@ -281,10 +281,10 @@ struct IteratorData {
 
 class IteratorHandler {
 	public: 
-		virtual bool test(int level, OctreeNode * node, BoundingCube * cube, void * context) = 0;
-		virtual void * before(int level, OctreeNode * node, BoundingCube * cube, void * context) = 0;
-		virtual void after(int level, OctreeNode * node, BoundingCube * cube, void * context) = 0;
-		virtual void getOrder(BoundingCube * cube, int * order) = 0;
+		virtual bool test(int level, OctreeNode * node, BoundingCube &cube, void * context) = 0;
+		virtual void * before(int level, OctreeNode * node, BoundingCube &cube, void * context) = 0;
+		virtual void after(int level, OctreeNode * node, BoundingCube &cube, void * context) = 0;
+		virtual void getOrder(BoundingCube &cube, int * order) = 0;
 		void iterate(int level, OctreeNode * node, BoundingCube cube, void * context);
 };
 
@@ -333,16 +333,16 @@ class Octree: public BoundingCube {
 		void del(ContainmentHandler * handler);
 		void iterate(IteratorHandler * handler);
 		OctreeNode * getNodeAt(glm::vec3 pos, int level, int simplification);
-		void getNodeNeighbors(BoundingCube * cube, int level, int simplification, int direction, OctreeNode ** out, int initialIndex, int finalIndex);
 		void handleQuadNodes(OctreeNode * node, OctreeNode** corners, OctreeNodeTriangleHandler * handler);
 
 		void save(std::string filename);
 		static glm::vec3 getShift(int i);
 		static glm::vec3 getShift3(int i);
-		static BoundingCube getChildCube(BoundingCube * cube, int i);
-		static BoundingCube getCube3(BoundingCube * cube, int i);
+		static BoundingCube getChildCube(BoundingCube &cube, int i);
+		static BoundingCube getCube3(BoundingCube &cube, int i);
 
-		int getHeight(BoundingCube * cube);
+		void getNodeNeighbors(BoundingCube &cube, int level, int simplification, int direction, OctreeNode ** out, int initialIndex, int finalIndex);
+		int getHeight(BoundingCube  &cube);
 
 };
 
@@ -361,10 +361,10 @@ class Tesselator : public IteratorHandler{
 		Geometry * chunk;
 		int simplification;
 		Tesselator(Octree * tree, Geometry * chunk, int simplification);
-		void * before(int level, OctreeNode * node, BoundingCube * cube, void * context) override;
-		void after(int level, OctreeNode * node, BoundingCube * cube, void * context) override;
-		bool test(int level, OctreeNode * node, BoundingCube * cube, void * context) override;
-		void getOrder(BoundingCube * cube, int * order) override;
+		void * before(int level, OctreeNode * node, BoundingCube &cube, void * context) override;
+		void after(int level, OctreeNode * node, BoundingCube &cube, void * context) override;
+		bool test(int level, OctreeNode * node, BoundingCube &cube, void * context) override;
+		void getOrder(BoundingCube &cube, int * order) override;
 };
 
 class Simplifier : public IteratorHandler{
@@ -377,10 +377,10 @@ class Simplifier : public IteratorHandler{
 		BoundingCube chunkCube;
 		Simplifier(Octree * tree, BoundingCube chunkCube, float angle, float distance, bool texturing, int simplification);
 
-		void * before(int level, OctreeNode * node, BoundingCube * cube, void * context) override;
-		void after(int level, OctreeNode * node, BoundingCube * cube, void * context) override;
-		bool test(int level, OctreeNode * node, BoundingCube * cube, void * context) override;
-		void getOrder(BoundingCube * cube, int * order) override;
+		void * before(int level, OctreeNode * node, BoundingCube &cube, void * context) override;
+		void after(int level, OctreeNode * node, BoundingCube &cube, void * context) override;
+		bool test(int level, OctreeNode * node, BoundingCube &cube, void * context) override;
+		void getOrder(BoundingCube &cube, int * order) override;
 
 };
 
@@ -521,10 +521,10 @@ class OctreeVisibilityChecker : public IteratorHandler{
 		OctreeVisibilityChecker(Octree * tree, int geometryLevel, std::vector<IteratorData> * visibleNodes);
 
 		void update(glm::mat4 m);
-		void * before(int level, OctreeNode * node, BoundingCube * cube, void * context) override;
-		void after(int level, OctreeNode * node, BoundingCube * cube, void * context) override;
-		bool test(int level, OctreeNode * node, BoundingCube * cube, void * context) override;
-		void getOrder(BoundingCube * cube, int * order) override;
+		void * before(int level, OctreeNode * node, BoundingCube &cube, void * context) override;
+		void after(int level, OctreeNode * node, BoundingCube &cube, void * context) override;
+		bool test(int level, OctreeNode * node, BoundingCube &cube, void * context) override;
+		void getOrder(BoundingCube &cube, int * order) override;
 
 };
 

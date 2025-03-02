@@ -14,31 +14,31 @@ void OctreeVisibilityChecker::update(glm::mat4 m) {
 
 
 
-void * OctreeVisibilityChecker::before(int level, OctreeNode * node, BoundingCube * cube, void * context) {		
+void * OctreeVisibilityChecker::before(int level, OctreeNode * node, BoundingCube &cube, void * context) {		
 	float height = tree->getHeight(cube);
 	int currentLod = height - geometryLevel;
 
 	if(currentLod <= 0){
-		visibleNodes->push_back(IteratorData(level, node, *cube));
+		visibleNodes->push_back(IteratorData(level, node, cube));
 		return node;
 	}
 	return NULL;
 }
 
-void OctreeVisibilityChecker::after(int level, OctreeNode * node, BoundingCube * cube, void * context) {			
+void OctreeVisibilityChecker::after(int level, OctreeNode * node, BoundingCube &cube, void * context) {			
 	return;
 }
 
-bool OctreeVisibilityChecker::test(int level, OctreeNode * node, BoundingCube * cube, void * context) {	
+bool OctreeVisibilityChecker::test(int level, OctreeNode * node, BoundingCube &cube, void * context) {	
 	if(context != NULL) {
 		return false;
 	}
-	BoundingBox box = BoundingBox(cube->getMin()-tree->minSize, cube->getMax());
+	BoundingBox box = BoundingBox(cube.getMin()-tree->minSize, cube.getMax());
 	return frustum.isBoxVisible(box);
 }
 
 
-void OctreeVisibilityChecker::getOrder(BoundingCube * cube, int * order){
+void OctreeVisibilityChecker::getOrder(BoundingCube &cube, int * order){
 	static std::pair<glm::vec3, int> internalSortingVector[8]={};
 	
 	for(int i =0; i< 8; ++i){

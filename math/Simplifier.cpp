@@ -16,17 +16,17 @@ bool isBorder(BoundingCube chunk, BoundingCube c) {
 	return chunk.getMinX() == c.getMinX() || chunk.getMinY() == c.getMinY() || chunk.getMinZ() == c.getMinZ();
 }
 
-void * Simplifier::before(int level, OctreeNode * node, BoundingCube * cube, void * context) {		
+void * Simplifier::before(int level, OctreeNode * node, BoundingCube &cube, void * context) {		
 	return context; 			 			
 }
 
-void Simplifier::after(int level, OctreeNode * node, BoundingCube * cube, void * context) {
+void Simplifier::after(int level, OctreeNode * node, BoundingCube &cube, void * context) {
 	// The parentNode plane
 	Plane parentPlane(node->vertex.normal, node->vertex.position); 
 	Vertex parentVertex = node->vertex;
 	
 	for(int i=1; i < 7 ; ++i) {
-		BoundingCube cc(cube->getMin() - cube->getLength()*Octree::getShift(i), cube->getLength());
+		BoundingCube cc(cube.getMin() - cube.getLength()*Octree::getShift(i), cube.getLength());
 		OctreeNode * c = tree->getNodeAt(cc.getCenter(), level, 0);
 		if(c!=NULL && c->solid == ContainmentType::Intersects) {
 			if(!chunkCube.contains(cc)){
@@ -75,11 +75,11 @@ void Simplifier::after(int level, OctreeNode * node, BoundingCube * cube, void *
 	return;
 }
 
-bool Simplifier::test(int level, OctreeNode * node, BoundingCube * cube, void * context) {			
+bool Simplifier::test(int level, OctreeNode * node, BoundingCube &cube, void * context) {			
 	return node->solid != ContainmentType::Contains && tree->getHeight(cube) >= 0;
 }
 
-void Simplifier::getOrder(BoundingCube * cube, int * order){
+void Simplifier::getOrder(BoundingCube &cube, int * order){
 	for(int i = 7 ; i >= 0 ; --i) {
 		order[i] = i;
 	}
