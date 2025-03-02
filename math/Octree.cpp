@@ -25,15 +25,17 @@ BoundingCube Octree::getCube3(BoundingCube &cube, int i) {
     return BoundingCube(cube.getMin() + cube.getLength() * Octree::getShift3(i), cube.getLength());
 }
 
-int getNodeIndex(glm::vec3 vec, BoundingCube * cube, bool checkBounds) {
-	if(checkBounds && !cube->contains(vec)) {
-		return -1;
-	}
-	glm::vec3 diff = (vec - cube->getMin()) / cube->getLength();
-	int px = Math::clamp(round(diff[0]), 0, 1);
-	int py = Math::clamp(round(diff[1]), 0, 1);
-	int pz = Math::clamp(round(diff[2]), 0, 1);
-	return px * 4 + py * 2 + pz;
+int getNodeIndex(glm::vec3& vec, BoundingCube* cube, bool checkBounds) {
+    if (checkBounds && !cube->contains(vec)) {
+        return -1;
+    }
+
+    glm::vec3 diff = (vec - cube->getMin()) * (1.0f / cube->getLength()); // Multiply instead of divide
+    int px = static_cast<int>(diff.x + 0.5f); // More efficient rounding
+    int py = static_cast<int>(diff.y + 0.5f);
+    int pz = static_cast<int>(diff.z + 0.5f);
+
+    return (px << 2) | (py << 1) | pz; // Bitwise operations for efficiency
 }
 
 OctreeNode * Octree::getNodeAt(glm::vec3 pos, int level, int simplification) {
@@ -65,8 +67,8 @@ void Octree::expand(ContainmentHandler * handler) {
 	    if (handler->isContained(*this)) {
 	        break;
 	    }
-	
-	    unsigned int i = 7 - getNodeIndex(handler->getCenter(), this, false);
+		glm::vec3 point = handler->getCenter();
+	    unsigned int i = 7 - getNodeIndex(point, this, false);
 
 	    setMin(getMin() -  Octree::getShift(i) * getLength());
 	    setLength(getLength()*2);
