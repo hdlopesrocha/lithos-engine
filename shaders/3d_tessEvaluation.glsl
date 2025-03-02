@@ -18,6 +18,7 @@ out vec3 teNormal;
 out vec2 teTextureCoord;
 out vec3 teTextureWeights;
 out vec3 tePosition;
+out vec3 teSharpNormal;
 out TextureProperties teProps;
 out vec4 teLightViewPosition[SHADOW_MATRIX_COUNT];
 flat out uvec3 teTextureIndices;
@@ -30,7 +31,10 @@ uniform TextureProperties overrideProps;
 void main() {
     if(!depthEnabled) {
         teNormal = normalize(tcNormal[0] * gl_TessCoord[0] + tcNormal[1] * gl_TessCoord[1] + tcNormal[2] * gl_TessCoord[2]);
-    
+        teSharpNormal = normalize(cross(tcPosition[1] - tcPosition[0], tcPosition[2] - tcPosition[0]));
+
+
+
         if(overrideEnabled) {
             teProps = overrideProps;
         } else {

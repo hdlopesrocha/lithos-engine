@@ -26,7 +26,7 @@ mat3 getTBN(vec3 pos, vec3 normal, vec2 uv, mat4 model, bool rotateTBN) {
 }
 
 
-ShadowProperties getShadow(sampler2D shadowMap[SHADOW_MATRIX_COUNT], sampler2D noise, vec4 lightViewPosition[SHADOW_MATRIX_COUNT], vec3 position) {
+ShadowProperties getShadow(sampler2D shadowMap[SHADOW_MATRIX_COUNT], sampler2D noise, vec4 lightViewPosition[SHADOW_MATRIX_COUNT], vec3 position, vec3 normal) {
     int selectedMap = 0;
     vec3 shadowPosition= lightViewPosition[selectedMap].xyz / lightViewPosition[selectedMap].w; 
 
@@ -41,7 +41,6 @@ ShadowProperties getShadow(sampler2D shadowMap[SHADOW_MATRIX_COUNT], sampler2D n
     vec2 texelSize = 1.0/textureSize(shadowMap[selectedMap], 0);
     vec2 noiseCoords = (position.xy)* PI;
     float shadowDepth = texture(shadowMap[selectedMap], shadowPosition.xy).r; 
-    vec3 normal = normalize(cross(dFdx(position), dFdy(position))); // Approximate normal
     vec3 lightDir = normalize(shadowPosition - position);
 
 

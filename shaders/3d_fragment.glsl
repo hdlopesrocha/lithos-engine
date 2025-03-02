@@ -20,10 +20,12 @@ flat in uvec3 teTextureIndices;
 in TextureProperties teProps;
 in vec3 tePosition;
 in vec3 teNormal;
+in vec3 teSharpNormal;
 in vec4 teLightViewPosition[SHADOW_MATRIX_COUNT];
 in mat4 teModel;
 
 out vec4 color;    // Final fragment color
+
 
 void main() {
     vec2 uv = teTextureCoord;
@@ -32,7 +34,7 @@ void main() {
     } 
 
     if(triplanarEnabled) {
-        int plane = triplanarPlane(tePosition, teNormal);
+        int plane = triplanarPlane(tePosition, teSharpNormal);
         uv = triplanarMapping(tePosition, plane, teProps.textureScale) * 0.1;
     }
 
@@ -92,7 +94,7 @@ void main() {
         shadow.shadowAmount = 1.0;
         shadow.lightAmount = 1.0;
         if(shadowEnabled) {
-            shadow = getShadow(shadowMap, noise, teLightViewPosition, tePosition);
+            shadow = getShadow(shadowMap, noise, teLightViewPosition, tePosition, teSharpNormal);
         }
 
         vec4 refractedColor = vec4(0.0,0.0,0.0,0.0);
