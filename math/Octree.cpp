@@ -25,7 +25,7 @@ BoundingCube Octree::getCube3(BoundingCube &cube, int i) {
     return BoundingCube(cube.getMin() + cube.getLength() * Octree::getShift3(i), cube.getLength());
 }
 
-int getNodeIndex(glm::vec3& vec, BoundingCube* cube, bool checkBounds) {
+int getNodeIndex(const glm::vec3& vec, BoundingCube* cube, bool checkBounds) {
     if (checkBounds && !cube->contains(vec)) {
         return -1;
     }
@@ -38,27 +38,24 @@ int getNodeIndex(glm::vec3& vec, BoundingCube* cube, bool checkBounds) {
     return (px << 2) | (py << 1) | pz; // Bitwise operations for efficiency
 }
 
-OctreeNode * Octree::getNodeAt(glm::vec3 pos, int level, int simplification) {
-	OctreeNode * node = root;
-	BoundingCube cube = *this;
+OctreeNode* Octree::getNodeAt(const glm::vec3 &pos, int level, int simplification) {
+    OctreeNode* node = root;
+    BoundingCube cube = *this;
 
-	while(node!= NULL && level>0) {
-		if(simplification && node->simplification == simplification) {
-			return node;
-		}
-		unsigned int i = getNodeIndex(pos, &cube, true);
-	  	if(i == -1) {
-	  		return NULL;
-	  	}
-	    
-	    cube = getChildCube(cube, i);
-		OctreeNode * candidate = node->children[i];
-	
-		node = candidate;
-		--level;
-	}
-	return level == 0 ? node : NULL;
+    for (; node && level > 0; --level) {
+        if (simplification && node->simplification == simplification) {
+            return node;
+        }
+        int i = getNodeIndex(pos, &cube, true);
+        if (i < 0) {
+            return NULL;
+        }
+        cube = getChildCube(cube, i);
+        node = node->children[i];
+    }
+    return level == 0 ? node : NULL;
 }
+
 
 void Octree::expand(ContainmentHandler * handler) {
 	while (true) {

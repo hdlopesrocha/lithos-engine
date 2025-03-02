@@ -357,7 +357,7 @@ class Octree: public BoundingCube {
 		void iterate(IteratorHandler * handler);
 		void iterateFlat(IteratorHandler * handler);
 
-		OctreeNode * getNodeAt(glm::vec3 pos, int level, int simplification);
+		OctreeNode* getNodeAt(const glm::vec3 &pos, int level, int simplification);
 		void handleQuadNodes(OctreeNode * node, OctreeNode** corners, OctreeNodeTriangleHandler * handler);
 
 		void save(std::string filename);
