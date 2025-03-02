@@ -359,14 +359,13 @@ class Octree: public BoundingCube {
 
 		OctreeNode* getNodeAt(const glm::vec3 &pos, int level, int simplification);
 		void handleQuadNodes(OctreeNode * node, OctreeNode** corners, OctreeNodeTriangleHandler * handler);
+		void getNodeNeighbors(BoundingCube &cube, int level, int simplification, int direction, OctreeNode ** out, int initialIndex, int finalIndex);
 
-		void save(std::string filename);
 		static glm::vec3 getShift(int i);
 		static glm::vec3 getShift3(int i);
 		static BoundingCube getChildCube(BoundingCube &cube, int i);
 		static BoundingCube getCube3(BoundingCube &cube, int i);
 
-		void getNodeNeighbors(BoundingCube &cube, int level, int simplification, int direction, OctreeNode ** out, int initialIndex, int finalIndex);
 		int getHeight(BoundingCube  &cube);
 
 };

@@ -12,19 +12,22 @@ Simplifier::Simplifier(Octree * tree, BoundingCube chunkCube, float angle, float
 	this->chunkCube = chunkCube;
 }
 
-bool isBorder(BoundingCube chunk, BoundingCube c) {
-	return chunk.getMinX() == c.getMinX() || chunk.getMinY() == c.getMinY() || chunk.getMinZ() == c.getMinZ();
-}
-
 void * Simplifier::before(int level, OctreeNode * node, BoundingCube &cube, void * context) {		
 	return context; 			 			
 }
 
 void Simplifier::after(int level, OctreeNode * node, BoundingCube &cube, void * context) {
 	// The parentNode plane
+
 	Plane parentPlane(node->vertex.normal, node->vertex.position); 
-	Vertex parentVertex = node->vertex;
+	const Vertex parentVertex = node->vertex;
 	
+	float height = tree->getHeight(cube);
+	if(height == 0) {
+		node->simplification = simplification;
+		return;
+	}
+
 	for(int i=0; i < 8 ; ++i) {
 		BoundingCube cc(cube.getMin() - cube.getLength()*Octree::getShift(i), cube.getLength());
 		OctreeNode * c = tree->getNodeAt(cc.getCenter(), level, 0);
@@ -60,7 +63,9 @@ void Simplifier::after(int level, OctreeNode * node, BoundingCube &cube, void * 
 			if(c->simplification != simplification) {
 				return;
 			}
-				
+			if(parentVertex.brushIndex != c->vertex.brushIndex && texturing) {
+				return;	
+			}
 			sumP += c->vertex.position;
 			sumN += c->vertex.normal;
 			++nodeCount;
@@ -68,10 +73,11 @@ void Simplifier::after(int level, OctreeNode * node, BoundingCube &cube, void * 
 	}
 
 	if(nodeCount > 0) {	
-		parentVertex.position = sumP / (float)nodeCount;
-		node->vertex = parentVertex;
+		node->vertex.position = sumP / (float)nodeCount;
+		node->simplification = simplification;
 	}
-	node->simplification = simplification;
+
+
 	return;
 }
 
