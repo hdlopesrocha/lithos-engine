@@ -289,6 +289,7 @@ class IteratorHandler {
 		virtual void getOrder(BoundingCube &cube, int * order) = 0;
 		void iterate(int level, OctreeNode * node, BoundingCube cube, void * context);
 		void iterateFlat(int level, OctreeNode * node, BoundingCube cube, void * context);
+		void iterateNonRecursive(int level, OctreeNode * root, BoundingCube cube, void * context);
 };
 
 
