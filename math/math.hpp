@@ -290,8 +290,9 @@ struct StackFrameOut {
 	OctreeNode* node;
 	BoundingCube cube;
 	void* context;
-	int childIndex;  // Track which child we're processing
+	bool visited;  // false: first time (push children), true: ready for after()
 };
+
 
 class IteratorHandler {
     std::stack<IteratorData> flatData;

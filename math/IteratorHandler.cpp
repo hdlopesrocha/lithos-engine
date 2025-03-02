@@ -80,45 +80,44 @@ void IteratorHandler::iterateFlat(int level, OctreeNode * root, BoundingCube cub
     }
 }
 
-
-void IteratorHandler::iterateFlatOut(int level, OctreeNode *root, BoundingCube cube, void *context) {
+void IteratorHandler::iterateFlatOut(int level, OctreeNode* root, BoundingCube cube, void* context) {
     if (!root) return;
 
-    // Array to store the order of child nodes for the entire iteration (shared across all nodes)
-    int internalOrder[8];
+    stackOut.push({level, root, cube, context, false});
 
-    stackOut.push({level, root, cube, context, 0});
+    // A single shared array to hold the child processing order.
+    int internalOrder[8];
 
     while (!stackOut.empty()) {
         StackFrameOut &frame = stackOut.top();
 
-        // Apply `before()` and `after()` at the same time for each node
-        frame.context = before(frame.level, frame.node, frame.cube, frame.context);
+        if (!frame.visited) {
+            // First visit: execute before() and update context.
+            frame.context = before(frame.level, frame.node, frame.cube, frame.context);
+            frame.visited = true;
 
-        if (!test(frame.level, frame.node, frame.cube, frame.context)) {
-            stackOut.pop(); // Skip processing if test fails
-            continue;
-        }
-        after(frame.level, frame.node, frame.cube, frame.context);  // Execute `after()` immediately
-
-        // Get the order for the first time (only once for the entire iteration)
-        if (frame.childIndex == 0) {
-            getOrder(frame.cube, internalOrder);  // Cache order once
-        }
-
-        // Process children in the correct order (using the shared `internalOrder`)
-        while (frame.childIndex < 8) {
-            int j = internalOrder[frame.childIndex++];
-            OctreeNode* child = frame.node->children[j];
-            if (child) {
-                stackOut.push({frame.level + 1, child, Octree::getChildCube(frame.cube, j), frame.context, 0});
-                break; // Break to ensure we process one child per iteration
+            // Only process children if the test passes.
+            if (!test(frame.level, frame.node, frame.cube, frame.context)) {
+                stackOut.pop();
+                continue;
             }
-        }
 
-        // Pop the stack frame after processing the node (if no more children left)
-        if (frame.childIndex == 8) {
-            stackOut.pop(); // Node has been fully processed
+            // Compute the child order for this node.
+            getOrder(frame.cube, internalOrder);
+
+            // Push all valid children in reverse order so that they are processed
+            // in the original (correct) order when popped.
+            for (int i = 7; i >= 0; --i) {
+                int j = internalOrder[i];
+                OctreeNode* child = frame.node->children[j];
+                if (child) {
+                    stackOut.push({frame.level + 1, child, Octree::getChildCube(frame.cube, j), frame.context, false});
+                }
+            }
+        } else {
+            // Second visit: all children have been processed; now call after().
+            after(frame.level, frame.node, frame.cube, frame.context);
+            stackOut.pop();
         }
     }
 }
