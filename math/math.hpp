@@ -270,11 +270,13 @@ struct IteratorData {
 	int level;
 	OctreeNode * node;
 	BoundingCube cube;
+	void * context;
 
-	IteratorData(int level, OctreeNode * node, BoundingCube cube) {
+	IteratorData(int level, OctreeNode * node, BoundingCube cube, void * context) {
 		this->level = level;
 		this->node = node;
 		this->cube = cube;
+		this->context = context;
 	}
 };
 
@@ -286,6 +288,7 @@ class IteratorHandler {
 		virtual void after(int level, OctreeNode * node, BoundingCube &cube, void * context) = 0;
 		virtual void getOrder(BoundingCube &cube, int * order) = 0;
 		void iterate(int level, OctreeNode * node, BoundingCube cube, void * context);
+		void iterateFlat(int level, OctreeNode * node, BoundingCube cube, void * context);
 };
 
 
@@ -332,6 +335,8 @@ class Octree: public BoundingCube {
 		void add(ContainmentHandler * handler);
 		void del(ContainmentHandler * handler);
 		void iterate(IteratorHandler * handler);
+		void iterateFlat(IteratorHandler * handler);
+
 		OctreeNode * getNodeAt(glm::vec3 pos, int level, int simplification);
 		void handleQuadNodes(OctreeNode * node, OctreeNode** corners, OctreeNodeTriangleHandler * handler);
 

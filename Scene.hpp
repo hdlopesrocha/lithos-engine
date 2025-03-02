@@ -124,7 +124,7 @@ class Scene {
 		checker->visibleNodes->clear();
 		checker->sortPosition = sortPosition;
 		checker->update(viewProjection);
-		checker->tree->iterate(checker);
+		checker->tree->iterateFlat(checker);
 	}
 
 
