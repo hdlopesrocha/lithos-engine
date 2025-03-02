@@ -285,9 +285,18 @@ struct StackFrame {
 	bool secondVisit; // Tracks whether we are on the second visit
 };
 
+struct StackFrameOut {
+	int level;
+	OctreeNode* node;
+	BoundingCube cube;
+	void* context;
+	int childIndex;  // Track which child we're processing
+};
+
 class IteratorHandler {
     std::stack<IteratorData> flatData;
     std::stack<StackFrame> stack;
+    std::stack<StackFrameOut> stackOut;
 
 
 	public: 
@@ -297,6 +306,7 @@ class IteratorHandler {
 		virtual void getOrder(BoundingCube &cube, int * order) = 0;
 		void iterate(int level, OctreeNode * node, BoundingCube cube, void * context);
 		void iterateFlatIn(int level, OctreeNode * node, BoundingCube cube, void * context);
+		void iterateFlatOut(int level, OctreeNode * node, BoundingCube cube, void * context);
 		void iterateFlat(int level, OctreeNode * root, BoundingCube cube, void * context);
 };
 
