@@ -30,7 +30,7 @@ int getNodeIndex(glm::vec3 vec, BoundingCube * cube, bool checkBounds) {
 		return -1;
 	}
 	glm::ivec3 p = glm::round((vec - cube->getMin()) / cube->getLength());
-	return p.x * 4 + p.y * 2 + p.z;
+	return (p.x << 2) + (p.y << 1) + p.z;
 }
 
 OctreeNode* Octree::getNodeAt(const glm::vec3 &pos, int level, int simplification) {
