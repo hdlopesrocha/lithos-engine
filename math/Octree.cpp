@@ -29,11 +29,8 @@ int getNodeIndex(glm::vec3 vec, BoundingCube * cube, bool checkBounds) {
 	if(checkBounds && !cube->contains(vec)) {
 		return -1;
 	}
-	glm::vec3 diff = (vec - cube->getMin()) / cube->getLength();
-	int px = Math::clamp(round(diff[0]), 0, 1);
-	int py = Math::clamp(round(diff[1]), 0, 1);
-	int pz = Math::clamp(round(diff[2]), 0, 1);
-	return px * 4 + py * 2 + pz;
+	glm::ivec3 p = glm::round((vec - cube->getMin()) / cube->getLength());
+	return p.x * 4 + p.y * 2 + p.z;
 }
 
 OctreeNode* Octree::getNodeAt(const glm::vec3 &pos, int level, int simplification) {
