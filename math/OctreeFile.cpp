@@ -12,7 +12,7 @@ OctreeFile::OctreeFile(Octree * tree, std::string filename, int chunkHeight) {
 
 std::string getChunkName(BoundingCube cube) {
 	glm::vec3 p = cube.getMin();
-	return std::to_string(cube.getLength()) + "_" + std::to_string(p.x) + "_" +  std::to_string(p.y) + "_" + std::to_string(p.z);
+	return std::to_string(cube.getLengthX()) + "_" + std::to_string(p.x) + "_" +  std::to_string(p.y) + "_" + std::to_string(p.z);
 }
 
 OctreeNode * loadRecursive(int i, std::vector<OctreeNodeSerialized> * nodes, int height, std::string filename, BoundingCube cube) {
@@ -120,7 +120,7 @@ void OctreeFile::save(){
 
 	OctreeSerialized  octreeSerialized;
 	octreeSerialized.min = tree->getMin();
-	octreeSerialized.length = tree->getLength();
+	octreeSerialized.length = tree->getLengthX();
 	octreeSerialized.minSize = tree->minSize;
 
     std::ostringstream decompressed;

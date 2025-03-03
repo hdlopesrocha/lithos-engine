@@ -9,43 +9,6 @@
 #include "Scene.hpp"
 
 
-class OctreeContainmentHandler : public ContainmentHandler {
-	public:
-	Octree * octree;
-    TextureBrush * brush;
-	BoundingBox box;
-
-	OctreeContainmentHandler(Octree * octree, BoundingBox box, TextureBrush * b) {
-		this->brush = b;
-		this->octree = octree;
-		this->box = box;
-	}
-	glm::vec3 getCenter() {
-		return box.getCenter();
-	}
-
-	bool contains(glm::vec3 p) {
-		return box.contains(p);
-	}
-
-	bool isContained(BoundingCube p) {
-		return p.contains(box);
-	}
-
-	glm::vec3 getNormal(glm::vec3 pos) {
-		return Math::surfaceNormal(pos, box);
-	}
-
-	ContainmentType check(BoundingCube cube) {
-		return box.test(cube);
-	}
-
-	Vertex getVertex(BoundingCube cube, ContainmentType solid) {
-		Vertex vtx;
-		vtx.position = cube.getCenter();
-		return vtx;
-	}
-};
 
 class GlslInclude {
 	public:

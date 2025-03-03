@@ -38,7 +38,7 @@ bool BoundingSphere::contains(glm::vec3 point){
  
 
 
-float squaredDistPointAABB( glm::vec3 p, BoundingCube aabb )
+float squaredDistPointAABB( glm::vec3 p, AbstractBoundingBox& aabb )
 {
  
     // Squared distance
@@ -52,17 +52,17 @@ float squaredDistPointAABB( glm::vec3 p, BoundingCube aabb )
 }
 
 
-bool BoundingSphere::intersects(BoundingCube cube) {
+bool BoundingSphere::intersects(AbstractBoundingBox& cube) {
     float squaredDistance = squaredDistPointAABB( center, cube );
     return squaredDistance <= (radius * radius);
 }
 
-ContainmentType BoundingSphere::test(BoundingCube cube) {
+ContainmentType BoundingSphere::test(AbstractBoundingBox& cube) {
     // Classify corners
     unsigned char mask = 0;
 
     for(int i=0; i < 8; ++i) {
-        glm::vec3 point(cube.getMin()+ Octree::getShift(i)*cube.getLength());
+        glm::vec3 point(cube.getMin()+ Octree::getShift(i)*cube.getLengthX());
         if(contains(point)){
             mask |= (1 << i);
         }

@@ -5,7 +5,7 @@ static std::vector<glm::ivec2> tessEdge;
 static bool initialized = false;
 
 Octree::Octree(BoundingCube minCube) : BoundingCube(minCube){
-	this->minSize = minCube.getLength();
+	this->minSize = minCube.getLengthX();
 	this->root = new OctreeNode(glm::vec3(minSize*0.5));
 	if(!initialized) {
 		tessOrder.push_back(glm::ivec4(0,1,3,2));tessEdge.push_back(glm::ivec2(3,7));
@@ -17,20 +17,97 @@ Octree::Octree(BoundingCube minCube) : BoundingCube(minCube){
 }
 
 BoundingCube Octree::getChildCube(BoundingCube &cube, int i) {
-	float newLength = 0.5*cube.getLength();
+	float newLength = 0.5*cube.getLengthX();
     return BoundingCube(cube.getMin() + newLength * Octree::getShift(i), newLength);
 }
 
 BoundingCube Octree::getCube3(BoundingCube &cube, int i) {
-    return BoundingCube(cube.getMin() + cube.getLength() * Octree::getShift3(i), cube.getLength());
+    return BoundingCube(cube.getMin() + cube.getLengthX() * Octree::getShift3(i), cube.getLengthX());
 }
 
 int getNodeIndex(glm::vec3 vec, BoundingCube * cube, bool checkBounds) {
 	if(checkBounds && !cube->contains(vec)) {
 		return -1;
 	}
-	glm::ivec3 p = glm::round((vec - cube->getMin()) / cube->getLength());
+	glm::ivec3 p = glm::round((vec - cube->getMin()) / cube->getLengthX());
 	return (p.x << 2) + (p.y << 1) + p.z;
+}
+
+ContainmentType Octree::contains(AbstractBoundingBox &c) {
+    OctreeNode* node = root;
+    BoundingCube cube = *this;
+    
+    // If c is not completely within the overall cube, it's disjoint.
+    if (!cube.contains(c))
+        return ContainmentType::Disjoint;
+    
+    while (node) {
+        // If we hit a node that is fully solid, it must be a leaf.
+        if (node->solid == ContainmentType::Contains)
+            return ContainmentType::Contains;
+        
+        // Determine the candidate child based on c's center.
+        int idx = getNodeIndex(c.getCenter(), &cube, true);
+        if (idx < 0)
+            return ContainmentType::Disjoint;
+        
+        // Get the bounding cube for the candidate child.
+        BoundingCube childCube = getChildCube(cube, idx);
+        
+        // If c is not fully inside this child cube, then c spans multiple children.
+        if (!childCube.contains(c))
+            return ContainmentType::Intersects;
+        
+        // If the child does not exist, we cannot descend further,
+        // so the cube is not completely inside a fully solid region.
+        if (node->children[idx] == nullptr)
+            return ContainmentType::Intersects;
+        
+        // Descend into the candidate child.
+        node = node->children[idx];
+        cube = childCube;
+    }
+    
+    return ContainmentType::Intersects;
+}
+
+
+ContainmentType Octree::contains(glm::vec3 &pos) {
+    OctreeNode* node = root;
+    BoundingCube cube = *this;
+    int level = getHeight(*this);
+
+    for (; node && level > 0; --level) {
+        bool testResult = cube.contains(pos);
+
+        // If completely outside, return Disjoint immediately
+        if (!testResult) {
+            return ContainmentType::Disjoint;
+        }
+
+        // If the node is marked as solid and the cube is not Disjoint, return Contains
+        if (node->solid == ContainmentType::Contains) {
+            break;
+        }
+		
+		int i = getNodeIndex(pos, &cube, true);
+        if (i < 0) {
+            return ContainmentType::Disjoint;
+        }
+
+   		OctreeNode* candidate = node->children[i];
+        if (candidate == NULL) {
+            return node->solid;
+        }
+
+        cube = getChildCube(cube, i);
+        node = candidate;
+    }
+    if (node == NULL){
+		return ContainmentType::Disjoint;
+	} 
+
+    return node->solid;
 }
 
 OctreeNode* Octree::getNodeAt(const glm::vec3 &pos, int level, int simplification) {
@@ -51,7 +128,6 @@ OctreeNode* Octree::getNodeAt(const glm::vec3 &pos, int level, int simplificatio
     return level == 0 ? node : NULL;
 }
 
-
 void Octree::expand(ContainmentHandler * handler) {
 	while (true) {
 		Vertex vertex(getCenter());
@@ -62,8 +138,8 @@ void Octree::expand(ContainmentHandler * handler) {
 		glm::vec3 point = handler->getCenter();
 	    unsigned int i = 7 - getNodeIndex(point, this, false);
 
-	    setMin(getMin() -  Octree::getShift(i) * getLength());
-	    setLength(getLength()*2);
+	    setMin(getMin() -  Octree::getShift(i) * getLengthX());
+	    setLength(getLengthX()*2);
 
 	    OctreeNode * newNode = new OctreeNode(getCenter());
 	    if(root->isEmpty()) {
@@ -77,7 +153,7 @@ void Octree::expand(ContainmentHandler * handler) {
 }
 
 int Octree::getHeight(BoundingCube &cube){
-	float r = glm::log2(cube.getLength() / minSize);
+	float r = glm::log2(cube.getLengthX() / minSize);
 	return r >= 0  ? (int) glm::floor(r) : -1;
 }
 
@@ -85,7 +161,7 @@ int Octree::getHeight(BoundingCube &cube){
 void Octree::getNodeNeighbors(BoundingCube &cube, int level, int simplification, int direction, OctreeNode ** out, int initialIndex, int finalIndex) {
 	// Get corners
 	for(int i=initialIndex; i < finalIndex; ++i) {
-		glm::vec3 pos = cube.getCenter() + direction * cube.getLength() * Octree::getShift(i);
+		glm::vec3 pos = cube.getCenter() + direction * cube.getLengthX() * Octree::getShift(i);
 		OctreeNode * n = getNodeAt(pos, level, simplification);
 		out[i] = n;
 	}
@@ -116,7 +192,7 @@ uint buildMask(ContainmentHandler * handler, BoundingCube &cube) {
 	float d[8];
 	uint mask = 0x00;
 	for(int i=0 ; i < 8 ; ++i) {
-		glm::vec3 p = cube.getMin() + cube.getLength()*Octree::getShift(i);
+		glm::vec3 p = cube.getMin() + cube.getLengthX()*Octree::getShift(i);
 		bool contains = handler->contains(p);
 		mask |= contains ? (1 << i) : 0;
 	}
@@ -217,12 +293,12 @@ void Octree::del(ContainmentHandler * handler) {
 
 
 void Octree::iterate(IteratorHandler * handler) {
-	BoundingCube cube(glm::vec3(getMinX(),getMinY(),getMinZ()),getLength());
+	BoundingCube cube(glm::vec3(getMinX(),getMinY(),getMinZ()),getLengthX());
 	handler->iterate(0, getHeight(cube), root, cube, NULL);
 }
 
 void Octree::iterateFlat(IteratorHandler * handler) {
-	BoundingCube cube(glm::vec3(getMinX(),getMinY(),getMinZ()),getLength());
+	BoundingCube cube(glm::vec3(getMinX(),getMinY(),getMinZ()),getLengthX());
 	handler->iterateFlatIn(0, getHeight(cube), root, cube, NULL);
 }
 

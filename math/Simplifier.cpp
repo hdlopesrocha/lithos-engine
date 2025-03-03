@@ -28,7 +28,7 @@ void Simplifier::after(int level, int height, OctreeNode * node, BoundingCube &c
 	}
 
 	for(int i=0; i < 8 ; ++i) {
-		BoundingCube cc(cube.getMin() - cube.getLength()*Octree::getShift(i), cube.getLength());
+		BoundingCube cc(cube.getMin() - cube.getLengthX()*Octree::getShift(i), cube.getLengthX());
 		OctreeNode * c = tree->getNodeAt(cc.getCenter(), level, 0);
 		if(c!=NULL && c->solid == ContainmentType::Intersects) {
 			if(!chunkCube.contains(cc)){

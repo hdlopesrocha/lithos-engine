@@ -52,7 +52,7 @@ glm::vec3 HeightMap::getPoint(BoundingCube cube) {
     }  
    
     for(int i =0; i < 4 ; ++i) {
-        v = cube.getMin() + cube.getLength() * getShift(i);
+        v = cube.getMin() + cube.getLengthX() * getShift(i);
         h = func->getHeightAt(v.x,0,v.z);
         if( Math::isBetween(h, cube.getMinY(), cube.getMaxY())){
             return glm::vec3(v.x, h, v.z);
@@ -81,7 +81,7 @@ bool HeightMap::hitsBoundary(BoundingCube cube) {
 
     glm::vec2 h = getHeightRangeBetween(cube);
     for(int i = 0; i<8 ; ++i) {
-        glm::vec3 p = cube.getMin() + cube.getLength() * getShift(i);
+        glm::vec3 p = cube.getMin() + cube.getLengthX() * getShift(i);
         if(h[0] <= p.y) {
             allPointsUnderground = false;
             break;
@@ -152,7 +152,7 @@ Vertex HeightMapContainmentHandler::getVertex(BoundingCube &cube, ContainmentTyp
 
     if(map->hitsBoundary(cube)) {
         vertex.normal = Math::surfaceNormal(cube.getCenter(), *map);
-        glm::vec3 c = cube.getCenter()+vertex.normal*cube.getLength();
+        glm::vec3 c = cube.getCenter()+vertex.normal*cube.getLengthX();
         c = glm::clamp(c, map->getMin(), map->getMax() );
         c = glm::clamp(c,cube.getMin(), cube.getMax() );
         vertex.position = c;

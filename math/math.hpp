@@ -34,7 +34,7 @@ struct Plane {
 	float d;
 	public:
 	Plane(glm::vec3 normal, glm::vec3 point);
-	float distance(glm::vec3 point);
+	float distance(glm::vec3 &point);
 };
 
 struct Vertex {
@@ -91,32 +91,56 @@ enum SpaceType {
     Solid
 };
 
-
-class BoundingCube {
+class AbstractBoundingBox {
 	private: 
-		glm::vec3 min;
-		float length;
+	glm::vec3 min;
 
+	public:
+	AbstractBoundingBox();
+	AbstractBoundingBox(glm::vec3 min);
+	float getMinX();
+	float getMinY();
+	float getMinZ();
+	glm::vec3 getMin();
+	void setMin(glm::vec3 v);
+	glm::vec3 getCenter();
+
+	virtual	float getMaxX() = 0;
+	virtual	float getMaxY() = 0;
+	virtual	float getMaxZ() = 0;
+	virtual	glm::vec3 getMax() = 0;	
+
+	virtual float getLengthX() =0;
+	virtual float getLengthY() =0;
+	virtual float getLengthZ() =0;
+	virtual glm::vec3 getLength() =0;
+
+
+	bool contains(glm::vec3 &point);
+	bool contains(BoundingSphere &sphere);
+	bool contains(AbstractBoundingBox &cube);
+	bool intersects(BoundingSphere &sphere);
+	ContainmentType test(AbstractBoundingBox &cube);
+};
+
+class BoundingCube : public AbstractBoundingBox {
+	private: 
+		float length;
+	
 	public: 
+		using AbstractBoundingBox::AbstractBoundingBox;
 		BoundingCube();
 		BoundingCube(glm::vec3 min, float length);
-		float getMaxX();
-		float getMaxY();
-		float getMaxZ();
-		float getMinX();
-		float getMinY();
-		float getMinZ();
-		glm::vec3 getMin();
-		glm::vec3 getMax();
-		glm::vec3 getCenter();
-		float getLength();
 		void setLength(float l);
-		void setMin(glm::vec3 v);
-		bool contains(glm::vec3 point);
-		bool contains(BoundingSphere sphere);
-		bool contains(BoundingCube cube);
-		bool contains(BoundingBox box);
 
+		glm::vec3 getLength() override;
+		float getLengthX() override;
+		float getLengthY() override;
+		float getLengthZ() override;
+		float getMaxX() override;
+		float getMaxY() override;
+		float getMaxZ() override;
+		glm::vec3 getMax() override;	
 };
 
 
@@ -127,34 +151,29 @@ class BoundingSphere {
 		BoundingSphere();		
 		BoundingSphere(glm::vec3 center, float radius);
 		bool contains(glm::vec3 point);
-		ContainmentType test(BoundingCube cube);
-		bool intersects(BoundingCube cube);
+		ContainmentType test(AbstractBoundingBox& cube);
+		bool intersects(AbstractBoundingBox& cube);
 };
 
 
-class BoundingBox {
+class BoundingBox : public AbstractBoundingBox {
 	private: 
-		glm::vec3 min;
 		glm::vec3 max;
 
 	public: 
+		using AbstractBoundingBox::AbstractBoundingBox;
 		BoundingBox(glm::vec3 min, glm::vec3 max);
 		BoundingBox();
-		float getMaxX();
-		float getMaxY();
-		float getMaxZ();
-		float getMinX();
-		float getMinY();
-		float getMinZ();
-		glm::vec3 getMin();
-		glm::vec3 getMax();
-		glm::vec3 getCenter();
-		glm::vec3 getLength();
-		void setMin(glm::vec3 v);
 		void setMax(glm::vec3 v);
-		ContainmentType test(BoundingCube cube);
-		bool intersects(BoundingSphere sphere);
-		bool contains(glm::vec3 point);
+
+		glm::vec3 getLength() override;
+		float getLengthX() override;
+		float getLengthY() override;
+		float getLengthZ() override;
+		float getMaxX() override;
+		float getMaxY() override;
+		float getMaxZ() override;
+		glm::vec3 getMax() override;	
 };
 
 
@@ -363,6 +382,8 @@ class Octree: public BoundingCube {
 		OctreeNode* getNodeAt(const glm::vec3 &pos, int level, int simplification);
 		void handleQuadNodes(OctreeNode * node, OctreeNode** corners, OctreeNodeTriangleHandler * handler);
 		void getNodeNeighbors(BoundingCube &cube, int level, int simplification, int direction, OctreeNode ** out, int initialIndex, int finalIndex);
+		ContainmentType contains(glm::vec3 &pos);
+		ContainmentType contains(AbstractBoundingBox&cube);
 
 		static glm::vec3 getShift(int i);
 		static glm::vec3 getShift3(int i);
@@ -421,7 +442,7 @@ public:
 	Frustum(glm::mat4 m);
 
 	// http://iquilezles.org/www/articles/frustumcorrect/frustumcorrect.htm
-	bool isBoxVisible(BoundingBox box);
+	bool isBoxVisible(AbstractBoundingBox &box);
 
 private:
 	enum Planes

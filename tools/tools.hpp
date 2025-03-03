@@ -42,6 +42,22 @@ class WaterBrush : public TextureBrush {
 	void paint(Vertex * vertex);
 };
 
+#include "tools.hpp"
+
+class OctreeContainmentHandler : public ContainmentHandler {
+	public:
+	Octree * octree;
+    TextureBrush * brush;
+	BoundingBox box;
+
+	OctreeContainmentHandler(Octree * octree, BoundingBox box, TextureBrush * b);
+	glm::vec3 getNormal(glm::vec3 pos);
+	glm::vec3 getCenter() override;
+	bool contains(glm::vec3 p) override;
+	bool isContained(BoundingCube &p) override;
+	ContainmentType check(BoundingCube &cube) override;
+	Vertex getVertex(BoundingCube &cube, ContainmentType solid, glm::vec3 previousPoint) override;
+};
 
 
 #endif
