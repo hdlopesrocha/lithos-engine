@@ -97,7 +97,6 @@ void main() {
             shadow = getShadow(shadowMap, noise, teLightViewPosition, tePosition, teSharpNormal);
         }
         
-        float deepness = clamp((existingDepth - currentDepth)*256.0, 0.0, 0.2);
 
         vec4 refractedColor = vec4(0.0,0.0,0.0,0.0);
         if(teProps.refractiveIndex > 0.0) {
@@ -105,7 +104,7 @@ void main() {
 
             float eta = 1.0 / teProps.refractiveIndex; // Air to water
             vec3 refractedDir = refract(viewDirectionTangent, normalMap, eta);
-            vec2 refractedUV = pixelUV + refractedDir.xy * deepness; // UV distortion
+            vec2 refractedUV = pixelUV + refractedDir.xy * 0.1; // UV distortion
         
             float d2 = texture(depthTexture, refractedUV).r;
 
