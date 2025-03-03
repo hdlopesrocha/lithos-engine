@@ -10,7 +10,7 @@ BoundingSphere::BoundingSphere() {
 	this->radius = 0;
 }
 
-bool BoundingSphere::contains(glm::vec3 point){
+bool BoundingSphere::contains(glm::vec3 point) const {
 	glm::vec3 temp = point - this->center;
 	return glm::dot(temp, temp) < radius*radius;
 }
@@ -52,12 +52,12 @@ float squaredDistPointAABB( glm::vec3 p, AbstractBoundingBox& aabb )
 }
 
 
-bool BoundingSphere::intersects(AbstractBoundingBox& cube) {
+bool BoundingSphere::intersects(AbstractBoundingBox& cube) const {
     float squaredDistance = squaredDistPointAABB( center, cube );
     return squaredDistance <= (radius * radius);
 }
 
-ContainmentType BoundingSphere::test(AbstractBoundingBox& cube) {
+ContainmentType BoundingSphere::test(AbstractBoundingBox& cube) const {
     // Classify corners
     unsigned char mask = 0;
 

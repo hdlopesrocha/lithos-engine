@@ -98,29 +98,29 @@ class AbstractBoundingBox {
 	public:
 	AbstractBoundingBox();
 	AbstractBoundingBox(glm::vec3 min);
-	float getMinX();
-	float getMinY();
-	float getMinZ();
-	glm::vec3 getMin();
+	float getMinX() const;
+	float getMinY() const;
+	float getMinZ() const;
+	glm::vec3 getMin() const;
 	void setMin(glm::vec3 v);
-	glm::vec3 getCenter();
+	glm::vec3 getCenter() const;
 
-	virtual	float getMaxX() = 0;
-	virtual	float getMaxY() = 0;
-	virtual	float getMaxZ() = 0;
-	virtual	glm::vec3 getMax() = 0;	
+	virtual	float getMaxX() const = 0;
+	virtual	float getMaxY() const = 0;
+	virtual	float getMaxZ() const = 0;
+	virtual	glm::vec3 getMax() const = 0;	
 
-	virtual float getLengthX() =0;
-	virtual float getLengthY() =0;
-	virtual float getLengthZ() =0;
-	virtual glm::vec3 getLength() =0;
+	virtual float getLengthX() const =0;
+	virtual float getLengthY() const =0;
+	virtual float getLengthZ() const =0;
+	virtual glm::vec3 getLength() const =0;
 
 
-	bool contains(glm::vec3 &point);
-	bool contains(BoundingSphere &sphere);
-	bool contains(AbstractBoundingBox &cube);
-	bool intersects(BoundingSphere &sphere);
-	ContainmentType test(AbstractBoundingBox &cube);
+	bool contains(glm::vec3 &point) const;
+	bool contains(BoundingSphere &sphere) const;
+	bool contains(AbstractBoundingBox &cube) const;
+	bool intersects(BoundingSphere &sphere) const;
+	ContainmentType test(AbstractBoundingBox &cube) const;
 };
 
 class BoundingCube : public AbstractBoundingBox {
@@ -133,14 +133,14 @@ class BoundingCube : public AbstractBoundingBox {
 		BoundingCube(glm::vec3 min, float length);
 		void setLength(float l);
 
-		glm::vec3 getLength() override;
-		float getLengthX() override;
-		float getLengthY() override;
-		float getLengthZ() override;
-		float getMaxX() override;
-		float getMaxY() override;
-		float getMaxZ() override;
-		glm::vec3 getMax() override;	
+		glm::vec3 getLength() const override;
+		float getLengthX() const override;
+		float getLengthY() const override;
+		float getLengthZ() const override;
+		float getMaxX() const override;
+		float getMaxY() const override;
+		float getMaxZ() const override;
+		glm::vec3 getMax() const override;	
 };
 
 
@@ -150,9 +150,9 @@ class BoundingSphere {
 		float radius;
 		BoundingSphere();		
 		BoundingSphere(glm::vec3 center, float radius);
-		bool contains(glm::vec3 point);
-		ContainmentType test(AbstractBoundingBox& cube);
-		bool intersects(AbstractBoundingBox& cube);
+		bool contains(glm::vec3 point) const ;
+		ContainmentType test(AbstractBoundingBox& cube) const;
+		bool intersects(AbstractBoundingBox& cube) const;
 };
 
 
@@ -166,14 +166,14 @@ class BoundingBox : public AbstractBoundingBox {
 		BoundingBox();
 		void setMax(glm::vec3 v);
 
-		glm::vec3 getLength() override;
-		float getLengthX() override;
-		float getLengthY() override;
-		float getLengthZ() override;
-		float getMaxX() override;
-		float getMaxY() override;
-		float getMaxZ() override;
-		glm::vec3 getMax() override;	
+		glm::vec3 getLength() const override;
+		float getLengthX() const override;
+		float getLengthY() const override;
+		float getLengthZ() const override;
+		float getMaxX() const override;
+		float getMaxY() const override;
+		float getMaxZ() const override;
+		glm::vec3 getMax() const override;	
 };
 
 

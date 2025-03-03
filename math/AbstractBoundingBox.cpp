@@ -9,19 +9,19 @@ AbstractBoundingBox::AbstractBoundingBox() {
     this->min = glm::vec3(0,0,0);
 }
 
-glm::vec3 AbstractBoundingBox::getMin() {
+glm::vec3 AbstractBoundingBox::getMin() const {
     return min;
 }
 
-float AbstractBoundingBox::getMinX() {
+float AbstractBoundingBox::getMinX() const {
     return min[0];
 }
 
-float AbstractBoundingBox::getMinY() {
+float AbstractBoundingBox::getMinY() const {
     return min[1];
 }
 
-float AbstractBoundingBox::getMinZ() {
+float AbstractBoundingBox::getMinZ() const {
     return min[2];
 }
 
@@ -29,11 +29,11 @@ void AbstractBoundingBox::setMin(glm::vec3 v) {
     this->min = v;
 }
 
-glm::vec3 AbstractBoundingBox::getCenter() {
+glm::vec3 AbstractBoundingBox::getCenter() const {
     return (getMin()+getMax())*0.5f;
 }
 
-bool AbstractBoundingBox::contains(glm::vec3 &point){
+bool AbstractBoundingBox::contains(glm::vec3 &point) const {
     return 
         Math::isBetween(point[0], min[0], getMaxX()) &&
         Math::isBetween(point[1], min[1], getMaxY()) &&
@@ -41,14 +41,14 @@ bool AbstractBoundingBox::contains(glm::vec3 &point){
 }
 
 
-bool AbstractBoundingBox::contains(BoundingSphere &sphere){
+bool AbstractBoundingBox::contains(BoundingSphere &sphere) const {
     glm::vec3 minS = (sphere.center-glm::vec3(sphere.radius));
     BoundingCube cube(minS, sphere.radius*2.0);
     return contains(cube);
 }
 
 
-bool AbstractBoundingBox::contains(AbstractBoundingBox &box){
+bool AbstractBoundingBox::contains(AbstractBoundingBox &box) const {
 
     glm::vec3 minC = box.getMin();
     glm::vec3 maxC = box.getMax();
@@ -61,7 +61,7 @@ bool AbstractBoundingBox::contains(AbstractBoundingBox &box){
     return false;
 }
 
-ContainmentType AbstractBoundingBox::test(AbstractBoundingBox &cube) {
+ContainmentType AbstractBoundingBox::test(AbstractBoundingBox &cube) const {
     ContainmentType result;
     result = ContainmentType::Intersects;
     glm::vec3 min1 = cube.getMin();

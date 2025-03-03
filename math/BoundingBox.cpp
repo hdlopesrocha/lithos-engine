@@ -9,35 +9,35 @@ BoundingBox::BoundingBox() : AbstractBoundingBox(glm::vec3(0.0)){
     this->max = glm::vec3(0,0,0);
 }
 
-glm::vec3 BoundingBox::getMax() {
+glm::vec3 BoundingBox::getMax() const {
     return max;
 }
 
-glm::vec3 BoundingBox::getLength() {
+glm::vec3 BoundingBox::getLength() const {
     return getMax() - getMin();
 }
 
-float BoundingBox::getMaxX() {
+float BoundingBox::getMaxX() const {
     return max[0];
 }
 
-float BoundingBox::getMaxY() {
+float BoundingBox::getMaxY() const {
     return max[1];
 }
 
-float BoundingBox::getMaxZ() {
+float BoundingBox::getMaxZ() const {
     return max[2];
 }
 
-float BoundingBox::getLengthX() {
+float BoundingBox::getLengthX() const {
     return max[0] - getMinX();
 }
 
-float BoundingBox::getLengthY() {
+float BoundingBox::getLengthY() const {
     return max[1] - getMinY();
 }
 
-float BoundingBox::getLengthZ() {
+float BoundingBox::getLengthZ() const {
     return max[2] - getMinZ();
 }
 

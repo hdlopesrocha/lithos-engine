@@ -8,35 +8,35 @@ BoundingCube::BoundingCube(glm::vec3 min, float length) : AbstractBoundingBox(mi
 	this->length = length;
 }
 
-glm::vec3 BoundingCube::getMax() {
+glm::vec3 BoundingCube::getMax() const {
     return getMin()+glm::vec3(length);
 }
 
-float BoundingCube::getMaxX() {
+float BoundingCube::getMaxX() const {
     return getMinX() + length;
 }
 
-float BoundingCube::getMaxY() {
+float BoundingCube::getMaxY() const {
     return getMinY() + length;
 }
 
-float BoundingCube::getMaxZ() {
+float BoundingCube::getMaxZ() const {
     return getMinZ() + length;
 }
 
-glm::vec3 BoundingCube::getLength() {
+glm::vec3 BoundingCube::getLength() const {
     return glm::vec3(length);
 }
 
-float BoundingCube::getLengthX() {
+float BoundingCube::getLengthX() const {
     return length;
 }
 
-float BoundingCube::getLengthY() {
+float BoundingCube::getLengthY() const {
     return length;
 }
 
-float BoundingCube::getLengthZ() {
+float BoundingCube::getLengthZ() const {
     return length;
 }
 
