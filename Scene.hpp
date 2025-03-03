@@ -145,22 +145,24 @@ class Scene {
 	void create(std::vector<Texture*> textures, std::vector<Brush*>  brushes) {
 
 		BoundingBox mapBox(glm::vec3(-200,-60,-200), glm::vec3(200,50,200));
-		HeightFunction * function = new GradientPerlinSurface(100, 1.0f/128.0f, 0);
-		CachedHeightMapSurface * surface = new CachedHeightMapSurface(function, mapBox, solidSpace->minSize);
-		HeightMap map(surface, mapBox.getMin(),mapBox.getMax(), solidSpace->minSize);
+		HeightMap map(
+			CachedHeightMapSurface(
+				GradientPerlinSurface(100, 1.0f/128.0f, 0), 
+				mapBox, solidSpace->minSize), 
+			mapBox.getMin(),mapBox.getMax(), solidSpace->minSize);
 
-		solidSpace->add(HeightMapContainmentHandler(&map, new LandBrush(brushes)));
-		solidSpace->add(BoxContainmentHandler(BoundingBox(glm::vec3(-10,6,-10),glm::vec3(34,50,34)),new SimpleBrush(brushes[8])));
-		solidSpace->add(SphereContainmentHandler(BoundingSphere(glm::vec3(0,50,0),20), new SimpleBrush(brushes[6])));
-		solidSpace->add(SphereContainmentHandler(BoundingSphere(glm::vec3(-11,61,11),10), new SimpleBrush(brushes[5])));
-		solidSpace->del(SphereContainmentHandler(BoundingSphere(glm::vec3(11,61,-11),10), new SimpleBrush(brushes[4])));
-		solidSpace->del(SphereContainmentHandler(BoundingSphere(glm::vec3(4,54,-4),8), new SimpleBrush(brushes[1])));
-		solidSpace->add(SphereContainmentHandler(BoundingSphere(glm::vec3(11,61,-11),4), new SimpleBrush(brushes[0])));
+		solidSpace->add(HeightMapContainmentHandler(&map, LandBrush(brushes)));
+		solidSpace->add(BoxContainmentHandler(BoundingBox(glm::vec3(-10,6,-10),glm::vec3(34,50,34)),SimpleBrush(brushes[8])));
+		solidSpace->add(SphereContainmentHandler(BoundingSphere(glm::vec3(0,50,0),20), SimpleBrush(brushes[6])));
+		solidSpace->add(SphereContainmentHandler(BoundingSphere(glm::vec3(-11,61,11),10), SimpleBrush(brushes[5])));
+		solidSpace->del(SphereContainmentHandler(BoundingSphere(glm::vec3(11,61,-11),10), SimpleBrush(brushes[4])));
+		solidSpace->del(SphereContainmentHandler(BoundingSphere(glm::vec3(4,54,-4),8), SimpleBrush(brushes[1])));
+		solidSpace->add(SphereContainmentHandler(BoundingSphere(glm::vec3(11,61,-11),4), SimpleBrush(brushes[0])));
 
 		BoundingBox waterBox(glm::vec3(-200,-60,-200), glm::vec3(200,3,200));
 		//liquidSpace->add(new OctreeContainmentHandler(solidSpace, waterBox, new SimpleBrush(brushes[6])));
 		//BoundingBox waterBox(glm::vec3(50,50,0), glm::vec3(70,70,20));
-		liquidSpace->add(OctreeContainmentHandler(solidSpace, waterBox, new WaterBrush(brushes[0])));
+		liquidSpace->add(OctreeContainmentHandler(solidSpace, waterBox, WaterBrush(brushes[0])));
 	}
 
 

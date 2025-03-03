@@ -1,18 +1,17 @@
 #include "math.hpp"
 
 
-HeightMap::HeightMap(HeightFunction * func, glm::vec3 min, glm::vec3 max, float step) : BoundingBox(min, max){
-    this->func = func;
-    this->step = step;
+HeightMap::HeightMap(const HeightFunction &func, glm::vec3 min, glm::vec3 max, float step)  : BoundingBox(min, max), func(func), step(step){
+
 }
 
 
-glm::vec2 HeightMap::getHeightRangeBetween(BoundingCube cube) {
-    glm::vec2 range = glm::vec2(func->getHeightAt(cube.getCenter().x,0,cube.getCenter().z));
+glm::vec2 HeightMap::getHeightRangeBetween(const BoundingCube &cube) const {
+    glm::vec2 range = glm::vec2(func.getHeightAt(cube.getCenter().x,0,cube.getCenter().z));
 
     for(float x = cube.getMinX() ; x <= cube.getMaxX(); x+=step) {
         for(float z = cube.getMinZ() ; z <= cube.getMaxZ(); z+=step) {
-            float h = func->getHeightAt(x,0,z);
+            float h = func.getHeightAt(x,0,z);
             range[0] = h < range[0] ? h : range[0];
             range[1] = h > range[1] ? h : range[1];
         }        
@@ -21,7 +20,7 @@ glm::vec2 HeightMap::getHeightRangeBetween(BoundingCube cube) {
     return range;
 }
 
-glm::vec3 HeightFunction::getNormal(float x, float z, float delta) {
+glm::vec3 HeightFunction::getNormal(float x, float z, float delta)  const {
     float q11 = getHeightAt(x, 0,z);
     float q21 = getHeightAt(x+delta,0, z);
     float q12 = getHeightAt(x,0, z+delta);
@@ -36,24 +35,24 @@ glm::vec3 HeightFunction::getNormal(float x, float z, float delta) {
     return glm::cross(n12,n21);
 }
 
-glm::vec3 HeightMap::getNormalAt(float x, float z) {
-    return func->getNormal(x,z,step);
+glm::vec3 HeightMap::getNormalAt(float x, float z) const {
+    return func.getNormal(x,z,step);
 }
 
 glm::vec3 getShift(int i) {
 	return glm::vec3( ((i >> 0) % 2) , ((i >> 2) % 2) , ((i >> 1) % 2));
 }
 
-glm::vec3 HeightMap::getPoint(BoundingCube cube) {
+glm::vec3 HeightMap::getPoint(const BoundingCube &cube) const {
     glm::vec3 v = cube.getCenter();
-    float h = func->getHeightAt(v.x,0,v.z);
+    float h = func.getHeightAt(v.x,0,v.z);
     if( Math::isBetween(h, cube.getMinY(), cube.getMaxY())){
         return glm::vec3(v.x, h, v.z);
     }  
    
     for(int i =0; i < 4 ; ++i) {
         v = cube.getMin() + cube.getLengthX() * getShift(i);
-        h = func->getHeightAt(v.x,0,v.z);
+        h = func.getHeightAt(v.x,0,v.z);
         if( Math::isBetween(h, cube.getMinY(), cube.getMaxY())){
             return glm::vec3(v.x, h, v.z);
         }
@@ -61,19 +60,19 @@ glm::vec3 HeightMap::getPoint(BoundingCube cube) {
     return cube.getCenter();
 }
 
-bool HeightMap::contains(glm::vec3 point){
+bool HeightMap::contains(const glm::vec3 &point) const {
     BoundingBox box(getMin(), getMax());
-    float h = func->getHeightAt(point.x, 0, point.z);
+    float h = func.getHeightAt(point.x, 0, point.z);
 
     return box.contains(point) && Math::isBetween(point.y, getMinY(), h);
 }
 
-bool HeightMap::isContained(BoundingCube p) {
+bool HeightMap::isContained(const BoundingCube &p) const {
     BoundingBox box(getMin(), getMax());
     return p.contains(box);
 }
     
-bool HeightMap::hitsBoundary(BoundingCube cube) {
+bool HeightMap::hitsBoundary(const BoundingCube &cube) const {
     BoundingBox box(getMin(), getMax());
 
     ContainmentType result = box.test(cube);
@@ -91,7 +90,7 @@ bool HeightMap::hitsBoundary(BoundingCube cube) {
     return result == ContainmentType::Intersects && allPointsUnderground;
 }
 
-ContainmentType HeightMap::test(BoundingCube cube) {
+ContainmentType HeightMap::test(const BoundingCube &cube) const {
     BoundingBox box(getMin(), getMax());
 
     ContainmentType result = box.test(cube);
@@ -118,9 +117,8 @@ ContainmentType HeightMap::test(BoundingCube cube) {
 }
 
 
-HeightMapContainmentHandler::HeightMapContainmentHandler(HeightMap * m, TextureBrush * b) : ContainmentHandler(){
-    this->map = m;
-    this->brush = b;
+HeightMapContainmentHandler::HeightMapContainmentHandler(HeightMap * m, const TextureBrush &b) : ContainmentHandler(), map(map), brush(b){
+
 }
 
 glm::vec3 HeightMapContainmentHandler::getCenter() const {
@@ -162,7 +160,7 @@ Vertex HeightMapContainmentHandler::getVertex(const BoundingCube &cube, Containm
         vertex.normal = getNormal(vertex.position);
     }
 
-    brush->paint(&vertex);
+    brush.paint(&vertex);
     return vertex;
 }
 

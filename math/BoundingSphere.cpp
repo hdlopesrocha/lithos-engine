@@ -79,9 +79,8 @@ ContainmentType BoundingSphere::test(const AbstractBoundingBox& cube) const {
 }
 
 
-SphereContainmentHandler::SphereContainmentHandler(BoundingSphere s, TextureBrush * b) : ContainmentHandler(){
-    this->sphere = s;
-    this->brush = b;
+SphereContainmentHandler::SphereContainmentHandler(BoundingSphere s, const TextureBrush &b) : ContainmentHandler(), sphere(s), brush(b){
+
 }
 
 glm::vec3 SphereContainmentHandler::getCenter() const {
@@ -114,6 +113,6 @@ Vertex SphereContainmentHandler::getVertex(const BoundingCube &cube, Containment
     Vertex vertex(p);
     vertex.normal = getNormal(vertex.position);
 
-    brush->paint(&vertex);
+    brush.paint(&vertex);
     return vertex;
 }

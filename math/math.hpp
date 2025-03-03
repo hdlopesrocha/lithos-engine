@@ -179,8 +179,8 @@ class BoundingBox : public AbstractBoundingBox {
 
 class HeightFunction {
 	public:
-		virtual float getHeightAt(float x, float y, float z) = 0;
-		glm::vec3 getNormal(float x, float z, float delta);
+		virtual float getHeightAt(float x, float y, float z) const = 0;
+		glm::vec3 getNormal(float x, float z, float delta) const;
 
 };
 
@@ -194,9 +194,9 @@ class CachedHeightMapSurface : public HeightFunction {
 		int height;
 
 
-	CachedHeightMapSurface(HeightFunction * function, BoundingBox box, float delta);
-	float getData(int x, int z);
-	float getHeightAt(float x, float yy, float z);
+	CachedHeightMapSurface(const HeightFunction &function, BoundingBox box, float delta);
+	float getData(int x, int z) const;
+	float getHeightAt(float x, float yy, float z) const override;
 
 };
 
@@ -208,14 +208,14 @@ class PerlinSurface : public HeightFunction {
 
 
 	PerlinSurface(float amplitude, float frequency, float offset);
-	float getHeightAt(float x, float y, float z);
+	float getHeightAt(float x, float y, float z) const override;
 };
 
 class FractalPerlinSurface : public PerlinSurface {
 	public:
 	using PerlinSurface::PerlinSurface;
 	FractalPerlinSurface(float amplitude, float frequency, float offset);
-	float getHeightAt(float x, float y, float z);
+	float getHeightAt(float x, float y, float z) const override;
 };
 
 
@@ -223,25 +223,25 @@ class GradientPerlinSurface : public PerlinSurface {
 	public:
 
 	GradientPerlinSurface(float amplitude, float frequency, float offset);
-	float getHeightAt(float x, float y, float z);
+	float getHeightAt(float x, float y, float z) const override;
 };
 
 class HeightMap: public BoundingBox  {
 	private: 
 		float step;
-		HeightFunction * func;
+		const HeightFunction &func;
 	public: 
-		HeightMap(HeightFunction * func, glm::vec3 min, glm::vec3 max, float step);
+		HeightMap(const HeightFunction &func, glm::vec3 min, glm::vec3 max, float step);
 		
-   		glm::vec3 getNormalAt(float x, float z);
-		glm::vec3 getPoint(BoundingCube cube);
+   		glm::vec3 getNormalAt(float x, float z) const ;
+		glm::vec3 getPoint(const BoundingCube& cube) const ;
 
-		glm::ivec2 getIndexes(float x, float z);
-		glm::vec2 getHeightRangeBetween(BoundingCube cube);
-		bool hitsBoundary(BoundingCube cube);
-		bool isContained(BoundingCube p);
-		bool contains(glm::vec3 point);
-		ContainmentType test(BoundingCube cube);
+		glm::ivec2 getIndexes(float x, float z) const ;
+		glm::vec2 getHeightRangeBetween(const BoundingCube &cube) const ;
+		bool hitsBoundary(const BoundingCube &cube) const ;
+		bool isContained(const BoundingCube &p) const ;
+		bool contains(const glm::vec3 &point) const ;
+		ContainmentType test(const BoundingCube &cube) const ;
 
 };
 
@@ -471,16 +471,16 @@ private:
 
 class TextureBrush {
 	public:
-	virtual void paint(Vertex * v) = 0;
+	virtual void paint(Vertex * v) const = 0;
 };
 
 
 class SphereContainmentHandler : public ContainmentHandler {
 	public:
 	BoundingSphere sphere;
-    TextureBrush * brush;
+    const TextureBrush &brush;
 
-	SphereContainmentHandler(BoundingSphere s, TextureBrush * b);
+	SphereContainmentHandler(BoundingSphere s, const TextureBrush &b);
 	glm::vec3 getCenter() const override;
 	bool contains(const glm::vec3 p) const override;
 	glm::vec3 getNormal(const glm::vec3 pos) const ;
@@ -492,9 +492,9 @@ class SphereContainmentHandler : public ContainmentHandler {
 class BoxContainmentHandler : public ContainmentHandler {
 	public: 
 	BoundingBox box;
-    TextureBrush * brush;
+    const TextureBrush &brush;
 
-	BoxContainmentHandler(BoundingBox box, TextureBrush * b);
+	BoxContainmentHandler(BoundingBox box, const TextureBrush &b);
 	glm::vec3 getCenter() const;
 	bool contains(const glm::vec3 p) const ;
 	bool isContained(const BoundingCube &cube) const override;
@@ -505,9 +505,9 @@ class BoxContainmentHandler : public ContainmentHandler {
 class HeightMapContainmentHandler : public ContainmentHandler {
 	public: 
 	HeightMap * map;
-    TextureBrush * brush;
+    const TextureBrush &brush;
 
-	HeightMapContainmentHandler(HeightMap * m, TextureBrush * b);
+	HeightMapContainmentHandler(HeightMap * m, const TextureBrush &b);
 	glm::vec3 getCenter() const;
 	bool contains(const glm::vec3 p) const ;
 	float intersection(const glm::vec3 a, const glm::vec3 b) const ;

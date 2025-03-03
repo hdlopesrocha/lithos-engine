@@ -14,7 +14,7 @@ LandBrush::LandBrush(std::vector<Brush*> brushes){
     this->rockMixSand = brushes[13];
 }
 
-void LandBrush::paint(Vertex * vertex) {
+void LandBrush::paint(Vertex * vertex) const {
     float steepness =glm::dot(glm::vec3(0.0f,1.0f,0.0f), vertex->normal );
     int grassLevel = 25;
     int sandLevel = 5;

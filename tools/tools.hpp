@@ -21,7 +21,7 @@ class LandBrush : public TextureBrush {
 
 	public: 
 	LandBrush(std::vector<Brush*> brushes);
-	void paint(Vertex * vertex);
+	void paint(Vertex * vertex) const override;
 };
 
 class SimpleBrush : public TextureBrush {
@@ -29,17 +29,17 @@ class SimpleBrush : public TextureBrush {
 
 	public: 
 	SimpleBrush(Brush * brush);
-	void paint(Vertex * vertex);
+	void paint(Vertex * vertex) const override;
 };
 
 
 
 class WaterBrush : public TextureBrush {
-	Brush * water;
+	Brush *water;
 
 	public: 
-	WaterBrush(Brush* water);
-	void paint(Vertex * vertex);
+	WaterBrush(Brush *water);
+	void paint(Vertex * vertex) const override;
 };
 
 #include "tools.hpp"
@@ -47,10 +47,10 @@ class WaterBrush : public TextureBrush {
 class OctreeContainmentHandler : public ContainmentHandler {
 	public:
 	Octree * octree;
-    TextureBrush * brush;
+    const TextureBrush &brush;
 	BoundingBox box;
 
-	OctreeContainmentHandler(Octree * octree, BoundingBox box, TextureBrush * b);
+	OctreeContainmentHandler(Octree * octree, BoundingBox box, const TextureBrush &b);
 	glm::vec3 getNormal(const glm::vec3 pos) const;
 	glm::vec3 getCenter() const override;
 	bool contains(const glm::vec3 p) const override;

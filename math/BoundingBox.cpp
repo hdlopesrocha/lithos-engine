@@ -45,9 +45,8 @@ void BoundingBox::setMax(glm::vec3 v) {
     this->max = v;
 }
 
-BoxContainmentHandler::BoxContainmentHandler(BoundingBox box, TextureBrush * b) : ContainmentHandler(){
-    this->box = box;
-    this->brush = b;
+BoxContainmentHandler::BoxContainmentHandler(BoundingBox box, const TextureBrush &b) : ContainmentHandler(), box(box), brush(b){
+
 }
 
 glm::vec3 BoxContainmentHandler::getCenter() const {
@@ -71,6 +70,6 @@ Vertex BoxContainmentHandler::getVertex(const BoundingCube &cube, ContainmentTyp
     glm::vec3 max = this->box.getMax();
     Vertex vertex(glm::clamp(previousPoint, min, max));
     vertex.normal = Math::surfaceNormal(vertex.position, box);
-    brush->paint(&vertex);	
+    brush.paint(&vertex);	
     return vertex;
 }

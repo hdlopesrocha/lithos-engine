@@ -1,7 +1,6 @@
 #include "tools.hpp"
 
-OctreeContainmentHandler::OctreeContainmentHandler(Octree * octree, BoundingBox box, TextureBrush * b) {
-    this->brush = b;
+OctreeContainmentHandler::OctreeContainmentHandler(Octree * octree, BoundingBox box, const TextureBrush &b): brush(b) {
     this->octree = octree;
     this->box = box;
 }
@@ -41,6 +40,6 @@ Vertex OctreeContainmentHandler::getVertex(const BoundingCube &cube, Containment
     Vertex vtx;
     vtx.position = cube.getCenter();
     vtx.normal = getNormal(vtx.position);
-    brush->paint(&vtx);
+    brush.paint(&vtx);
     return vtx;
 }
