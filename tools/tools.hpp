@@ -51,12 +51,12 @@ class OctreeContainmentHandler : public ContainmentHandler {
 	BoundingBox box;
 
 	OctreeContainmentHandler(Octree * octree, BoundingBox box, TextureBrush * b);
-	glm::vec3 getNormal(glm::vec3 pos);
-	glm::vec3 getCenter() override;
-	bool contains(glm::vec3 p) override;
-	bool isContained(BoundingCube &p) override;
-	ContainmentType check(BoundingCube &cube) override;
-	Vertex getVertex(BoundingCube &cube, ContainmentType solid, glm::vec3 previousPoint) override;
+	glm::vec3 getNormal(const glm::vec3 pos) const;
+	glm::vec3 getCenter() const override;
+	bool contains(const glm::vec3 p) const override;
+	bool isContained(const BoundingCube &p) const override;
+	ContainmentType check(const BoundingCube &cube) const override;
+	Vertex getVertex(const BoundingCube &cube, ContainmentType solid, glm::vec3 previousPoint) const override;
 };
 
 

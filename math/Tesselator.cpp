@@ -27,7 +27,7 @@ void * Tesselator::before(int level, int height, OctreeNode * node, const Boundi
 		
 		// Tesselate
 		OctreeNodeTriangleTesselator handler(chunk, &triangles);
-		tree->handleQuadNodes(node, corners , &handler);	
+		tree->handleQuadNodes(*node, corners , handler);	
 	}
 	return context;
 }

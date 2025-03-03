@@ -150,9 +150,9 @@ class BoundingSphere {
 		float radius;
 		BoundingSphere();		
 		BoundingSphere(glm::vec3 center, float radius);
-		bool contains(glm::vec3 point) const ;
-		ContainmentType test(AbstractBoundingBox& cube) const;
-		bool intersects(AbstractBoundingBox& cube) const;
+		bool contains(const glm::vec3 point) const ;
+		ContainmentType test(const AbstractBoundingBox& cube) const;
+		bool intersects(const AbstractBoundingBox& cube) const;
 };
 
 
@@ -247,11 +247,11 @@ class HeightMap: public BoundingBox  {
 
 class ContainmentHandler {
 	public: 
-		virtual ContainmentType check(BoundingCube &cube) = 0;
-		virtual Vertex getVertex(BoundingCube &cube, ContainmentType solid, glm::vec3 previousPoint) = 0;
-		virtual glm::vec3 getCenter() = 0;
-		virtual bool contains(glm::vec3 p) = 0;
-		virtual bool isContained(BoundingCube &cube) = 0;
+		virtual ContainmentType check(const BoundingCube &cube) const = 0;
+		virtual Vertex getVertex(const BoundingCube &cube, ContainmentType solid, glm::vec3 previousPoint) const = 0;
+		virtual glm::vec3 getCenter() const = 0;
+		virtual bool contains(const glm::vec3 p) const = 0;
+		virtual bool isContained(const BoundingCube &cube) const = 0;
 };
 
 struct NodeInfo {
@@ -373,14 +373,14 @@ class Octree: public BoundingCube {
 		OctreeNode * root;
 
 		Octree(BoundingCube minCube);
-		void expand(ContainmentHandler * handler);
-		void add(ContainmentHandler * handler);
-		void del(ContainmentHandler * handler);
-		void iterate(IteratorHandler * handler);
-		void iterateFlat(IteratorHandler * handler);
+		void expand(const ContainmentHandler &handler);
+		void add(const ContainmentHandler &handler);
+		void del(const ContainmentHandler &handler);
+		void iterate(IteratorHandler &handler);
+		void iterateFlat(IteratorHandler &handler);
 
 		OctreeNode* getNodeAt(const glm::vec3 &pos, int level, int simplification);
-		void handleQuadNodes(OctreeNode * node, OctreeNode** corners, OctreeNodeTriangleHandler * handler);
+		void handleQuadNodes(OctreeNode &node, OctreeNode** corners, OctreeNodeTriangleHandler &handler);
 		void getNodeNeighbors(const BoundingCube &cube, int level, int simplification, int direction, OctreeNode ** out, int initialIndex, int finalIndex);
 		ContainmentType contains(const glm::vec3 &pos);
 		ContainmentType contains(const AbstractBoundingBox&cube);
@@ -481,12 +481,12 @@ class SphereContainmentHandler : public ContainmentHandler {
     TextureBrush * brush;
 
 	SphereContainmentHandler(BoundingSphere s, TextureBrush * b);
-	glm::vec3 getCenter();
-	bool contains(glm::vec3 p);
-	glm::vec3 getNormal(glm::vec3 pos);
-	bool isContained(BoundingCube &cube) override;
-	ContainmentType check(BoundingCube &cube) override;
-	Vertex getVertex(BoundingCube &cube, ContainmentType solid, glm::vec3 previousPoint) override;
+	glm::vec3 getCenter() const override;
+	bool contains(const glm::vec3 p) const override;
+	glm::vec3 getNormal(const glm::vec3 pos) const ;
+	bool isContained(const BoundingCube &cube) const override;
+	ContainmentType check(const BoundingCube &cube) const override;
+	Vertex getVertex(const BoundingCube &cube, ContainmentType solid, glm::vec3 previousPoint) const override;
 };
 
 class BoxContainmentHandler : public ContainmentHandler {
@@ -495,11 +495,11 @@ class BoxContainmentHandler : public ContainmentHandler {
     TextureBrush * brush;
 
 	BoxContainmentHandler(BoundingBox box, TextureBrush * b);
-	glm::vec3 getCenter();
-	bool contains(glm::vec3 p);
-	bool isContained(BoundingCube &cube) override;
-	ContainmentType check(BoundingCube &cube) override;
-	Vertex getVertex(BoundingCube &cube, ContainmentType solid, glm::vec3 previousPoint) override;
+	glm::vec3 getCenter() const;
+	bool contains(const glm::vec3 p) const ;
+	bool isContained(const BoundingCube &cube) const override;
+	ContainmentType check(const BoundingCube &cube) const override;
+	Vertex getVertex(const BoundingCube &cube, ContainmentType solid, glm::vec3 previousPoint) const override;
 };
 
 class HeightMapContainmentHandler : public ContainmentHandler {
@@ -508,13 +508,13 @@ class HeightMapContainmentHandler : public ContainmentHandler {
     TextureBrush * brush;
 
 	HeightMapContainmentHandler(HeightMap * m, TextureBrush * b);
-	glm::vec3 getCenter();
-	bool contains(glm::vec3 p);
-	float intersection(glm::vec3 a, glm::vec3 b);
-	glm::vec3 getNormal(glm::vec3 pos);
-	bool isContained(BoundingCube &cube) override;
-	ContainmentType check(BoundingCube &cube) override;
-	Vertex getVertex(BoundingCube &cube, ContainmentType solid, glm::vec3 previousPoint) override;
+	glm::vec3 getCenter() const;
+	bool contains(const glm::vec3 p) const ;
+	float intersection(const glm::vec3 a, const glm::vec3 b) const ;
+	glm::vec3 getNormal(const glm::vec3 pos) const ;
+	bool isContained(const BoundingCube &cube) const override;
+	ContainmentType check(const BoundingCube &cube) const override;
+	Vertex getVertex(const BoundingCube &cube, ContainmentType solid, glm::vec3 previousPoint) const override;
 };
 
 struct OctreeNodeSerialized {
@@ -587,7 +587,7 @@ public:
 	static int triplanarPlane(glm::vec3 position, glm::vec3 normal);
 	static int mod(int a, int b);
 	static glm::vec2 triplanarMapping(glm::vec3 position, int plane);
-	static glm::vec3 surfaceNormal(glm::vec3 point, BoundingBox &box);
+	static glm::vec3 surfaceNormal(const glm::vec3 point, const BoundingBox &box);
 	static glm::mat4 getCanonicalMVP(glm::mat4 m);
 	static glm::mat4 getRotationMatrixFromNormal(glm::vec3 normal, glm::vec3 target);
 };

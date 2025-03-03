@@ -10,7 +10,7 @@ BoundingSphere::BoundingSphere() {
 	this->radius = 0;
 }
 
-bool BoundingSphere::contains(glm::vec3 point) const {
+bool BoundingSphere::contains(const glm::vec3 point) const {
 	glm::vec3 temp = point - this->center;
 	return glm::dot(temp, temp) < radius*radius;
 }
@@ -38,7 +38,7 @@ bool BoundingSphere::contains(glm::vec3 point) const {
  
 
 
-float squaredDistPointAABB( glm::vec3 p, AbstractBoundingBox& aabb )
+float squaredDistPointAABB( const glm::vec3 p, const AbstractBoundingBox& aabb )
 {
  
     // Squared distance
@@ -52,12 +52,12 @@ float squaredDistPointAABB( glm::vec3 p, AbstractBoundingBox& aabb )
 }
 
 
-bool BoundingSphere::intersects(AbstractBoundingBox& cube) const {
+bool BoundingSphere::intersects(const AbstractBoundingBox& cube) const {
     float squaredDistance = squaredDistPointAABB( center, cube );
     return squaredDistance <= (radius * radius);
 }
 
-ContainmentType BoundingSphere::test(AbstractBoundingBox& cube) const {
+ContainmentType BoundingSphere::test(const AbstractBoundingBox& cube) const {
     // Classify corners
     unsigned char mask = 0;
 
@@ -84,27 +84,27 @@ SphereContainmentHandler::SphereContainmentHandler(BoundingSphere s, TextureBrus
     this->brush = b;
 }
 
-glm::vec3 SphereContainmentHandler::getCenter() {
+glm::vec3 SphereContainmentHandler::getCenter() const {
     return sphere.center;
 }
 
-bool SphereContainmentHandler::contains(glm::vec3 p) {
+bool SphereContainmentHandler::contains(const glm::vec3 p) const {
     return sphere.contains(p);
 }
 
-bool SphereContainmentHandler::isContained(BoundingCube &cube) {
+bool SphereContainmentHandler::isContained(const BoundingCube &cube) const {
     return cube.contains(sphere);
 }
 
-glm::vec3 SphereContainmentHandler::getNormal(glm::vec3 pos) {
+glm::vec3 SphereContainmentHandler::getNormal(const glm::vec3 pos) const  {
     return glm::normalize( pos - sphere.center);
 }
 
-ContainmentType SphereContainmentHandler::check(BoundingCube &cube) {
+ContainmentType SphereContainmentHandler::check(const BoundingCube &cube) const {
     return sphere.test(cube); 
 }
 
-Vertex SphereContainmentHandler::getVertex(BoundingCube &cube, ContainmentType solid, glm::vec3 previousPoint) {
+Vertex SphereContainmentHandler::getVertex(const BoundingCube &cube, ContainmentType solid, glm::vec3 previousPoint) const {
     glm::vec3 c = this->sphere.center;
     float r = this->sphere.radius;
     glm::vec3 a = previousPoint;

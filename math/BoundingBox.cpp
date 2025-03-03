@@ -50,23 +50,23 @@ BoxContainmentHandler::BoxContainmentHandler(BoundingBox box, TextureBrush * b) 
     this->brush = b;
 }
 
-glm::vec3 BoxContainmentHandler::getCenter() {
+glm::vec3 BoxContainmentHandler::getCenter() const {
     return box.getCenter();
 }
 
-bool BoxContainmentHandler::contains(glm::vec3 p) {
+bool BoxContainmentHandler::contains(const glm::vec3 p) const {
     return box.contains(p);
 }
 
-bool BoxContainmentHandler::isContained(BoundingCube &cube) {
+bool BoxContainmentHandler::isContained(const BoundingCube &cube) const {
     return cube.contains(box);
 }
 
-ContainmentType BoxContainmentHandler::check(BoundingCube &cube) {
+ContainmentType BoxContainmentHandler::check(const BoundingCube &cube) const {
     return box.test(cube); 
 }
 
-Vertex BoxContainmentHandler::getVertex(BoundingCube &cube, ContainmentType solid, glm::vec3 previousPoint) {
+Vertex BoxContainmentHandler::getVertex(const BoundingCube &cube, ContainmentType solid, glm::vec3 previousPoint) const {
     glm::vec3 min = this->box.getMin();
     glm::vec3 max = this->box.getMax();
     Vertex vertex(glm::clamp(previousPoint, min, max));

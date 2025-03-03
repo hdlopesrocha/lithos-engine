@@ -125,14 +125,14 @@ OctreeNode* Octree::getNodeAt(const glm::vec3 &pos, int level, int simplificatio
     return level == 0 ? node : NULL;
 }
 
-void Octree::expand(ContainmentHandler * handler) {
+void Octree::expand(const ContainmentHandler &handler) {
 	while (true) {
 		Vertex vertex(getCenter());
-		ContainmentType cont = handler->check(*this);
-	    if (handler->isContained(*this)) {
+		ContainmentType cont = handler.check(*this);
+	    if (handler.isContained(*this)) {
 	        break;
 	    }
-		glm::vec3 point = handler->getCenter();
+		glm::vec3 point = handler.getCenter();
 	    unsigned int i = 7 - getNodeIndex(point, *this);
 
 	    setMin(getMin() -  Octree::getShift(i) * getLengthX());
@@ -164,10 +164,10 @@ void Octree::getNodeNeighbors(const BoundingCube &cube, int level, int simplific
 	}
 }
 
-void Octree::handleQuadNodes(OctreeNode * node,  OctreeNode** corners, OctreeNodeTriangleHandler * handler) {
+void Octree::handleQuadNodes(OctreeNode &node,  OctreeNode** corners, OctreeNodeTriangleHandler &handler) {
 	for(int k =0 ; k < tessOrder.size(); ++k) {
 		glm::ivec2 edge = tessEdge[k];
-		uint mask = node->mask;
+		uint mask = node.mask;
 		bool sign0 = (mask & (1 << edge[0])) != 0;
 		bool sign1 = (mask & (1 << edge[1])) != 0;
 
@@ -178,26 +178,26 @@ void Octree::handleQuadNodes(OctreeNode * node,  OctreeNode** corners, OctreeNod
 				OctreeNode * n = corners[quad[i]];
 				quads[i] = (n != NULL && n->solid == ContainmentType::Intersects) ? n : NULL;
 			}
-			handler->handle(quads[0],quads[2],quads[1],sign1);
-			handler->handle(quads[0],quads[3],quads[2],sign1);
+			handler.handle(quads[0],quads[2],quads[1],sign1);
+			handler.handle(quads[0],quads[3],quads[2],sign1);
 		} 
 	}
 }
 
 
-uint buildMask(ContainmentHandler * handler, BoundingCube &cube) {
+uint buildMask(const ContainmentHandler  &handler, BoundingCube &cube) {
 	float d[8];
 	uint mask = 0x00;
 	for(int i=0 ; i < 8 ; ++i) {
 		glm::vec3 p = cube.getMin() + cube.getLengthX()*Octree::getShift(i);
-		bool contains = handler->contains(p);
+		bool contains = handler.contains(p);
 		mask |= contains ? (1 << i) : 0;
 	}
 	return mask;
 }
 
-OctreeNode * addAux(Octree * tree, ContainmentHandler * handler, OctreeNode * node, BoundingCube &cube, int level) {
-	ContainmentType check = handler->check(cube);
+OctreeNode * addAux(Octree &tree, const ContainmentHandler &handler, OctreeNode * node, BoundingCube &cube, int level) {
+	ContainmentType check = handler.check(cube);
 
 	if(check == ContainmentType::Disjoint) {
 		return node;
@@ -211,7 +211,7 @@ OctreeNode * addAux(Octree * tree, ContainmentHandler * handler, OctreeNode * no
 	}
 
 	if(check == ContainmentType::Intersects) {
-		node->vertex = handler->getVertex(cube, check, node->vertex.position);
+		node->vertex = handler.getVertex(cube, check, node->vertex.position);
 	}
 	node->mask |= buildMask(handler, cube);
 	node->solid = check;
@@ -219,7 +219,7 @@ OctreeNode * addAux(Octree * tree, ContainmentHandler * handler, OctreeNode * no
 	if(check == ContainmentType::Contains) {
 		node->clear();
 	}
-	else if(tree->getHeight(cube) != 0) {
+	else if(tree.getHeight(cube) != 0) {
 		for(int i=0; i <8 ; ++i) {
 			BoundingCube subCube = Octree::getChildCube(cube,i);
 			node->children[i] = addAux(tree, handler, node->children[i], subCube, level +1);
@@ -237,11 +237,11 @@ void split(OctreeNode * node, BoundingCube &cube) {
 	}	
 }
 
-OctreeNode * delAux(Octree * tree,  ContainmentHandler * handler, OctreeNode * node, BoundingCube &cube, int level) {
-	ContainmentType check = handler->check(cube);
+OctreeNode * delAux(Octree &tree, const ContainmentHandler &handler, OctreeNode * node, BoundingCube &cube, int level) {
+	ContainmentType check = handler.check(cube);
 
 	if(check != ContainmentType::Disjoint) {
-		bool height = tree->getHeight(cube);
+		bool height = tree.getHeight(cube);
 		bool isContained = check == ContainmentType::Contains;
 		bool isIntersecting = check == ContainmentType::Intersects;
 
@@ -261,7 +261,7 @@ OctreeNode * delAux(Octree * tree,  ContainmentHandler * handler, OctreeNode * n
 
 			if(isIntersecting) {
 				glm::vec3 previousNormal = node->vertex.normal;
-				node->vertex = handler->getVertex(cube, check, node->vertex.position);
+				node->vertex = handler.getVertex(cube, check, node->vertex.position);
 				node->vertex.normal = glm::normalize(previousNormal-node->vertex.normal);
 			}
 
@@ -279,24 +279,24 @@ OctreeNode * delAux(Octree * tree,  ContainmentHandler * handler, OctreeNode * n
 	return node;
 }
 
-void Octree::add(ContainmentHandler * handler) {
+void Octree::add(const ContainmentHandler &handler) {
 	expand(handler);	
-	root = addAux(this, handler, root, *this, 0);
+	root = addAux(*this, handler, root, *this, 0);
 }
 
-void Octree::del(ContainmentHandler * handler) {
-	root = delAux(this, handler, root, *this, 0);
+void Octree::del(const ContainmentHandler &handler) {
+	root = delAux(*this, handler, root, *this, 0);
 }
 
 
-void Octree::iterate(IteratorHandler * handler) {
+void Octree::iterate(IteratorHandler &handler) {
 	BoundingCube cube(glm::vec3(getMinX(),getMinY(),getMinZ()),getLengthX());
-	handler->iterate(0, getHeight(cube), root, cube, NULL);
+	handler.iterate(0, getHeight(cube), root, cube, NULL);
 }
 
-void Octree::iterateFlat(IteratorHandler * handler) {
+void Octree::iterateFlat(IteratorHandler &handler) {
 	BoundingCube cube(glm::vec3(getMinX(),getMinY(),getMinZ()),getLengthX());
-	handler->iterateFlatIn(0, getHeight(cube), root, cube, NULL);
+	handler.iterateFlatIn(0, getHeight(cube), root, cube, NULL);
 }
 
 

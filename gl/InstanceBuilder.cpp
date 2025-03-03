@@ -21,7 +21,7 @@ void * InstanceBuilder::before(int level, int height, OctreeNode * node, const B
 			tree->getNodeNeighbors(cube, level, 0, 1, neighbors, 0, 8);
 
 			OctreeNodeTriangleInstanceBuilder handler(&chunk, &instanceCount , (OctreeNode**)&neighbors, instances, 3);
-			tree->handleQuadNodes(node, neighbors, &handler);
+			tree->handleQuadNodes(*node, neighbors, handler);
 
 		}
 		

@@ -110,21 +110,21 @@ class Scene {
 
 	void setVisibility(glm::mat4 viewProjection, std::vector<glm::mat4> shadowMatrices ,Camera * camera, DirectionalLight * light, Settings * settings) {
 		float far = 512.0;
-		setVisibleNodes(viewProjection, camera->position, solidRenderer);
-		setVisibleNodes(viewProjection, camera->position, liquidRenderer);
+		setVisibleNodes(viewProjection, camera->position, *solidRenderer);
+		setVisibleNodes(viewProjection, camera->position, *liquidRenderer);
 		if(settings->shadowEnabled) {
 			glm::vec3 fakeLightPosition = camera->position - light->direction * far;
 			for(int i=0 ; i < shadowMatrices.size() ; ++i) {
-				setVisibleNodes(shadowMatrices[i], fakeLightPosition, shadowRenderer[i]);
+				setVisibleNodes(shadowMatrices[i], fakeLightPosition, *shadowRenderer[i]);
 			}
 		}
 	}
 
-	void setVisibleNodes(glm::mat4 viewProjection, glm::vec3 sortPosition, OctreeVisibilityChecker * checker) {
-		checker->visibleNodes->clear();
-		checker->sortPosition = sortPosition;
-		checker->update(viewProjection);
-		checker->tree->iterateFlat(checker);
+	void setVisibleNodes(glm::mat4 viewProjection, glm::vec3 sortPosition, OctreeVisibilityChecker &checker) {
+		checker.visibleNodes->clear();
+		checker.sortPosition = sortPosition;
+		checker.update(viewProjection);
+		checker.tree->iterateFlat(checker);
 	}
 
 
@@ -149,18 +149,18 @@ class Scene {
 		CachedHeightMapSurface * surface = new CachedHeightMapSurface(function, mapBox, solidSpace->minSize);
 		HeightMap map(surface, mapBox.getMin(),mapBox.getMax(), solidSpace->minSize);
 
-		solidSpace->add(new HeightMapContainmentHandler(&map, new LandBrush(brushes)));
-		solidSpace->add(new BoxContainmentHandler(BoundingBox(glm::vec3(-10,6,-10),glm::vec3(34,50,34)),new SimpleBrush(brushes[8])));
-		solidSpace->add(new SphereContainmentHandler(BoundingSphere(glm::vec3(0,50,0),20), new SimpleBrush(brushes[6])));
-		solidSpace->add(new SphereContainmentHandler(BoundingSphere(glm::vec3(-11,61,11),10), new SimpleBrush(brushes[5])));
-		solidSpace->del(new SphereContainmentHandler(BoundingSphere(glm::vec3(11,61,-11),10), new SimpleBrush(brushes[4])));
-		solidSpace->del(new SphereContainmentHandler(BoundingSphere(glm::vec3(4,54,-4),8), new SimpleBrush(brushes[1])));
-		solidSpace->add(new SphereContainmentHandler(BoundingSphere(glm::vec3(11,61,-11),4), new SimpleBrush(brushes[0])));
+		solidSpace->add(HeightMapContainmentHandler(&map, new LandBrush(brushes)));
+		solidSpace->add(BoxContainmentHandler(BoundingBox(glm::vec3(-10,6,-10),glm::vec3(34,50,34)),new SimpleBrush(brushes[8])));
+		solidSpace->add(SphereContainmentHandler(BoundingSphere(glm::vec3(0,50,0),20), new SimpleBrush(brushes[6])));
+		solidSpace->add(SphereContainmentHandler(BoundingSphere(glm::vec3(-11,61,11),10), new SimpleBrush(brushes[5])));
+		solidSpace->del(SphereContainmentHandler(BoundingSphere(glm::vec3(11,61,-11),10), new SimpleBrush(brushes[4])));
+		solidSpace->del(SphereContainmentHandler(BoundingSphere(glm::vec3(4,54,-4),8), new SimpleBrush(brushes[1])));
+		solidSpace->add(SphereContainmentHandler(BoundingSphere(glm::vec3(11,61,-11),4), new SimpleBrush(brushes[0])));
 
 		BoundingBox waterBox(glm::vec3(-200,-60,-200), glm::vec3(200,3,200));
 		//liquidSpace->add(new OctreeContainmentHandler(solidSpace, waterBox, new SimpleBrush(brushes[6])));
 		//BoundingBox waterBox(glm::vec3(50,50,0), glm::vec3(70,70,20));
-		liquidSpace->add(new OctreeContainmentHandler(solidSpace, waterBox, new WaterBrush(brushes[0])));
+		liquidSpace->add(OctreeContainmentHandler(solidSpace, waterBox, new WaterBrush(brushes[0])));
 	}
 
 

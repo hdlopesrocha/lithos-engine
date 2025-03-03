@@ -123,31 +123,31 @@ HeightMapContainmentHandler::HeightMapContainmentHandler(HeightMap * m, TextureB
     this->brush = b;
 }
 
-glm::vec3 HeightMapContainmentHandler::getCenter() {
+glm::vec3 HeightMapContainmentHandler::getCenter() const {
     return map->getCenter();
 }
 
-bool HeightMapContainmentHandler::contains(glm::vec3 p) {
+bool HeightMapContainmentHandler::contains(const glm::vec3 p) const {
     return map->contains(p);
 }
 
-bool HeightMapContainmentHandler::isContained(BoundingCube &p) {
+bool HeightMapContainmentHandler::isContained(const BoundingCube &p) const {
     return map->isContained(p);
 }
 
-float HeightMapContainmentHandler::intersection(glm::vec3 a, glm::vec3 b) {
+float HeightMapContainmentHandler::intersection(const glm::vec3 a, const glm::vec3 b) const {
     return 0;	
 } 
 
-glm::vec3 HeightMapContainmentHandler::getNormal(glm::vec3 pos) {
+glm::vec3 HeightMapContainmentHandler::getNormal(const glm::vec3 pos) const {
     return map->getNormalAt(pos.x, pos.z);
 }
 
-ContainmentType HeightMapContainmentHandler::check(BoundingCube &cube) {
+ContainmentType HeightMapContainmentHandler::check(const BoundingCube &cube) const {
     return map->test(cube); 
 }
 
-Vertex HeightMapContainmentHandler::getVertex(BoundingCube &cube, ContainmentType solid, glm::vec3 previousPoint) {
+Vertex HeightMapContainmentHandler::getVertex(const BoundingCube &cube, ContainmentType solid, glm::vec3 previousPoint) const {
     Vertex vertex(cube.getCenter());
 
     if(map->hitsBoundary(cube)) {

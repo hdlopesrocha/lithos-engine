@@ -6,24 +6,24 @@ OctreeContainmentHandler::OctreeContainmentHandler(Octree * octree, BoundingBox 
     this->box = box;
 }
 
-glm::vec3 OctreeContainmentHandler::getCenter() {
+glm::vec3 OctreeContainmentHandler::getCenter() const {
     return box.getCenter();
 }
 
-bool OctreeContainmentHandler::contains(glm::vec3 p) {
+bool OctreeContainmentHandler::contains(const glm::vec3 p) const {
     ContainmentType tc = octree->contains(p);
     return tc != ContainmentType::Contains && box.contains(p);
 }
 
-bool OctreeContainmentHandler::isContained(BoundingCube &p) {
+bool OctreeContainmentHandler::isContained(const BoundingCube &p) const {
     return p.contains(box);
 }
 
-glm::vec3 OctreeContainmentHandler::getNormal(glm::vec3 pos) {
+glm::vec3 OctreeContainmentHandler::getNormal(const glm::vec3 pos) const {
     return Math::surfaceNormal(pos, box);
 }
 
-ContainmentType OctreeContainmentHandler::check(BoundingCube &cube) {
+ContainmentType OctreeContainmentHandler::check(const BoundingCube &cube) const {
     ContainmentType ct0 = box.test(cube);
 
     if(ct0 != ContainmentType::Disjoint) {
@@ -37,7 +37,7 @@ ContainmentType OctreeContainmentHandler::check(BoundingCube &cube) {
     return ContainmentType::Disjoint;
 }
 
-Vertex OctreeContainmentHandler::getVertex(BoundingCube &cube, ContainmentType solid, glm::vec3 previousPoint) {
+Vertex OctreeContainmentHandler::getVertex(const BoundingCube &cube, ContainmentType solid, glm::vec3 previousPoint) const {
     Vertex vtx;
     vtx.position = cube.getCenter();
     vtx.normal = getNormal(vtx.position);
