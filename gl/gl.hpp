@@ -187,10 +187,10 @@ class OctreeProcessor : public IteratorHandler{
         int * instancesCount;
 		OctreeProcessor(Octree * tree, int * instancesCount, int drawableType, int geometryLevel, float simplificationAngle, float simplificationDistance, bool simplificationTexturing, bool createInstances, int simplification);
 
-		void * before(int level, int height, OctreeNode * node, BoundingCube &cube, void * context) override;
-		void after(int level, int height, OctreeNode * node, BoundingCube &cube, void * context) override;
-		bool test(int level, int height, OctreeNode * node, BoundingCube &cube, void * context) override;
-		void getOrder(BoundingCube &cube, int * order) override;
+		void * before(int level, int height, OctreeNode * node, const BoundingCube &cube, void * context) override;
+		void after(int level, int height, OctreeNode * node, const BoundingCube &cube, void * context) override;
+		bool test(int level, int height, OctreeNode * node, const BoundingCube &cube, void * context) override;
+		void getOrder(const BoundingCube &cube, int * order) override;
 
 };
 
@@ -254,10 +254,10 @@ class InstanceBuilder : public IteratorHandler{
         std::vector<InstanceData> * instances;
 		InstanceBuilder(Octree * tree, int lod, std::vector<InstanceData> * instances);
 
-		void * before(int level, int height, OctreeNode * node, BoundingCube &cube, void * context) override;
-		void after(int level, int height, OctreeNode * node, BoundingCube &cube, void * context) override;
-		bool test(int level, int height, OctreeNode * node, BoundingCube &cube, void * context) override;
-		void getOrder(BoundingCube &cube, int * order) override;
+		void * before(int level, int height, OctreeNode * node, const BoundingCube &cube, void * context) override;
+		void after(int level, int height, OctreeNode * node, const BoundingCube &cube, void * context) override;
+		bool test(int level, int height, OctreeNode * node, const BoundingCube &cube, void * context) override;
+		void getOrder(const BoundingCube &cube, int * order) override;
 
 };
 

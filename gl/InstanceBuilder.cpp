@@ -10,7 +10,7 @@ InstanceBuilder::InstanceBuilder(Octree * tree, int lod, std::vector<InstanceDat
 	this->instances = instances;
 }
 
-void * InstanceBuilder::before(int level, int height, OctreeNode * node, BoundingCube &cube, void * context) {		
+void * InstanceBuilder::before(int level, int height, OctreeNode * node, const BoundingCube &cube, void * context) {		
 	OctreeNode * neighbors[8];
 
 	if(height==lod){
@@ -30,16 +30,16 @@ void * InstanceBuilder::before(int level, int height, OctreeNode * node, Boundin
 	return NULL; 			 			
 }
 
-void InstanceBuilder::after(int level, int height, OctreeNode * node, BoundingCube &cube, void * context) {			
+void InstanceBuilder::after(int level, int height, OctreeNode * node, const BoundingCube &cube, void * context) {			
 	return;
 }
 
-bool InstanceBuilder::test(int level, int height, OctreeNode * node, BoundingCube &cube, void * context) {	
+bool InstanceBuilder::test(int level, int height, OctreeNode * node, const BoundingCube &cube, void * context) {	
 	return context == NULL;
 }
 
 
-void InstanceBuilder::getOrder(BoundingCube &cube, int * order){
+void InstanceBuilder::getOrder(const BoundingCube &cube, int * order){
 	for(int i = 0 ; i < 8 ; ++i) {
 		order[i] = i;
 	}

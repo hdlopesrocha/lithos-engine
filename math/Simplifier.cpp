@@ -12,11 +12,11 @@ Simplifier::Simplifier(Octree * tree, BoundingCube chunkCube, float angle, float
 	this->chunkCube = chunkCube;
 }
 
-void * Simplifier::before(int level, int height, OctreeNode * node, BoundingCube &cube, void * context) {		
+void * Simplifier::before(int level, int height, OctreeNode * node, const BoundingCube &cube, void * context) {		
 	return context; 			 			
 }
 
-void Simplifier::after(int level, int height, OctreeNode * node, BoundingCube &cube, void * context) {
+void Simplifier::after(int level, int height, OctreeNode * node, const BoundingCube &cube, void * context) {
 	// The parentNode plane
 
 	Plane parentPlane(node->vertex.normal, node->vertex.position); 
@@ -80,11 +80,11 @@ void Simplifier::after(int level, int height, OctreeNode * node, BoundingCube &c
 	return;
 }
 
-bool Simplifier::test(int level, int height, OctreeNode * node, BoundingCube &cube, void * context) {			
-	return node->solid != ContainmentType::Contains && tree->getHeight(cube) >= 0;
+bool Simplifier::test(int level, int height, OctreeNode * node, const BoundingCube &cube, void * context) {			
+	return node->solid != ContainmentType::Contains && height >= 0;
 }
 
-void Simplifier::getOrder(BoundingCube &cube, int * order){
+void Simplifier::getOrder(const BoundingCube &cube, int * order){
 	for(int i = 7 ; i >= 0 ; --i) {
 		order[i] = i;
 	}

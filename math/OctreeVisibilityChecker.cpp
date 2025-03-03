@@ -14,7 +14,7 @@ void OctreeVisibilityChecker::update(glm::mat4 m) {
 
 
 
-void * OctreeVisibilityChecker::before(int level, int height, OctreeNode * node, BoundingCube &cube, void * context) {		
+void * OctreeVisibilityChecker::before(int level, int height, OctreeNode * node, const BoundingCube &cube, void * context) {		
 	int currentLod = height - geometryLevel;
 
 	if(currentLod <= 0){
@@ -24,11 +24,11 @@ void * OctreeVisibilityChecker::before(int level, int height, OctreeNode * node,
 	return NULL;
 }
 
-void OctreeVisibilityChecker::after(int level, int height, OctreeNode * node, BoundingCube &cube, void * context) {			
+void OctreeVisibilityChecker::after(int level, int height, OctreeNode * node, const BoundingCube &cube, void * context) {			
 	return;
 }
 
-bool OctreeVisibilityChecker::test(int level, int height, OctreeNode * node, BoundingCube &cube, void * context) {	
+bool OctreeVisibilityChecker::test(int level, int height, OctreeNode * node, const BoundingCube &cube, void * context) {	
 	if(context != NULL) {
 		return false;
 	}
@@ -37,7 +37,7 @@ bool OctreeVisibilityChecker::test(int level, int height, OctreeNode * node, Bou
 }
 
 
-void OctreeVisibilityChecker::getOrder(BoundingCube &cube, int * order){
+void OctreeVisibilityChecker::getOrder(const BoundingCube &cube, int * order){
 	static std::pair<glm::vec3, int> internalSortingVector[8]={};
 	
 	for(int i =0; i< 8; ++i){

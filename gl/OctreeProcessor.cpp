@@ -22,7 +22,7 @@ OctreeProcessor::OctreeProcessor(Octree * tree, int * instancesCount,  int drawa
 }
 
 
-void markNeighborsAsDirty(Octree * tree, BoundingCube &cube, int level, int drawableType) {
+void markNeighborsAsDirty(Octree * tree, const BoundingCube &cube, int level, int drawableType) {
 	for(int i=1; i < 7 ; ++i) {
 		glm::vec3 p = cube.getCenter() - cube.getLength()* Octree::getShift(i);
 		OctreeNode * n = tree->getNodeAt(p, level, 0);
@@ -37,7 +37,7 @@ void markNeighborsAsDirty(Octree * tree, BoundingCube &cube, int level, int draw
 	}
 }
 
-void * OctreeProcessor::before(int level, int height, OctreeNode * node, BoundingCube &cube, void * context) {		
+void * OctreeProcessor::before(int level, int height, OctreeNode * node, const BoundingCube &cube, void * context) {		
 	if(loadCount > 0) {
 		bool canGenerate = true;
 		for(NodeInfo &info : node->info) {
@@ -108,15 +108,15 @@ void * OctreeProcessor::before(int level, int height, OctreeNode * node, Boundin
 	return NULL; 			 			
 }
 
-void OctreeProcessor::after(int level, int height, OctreeNode * node, BoundingCube &cube, void * context) {			
+void OctreeProcessor::after(int level, int height, OctreeNode * node, const BoundingCube &cube, void * context) {			
 	return;
 }
 
-bool OctreeProcessor::test(int level, int height, OctreeNode * node, BoundingCube &cube, void * context) {	
+bool OctreeProcessor::test(int level, int height, OctreeNode * node, const BoundingCube &cube, void * context) {	
 	return loadCount > 0;
 }
 
-void OctreeProcessor::getOrder(BoundingCube &cube, int * order){
+void OctreeProcessor::getOrder(const BoundingCube &cube, int * order){
 	for(int i = 0 ; i < 8 ; ++i) {
 		order[i] = i;
 	}

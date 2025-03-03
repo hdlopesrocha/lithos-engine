@@ -16,12 +16,12 @@ Octree::Octree(BoundingCube minCube) : BoundingCube(minCube){
 	}
 }
 
-BoundingCube Octree::getChildCube(BoundingCube &cube, int i) {
+BoundingCube Octree::getChildCube(const BoundingCube &cube, int i) {
 	float newLength = 0.5*cube.getLengthX();
     return BoundingCube(cube.getMin() + newLength * Octree::getShift(i), newLength);
 }
 
-BoundingCube Octree::getCube3(BoundingCube &cube, int i) {
+BoundingCube Octree::getCube3(const BoundingCube &cube, int i) {
     return BoundingCube(cube.getMin() + cube.getLengthX() * Octree::getShift3(i), cube.getLengthX());
 }
 
@@ -33,7 +33,7 @@ int getNodeIndex(glm::vec3 vec, BoundingCube * cube, bool checkBounds) {
 	return (p.x << 2) + (p.y << 1) + p.z;
 }
 
-ContainmentType Octree::contains(AbstractBoundingBox &c) {
+ContainmentType Octree::contains(const AbstractBoundingBox &c) {
     OctreeNode* node = root;
     BoundingCube cube = *this;
     
@@ -72,7 +72,7 @@ ContainmentType Octree::contains(AbstractBoundingBox &c) {
 }
 
 
-ContainmentType Octree::contains(glm::vec3 &pos) {
+ContainmentType Octree::contains(const glm::vec3 &pos) {
     OctreeNode* node = root;
     BoundingCube cube = *this;
     int level = getHeight(*this);
@@ -152,13 +152,13 @@ void Octree::expand(ContainmentHandler * handler) {
 	}
 }
 
-int Octree::getHeight(BoundingCube &cube){
+int Octree::getHeight(const BoundingCube &cube){
 	float r = glm::log2(cube.getLengthX() / minSize);
 	return r >= 0  ? (int) glm::floor(r) : -1;
 }
 
 
-void Octree::getNodeNeighbors(BoundingCube &cube, int level, int simplification, int direction, OctreeNode ** out, int initialIndex, int finalIndex) {
+void Octree::getNodeNeighbors(const BoundingCube &cube, int level, int simplification, int direction, OctreeNode ** out, int initialIndex, int finalIndex) {
 	// Get corners
 	for(int i=initialIndex; i < finalIndex; ++i) {
 		glm::vec3 pos = cube.getCenter() + direction * cube.getLengthX() * Octree::getShift(i);
