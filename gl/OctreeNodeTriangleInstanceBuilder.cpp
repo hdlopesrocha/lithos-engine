@@ -75,7 +75,6 @@ void OctreeNodeTriangleInstanceBuilder::handle(OctreeNode* c0,OctreeNode* c1,Oct
 
             float deepness = Math::clamp(1.0-h, 0.0f , 1.0f);
 
-
             glm::mat4 model(1.0);
             model = glm::translate(model, point);
             if(h*force > 1.0) {

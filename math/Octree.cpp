@@ -25,11 +25,8 @@ BoundingCube Octree::getCube3(const BoundingCube &cube, int i) {
     return BoundingCube(cube.getMin() + cube.getLengthX() * Octree::getShift3(i), cube.getLengthX());
 }
 
-int getNodeIndex(glm::vec3 vec, BoundingCube * cube, bool checkBounds) {
-	if(checkBounds && !cube->contains(vec)) {
-		return -1;
-	}
-	glm::ivec3 p = glm::round((vec - cube->getMin()) / cube->getLengthX());
+int getNodeIndex(const glm::vec3 &vec, const BoundingCube &cube) {
+	glm::ivec3 p = glm::round((vec - cube.getMin()) / cube.getLengthX());
 	return (p.x << 2) + (p.y << 1) + p.z;
 }
 
@@ -47,7 +44,7 @@ ContainmentType Octree::contains(const AbstractBoundingBox &c) {
             return ContainmentType::Contains;
         
         // Determine the candidate child based on c's center.
-        int idx = getNodeIndex(c.getCenter(), &cube, true);
+        int idx = getNodeIndex(c.getCenter(), cube);
         if (idx < 0)
             return ContainmentType::Disjoint;
         
@@ -90,7 +87,7 @@ ContainmentType Octree::contains(const glm::vec3 &pos) {
             break;
         }
 		
-		int i = getNodeIndex(pos, &cube, true);
+		int i = getNodeIndex(pos, cube);
         if (i < 0) {
             return ContainmentType::Disjoint;
         }
@@ -113,15 +110,15 @@ ContainmentType Octree::contains(const glm::vec3 &pos) {
 OctreeNode* Octree::getNodeAt(const glm::vec3 &pos, int level, int simplification) {
     OctreeNode* node = root;
     BoundingCube cube = *this;
+	if(!contains(pos)) {
+		return NULL;
+	}
 
     for (; node && level > 0; --level) {
         if (simplification && node->simplification == simplification) {
             return node;
         }
-        int i = getNodeIndex(pos, &cube, true);
-        if (i < 0) {
-            return NULL;
-        }
+        int i = getNodeIndex(pos, cube);
         cube = getChildCube(cube, i);
         node = node->children[i];
     }
@@ -136,7 +133,7 @@ void Octree::expand(ContainmentHandler * handler) {
 	        break;
 	    }
 		glm::vec3 point = handler->getCenter();
-	    unsigned int i = 7 - getNodeIndex(point, this, false);
+	    unsigned int i = 7 - getNodeIndex(point, *this);
 
 	    setMin(getMin() -  Octree::getShift(i) * getLengthX());
 	    setLength(getLengthX()*2);
