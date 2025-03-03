@@ -218,12 +218,12 @@ void Octree::del(ContainmentHandler * handler) {
 
 void Octree::iterate(IteratorHandler * handler) {
 	BoundingCube cube(glm::vec3(getMinX(),getMinY(),getMinZ()),getLength());
-	handler->iterate(0, root, cube, NULL);
+	handler->iterate(0, getHeight(cube), root, cube, NULL);
 }
 
 void Octree::iterateFlat(IteratorHandler * handler) {
 	BoundingCube cube(glm::vec3(getMinX(),getMinY(),getMinZ()),getLength());
-	handler->iterateFlatIn(0, root, cube, NULL);
+	handler->iterateFlatIn(0, getHeight(cube), root, cube, NULL);
 }
 
 

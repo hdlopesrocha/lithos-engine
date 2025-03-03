@@ -99,11 +99,11 @@ class Scene {
 		vegetationInstancesVisible = 0;
 
 		for(IteratorData &data : visibleSolidNodes){
-			solidProcessor->before(data.level, data.node, data.cube, NULL);
-			vegetationProcessor->before(data.level, data.node, data.cube, NULL);
+			solidProcessor->before(data.level,data.height, data.node, data.cube, NULL);
+			vegetationProcessor->before(data.level,data.height, data.node, data.cube, NULL);
 		}
 		for(IteratorData &data : visibleLiquidNodes){
-			liquidProcessor->before(data.level, data.node, data.cube, NULL);
+			liquidProcessor->before(data.level,data.height, data.node, data.cube, NULL);
 		}
 	}
 

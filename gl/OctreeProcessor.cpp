@@ -37,7 +37,7 @@ void markNeighborsAsDirty(Octree * tree, BoundingCube &cube, int level, int draw
 	}
 }
 
-void * OctreeProcessor::before(int level, OctreeNode * node, BoundingCube &cube, void * context) {		
+void * OctreeProcessor::before(int level, int height, OctreeNode * node, BoundingCube &cube, void * context) {		
 	if(loadCount > 0) {
 		bool canGenerate = true;
 		for(NodeInfo &info : node->info) {
@@ -51,7 +51,6 @@ void * OctreeProcessor::before(int level, OctreeNode * node, BoundingCube &cube,
 				canGenerate = false;
 			}
 		}
-		float height = tree->getHeight(cube);
 		int currentLod = height - geometryLevel;
 
 
@@ -61,12 +60,12 @@ void * OctreeProcessor::before(int level, OctreeNode * node, BoundingCube &cube,
 
 					// Simplify
 					Simplifier simplifier(tree, cube, simplificationAngle, simplificationDistance, simplificationTexturing, simplification); 
-					simplifier.iterateFlatOut(level, node, cube, NULL);
+					simplifier.iterateFlatOut(level, height, node, cube, NULL);
 
 					// Tesselate
 					Geometry * geometry = new Geometry();
 					Tesselator tesselator(tree, geometry, simplification);
-					tesselator.iterateFlatIn(level, node, cube, NULL);
+					tesselator.iterateFlatIn(level, height, node, cube, NULL);
 
 					NodeInfo * info = node->getNodeInfo(drawableType);
 					if(info == NULL) {
@@ -91,7 +90,7 @@ void * OctreeProcessor::before(int level, OctreeNode * node, BoundingCube &cube,
 						pre->geometry = new Vegetation3d();
 
 						InstanceBuilder instanceBuilder(tree, currentLod, &pre->instances);
-						instanceBuilder.iterateFlatIn(level, node, cube, NULL);
+						instanceBuilder.iterateFlatIn(level, height, node, cube, NULL);
 
 						// Shuffle the vector
 						std::shuffle(pre->instances.begin(), pre->instances.end(), g);
@@ -109,11 +108,11 @@ void * OctreeProcessor::before(int level, OctreeNode * node, BoundingCube &cube,
 	return NULL; 			 			
 }
 
-void OctreeProcessor::after(int level, OctreeNode * node, BoundingCube &cube, void * context) {			
+void OctreeProcessor::after(int level, int height, OctreeNode * node, BoundingCube &cube, void * context) {			
 	return;
 }
 
-bool OctreeProcessor::test(int level, OctreeNode * node, BoundingCube &cube, void * context) {	
+bool OctreeProcessor::test(int level, int height, OctreeNode * node, BoundingCube &cube, void * context) {	
 	return loadCount > 0;
 }
 

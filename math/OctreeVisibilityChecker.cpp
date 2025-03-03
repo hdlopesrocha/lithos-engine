@@ -14,22 +14,21 @@ void OctreeVisibilityChecker::update(glm::mat4 m) {
 
 
 
-void * OctreeVisibilityChecker::before(int level, OctreeNode * node, BoundingCube &cube, void * context) {		
-	float height = tree->getHeight(cube);
+void * OctreeVisibilityChecker::before(int level, int height, OctreeNode * node, BoundingCube &cube, void * context) {		
 	int currentLod = height - geometryLevel;
 
 	if(currentLod <= 0){
-		visibleNodes->push_back({level, node, cube, context});
+		visibleNodes->push_back({level, height, node, cube, context});
 		return node;
 	}
 	return NULL;
 }
 
-void OctreeVisibilityChecker::after(int level, OctreeNode * node, BoundingCube &cube, void * context) {			
+void OctreeVisibilityChecker::after(int level, int height, OctreeNode * node, BoundingCube &cube, void * context) {			
 	return;
 }
 
-bool OctreeVisibilityChecker::test(int level, OctreeNode * node, BoundingCube &cube, void * context) {	
+bool OctreeVisibilityChecker::test(int level, int height, OctreeNode * node, BoundingCube &cube, void * context) {	
 	if(context != NULL) {
 		return false;
 	}
