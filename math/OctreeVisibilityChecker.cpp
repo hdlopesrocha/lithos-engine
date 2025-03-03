@@ -38,18 +38,16 @@ bool OctreeVisibilityChecker::test(int level, int height, OctreeNode * node, con
 
 
 void OctreeVisibilityChecker::getOrder(const BoundingCube &cube, int * order){
-	static std::pair<glm::vec3, int> internalSortingVector[8]={};
+	static std::pair<float, int> internalSortingVector[8]={};
 	
 	for(int i =0; i< 8; ++i){
 		BoundingCube c = Octree::getChildCube(cube, i);
-		internalSortingVector[i] = std::pair<glm::vec3, int>(c.getCenter(), i);
+		internalSortingVector[i] = std::pair<float, int>(glm::distance2(c.getCenter(), sortPosition), i);
 	}
 
     std::sort(std::begin(internalSortingVector), std::end(internalSortingVector), 
-		[&](const std::pair<glm::vec3, int>& a, const std::pair<glm::vec3, int>& b) {
-	    float distA = glm::distance2(a.first, sortPosition);
-        float distB = glm::distance2(b.first, sortPosition);
-        return distA < distB;
+		[&](const std::pair<float, int>& a, const std::pair<float, int>& b) {
+        return a.first < b.first;
     });
 
 	for(int i = 0 ; i < 8 ; ++i) {
