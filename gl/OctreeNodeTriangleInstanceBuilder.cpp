@@ -63,7 +63,6 @@ void OctreeNodeTriangleInstanceBuilder::handle(OctreeNode* c0,OctreeNode* c1,Oct
 
         float force = 2.0;
         if(hMin  < perlin && perlin < hMax) {
-            glm::mat4 model(1.0);
             float height = (perlin - hMin)/ (hMax-hMin);
 
             glm::vec3 normal = fps.getNormal(point.x, 0, point.z);
@@ -76,10 +75,13 @@ void OctreeNodeTriangleInstanceBuilder::handle(OctreeNode* c0,OctreeNode* c1,Oct
 
             float deepness = Math::clamp(1.0-h, 0.0f , 1.0f);
 
+
+            glm::mat4 model(1.0);
             model = glm::translate(model, point);
             if(h*force > 1.0) {
                 model = glm::scale(model, glm::vec3(1.0, h*force, 1.0));
             }     
+            model *=  Math::getRotationMatrixFromNormal(c0->vertex.normal, glm::vec3(0.0,1.0,0.0));
 
             instances->push_back(InstanceData(model, deepness));
             ++*count;

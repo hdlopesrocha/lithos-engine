@@ -589,7 +589,7 @@ public:
 	static glm::vec2 triplanarMapping(glm::vec3 position, int plane);
 	static glm::vec3 surfaceNormal(glm::vec3 point, BoundingBox &box);
 	static glm::mat4 getCanonicalMVP(glm::mat4 m);
-
+	static glm::mat4 getRotationMatrixFromNormal(glm::vec3 normal, glm::vec3 target);
 };
 void ensureFolderExists(const std::string& folder);
 

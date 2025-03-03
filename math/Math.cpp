@@ -164,3 +164,16 @@ glm::mat4 Math::getCanonicalMVP(glm::mat4 m) {
 					* glm::scale(glm::mat4(1.0f), glm::vec3(0.5)) 
 					* m;
 }
+
+glm::mat4 Math::getRotationMatrixFromNormal(glm::vec3 normal, glm::vec3 target) {
+    // Compute rotation axis (cross product)
+    glm::vec3 rotationAxis = glm::normalize(glm::cross(normal, target));
+
+    // Compute the angle between the vectors
+    float angle = glm::acos(glm::dot(normal, target));
+
+    // Create the rotation matrix
+    return glm::rotate(glm::mat4(1.0f), angle, rotationAxis);
+}
+
+
