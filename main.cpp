@@ -8,7 +8,7 @@
 #include "HeightFunctions.hpp"
 #include "Scene.hpp"
 
-//#define MEM_HEADER 1
+#define MEM_HEADER 1
 
 #ifdef MEM_HEADER
 long usedMemory = 0;
@@ -86,6 +86,7 @@ class MainApplication : public LithosApplication {
 	GLuint programSwap;
 	GLuint program3d;
 	GLuint programBillboard;
+	GLuint programImpostor;
 	GLuint programAtlas;
 	GLuint programTexture;
 	GLuint programDepth;
@@ -94,6 +95,8 @@ class MainApplication : public LithosApplication {
 
 	ProgramData * program3dData;
 	ProgramData * programBillboardData;
+	ProgramData * programImpostorData;
+	DrawableInstanceGeometry * vegetationMesh;
 
 	UniformBlock viewerBlock;
 
@@ -188,6 +191,12 @@ public:
 		});
 		programBillboardData = new ProgramData();
 
+		programImpostor = createShaderProgram({
+			compileShader(replaceIncludes(includes,readFile("shaders/impostor_vertex.glsl")),GL_VERTEX_SHADER), 
+			compileShader(replaceIncludes(includes,readFile("shaders/impostor_geometry.glsl")),GL_GEOMETRY_SHADER), 
+			compileShader(replaceIncludes(includes,readFile("shaders/impostor_fragment.glsl")),GL_FRAGMENT_SHADER) 
+		});
+		programImpostorData = new ProgramData();
 
 		renderBuffer = createRenderFrameBuffer(getWidth(), getHeight());
 		solidBuffer = createRenderFrameBuffer(getWidth(), getHeight());
@@ -367,6 +376,14 @@ public:
 		* glm::angleAxis(glm::radians(135.0f), glm::vec3(0, 1, 0));  
 		camera.position = glm::vec3(48,48,48);
         light.direction = glm::normalize(glm::vec3(-1.0,-1.0,-1.0));
+
+
+
+		std::vector<InstanceData> vegetationInstances;
+		vegetationInstances.push_back(InstanceData(glm::mat4(1.0), 0));
+		vegetationMesh = new DrawableInstanceGeometry(new Vegetation3d(), &vegetationInstances, glm::vec3(0.0));
+
+
 
 		//tesselator->normalize();
 		uniformBlockViewer = new UniformBlockViewer(&viewerBlock);
@@ -559,6 +576,7 @@ public:
 			programBillboardData->uniform(&uniformBlock);
 			mainScene->drawBillboards(camera.position, settings, &mainScene->visibleSolidNodes);
 		}
+
 		// ==================
 		// Second Pass: Solid
 		//===================
@@ -578,6 +596,11 @@ public:
 			programBillboardData->uniform(&uniformBlock);
 			mainScene->drawBillboards(camera.position, settings, &mainScene->visibleSolidNodes);
 		}
+
+		glDisable(GL_CULL_FACE);
+		vegetationMesh->draw(GL_PATCHES);
+		glEnable(GL_CULL_FACE);
+
 		uniformBlock.set(TESSELATION_FLAG, settings->tesselationEnabled);
 		uniformBlock.set(OPACITY_FLAG, false);
 		uniformBlock.set(TRIPLANAR_FLAG, true); 

@@ -28,8 +28,8 @@ class Scene {
 		std::vector<IteratorData> visibleShadowNodes[SHADOW_MATRIX_COUNT];
 
 
-    void setup() {
 
+    void setup() {
 		solidSpace = new Octree(BoundingCube(glm::vec3(0,0,0), 2.0));
 		liquidSpace = new Octree(BoundingCube(glm::vec3(0,20,0), 2.0));
   
