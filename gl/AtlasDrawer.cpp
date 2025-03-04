@@ -4,7 +4,7 @@
 AtlasDrawer::AtlasDrawer(GLuint program, int width, int height, std::vector<AtlasTexture*> * atlasTextures) {
     this->program = program;
     this->atlasTextures = atlasTextures;
-    this->renderBuffer = createMultiLayerRenderFrameBuffer(width,height, 3);
+    this->renderBuffer = createMultiLayerRenderFrameBuffer(width,height, 3, false);
     this->viewVao = DrawableGeometry::create2DVAO(-1,-1, 1,1);
     this->samplerLoc = glGetUniformLocation(program, "textureSampler");
     this->modelLoc = glGetUniformLocation(program, "model");

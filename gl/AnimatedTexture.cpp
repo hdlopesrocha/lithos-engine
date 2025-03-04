@@ -1,7 +1,7 @@
 #include "gl.hpp"
 
 AnimatedTexture::AnimatedTexture(int width, int height, GLuint program) {
-    this->textureMixerBuffer = createMultiLayerRenderFrameBuffer(width,height, 3);
+    this->textureMixerBuffer = createMultiLayerRenderFrameBuffer(width,height, 3, false);
     this->program = program;
     this->previewVao = DrawableGeometry::create2DVAO(-1,-1, 1,1);
     this->perlinScale = 9;

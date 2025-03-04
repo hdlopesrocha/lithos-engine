@@ -4,7 +4,7 @@ ImpostorDrawer::ImpostorDrawer(GLuint program, int width, int height) {
     this->height = height;
     this->width = width;
     this->program = program;
-    this->renderBuffer = createMultiLayerRenderFrameBuffer(width,height, 4);
+    this->renderBuffer = createMultiLayerRenderFrameBuffer(width, height, 3, true);
 
     std::vector<InstanceData> vegetationInstances;
     vegetationInstances.push_back(InstanceData(glm::mat4(1.0), 0));
@@ -23,7 +23,7 @@ void ImpostorDrawer::draw() {
     
     glBindFramebuffer(GL_FRAMEBUFFER, renderBuffer.frameBuffer);
     glViewport(0, 0, renderBuffer.width, renderBuffer.height);
-    glClearColor (0.0,0.0,0.0,0.0);
+    glClearColor (1.0,0.0,0.0,1.0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glUseProgram(program);
@@ -38,4 +38,10 @@ void ImpostorDrawer::draw() {
     glDisable(GL_CULL_FACE);
     mesh->draw(GL_TRIANGLES);
     glEnable(GL_CULL_FACE);
+
+    glActiveTexture(GL_TEXTURE0); 
+    glBindTexture(GL_TEXTURE_2D_ARRAY, renderBuffer.colorTexture);
+    glGenerateMipmap(GL_TEXTURE_2D_ARRAY);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }

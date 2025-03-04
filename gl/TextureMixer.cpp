@@ -1,7 +1,7 @@
 #include "gl.hpp"
 
 TextureMixer::TextureMixer(int width, int height, GLuint program, std::vector<Texture*> * textures) {
-    this->textureMixerBuffer = createMultiLayerRenderFrameBuffer(width,height, 3);
+    this->textureMixerBuffer = createMultiLayerRenderFrameBuffer(width,height, 3, false);
     this->textures = textures;
     this->program = program;
     this->previewVao = DrawableGeometry::create2DVAO(-1,-1, 1,1);

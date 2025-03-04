@@ -224,7 +224,7 @@ GLuint createTextureArray(int width, int height, int layers) {
     return texArray;
 }
 
-RenderBuffer createMultiLayerRenderFrameBuffer(int width, int height, int layers) {
+RenderBuffer createMultiLayerRenderFrameBuffer(int width, int height, int layers, bool depth) {
    
     RenderBuffer buffer;
     buffer.width = width;
@@ -237,8 +237,20 @@ RenderBuffer createMultiLayerRenderFrameBuffer(int width, int height, int layers
         std::cerr << "glGenFramebuffers failed with error: " << err << std::endl;
     }
 
-
+    if(depth) {
+        glGenTextures(1, &buffer.depthTexture);
+        glBindTexture(GL_TEXTURE_2D, buffer.depthTexture);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+    }
     glBindFramebuffer(GL_FRAMEBUFFER, buffer.frameBuffer);
+
+    if(depth) {
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, buffer.depthTexture, 0);
+    }
 
     // Attach texture array layers to framebuffer
     std::vector<GLenum> buffers;
@@ -313,19 +325,15 @@ TextureArray LithosApplication::loadTextureArray(std::initializer_list<std::stri
     // Load the image
     int width, height;
 
-
     std::vector<std::string> filenames;
     std::vector<unsigned char*> datas;
     std::vector<int> channels;
-
 
     for(std::string fn : fns) {
         filenames.push_back(fn);
         datas.push_back(NULL);
         channels.push_back(0);
     }
-
-
     
     for(int i = 0; i < filenames.size() ; ++i) {
         std::string filename = filenames[i];

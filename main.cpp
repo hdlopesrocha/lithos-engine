@@ -73,6 +73,7 @@ class MainApplication : public LithosApplication {
 	std::vector<AtlasDrawer*> atlasDrawers;
 	std::vector<TextureMixer*> mixers;
 	std::vector<AnimatedTexture*> animatedTextures;
+	std::vector<ImpostorDrawer*> impostorDrawers;
 
 	Scene * mainScene;
 	Settings * settings = new Settings();
@@ -119,7 +120,7 @@ class MainApplication : public LithosApplication {
 	DepthBufferViewer * depthBufferViewer;
 	SettingsEditor * settingsEditor;
 	TextureViewer * textureViewer;
-	ImpostorDrawer * impostorDrawer;
+	ImpostorViewer * impostorViewer;
 
 public:
 	MainApplication() {
@@ -340,8 +341,8 @@ public:
 			billboardTextures.push_back(new Texture(ad->getTexture()));
 		}
 
-		impostorDrawer = new ImpostorDrawer(programImpostor, 256, 256);
-
+		impostorDrawers.push_back(new ImpostorDrawer(programImpostor, 256, 256));
+		
 		noiseTexture = loadTextureImage("textures/noise.jpg");
 
 		Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, glGetUniformLocation(program3d, "noise"), noiseTexture);
@@ -368,11 +369,14 @@ public:
 		Brush::bindBrushes(programBillboard, "brushes", "brushTextures", &billboardBrushes);
 		Brush::bindBrushes(programImpostor, "brushes", "brushTextures", &billboardBrushes);
 
+		for(ImpostorDrawer * drawer : impostorDrawers) {
+			drawer->draw();
+		}
+
 		mainScene = new Scene();
 		mainScene->setup();
 		mainScene->load();
 	
-		impostorDrawer->draw();
 
 		
 		camera.quaternion =   glm::angleAxis(glm::radians(180.0f), glm::vec3(0, 0, 1))
@@ -392,6 +396,7 @@ public:
 		depthBufferViewer = new DepthBufferViewer(programDepth,depthFrameBuffer.depthTexture,512,512);
 		settingsEditor = new SettingsEditor(settings);
 		textureViewer = new TextureViewer(&textures, programTexture);
+		impostorViewer = new ImpostorViewer(&impostorDrawers, programTexture, 256, 256);
 
 		// ImGui
 		IMGUI_CHECKVERSION();
@@ -685,6 +690,9 @@ public:
 				if (ImGui::MenuItem("Depth Buffer Viewer", "Ctrl+B")) {
 					depthBufferViewer->show();
 				}
+				if (ImGui::MenuItem("Impostor Viewer", "Ctrl+B")) {
+					impostorViewer->show();
+				}
 				if (ImGui::MenuItem("Shadow Map Viewer", "Ctrl+D")) {
 					shadowMapViewer->show();
 				}
@@ -750,7 +758,7 @@ public:
 		atlasViewer->draw2dIfOpen();
 		atlasPainter->draw2dIfOpen();
 		textureViewer->draw2dIfOpen();
-		
+		impostorViewer->draw2dIfOpen();
 
 		if(demo) {
 			ImGui::ShowDemoWindow(&demo);
