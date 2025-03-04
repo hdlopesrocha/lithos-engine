@@ -93,9 +93,7 @@ class MainApplication : public LithosApplication {
 	GLuint programMixTexture;
 	GLuint programWaterTexture;
 
-	ProgramData * program3dData;
-	ProgramData * programBillboardData;
-	ProgramData * programImpostorData;
+	ProgramData * programData;
 	DrawableInstanceGeometry * vegetationMesh;
 
 	UniformBlock viewerBlock;
@@ -181,7 +179,7 @@ public:
 			compileShader(replaceIncludes(includes,readFile("shaders/3d_tessEvaluation.glsl")),GL_TESS_EVALUATION_SHADER),
 			compileShader(replaceIncludes(includes,readFile("shaders/3d_fragment.glsl")),GL_FRAGMENT_SHADER) 
 		});
-		program3dData = new ProgramData();
+		programData = new ProgramData();
 
 		programBillboard = createShaderProgram({
 			compileShader(replaceIncludes(includes,readFile("shaders/3d_vertex.glsl")),GL_VERTEX_SHADER), 
@@ -189,14 +187,12 @@ public:
 			compileShader(replaceIncludes(includes,readFile("shaders/3d_tessEvaluation.glsl")),GL_TESS_EVALUATION_SHADER),
 			compileShader(replaceIncludes(includes,readFile("shaders/3d_fragment.glsl")),GL_FRAGMENT_SHADER) 
 		});
-		programBillboardData = new ProgramData();
 
 		programImpostor = createShaderProgram({
 			compileShader(replaceIncludes(includes,readFile("shaders/impostor_vertex.glsl")),GL_VERTEX_SHADER), 
 			compileShader(replaceIncludes(includes,readFile("shaders/impostor_geometry.glsl")),GL_GEOMETRY_SHADER), 
 			compileShader(replaceIncludes(includes,readFile("shaders/impostor_fragment.glsl")),GL_FRAGMENT_SHADER) 
 		});
-		programImpostorData = new ProgramData();
 
 		renderBuffer = createRenderFrameBuffer(getWidth(), getHeight());
 		solidBuffer = createRenderFrameBuffer(getWidth(), getHeight());
@@ -360,11 +356,15 @@ public:
 			Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, glGetUniformLocation(program3d, shadowMapName.c_str()), shadowFrameBuffers[i].first.depthTexture);
 			activeTexture = Texture::bindTexture(programBillboard, GL_TEXTURE_2D, activeTexture, glGetUniformLocation(programBillboard, shadowMapName.c_str()), shadowFrameBuffers[i].first.depthTexture);
 		}
+		
+		Texture::bindTextures(programImpostor, GL_TEXTURE_2D_ARRAY, activeTexture, "textures", &billboardTextures);
 		activeTexture = Texture::bindTextures(programBillboard, GL_TEXTURE_2D_ARRAY, activeTexture, "textures", &billboardTextures);
+		
 		activeTexture = Texture::bindTextures(program3d, GL_TEXTURE_2D_ARRAY, activeTexture, "textures", &textures);
 
 		Brush::bindBrushes(program3d,"brushes", "brushTextures", &brushes);
 		Brush::bindBrushes(programBillboard, "brushes", "brushTextures", &billboardBrushes);
+		Brush::bindBrushes(programImpostor, "brushes", "brushTextures", &billboardBrushes);
 
 		mainScene = new Scene();
 		mainScene->setup();
@@ -540,14 +540,14 @@ public:
 
 				glUseProgram(program3d);
 				uniformBlock.set(OPACITY_FLAG, false);
-				program3dData->uniform(&uniformBlock);
+				programData->uniform(&uniformBlock);
 
 				mainScene->draw3dSolid(camera.position, settings, &mainScene->visibleShadowNodes[i]);
 				
 				if(settings->billboardEnabled) {
 					glUseProgram(programBillboard);
 					uniformBlock.set(OPACITY_FLAG, true);
-					programBillboardData->uniform(&uniformBlock);
+					programData->uniform(&uniformBlock);
 					mainScene->drawBillboards(camera.position, settings, &mainScene->visibleShadowNodes[i]);
 				}
 			}
@@ -566,14 +566,14 @@ public:
 
 		glUseProgram(program3d);
 		uniformBlock.set(OPACITY_FLAG, false);
-		program3dData->uniform(&uniformBlock);
+		programData->uniform(&uniformBlock);
 		mainScene->draw3dSolid(camera.position, settings, &mainScene->visibleSolidNodes);
 
 		uniformBlock.set(TESSELATION_FLAG, false);
 		uniformBlock.set(OPACITY_FLAG, settings->opacityEnabled);
 		if(settings->billboardEnabled) {
 			glUseProgram(programBillboard);
-			programBillboardData->uniform(&uniformBlock);
+			programData->uniform(&uniformBlock);
 			mainScene->drawBillboards(camera.position, settings, &mainScene->visibleSolidNodes);
 		}
 
@@ -593,12 +593,14 @@ public:
 		} 
 		if(settings->billboardEnabled) {
 			glUseProgram(programBillboard);
-			programBillboardData->uniform(&uniformBlock);
+			programData->uniform(&uniformBlock);
 			mainScene->drawBillboards(camera.position, settings, &mainScene->visibleSolidNodes);
 		}
 
+		glUseProgram(programImpostor);
+		programData->uniform(&uniformBlock);
 		glDisable(GL_CULL_FACE);
-		vegetationMesh->draw(GL_PATCHES);
+		vegetationMesh->draw(GL_TRIANGLES);
 		glEnable(GL_CULL_FACE);
 
 		uniformBlock.set(TESSELATION_FLAG, settings->tesselationEnabled);
@@ -606,7 +608,7 @@ public:
 		uniformBlock.set(TRIPLANAR_FLAG, true); 
 
 		glUseProgram(program3d);
-		program3dData->uniform(&uniformBlock);
+		programData->uniform(&uniformBlock);
 		mainScene->draw3dSolid(camera.position, settings, &mainScene->visibleSolidNodes);
 		if(settings->wireFrameEnabled) {
 			glPolygonMode(GL_FRONT, GL_FILL);
@@ -625,7 +627,7 @@ public:
 		glViewport(0, 0, renderBuffer.width, renderBuffer.height);
 
 		glUseProgram(program3d);
-		program3dData->uniform(&uniformBlock);
+		programData->uniform(&uniformBlock);
 		mainScene->draw3dLiquid(camera.position, settings, &mainScene->visibleLiquidNodes);
 
 		//glUseProgram(program3d);
