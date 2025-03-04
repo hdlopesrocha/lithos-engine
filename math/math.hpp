@@ -231,7 +231,7 @@ class HeightMap: public BoundingBox  {
 		float step;
 		const HeightFunction &func;
 	public: 
-		HeightMap(const HeightFunction &func, glm::vec3 min, glm::vec3 max, float step);
+		HeightMap(const HeightFunction &func, BoundingBox box, float step);
 		
    		glm::vec3 getNormalAt(float x, float z) const ;
 		glm::vec3 getPoint(const BoundingCube& cube) const ;

@@ -149,7 +149,7 @@ class Scene {
 			CachedHeightMapSurface(
 				GradientPerlinSurface(100, 1.0f/128.0f, 0), 
 				mapBox, solidSpace->minSize), 
-			mapBox.getMin(),mapBox.getMax(), solidSpace->minSize);
+			mapBox, solidSpace->minSize);
 
 		solidSpace->add(HeightMapContainmentHandler(&map, LandBrush(brushes)));
 		solidSpace->add(BoxContainmentHandler(BoundingBox(glm::vec3(-10,6,-10),glm::vec3(34,50,34)),SimpleBrush(brushes[8])));

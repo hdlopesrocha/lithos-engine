@@ -1,7 +1,7 @@
 #include "math.hpp"
 
 
-HeightMap::HeightMap(const HeightFunction &func, glm::vec3 min, glm::vec3 max, float step)  : BoundingBox(min, max), func(func), step(step){
+HeightMap::HeightMap(const HeightFunction &func, BoundingBox box, float step)  : BoundingBox(box), func(func), step(step){
 
 }
 
