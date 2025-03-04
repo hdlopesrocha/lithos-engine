@@ -4,16 +4,13 @@
 AtlasPainter::AtlasPainter(std::vector<AtlasTexture*> * atlasTextures, std::vector<AtlasDrawer*> * atlasDrawers, GLuint programAtlas, GLuint previewProgram, int width, int height) {
     this->atlasTextures = atlasTextures;
     this->atlasDrawers = atlasDrawers;
-    this->previewer = new TexturePreviewer(previewProgram, width, height, {"Color", "Normal", "Bump", "Opacity"});
+    this->previewer = new TexturePreviewer(previewProgram, width, height, {"Color", "Normal", "Opacity"});
     this->selectedDrawer = 0;
     this->selectedDraw = 0;
-
 }
 
-
 void AtlasPainter::draw2d(){
-        float PI = glm::pi<float>();
-
+    float PI = glm::pi<float>();
 
     ImGui::Begin("Atlas Painter", &open, ImGuiWindowFlags_AlwaysAutoResize);
 

@@ -300,7 +300,7 @@ public:
 			textures.push_back(t);
 		}
 		{
-			AtlasTexture * at = new AtlasTexture(loadTextureArray({"textures/vegetation/foliage_color.jpg", "textures/vegetation/foliage_normal.jpg", "textures/vegetation/foliage_bump.jpg", "textures/vegetation/foliage_opacity.jpg"}));
+			AtlasTexture * at = new AtlasTexture(loadTextureArray({"textures/vegetation/foliage_color.jpg", "textures/vegetation/foliage_normal.jpg", "textures/vegetation/foliage_opacity.jpg"}));
 			at->tiles.push_back(Tile(glm::vec2(1.0),glm::vec2(0.0)));
 			at->tiles.push_back(Tile(glm::vec2(0.15, 1.0),glm::vec2(0.0, 0.0)));
 			at->tiles.push_back(Tile(glm::vec2(0.15, 0.5),glm::vec2(0.15, 0.0)));
@@ -325,7 +325,7 @@ public:
 			billboardTextures.push_back(new Texture(ad->getTexture()));
 		}
 		{
-			AtlasTexture * at = new AtlasTexture(loadTextureArray({"textures/vegetation/grass_color.jpg", "textures/vegetation/grass_normal.jpg", "textures/vegetation/grass_bump.jpg", "textures/vegetation/grass_opacity.jpg"}));
+			AtlasTexture * at = new AtlasTexture(loadTextureArray({"textures/vegetation/grass_color.jpg", "textures/vegetation/grass_normal.jpg", "textures/vegetation/grass_opacity.jpg"}));
 			at->tiles.push_back(Tile(glm::vec2(1.0),glm::vec2(0.0)));
 			
 			atlasTextures.push_back(at);
@@ -372,6 +372,8 @@ public:
 		mainScene->setup();
 		mainScene->load();
 	
+		impostorDrawer->draw();
+
 		
 		camera.quaternion =   glm::angleAxis(glm::radians(180.0f), glm::vec3(0, 0, 1))
 		* glm::angleAxis(glm::radians(145.0f), glm::vec3(1, 0, 0))
@@ -590,7 +592,6 @@ public:
 			programData->uniform(&uniformBlock);
 			mainScene->drawBillboards(camera.position, settings, &mainScene->visibleSolidNodes);
 		}
-		impostorDrawer->draw(programData, uniformBlock);
 
 
 		uniformBlock.set(TESSELATION_FLAG, settings->tesselationEnabled);

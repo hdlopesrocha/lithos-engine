@@ -4,7 +4,7 @@
 AtlasViewer::AtlasViewer(std::vector<AtlasTexture*> * atlasTextures, GLuint programAtlas, GLuint previewProgram, int width, int height) {
     this->atlasTextures = atlasTextures;
     this->drawer = new AtlasDrawer(programAtlas, width, height, atlasTextures);
-    this->previewer = new TexturePreviewer(previewProgram, width, height, {"Color", "Normal", "Bump", "Opacity"});
+    this->previewer = new TexturePreviewer(previewProgram, width, height, {"Color", "Normal", "Opacity"});
     this->selectedTexture = 0;
     this->selectedTile = 0;
     this->drawer->filterEnabled = false;

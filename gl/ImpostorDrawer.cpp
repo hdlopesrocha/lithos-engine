@@ -15,13 +15,12 @@ TextureArray ImpostorDrawer::getTexture() {
     return renderBuffer.colorTexture;
 }
 
-void ImpostorDrawer::draw(ProgramData * programData, UniformBlock uniformBlock) {
+void ImpostorDrawer::draw() {
     glm::mat4 view = glm::lookAt(glm::vec3(2.0), mesh->center, glm::vec3(0.0, 1.0, 0.0));
     glm::mat4 projection = glm::perspective(glm::radians(45.0f), width / (float) height, 0.1f, 32.0f);
     glm::mat4 viewProjection = projection * view;
-
-    uniformBlock.viewProjection = viewProjection;
-
+    glm::mat4 model(1.0);
+    
     glBindFramebuffer(GL_FRAMEBUFFER, renderBuffer.frameBuffer);
     glViewport(0, 0, renderBuffer.width, renderBuffer.height);
     glClearColor (0.0,0.0,0.0,0.0);
@@ -29,10 +28,13 @@ void ImpostorDrawer::draw(ProgramData * programData, UniformBlock uniformBlock) 
 
     glUseProgram(program);
 
+    glUniform1i(glGetUniformLocation(program, "triplanarEnabled"), false); 
+    glUniform1i(glGetUniformLocation(program, "opacityEnabled"), true); 
+    glUniform1i(glGetUniformLocation(program, "overrideEnabled"), false); 
+    glUniform1i(glGetUniformLocation(program, "overrideTexture"), 0u); 
+    glUniformMatrix4fv(glGetUniformLocation(program, "model"), 1, GL_FALSE, glm::value_ptr(model));
+    glUniformMatrix4fv(glGetUniformLocation(program, "viewProjection"), 1, GL_FALSE, glm::value_ptr(viewProjection));
 
-
-
-    programData->uniform(&uniformBlock);
     glDisable(GL_CULL_FACE);
     mesh->draw(GL_TRIANGLES);
     glEnable(GL_CULL_FACE);

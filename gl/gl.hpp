@@ -418,7 +418,7 @@ class ImpostorDrawer {
 
     public:
     ImpostorDrawer(GLuint program, int width, int height);
-    void draw(ProgramData * programData, UniformBlock uniformBlock);
+    void draw();
     TextureArray getTexture();
 };
 

@@ -41,7 +41,7 @@ void main() {
     }
 
     if(opacityEnabled) {
-        vec4 opacity = textureBlend(textures, teTextureWeights, teTextureIndices, uv, 3);
+        vec4 opacity = textureBlend(textures, teTextureWeights, teTextureIndices, uv, 2);
         if(opacity.r < 0.98) {
             discard;
         }
