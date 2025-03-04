@@ -1,7 +1,6 @@
 #include <bitset>
 #include "../math/math.hpp"
 #include "gl.hpp"
-#include <glm/gtx/norm.hpp> 
 #include <algorithm>
 #include <random>
 

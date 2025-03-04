@@ -1,7 +1,6 @@
 #include <bitset>
 #include "../math/math.hpp"
 #include "gl.hpp"
-#include <glm/gtx/norm.hpp> 
 
 InstanceBuilder::InstanceBuilder(Octree * tree, int lod, std::vector<InstanceData> * instances) {
 	this->tree = tree;

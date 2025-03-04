@@ -1,6 +1,5 @@
 #include <bitset>
 #include "math.hpp"
-#include <glm/gtx/norm.hpp> 
 
 OctreeVisibilityChecker::OctreeVisibilityChecker(Octree * tree, int geometryLevel, std::vector<IteratorData> * visibleNodes) {
 	this->tree = tree;

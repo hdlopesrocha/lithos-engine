@@ -409,6 +409,18 @@ class AtlasDrawer {
     void draw();
 };
 
+class ImpostorDrawer {
+    GLuint program;
+	DrawableInstanceGeometry * mesh;
+    RenderBuffer renderBuffer;
+    int width; 
+    int height;
+
+    public:
+    ImpostorDrawer(GLuint program, int width, int height);
+    void draw(ProgramData * programData, UniformBlock uniformBlock);
+    TextureArray getTexture();
+};
 
 GLuint createTextureArray(int width, int height, int layers); 
 RenderBuffer createMultiLayerRenderFrameBuffer(int width, int height, int layers);

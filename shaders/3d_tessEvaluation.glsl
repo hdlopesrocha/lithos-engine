@@ -1,5 +1,6 @@
 #version 460 core
 #include<structs.glsl>
+#include<uniforms.glsl>
 
 layout(triangles, equal_spacing, ccw) in; // Define primitive type and tessellation spacing
 

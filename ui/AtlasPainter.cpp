@@ -1,5 +1,4 @@
 #include "ui.hpp"
-#include <glm/gtc/type_ptr.hpp>
 
 
 AtlasPainter::AtlasPainter(std::vector<AtlasTexture*> * atlasTextures, std::vector<AtlasDrawer*> * atlasDrawers, GLuint programAtlas, GLuint previewProgram, int width, int height) {

@@ -1,5 +1,6 @@
 #version 460 core
 #include<structs.glsl>
+#include<uniforms.glsl>
 
 uniform sampler2D shadowMap[SHADOW_MATRIX_COUNT];
 uniform sampler2D noise;
@@ -9,6 +10,7 @@ uniform sampler2DArray textures[25];
 
 #include<functions.glsl>
 #include<functions_fragment.glsl>
+#include<shadow.glsl>
 #include<parallax.glsl>
 #include<depth.glsl>
 

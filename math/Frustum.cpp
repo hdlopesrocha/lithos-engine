@@ -1,4 +1,3 @@
-#include <glm/matrix.hpp>
 #include "math.hpp"
 
 Frustum::Frustum(glm::mat4 m)

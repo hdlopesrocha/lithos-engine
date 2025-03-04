@@ -1,6 +1,5 @@
 #include <bitset>
 #include "math.hpp"
-#include <glm/gtx/norm.hpp> 
 
 
 

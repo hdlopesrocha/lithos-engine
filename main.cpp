@@ -1,7 +1,5 @@
 #include "gl/gl.hpp"
 #include <math.h>
-#include <glm/gtc/type_ptr.hpp>
-#include <glm/gtc/integer.hpp>
 #include "math/math.hpp"
 #include "ui/ui.hpp"
 #include "tools/tools.hpp"
@@ -94,7 +92,6 @@ class MainApplication : public LithosApplication {
 	GLuint programWaterTexture;
 
 	ProgramData * programData;
-	DrawableInstanceGeometry * vegetationMesh;
 
 	UniformBlock viewerBlock;
 
@@ -122,6 +119,7 @@ class MainApplication : public LithosApplication {
 	DepthBufferViewer * depthBufferViewer;
 	SettingsEditor * settingsEditor;
 	TextureViewer * textureViewer;
+	ImpostorDrawer * impostorDrawer;
 
 public:
 	MainApplication() {
@@ -140,6 +138,8 @@ public:
 		includes.push_back(GlslInclude("#include<structs.glsl>" , readFile("shaders/util/structs.glsl")));
 		includes.push_back(GlslInclude("#include<parallax.glsl>" , readFile("shaders/util/parallax.glsl")));
 		includes.push_back(GlslInclude("#include<depth.glsl>" , readFile("shaders/util/depth.glsl")));
+		includes.push_back(GlslInclude("#include<uniforms.glsl>" , readFile("shaders/util/uniforms.glsl")));
+		includes.push_back(GlslInclude("#include<shadow.glsl>" , readFile("shaders/util/shadow.glsl")));
 
 		programAtlas = createShaderProgram({
 			compileShader(replaceIncludes(includes,readFile("shaders/texture/atlas_vertex.glsl")),GL_VERTEX_SHADER), 
@@ -340,6 +340,8 @@ public:
 			billboardTextures.push_back(new Texture(ad->getTexture()));
 		}
 
+		impostorDrawer = new ImpostorDrawer(programImpostor, 256, 256);
+
 		noiseTexture = loadTextureImage("textures/noise.jpg");
 
 		Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, glGetUniformLocation(program3d, "noise"), noiseTexture);
@@ -376,14 +378,6 @@ public:
 		* glm::angleAxis(glm::radians(135.0f), glm::vec3(0, 1, 0));  
 		camera.position = glm::vec3(48,48,48);
         light.direction = glm::normalize(glm::vec3(-1.0,-1.0,-1.0));
-
-
-
-		std::vector<InstanceData> vegetationInstances;
-		vegetationInstances.push_back(InstanceData(glm::mat4(1.0), 0));
-		vegetationMesh = new DrawableInstanceGeometry(new Vegetation3d(), &vegetationInstances, glm::vec3(0.0));
-
-
 
 		//tesselator->normalize();
 		uniformBlockViewer = new UniformBlockViewer(&viewerBlock);
@@ -596,12 +590,8 @@ public:
 			programData->uniform(&uniformBlock);
 			mainScene->drawBillboards(camera.position, settings, &mainScene->visibleSolidNodes);
 		}
+		impostorDrawer->draw(programData, uniformBlock);
 
-		glUseProgram(programImpostor);
-		programData->uniform(&uniformBlock);
-		glDisable(GL_CULL_FACE);
-		vegetationMesh->draw(GL_TRIANGLES);
-		glEnable(GL_CULL_FACE);
 
 		uniformBlock.set(TESSELATION_FLAG, settings->tesselationEnabled);
 		uniformBlock.set(OPACITY_FLAG, false);

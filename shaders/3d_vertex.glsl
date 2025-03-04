@@ -1,5 +1,6 @@
 #version 460 core
 #include<structs.glsl>
+#include<uniforms.glsl>
 
 // Input from the vertex array
 layout(location = 0) in vec3 position; 

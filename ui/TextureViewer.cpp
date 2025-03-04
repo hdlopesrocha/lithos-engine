@@ -1,5 +1,4 @@
 #include "ui.hpp"
-#include <glm/gtc/type_ptr.hpp>
 
 
 TextureViewer::TextureViewer(std::vector<Texture*> * textures, GLuint previewProgram) {

@@ -1,5 +1,6 @@
 #version 460 core
 #include<structs.glsl>
+#include<uniforms.glsl>
 
 layout(vertices = 3) out;
 

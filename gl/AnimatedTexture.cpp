@@ -1,5 +1,4 @@
 #include "gl.hpp"
-#include <glm/gtc/type_ptr.hpp>
 
 AnimatedTexture::AnimatedTexture(int width, int height, GLuint program) {
     this->textureMixerBuffer = createMultiLayerRenderFrameBuffer(width,height, 3);

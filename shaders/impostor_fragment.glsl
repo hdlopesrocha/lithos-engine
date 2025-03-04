@@ -2,6 +2,10 @@
 #include<structs.glsl>
 
 uniform sampler2DArray textures[25];
+uniform bool triplanarEnabled;
+uniform bool opacityEnabled;
+uniform bool overrideEnabled;
+uniform uint overrideTexture;
 
 #include<functions.glsl>
 #include<functions_fragment.glsl>
@@ -17,12 +21,8 @@ in mat4 gModel;
 
 out vec4 color;    // Final fragment color
 
-
 void main() {
     vec2 uv = gTextureCoord;
-    if(uv.y < 0.0) {
-        discard;
-    } 
 
     if(triplanarEnabled) {
         int plane = triplanarPlane(gPosition, gSharpNormal);
@@ -40,13 +40,7 @@ void main() {
     mat3 normalMatrix = transpose(inverse(mat3(gModel)));
     vec3 normal = normalize(normalMatrix * correctedNormal);
 
-    float effectAmount = sin(time*3.14/4.0)*0.5 + 0.5;
-    float distance = length(cameraPosition.xyz - gPosition);
-    float distanceFactor = clamp(gProps.parallaxFade / distance, 0.0, 1.0); // Adjust these numbers to fit your scene
-
-    vec3 viewDirection = normalize(gPosition-cameraPosition.xyz);
     mat3 TBN = getTBN(gPosition, correctedNormal, uv, gModel, false);
-    vec3 viewDirectionTangent = normalize(transpose(TBN) * viewDirection);
   
     vec4 mixedColor = textureBlend(textures, gTextureWeights, gTextureIndices, uv, 0);
     if(mixedColor.a == 0.0) {
@@ -57,11 +51,8 @@ void main() {
     normalMap = normalize(normalMap); // Convert to range [-1, 1]
     vec3 worldNormal = normalize(TBN * normalMap);
 
-    if(debugEnabled) {
-        color = vec4(visual(worldNormal),1.0);
-    } else {
-        color = mixedColor;
-    }
+    //    color = vec4(visual(worldNormal),1.0);
+    color = mixedColor;
  }
 
 

@@ -1,5 +1,4 @@
 #include "gl.hpp"
-#include <glm/gtc/type_ptr.hpp>
 
 Brush::Brush(uint textureIndex){
     this->textureIndex = textureIndex;

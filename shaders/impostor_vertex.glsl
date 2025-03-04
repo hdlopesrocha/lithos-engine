@@ -19,6 +19,9 @@ out mat4 vModel;
 
 uniform TextureProperties brushes[25];
 uniform uint brushTextures[25];
+uniform mat4 world;
+uniform mat4 viewProjection;
+
 
 void main() {
     vTextureIndex = brushTextures[brushIndex];

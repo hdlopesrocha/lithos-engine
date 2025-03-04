@@ -1,5 +1,4 @@
 #include "ui.hpp"
-#include <glm/gtc/type_ptr.hpp>
 
 
 BrushEditor::BrushEditor(Camera * camera, std::vector<Brush*> * brushes, std::vector<Texture*> * textures, GLuint program, GLuint previewProgram) {

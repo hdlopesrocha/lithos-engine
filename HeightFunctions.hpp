@@ -1,6 +1,5 @@
 #include "math/math.hpp"
 #include <math.h>
-#include <glm/gtc/type_ptr.hpp>
 
 class WaveSurface : public HeightFunction {
 	float getHeightAt(float x, float z) {

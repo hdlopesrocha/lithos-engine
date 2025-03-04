@@ -1,5 +1,4 @@
 	#include "math.hpp"
-    #include <glm/gtc/type_ptr.hpp>
 
     Vertex getVertex(float x, float y, float z) {
         return Vertex(glm::vec3(x,y,z),glm::normalize(glm::vec3(x,y,z)),glm::vec2(0),0 );
