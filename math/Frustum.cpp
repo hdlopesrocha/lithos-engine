@@ -41,7 +41,7 @@ Frustum::Frustum(glm::mat4 m)
 }
 
 // http://iquilezles.org/www/articles/frustumcorrect/frustumcorrect.htm
-bool Frustum::isBoxVisible(AbstractBoundingBox &box) {
+bool Frustum::isBoxVisible(const AbstractBoundingBox &box) {
     glm::vec3 minp = box.getMin();
     glm::vec3 maxp = box.getMax();
 	// check box outside/inside of frustum

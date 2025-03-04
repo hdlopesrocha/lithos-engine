@@ -113,6 +113,6 @@ Vertex SphereContainmentHandler::getVertex(const BoundingCube &cube, Containment
     Vertex vertex(p);
     vertex.normal = getNormal(vertex.position);
 
-    brush.paint(&vertex);
+    brush.paint(vertex);
     return vertex;
 }

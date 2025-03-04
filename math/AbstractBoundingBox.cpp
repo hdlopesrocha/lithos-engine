@@ -1,12 +1,11 @@
 #include "math.hpp"
 
 
-AbstractBoundingBox::AbstractBoundingBox(glm::vec3 min) {
-	this->min = min;
+AbstractBoundingBox::AbstractBoundingBox(glm::vec3 min) : min(min) {
 }
 
-AbstractBoundingBox::AbstractBoundingBox() {
-    this->min = glm::vec3(0,0,0);
+AbstractBoundingBox::AbstractBoundingBox() :min(glm::vec3(0,0,0)){
+
 }
 
 glm::vec3 AbstractBoundingBox::getMin() const {

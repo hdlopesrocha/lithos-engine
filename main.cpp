@@ -8,7 +8,35 @@
 #include "HeightFunctions.hpp"
 #include "Scene.hpp"
 
+#define MEM_HEADER 1
 
+#ifdef MEM_HEADER
+long usedMemory = 0;
+struct Header {
+    std::size_t size;
+};
+
+
+void* operator new(std::size_t size) {
+    std::size_t totalSize = size + sizeof(Header);
+    void* mem = std::malloc(totalSize);
+    if (!mem) throw std::bad_alloc();
+
+    static_cast<Header*>(mem)->size = size;
+    usedMemory += size;
+    
+    return static_cast<void*>(static_cast<char*>(mem) + sizeof(Header));
+}
+
+void operator delete(void* ptr) noexcept {
+    if (!ptr) return;
+
+    Header* header = reinterpret_cast<Header*>(static_cast<char*>(ptr) - sizeof(Header));
+    usedMemory-= header->size;
+
+    std::free(header);
+}
+#endif
 
 class GlslInclude {
 	public:
@@ -689,6 +717,9 @@ public:
 			ImGui::Text("%d/%d solid instances", mainScene->solidInstancesVisible, mainScene->solidInstancesCount);
 			ImGui::Text("%d/%d liquid instances", mainScene->liquidInstancesVisible, mainScene->liquidInstancesCount);
 			ImGui::Text("%d/%d vegetation instances", mainScene->vegetationInstancesVisible, mainScene->vegetationInstancesCount);
+			#ifdef MEM_HEADER
+			ImGui::Text("%ld KB", usedMemory/1024);
+			#endif
 			ImGui::End();
 
 		}

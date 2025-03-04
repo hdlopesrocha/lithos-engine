@@ -21,7 +21,7 @@ class LandBrush : public TextureBrush {
 
 	public: 
 	LandBrush(std::vector<Brush*> brushes);
-	void paint(Vertex * vertex) const override;
+	void paint(Vertex &vertex) const override;
 };
 
 class SimpleBrush : public TextureBrush {
@@ -29,7 +29,7 @@ class SimpleBrush : public TextureBrush {
 
 	public: 
 	SimpleBrush(Brush * brush);
-	void paint(Vertex * vertex) const override;
+	void paint(Vertex &vertex) const override;
 };
 
 
@@ -39,7 +39,7 @@ class WaterBrush : public TextureBrush {
 
 	public: 
 	WaterBrush(Brush *water);
-	void paint(Vertex * vertex) const override;
+	void paint(Vertex &vertex) const override;
 };
 
 #include "tools.hpp"

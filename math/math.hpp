@@ -98,6 +98,8 @@ class AbstractBoundingBox {
 	public:
 	AbstractBoundingBox();
 	AbstractBoundingBox(glm::vec3 min);
+    virtual ~AbstractBoundingBox() {}  
+
 	float getMinX() const;
 	float getMinY() const;
 	float getMinZ() const;
@@ -128,7 +130,6 @@ class BoundingCube : public AbstractBoundingBox {
 		float length;
 	
 	public: 
-		using AbstractBoundingBox::AbstractBoundingBox;
 		BoundingCube();
 		BoundingCube(glm::vec3 min, float length);
 		void setLength(float l);
@@ -161,7 +162,6 @@ class BoundingBox : public AbstractBoundingBox {
 		glm::vec3 max;
 
 	public: 
-		using AbstractBoundingBox::AbstractBoundingBox;
 		BoundingBox(glm::vec3 min, glm::vec3 max);
 		BoundingBox();
 		void setMax(glm::vec3 v);
@@ -179,6 +179,7 @@ class BoundingBox : public AbstractBoundingBox {
 
 class HeightFunction {
 	public:
+	    virtual ~HeightFunction() {}  
 		virtual float getHeightAt(float x, float y, float z) const = 0;
 		glm::vec3 getNormal(float x, float z, float delta) const;
 
@@ -442,7 +443,7 @@ public:
 	Frustum(glm::mat4 m);
 
 	// http://iquilezles.org/www/articles/frustumcorrect/frustumcorrect.htm
-	bool isBoxVisible(AbstractBoundingBox &box);
+	bool isBoxVisible(const AbstractBoundingBox &box);
 
 private:
 	enum Planes
@@ -471,7 +472,7 @@ private:
 
 class TextureBrush {
 	public:
-	virtual void paint(Vertex * v) const = 0;
+	virtual void paint(Vertex &v) const = 0;
 };
 
 
@@ -504,10 +505,10 @@ class BoxContainmentHandler : public ContainmentHandler {
 
 class HeightMapContainmentHandler : public ContainmentHandler {
 	public: 
-	HeightMap * map;
+	const HeightMap &map;
     const TextureBrush &brush;
 
-	HeightMapContainmentHandler(HeightMap * m, const TextureBrush &b);
+	HeightMapContainmentHandler(const HeightMap &map, const TextureBrush &b);
 	glm::vec3 getCenter() const;
 	bool contains(const glm::vec3 p) const ;
 	float intersection(const glm::vec3 a, const glm::vec3 b) const ;
