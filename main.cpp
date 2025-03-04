@@ -8,7 +8,7 @@
 #include "HeightFunctions.hpp"
 #include "Scene.hpp"
 
-#define MEM_HEADER 1
+//#define MEM_HEADER 1
 
 #ifdef MEM_HEADER
 long usedMemory = 0;
@@ -473,8 +473,8 @@ public:
 
 		glm::mat4 viewProjection = camera.getVP();
 
-		mainScene->processSpace();
 		mainScene->setVisibility(viewProjection, shadowMatrices, &camera, &light, settings);
+		mainScene->processSpace();
 
 	
 		glPolygonMode(GL_FRONT, GL_FILL);

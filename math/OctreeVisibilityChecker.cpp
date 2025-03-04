@@ -17,7 +17,7 @@ void OctreeVisibilityChecker::update(glm::mat4 m) {
 void * OctreeVisibilityChecker::before(int level, int height, OctreeNode * node, const BoundingCube &cube, void * context) {		
 	int currentLod = height - geometryLevel;
 
-	if(currentLod <= 0){
+	if(currentLod == 0){
 		visibleNodes->push_back({level, height, node, cube, context});
 		return node;
 	}

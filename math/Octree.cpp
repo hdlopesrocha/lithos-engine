@@ -27,6 +27,7 @@ BoundingCube Octree::getCube3(const BoundingCube &cube, int i) {
 
 int getNodeIndex(const glm::vec3 &vec, const BoundingCube &cube) {
 	glm::ivec3 p = glm::round((vec - cube.getMin()) / cube.getLengthX());
+    p = glm::clamp(p, glm::ivec3(0), glm::ivec3(1));  
 	return (p.x << 2) + (p.y << 1) + p.z;
 }
 
@@ -138,13 +139,12 @@ void Octree::expand(const ContainmentHandler &handler) {
 	    setMin(getMin() -  Octree::getShift(i) * getLengthX());
 	    setLength(getLengthX()*2);
 
-	    OctreeNode * newNode = new OctreeNode(getCenter());
-	    if(root->isEmpty()) {
+	    if(root != NULL && root->isEmpty()) {
 	    	delete root;
+			root = NULL;
 	    }
-	    else {
-			newNode->setChild(i, root);
-	    }
+	    OctreeNode * newNode = new OctreeNode(getCenter());
+		newNode->setChild(i, root);
 	    root = newNode;
 	}
 }

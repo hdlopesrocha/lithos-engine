@@ -162,8 +162,6 @@ class Scene {
 		solidSpace->add(SphereContainmentHandler(BoundingSphere(glm::vec3(11,61,-11),4), SimpleBrush(brushes[0])));
 
 		BoundingBox waterBox(glm::vec3(-200,-60,-200), glm::vec3(200,3,200));
-		//liquidSpace->add(new OctreeContainmentHandler(solidSpace, waterBox, new SimpleBrush(brushes[6])));
-		//BoundingBox waterBox(glm::vec3(50,50,0), glm::vec3(70,70,20));
 		liquidSpace->add(OctreeContainmentHandler(solidSpace, waterBox, WaterBrush(brushes[0])));
 	}
 
