@@ -344,22 +344,30 @@ class TextureMixer {
     void mix(MixerParams params);
 };
 
-class AnimatedTexture {
-    MultiLayerRenderBuffer textureMixerBuffer;
-    GLuint program;
-    GLuint previewVao;
-
+class AnimateParams {
     public:
-
     int perlinScale;
     int perlinLacunarity;
     int perlinIterations;
     float brightness;
     float contrast;
+    int targetTexture = 0;
     glm::vec4 color;
-    AnimatedTexture(int width, int height, GLuint program);
+
+    AnimateParams(int targetTexture);
+
+};
+
+class AnimatedTexture {
+    MultiLayerRenderBuffer textureMixerBuffer;
+    GLuint program;
+    GLuint previewVao;
+    TextureLayers layers;
+    public:
+
+    AnimatedTexture(int width, int height, GLuint program, TextureLayers layers);
     TextureArray getTexture();
-    void animate(float time);
+    void animate(float time, AnimateParams params);
 };
 
 class Settings {

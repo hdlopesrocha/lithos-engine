@@ -71,7 +71,7 @@ class MainApplication : public LithosApplication {
 	std::vector<AtlasTexture*> atlasTextures;
 	std::vector<AtlasDrawer*> atlasDrawers;
 	std::vector<MixerParams> mixers;
-	std::vector<AnimatedTexture*> animatedTextures;
+	std::vector<AnimateParams> animations;
 	std::vector<ImpostorDrawer*> impostorDrawers;
 
 	Scene * mainScene;
@@ -125,7 +125,9 @@ class MainApplication : public LithosApplication {
 	TextureLayers billboardLayers;
 	
 
-	
+	TextureMixer * textureMixer;
+	AnimatedTexture * textureAnimator;
+
 
 public:
 	MainApplication() {
@@ -216,13 +218,12 @@ public:
 		shadowFrameBuffers.push_back(std::pair(createDepthFrameBuffer(1024, 1024), 32));
 		shadowFrameBuffers.push_back(std::pair(createDepthFrameBuffer(1024, 1024), 128));
 		shadowFrameBuffers.push_back(std::pair(createDepthFrameBuffer(1024, 1024), 512));
-		TextureMixer * textureMixer = new TextureMixer(1024,1024, programMixTexture, textureLayers);
+		textureMixer = new TextureMixer(1024,1024, programMixTexture, textureLayers);
+		textureAnimator = new AnimatedTexture(1024,1024, programWaterTexture, textureLayers);
 
 		{
-			AnimatedTexture * tm = new AnimatedTexture(1024,1024, programWaterTexture);
-			tm->animate(0);
+			animations.push_back(AnimateParams(textureLayers.count));
 			brushes.push_back(new Brush(textureLayers.count, glm::vec2(0.2), 0.02, 8, 32, 16,4, 10.0, 0.5 , 1.33));
-			animatedTextures.push_back(tm);
 			textureLayers.count++;
 		}
 		{
@@ -403,7 +404,7 @@ public:
 		brushEditor = new BrushEditor(&camera, &brushes, program3d, programTexture, textureLayers);
 		shadowMapViewer = new ShadowMapViewer(&shadowFrameBuffers, 512, 512);
 		textureMixerEditor = new TextureMixerEditor(textureMixer, &mixers, programTexture, textureLayers);
-		animatedTextureEditor = new AnimatedTextureEditor(&animatedTextures, programTexture, 256,256, textureLayers);
+		animatedTextureEditor = new AnimatedTextureEditor(&animations, programTexture, 256,256, textureLayers);
 		depthBufferViewer = new DepthBufferViewer(programDepth,depthFrameBuffer.depthTexture,512,512);
 		settingsEditor = new SettingsEditor(settings);
 		textureViewer = new TextureViewer(programTexture, textureLayers);
@@ -470,9 +471,9 @@ public:
 
 	
 
-		for(int i=0; i<animatedTextures.size() ; ++i) {
-			AnimatedTexture * texture = animatedTextures[i];
-			texture->animate(time);
+
+		for(AnimateParams params : animations) {
+			textureAnimator->animate(time, params);
 		}
     }
 

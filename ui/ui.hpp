@@ -174,12 +174,12 @@ class TextureMixerEditor : public Closable{
 };
 
 class AnimatedTextureEditor : public Closable{
-    std::vector<AnimatedTexture*> * animatedTextures;
+    std::vector<AnimateParams> * animations;
   	int selectedAnimatedTexture;
     TexturePreviewer * previewer;
     TextureLayers layers;
     public:
-    AnimatedTextureEditor(std::vector<AnimatedTexture*> * animatedTextures, GLuint previewProgram, int width, int height, TextureLayers layers);
+    AnimatedTextureEditor(std::vector<AnimateParams> * animations, GLuint previewProgram, int width, int height, TextureLayers layers);
 
     void draw2d();
     void draw3d(UniformBlock * block);
