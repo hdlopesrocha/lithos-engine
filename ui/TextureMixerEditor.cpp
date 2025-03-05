@@ -1,10 +1,11 @@
 #include "ui.hpp"
 
 
-TextureMixerEditor::TextureMixerEditor(std::vector<TextureMixer*> * mixers, std::vector<Texture*> * textures, GLuint previewProgram) {
+TextureMixerEditor::TextureMixerEditor(TextureMixer * mixer, std::vector<int> * mixers, GLuint previewProgram, TextureLayers layers) {
     this->mixers = mixers;
-    this->textures = textures;
-    this->previewer = new TexturePreviewer(previewProgram, 512, 512, {"Color", "Normal", "Bump"});
+    this->mixer = mixer;
+    this->layers = layers;
+    this->previewer = new TexturePreviewer(previewProgram, 512, 512, {{"Color", layers.colorTextures }, {"Normal", layers.normalTextures}, {"Bump", layers.bumpTextures }});
     this->selectedMixer = 0;
 }
 
@@ -13,10 +14,10 @@ void TextureMixerEditor::draw2d(){
     ImGui::Begin("Texture Mixer", &open, ImGuiWindowFlags_AlwaysAutoResize);
 
 
-    TextureMixer * mixer = mixers->at(Math::mod(selectedMixer, mixers->size()));
-    mixer->mix();
+    int mixerIndex = mixers->at(Math::mod(selectedMixer, mixers->size()));
+    mixer->mix(mixerIndex);
 
-    previewer->draw2d(mixer->getTexture());
+    previewer->draw2d(0);
 
     ImGui::Text("Mixer: ");
     ImGui::SameLine();

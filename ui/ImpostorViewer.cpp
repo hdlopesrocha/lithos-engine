@@ -1,10 +1,11 @@
 #include "ui.hpp"
 
 
-ImpostorViewer::ImpostorViewer(std::vector<ImpostorDrawer*> * impostorDrawers, GLuint previewProgram, int width, int height) {
+ImpostorViewer::ImpostorViewer(std::vector<ImpostorDrawer*> * impostorDrawers, GLuint previewProgram, int width, int height, TextureLayers layers) {
     this->impostorDrawers = impostorDrawers;
     std::cout << "TexturePreviewer" << std::endl;
-    this->previewer = new TexturePreviewer(previewProgram, width, height, {"Color", "Normal", "Opacity"});
+    this->layers = layers;
+    this->previewer = new TexturePreviewer(previewProgram, 256, 256, {{"Color", layers.colorTextures }, {"Normal", layers.normalTextures}, {"Opacity", layers.bumpTextures }});
     this->selectedDrawer = 0;
 }
 
@@ -15,7 +16,7 @@ void ImpostorViewer::draw2d(){
     selectedDrawer = Math::mod(selectedDrawer, impostorDrawers->size());
 
     ImpostorDrawer * drawer = impostorDrawers->at(selectedDrawer);
-    previewer->draw2d(drawer->getTexture());
+    previewer->draw2d(0);
 
     ImGui::Text("Selected impostor: %d/%ld ", selectedDrawer, impostorDrawers->size());
     ImGui::SameLine();

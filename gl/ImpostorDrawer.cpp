@@ -19,6 +19,7 @@ TextureArray ImpostorDrawer::getTexture() {
 }
 
 void ImpostorDrawer::draw() {
+    std::cout << "ImpostorDrawer::draw" << std::endl;
     glm::mat4 view = glm::lookAt(glm::vec3(2.0), mesh->center, glm::vec3(0.0, 1.0, 0.0));
     glm::mat4 projection = glm::perspective(glm::radians(45.0f), width / (float) height, 0.1f, 32.0f);
     glm::mat4 viewProjection = projection * view;
@@ -42,8 +43,9 @@ void ImpostorDrawer::draw() {
     glEnable(GL_CULL_FACE);
 
     glActiveTexture(GL_TEXTURE0); 
-    glBindTexture(GL_TEXTURE_2D_ARRAY, renderBuffer.colorTexture);
+    glBindTexture(GL_TEXTURE_2D_ARRAY, renderBuffer.colorTexture.index);
     glGenerateMipmap(GL_TEXTURE_2D_ARRAY);
 
+    glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }

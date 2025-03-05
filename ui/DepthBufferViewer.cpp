@@ -1,7 +1,7 @@
 #include "ui.hpp"
 
 
-DepthBufferViewer::DepthBufferViewer(GLuint previewProgram, GLuint depthTexture, int width, int height) {
+DepthBufferViewer::DepthBufferViewer(GLuint previewProgram, TextureImage depthTexture, int width, int height) {
     this->depthTexture = depthTexture;
     this->previewProgram = previewProgram;
     this->previewBuffer = createRenderFrameBuffer(width,height);
@@ -11,6 +11,7 @@ DepthBufferViewer::DepthBufferViewer(GLuint previewProgram, GLuint depthTexture,
 }
 
 void DepthBufferViewer::draw2d(){
+    std::cout << "DepthBufferViewer::draw2d" << std::endl;
 
     glBindFramebuffer(GL_FRAMEBUFFER, previewBuffer.frameBuffer);
     glViewport(0, 0, previewBuffer.width, previewBuffer.height); 
@@ -19,7 +20,7 @@ void DepthBufferViewer::draw2d(){
 
     glUseProgram(previewProgram);
     glActiveTexture(GL_TEXTURE0); 
-    glBindTexture(GL_TEXTURE_2D, depthTexture);
+    glBindTexture(GL_TEXTURE_2D, depthTexture.idx);
     glUniform1i(glGetUniformLocation(previewProgram, "textureSampler"), 0); 
     glBindVertexArray(previewVao);
     glDisable(GL_DEPTH_TEST);
@@ -28,9 +29,10 @@ void DepthBufferViewer::draw2d(){
 
 
     ImGui::Begin("Depth Buffer Viewer", &open, ImGuiWindowFlags_AlwaysAutoResize);
-	ImGui::Image((ImTextureID)(intptr_t)previewBuffer.colorTexture, ImVec2(width, height));
+	ImGui::Image((ImTextureID)(intptr_t)previewBuffer.colorTexture.idx, ImVec2(width, height));
 	ImGui::End();
 
+    glBindTexture(GL_TEXTURE_2D, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 }

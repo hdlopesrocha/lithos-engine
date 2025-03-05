@@ -254,7 +254,6 @@ OctreeNode * delAux(Octree &tree, const ContainmentHandler &handler, OctreeNode 
 			return NULL;
 		}
 		if(node!= NULL) {
-			// TODO: problem here
 			if(node->solid == ContainmentType::Contains && isIntersecting && height != 0) {
 				split(node, cube);
 			}

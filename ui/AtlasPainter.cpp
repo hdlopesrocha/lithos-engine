@@ -1,10 +1,11 @@
 #include "ui.hpp"
 
 
-AtlasPainter::AtlasPainter(std::vector<AtlasTexture*> * atlasTextures, std::vector<AtlasDrawer*> * atlasDrawers, GLuint programAtlas, GLuint previewProgram, int width, int height) {
+AtlasPainter::AtlasPainter(std::vector<AtlasTexture*> * atlasTextures, std::vector<AtlasDrawer*> * atlasDrawers, GLuint programAtlas, GLuint previewProgram, int width, int height, TextureLayers layers) {
     this->atlasTextures = atlasTextures;
     this->atlasDrawers = atlasDrawers;
-    this->previewer = new TexturePreviewer(previewProgram, width, height, {"Color", "Normal", "Opacity"});
+    this->layers = layers;
+    this->previewer = new TexturePreviewer(previewProgram, width, height, {{"Color", layers.colorTextures }, {"Normal", layers.normalTextures}, {"Opacity", layers.bumpTextures }});
     this->selectedDrawer = 0;
     this->selectedDraw = 0;
 }
@@ -37,7 +38,7 @@ void AtlasPainter::draw2d(){
     Tile * tile = &atlas->tiles[tileIndex];
     
     drawer->draw(drawer->atlasIndex, drawer->draws);
-    previewer->draw2d(drawer->getTexture());
+    previewer->draw2d(0);
 
     ImGui::Text("Selected texture: %d/%ld ", drawer->atlasIndex, atlasTextures->size());
     ImGui::SameLine();

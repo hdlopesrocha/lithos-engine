@@ -65,13 +65,12 @@ std::string replaceIncludes(std::vector<GlslInclude> includes, std::string code)
 
 
 class MainApplication : public LithosApplication {
-	std::vector<Texture*> textures;
-	std::vector<Texture*> billboardTextures;
+	std::vector<TextureArray> billboardTextures;
 	std::vector<Brush*> brushes;
 	std::vector<Brush*> billboardBrushes;
 	std::vector<AtlasTexture*> atlasTextures;
 	std::vector<AtlasDrawer*> atlasDrawers;
-	std::vector<TextureMixer*> mixers;
+	std::vector<int> mixers;
 	std::vector<AnimatedTexture*> animatedTextures;
 	std::vector<ImpostorDrawer*> impostorDrawers;
 
@@ -97,7 +96,7 @@ class MainApplication : public LithosApplication {
 	UniformBlock viewerBlock;
 
 
-	GLuint noiseTexture;
+	TextureImage noiseTexture;
 
 	RenderBuffer depthFrameBuffer;
 	RenderBuffer renderBuffer;
@@ -122,12 +121,10 @@ class MainApplication : public LithosApplication {
 	TextureViewer * textureViewer;
 	ImpostorViewer * impostorViewer;
 
-	TextureArray colorTextures;
-	TextureArray normalTextures;
-	TextureArray bumpTextures;
-	TextureArray colorBillboards;
-	TextureArray normalBillboards;
-	TextureArray bumpBillboards;
+	TextureLayers textureLayers;
+	TextureLayers billboardLayers;
+	
+
 	
 
 public:
@@ -140,13 +137,15 @@ public:
 	}
 
     virtual void setup() {
-		colorTextures = createTextureArray(1024, 1024, 25, GL_RGBA8);
-		normalTextures = createTextureArray(1024, 1024, 25, GL_RGBA8);
-		bumpTextures = createTextureArray(1024, 1024, 25, GL_RGBA8);
+		textureLayers.colorTextures = createTextureArray(1024, 1024, 25, GL_RGBA8);
+		textureLayers.normalTextures = createTextureArray(1024, 1024, 25, GL_RGBA8);
+		textureLayers.bumpTextures = createTextureArray(1024, 1024, 25, GL_RGBA8);
+		textureLayers.count = 0;
 
-		colorBillboards = createTextureArray(1024, 1024, 25, GL_RGBA8);
-		normalBillboards = createTextureArray(1024, 1024, 25, GL_RGBA8);
-		bumpBillboards = createTextureArray(1024, 1024, 25, GL_RGBA8);
+		billboardLayers.colorTextures = createTextureArray(1024, 1024, 5, GL_RGBA8);
+		billboardLayers.normalTextures = createTextureArray(1024, 1024, 5, GL_RGBA8);
+		billboardLayers.bumpTextures = createTextureArray(1024, 1024, 5, GL_RGBA8);
+		billboardLayers.count = 0;
 
 		std::vector<GlslInclude> includes;
 		includes.push_back(GlslInclude("#include<functions.glsl>" , readFile("shaders/util/functions.glsl")));
@@ -217,118 +216,98 @@ public:
 		shadowFrameBuffers.push_back(std::pair(createDepthFrameBuffer(1024, 1024), 32));
 		shadowFrameBuffers.push_back(std::pair(createDepthFrameBuffer(1024, 1024), 128));
 		shadowFrameBuffers.push_back(std::pair(createDepthFrameBuffer(1024, 1024), 512));
+		TextureMixer * textureMixer = new TextureMixer(1024,1024, programMixTexture, textureLayers);
 
 		{
 			AnimatedTexture * tm = new AnimatedTexture(1024,1024, programWaterTexture);
 			tm->animate(0);
-			Texture * t = new Texture(tm->getTexture());
-			brushes.push_back(new Brush(textures.size(), glm::vec2(0.2), 0.02, 8, 32, 16,4, 10.0, 0.5 , 1.33));
+			brushes.push_back(new Brush(textureLayers.count, glm::vec2(0.2), 0.02, 8, 32, 16,4, 10.0, 0.5 , 1.33));
 			animatedTextures.push_back(tm);
-			textures.push_back(t);
+			textureLayers.count++;
 		}
 		{
-			loadTexture({{"textures/lava_color.jpg", colorTextures }, {"textures/lava_normal.jpg", normalTextures }, {"textures/lava_bump.jpg", bumpTextures}}, textures.size());
-			Texture * t = new Texture();
-			brushes.push_back(new Brush(textures.size(), glm::vec2(1.0), 0.1, 8, 32, 16,4 ,256, 0.4, 0.0));
-			textures.push_back(t);
+			loadTexture({{"textures/lava_color.jpg", textureLayers.colorTextures }, {"textures/lava_normal.jpg", textureLayers.normalTextures }, {"textures/lava_bump.jpg", textureLayers.bumpTextures}}, textureLayers.count);
+			brushes.push_back(new Brush(textureLayers.count, glm::vec2(1.0), 0.1, 8, 32, 16,4 ,256, 0.4, 0.0));
+			textureLayers.count++;
 		}
 		{
-			loadTexture({{"textures/grass_color.jpg", colorTextures }, {"textures/grass_normal.jpg", normalTextures }, {"textures/grass_bump.jpg", bumpTextures}}, textures.size());
-			Texture * t = new Texture();
-			brushes.push_back(new Brush(textures.size(), glm::vec2(1.0), 0.01, 2, 8, 8,4 ,32, 0.03, 0.0));
-			textures.push_back(t);
+			loadTexture({{"textures/grass_color.jpg", textureLayers.colorTextures }, {"textures/grass_normal.jpg", textureLayers.normalTextures }, {"textures/grass_bump.jpg", textureLayers.bumpTextures}}, textureLayers.count);
+			brushes.push_back(new Brush(textureLayers.count, glm::vec2(1.0), 0.01, 2, 8, 8,4 ,32, 0.03, 0.0));
+			textureLayers.count++;
         }
 		{
-			loadTexture({{"textures/sand_color.jpg", colorTextures }, {"textures/sand_normal.jpg", normalTextures }, {"textures/sand_bump.jpg", bumpTextures}}, textures.size());
-			Texture * t = new Texture();
-			brushes.push_back(new Brush(textures.size(), glm::vec2(1.0), 0.05, 8, 32, 16,4 ,32,0.02, 0.0));
-			textures.push_back(t);
+			loadTexture({{"textures/sand_color.jpg", textureLayers.colorTextures }, {"textures/sand_normal.jpg", textureLayers.normalTextures }, {"textures/sand_bump.jpg", textureLayers.bumpTextures}}, textureLayers.count);
+			brushes.push_back(new Brush(textureLayers.count, glm::vec2(1.0), 0.05, 8, 32, 16,4 ,32,0.02, 0.0));
+			textureLayers.count++;
         }
 		{
-			loadTexture({{"textures/rock_color.jpg", colorTextures }, {"textures/rock_normal.jpg", normalTextures }, {"textures/rock_bump.jpg", bumpTextures}}, textures.size());
-			Texture * t = new Texture();
-			brushes.push_back(new Brush(textures.size(), glm::vec2(1.0), 0.1, 8, 32, 16,4,128, 0.4, 0.0));
-			textures.push_back(t);
+			loadTexture({{"textures/rock_color.jpg", textureLayers.colorTextures }, {"textures/rock_normal.jpg", textureLayers.normalTextures }, {"textures/rock_bump.jpg", textureLayers.bumpTextures}}, textureLayers.count);
+			brushes.push_back(new Brush(textureLayers.count, glm::vec2(1.0), 0.1, 8, 32, 16,4,128, 0.4, 0.0));
+			textureLayers.count++;
         }
 		{
-			loadTexture({{"textures/snow_color.jpg", colorTextures }, {"textures/snow_normal.jpg", normalTextures }, {"textures/snow_bump.jpg", bumpTextures}}, textures.size());
-			Texture * t = new Texture();
-			brushes.push_back(new Brush(textures.size(), glm::vec2(1.0), 0.1, 8, 32, 16,4, 32 , 0.4, 0.0));
-			textures.push_back(t);
+			loadTexture({{"textures/snow_color.jpg", textureLayers.colorTextures }, {"textures/snow_normal.jpg", textureLayers.normalTextures }, {"textures/snow_bump.jpg", textureLayers.bumpTextures}}, textureLayers.count);
+			brushes.push_back(new Brush(textureLayers.count, glm::vec2(1.0), 0.1, 8, 32, 16,4, 32 , 0.4, 0.0));
+			textureLayers.count++;
         }
 		{
-			loadTexture({{"textures/metal_color.jpg", colorTextures }, {"textures/metal_normal.jpg", normalTextures }, {"textures/metal_bump.jpg", bumpTextures}}, textures.size());
-			Texture * t = new Texture();
-			brushes.push_back(new Brush(textures.size(), glm::vec2(1.0), 0.1, 8, 64, 64,4, 32, 0.6 , 0.0));
-			textures.push_back(t);
+			loadTexture({{"textures/metal_color.jpg", textureLayers.colorTextures }, {"textures/metal_normal.jpg", textureLayers.normalTextures }, {"textures/metal_bump.jpg", textureLayers.bumpTextures}}, textureLayers.count);
+			brushes.push_back(new Brush(textureLayers.count, glm::vec2(1.0), 0.1, 8, 64, 64,4, 32, 0.6 , 0.0));
+			textureLayers.count++;
         }
 		{
-			loadTexture({{"textures/dirt_color.jpg", colorTextures }, {"textures/dirt_normal.jpg", normalTextures }, {"textures/dirt_bump.jpg", bumpTextures}}, textures.size());
-			Texture * t = new Texture();
-			brushes.push_back(new Brush(textures.size(), glm::vec2(1.0), 0.1, 8, 32, 16,4 , 256, 0.02, 0.0));
-			textures.push_back(t);
+			loadTexture({{"textures/dirt_color.jpg", textureLayers.colorTextures }, {"textures/dirt_normal.jpg", textureLayers.normalTextures }, {"textures/dirt_bump.jpg", textureLayers.bumpTextures}}, textureLayers.count);
+			brushes.push_back(new Brush(textureLayers.count, glm::vec2(1.0), 0.1, 8, 32, 16,4 , 256, 0.02, 0.0));
+			textureLayers.count++;
         }
 		{
-			loadTexture({{"textures/bricks_color.jpg", colorTextures }, {"textures/bricks_normal.jpg", normalTextures }, {"textures/bricks_bump.jpg", bumpTextures}}, textures.size());
-			Texture * t = new Texture();
-			brushes.push_back(new Brush(textures.size(), glm::vec2(1.0), 0.01, 8, 32, 16,4, 256, 0.2 , 0.0));
-			textures.push_back(t);
+			loadTexture({{"textures/bricks_color.jpg", textureLayers.colorTextures }, {"textures/bricks_normal.jpg", textureLayers.normalTextures }, {"textures/bricks_bump.jpg", textureLayers.bumpTextures}}, textureLayers.count);
+			brushes.push_back(new Brush(textureLayers.count, glm::vec2(1.0), 0.01, 8, 32, 16,4, 256, 0.2 , 0.0));
+			textureLayers.count++;
 		}
 		{
-			TextureMixer * tm = new TextureMixer(1024,1024, programMixTexture, &textures);
-			tm->mix(2, 3);
-			Texture * t = new Texture(tm->getTexture());
-			brushes.push_back(new Brush(textures.size(), glm::vec2(1.0), 0.01, 8, 32, 16,4, 256, 0.2 , 0.0));
-			mixers.push_back(tm);
-			textures.push_back(t);
+			textureMixer->mix(2, 3, textureLayers.count);
+			mixers.push_back(textureLayers.count);
+			brushes.push_back(new Brush(textureLayers.count, glm::vec2(1.0), 0.01, 8, 32, 16,4, 256, 0.2 , 0.0));
+			textureLayers.count++;
 		}
 		{
-			TextureMixer * tm = new TextureMixer(1024,1024, programMixTexture, &textures);
-			tm->mix(2, 5);
-			Texture * t = new Texture(tm->getTexture());
-			brushes.push_back(new Brush(textures.size(), glm::vec2(1.0), 0.01, 8, 32, 16,4, 256, 0.2 , 0.0));
-			mixers.push_back(tm);
-			textures.push_back(t);
+			textureMixer->mix(2, 5, textureLayers.count);
+			mixers.push_back(textureLayers.count);
+			brushes.push_back(new Brush(textureLayers.count, glm::vec2(1.0), 0.01, 8, 32, 16,4, 256, 0.2 , 0.0));
+			textureLayers.count++;
 		}
 		{
-			TextureMixer * tm = new TextureMixer(1024,1024, programMixTexture, &textures);
-			tm->mix(4, 2);
-			Texture * t = new Texture(tm->getTexture());
-			brushes.push_back(new Brush(textures.size(), glm::vec2(1.0), 0.01, 8, 32, 16,4, 256, 0.2 , 0.0));
-			mixers.push_back(tm);
-			textures.push_back(t);
+			textureMixer->mix(4, 2, textureLayers.count);
+			mixers.push_back(textureLayers.count);
+			brushes.push_back(new Brush(textureLayers.count, glm::vec2(1.0), 0.01, 8, 32, 16,4, 256, 0.2 , 0.0));
+			textureLayers.count++;
 		}
 		{
-			TextureMixer * tm = new TextureMixer(1024,1024, programMixTexture, &textures);
-			tm->mix(4, 5);
-			Texture * t = new Texture(tm->getTexture());
-			brushes.push_back(new Brush(textures.size(), glm::vec2(1.0), 0.01, 8, 32, 16,4, 256, 0.2 , 0.0));
-			mixers.push_back(tm);
-			textures.push_back(t);
+			textureMixer->mix(4, 5, textureLayers.count);
+			mixers.push_back(textureLayers.count);
+			brushes.push_back(new Brush(textureLayers.count, glm::vec2(1.0), 0.01, 8, 32, 16,4, 256, 0.2 , 0.0));
+			textureLayers.count++;
 		}
 		{
-			TextureMixer * tm = new TextureMixer(1024,1024, programMixTexture, &textures);
-			tm->mix(4, 3);
-			Texture * t = new Texture(tm->getTexture());
-			brushes.push_back(new Brush(textures.size(), glm::vec2(1.0), 0.01, 8, 32, 16,4, 256, 0.2 , 0.0));
-			mixers.push_back(tm);
-			textures.push_back(t);
+			textureMixer->mix(4, 3, textureLayers.count);
+			mixers.push_back(textureLayers.count);
+			brushes.push_back(new Brush(textureLayers.count, glm::vec2(1.0), 0.01, 8, 32, 16,4, 256, 0.2 , 0.0));
+			textureLayers.count++;
 		}
 		{
-			loadTexture({{"textures/soft_sand_color.jpg", colorTextures }, {"textures/soft_sand_normal.jpg", normalTextures }, {"textures/soft_sand_bump.jpg", bumpTextures}}, textures.size());
-			Texture * t = new Texture();
-			brushes.push_back(new Brush(textures.size(), glm::vec2(1.0), 0.01, 4, 16, 8,4, 256, 0.2 , 0.0));
-			textures.push_back(t);
+			loadTexture({{"textures/soft_sand_color.jpg", textureLayers.colorTextures }, {"textures/soft_sand_normal.jpg", textureLayers.normalTextures }, {"textures/soft_sand_bump.jpg", textureLayers.bumpTextures}}, textureLayers.count);
+			brushes.push_back(new Brush(textureLayers.count, glm::vec2(1.0), 0.01, 4, 16, 8,4, 256, 0.2 , 0.0));
+			textureLayers.count++;
 		}
 		{
-			loadTexture({{"textures/forest_color.jpg", colorTextures }, {"textures/forest_normal.jpg", normalTextures }, {"textures/forest_bump.jpg", bumpTextures}}, textures.size());
-			Texture * t = new Texture();
-			brushes.push_back(new Brush(textures.size(), glm::vec2(1.0), 0.01, 4, 16, 8,4, 256, 0.2 , 0.0));
-			textures.push_back(t);
+			loadTexture({{"textures/forest_color.jpg", textureLayers.colorTextures }, {"textures/forest_normal.jpg", textureLayers.normalTextures }, {"textures/forest_bump.jpg", textureLayers.bumpTextures}}, textureLayers.count);
+			brushes.push_back(new Brush(textureLayers.count, glm::vec2(1.0), 0.01, 4, 16, 8,4, 256, 0.2 , 0.0));
+			textureLayers.count++;
 		}
 		{
-			loadTexture({{"textures/vegetation/foliage_color.jpg", colorTextures }, {"textures/vegetation/foliage_normal.jpg", normalTextures }, {"textures/vegetation/foliage_opacity.jpg", bumpTextures}}, textures.size());
-			AtlasTexture * at = new AtlasTexture(0);
+			loadTexture({{"textures/vegetation/foliage_color.jpg", textureLayers.colorTextures }, {"textures/vegetation/foliage_normal.jpg", textureLayers.normalTextures }, {"textures/vegetation/foliage_opacity.jpg", textureLayers.bumpTextures}}, billboardLayers.count);
+			AtlasTexture * at = new AtlasTexture();
 			at->tiles.push_back(Tile(glm::vec2(1.0),glm::vec2(0.0)));
 			at->tiles.push_back(Tile(glm::vec2(0.15, 1.0),glm::vec2(0.0, 0.0)));
 			at->tiles.push_back(Tile(glm::vec2(0.15, 0.5),glm::vec2(0.15, 0.0)));
@@ -343,18 +322,19 @@ public:
 			atlasTextures.push_back(at);
 			//brushes.push_back(new Brush(at, glm::vec2(0.2), 0.02, 8, 32, 16,4, 10.0, 0.5 , 1.33));
 
-			AtlasDrawer * ad = new AtlasDrawer(programAtlas, 256, 256, &atlasTextures);
+			AtlasDrawer * ad = new AtlasDrawer(programAtlas, 1024, 1024, &atlasTextures);
 			std::vector<TileDraw> draws;
 			draws.push_back(TileDraw(0,glm::vec2(1), glm::vec2(0.5), glm::vec2(0.5), 0.5));
 			ad->draw(0, draws);
 
 			atlasDrawers.push_back(ad);
 			billboardBrushes.push_back(new Brush(billboardTextures.size()));
-			billboardTextures.push_back(new Texture(ad->getTexture()));
+			billboardTextures.push_back(ad->getTexture());
+			++billboardLayers.count;
 		}
 		{
-			loadTexture({{"textures/vegetation/grass_color.jpg", colorTextures }, {"textures/vegetation/grass_normal.jpg", normalTextures }, {"textures/vegetation/grass_opacity.jpg", bumpTextures}}, textures.size());
-			AtlasTexture * at = new AtlasTexture(0);
+			loadTexture({{"textures/vegetation/grass_color.jpg", textureLayers.colorTextures }, {"textures/vegetation/grass_normal.jpg", textureLayers.normalTextures }, {"textures/vegetation/grass_opacity.jpg", textureLayers.bumpTextures}}, billboardLayers.count);
+			AtlasTexture * at = new AtlasTexture();
 			at->tiles.push_back(Tile(glm::vec2(1.0),glm::vec2(0.0)));
 			
 			atlasTextures.push_back(at);
@@ -365,40 +345,41 @@ public:
 			ad->draw(1, draws);
 
 			atlasDrawers.push_back(ad);
-			billboardBrushes.push_back(new Brush(billboardTextures.size()));
-			billboardTextures.push_back(new Texture(ad->getTexture()));
+			billboardBrushes.push_back(new Brush(BrushIndex(billboardTextures.size())));
+			billboardTextures.push_back(ad->getTexture());
+			++billboardLayers.count;
 		}
 
 		impostorDrawers.push_back(new ImpostorDrawer(programImpostor, 256, 256));
 		
 		noiseTexture = loadTextureImage("textures/noise.jpg");
 
-		Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, glGetUniformLocation(program3d, "noise"), noiseTexture);
-		activeTexture = Texture::bindTexture(programBillboard, GL_TEXTURE_2D, activeTexture, glGetUniformLocation(programBillboard, "noise"), noiseTexture);
+		Texture::bindTexture(program3d, activeTexture, glGetUniformLocation(program3d, "noise"), noiseTexture);
+		activeTexture = Texture::bindTexture(programBillboard, activeTexture, glGetUniformLocation(programBillboard, "noise"), noiseTexture);
 
-		Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture,  glGetUniformLocation(program3d, "depthTexture"), depthFrameBuffer.depthTexture);
-		activeTexture = Texture::bindTexture(programBillboard, GL_TEXTURE_2D, activeTexture,  glGetUniformLocation(programBillboard, "depthTexture"), depthFrameBuffer.depthTexture);
+		Texture::bindTexture(program3d, activeTexture,  glGetUniformLocation(program3d, "depthTexture"), depthFrameBuffer.depthTexture);
+		activeTexture = Texture::bindTexture(programBillboard, activeTexture,  glGetUniformLocation(programBillboard, "depthTexture"), depthFrameBuffer.depthTexture);
 
-		Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, glGetUniformLocation(program3d, "underTexture"), solidBuffer.colorTexture);
-		activeTexture = Texture::bindTexture(programBillboard, GL_TEXTURE_2D, activeTexture, glGetUniformLocation(programBillboard, "underTexture"), solidBuffer.colorTexture);
+		Texture::bindTexture(program3d, activeTexture, glGetUniformLocation(program3d, "underTexture"), solidBuffer.colorTexture);
+		activeTexture = Texture::bindTexture(programBillboard, activeTexture, glGetUniformLocation(programBillboard, "underTexture"), solidBuffer.colorTexture);
 
 		for(int i=0; i < shadowFrameBuffers.size(); ++i) {
 			std::string shadowMapName = "shadowMap["+ std::to_string(i) +"]";
-			Texture::bindTexture(program3d, GL_TEXTURE_2D, activeTexture, glGetUniformLocation(program3d, shadowMapName.c_str()), shadowFrameBuffers[i].first.depthTexture);
-			activeTexture = Texture::bindTexture(programBillboard, GL_TEXTURE_2D, activeTexture, glGetUniformLocation(programBillboard, shadowMapName.c_str()), shadowFrameBuffers[i].first.depthTexture);
+			Texture::bindTexture(program3d, activeTexture, glGetUniformLocation(program3d, shadowMapName.c_str()), shadowFrameBuffers[i].first.depthTexture);
+			activeTexture = Texture::bindTexture(programBillboard, activeTexture, glGetUniformLocation(programBillboard, shadowMapName.c_str()), shadowFrameBuffers[i].first.depthTexture);
 		}
 		
-		Texture::bindTexture(programImpostor, GL_TEXTURE_2D_ARRAY, activeTexture, "colorTextures", colorBillboards);
-		activeTexture = Texture::bindTexture(programBillboard, GL_TEXTURE_2D_ARRAY, activeTexture, "colorTextures", colorBillboards);
-		activeTexture = Texture::bindTexture(program3d, GL_TEXTURE_2D_ARRAY, activeTexture, "colorTextures", colorTextures);
+		Texture::bindTexture(programImpostor, activeTexture, "colorTextures", billboardLayers.colorTextures);
+		activeTexture = Texture::bindTexture(programBillboard, activeTexture, "colorTextures", billboardLayers.colorTextures);
+		activeTexture = Texture::bindTexture(program3d, activeTexture, "colorTextures", textureLayers.colorTextures);
 
-		Texture::bindTexture(programImpostor, GL_TEXTURE_2D_ARRAY, activeTexture, "normalTextures", normalBillboards);
-		activeTexture = Texture::bindTexture(programBillboard, GL_TEXTURE_2D_ARRAY, activeTexture, "normalTextures", normalBillboards);
-		activeTexture = Texture::bindTexture(program3d, GL_TEXTURE_2D_ARRAY, activeTexture, "normalTextures", normalTextures);
+		Texture::bindTexture(programImpostor, activeTexture, "normalTextures", billboardLayers.normalTextures);
+		activeTexture = Texture::bindTexture(programBillboard, activeTexture, "normalTextures", billboardLayers.normalTextures);
+		activeTexture = Texture::bindTexture(program3d, activeTexture, "normalTextures", textureLayers.normalTextures);
 
-		Texture::bindTexture(programImpostor, GL_TEXTURE_2D_ARRAY, activeTexture, "bumpTextures", bumpBillboards);
-		activeTexture = Texture::bindTexture(programBillboard, GL_TEXTURE_2D_ARRAY, activeTexture, "bumpTextures", bumpBillboards);
-		activeTexture = Texture::bindTexture(program3d, GL_TEXTURE_2D_ARRAY, activeTexture, "bumpTextures", bumpTextures);
+		Texture::bindTexture(programImpostor, activeTexture, "bumpTextures", billboardLayers.bumpTextures);
+		activeTexture = Texture::bindTexture(programBillboard, activeTexture, "bumpTextures", billboardLayers.bumpTextures);
+		activeTexture = Texture::bindTexture(program3d, activeTexture, "bumpTextures", textureLayers.bumpTextures);
 
 		Brush::bindBrushes(program3d,"brushes", "brushTextures", &brushes);
 		Brush::bindBrushes(programBillboard, "brushes", "brushTextures", &billboardBrushes);
@@ -422,16 +403,16 @@ public:
 		glUseProgram(0);
 		//tesselator->normalize();
 		uniformBlockViewer = new UniformBlockViewer(&viewerBlock);
-		atlasPainter = new AtlasPainter(&atlasTextures, &atlasDrawers, programAtlas, programTexture, 256,256);
-		atlasViewer = new AtlasViewer(&atlasTextures, programAtlas, programTexture, 256,256);
-		brushEditor = new BrushEditor(&camera, &brushes, &textures, program3d, programTexture);
+		atlasPainter = new AtlasPainter(&atlasTextures, &atlasDrawers, programAtlas, programTexture, 256,256, billboardLayers);
+		atlasViewer = new AtlasViewer(&atlasTextures, programAtlas, programTexture, 256,256, billboardLayers);
+		brushEditor = new BrushEditor(&camera, &brushes, program3d, programTexture, textureLayers);
 		shadowMapViewer = new ShadowMapViewer(&shadowFrameBuffers, 512, 512);
-		textureMixerEditor = new TextureMixerEditor(&mixers, &textures, programTexture);
-		animatedTextureEditor = new AnimatedTextureEditor(&animatedTextures, &textures, programTexture, 256,256);
+		textureMixerEditor = new TextureMixerEditor(textureMixer, &mixers, programTexture, textureLayers);
+		animatedTextureEditor = new AnimatedTextureEditor(&animatedTextures, programTexture, 256,256, textureLayers);
 		depthBufferViewer = new DepthBufferViewer(programDepth,depthFrameBuffer.depthTexture,512,512);
 		settingsEditor = new SettingsEditor(settings);
-		textureViewer = new TextureViewer(&textures, programTexture);
-		impostorViewer = new ImpostorViewer(&impostorDrawers, programTexture, 256, 256);
+		textureViewer = new TextureViewer(programTexture, textureLayers);
+		impostorViewer = new ImpostorViewer(&impostorDrawers, programTexture, 256, 256, billboardLayers);
 
 		// ImGui
 		IMGUI_CHECKVERSION();
@@ -694,7 +675,7 @@ public:
 			// File Menu
 			if (ImGui::BeginMenu("File")) {
 				if (ImGui::MenuItem("New")) {
-					mainScene->create(textures, brushes);
+					mainScene->create(brushes);
 				}
 				if (ImGui::MenuItem("Open", "Ctrl+O")) {
 					mainScene->load();

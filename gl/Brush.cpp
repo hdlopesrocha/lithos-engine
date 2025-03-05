@@ -1,7 +1,7 @@
 #include "gl.hpp"
 
-Brush::Brush(uint textureIndex){
-    this->textureIndex = textureIndex;
+Brush::Brush(BrushIndex brushIndex){
+    this->brushIndex = brushIndex.bid;
     this->parallaxScale = 0.0;
     this->parallaxMinLayers = 0;
     this->parallaxMaxLayers = 0;
@@ -13,8 +13,8 @@ Brush::Brush(uint textureIndex){
     this->refractiveIndex = 0;
 }
 
-Brush::Brush(uint textureIndex, glm::vec2 textureScale,float parallaxScale, float parallaxMinLayers, float parallaxMaxLayers, float parallaxFade, float parallaxRefine, float shininess, float specularStrength, float refractiveIndex){
-    this->textureIndex = textureIndex;
+Brush::Brush(BrushIndex brushIndex, glm::vec2 textureScale,float parallaxScale, float parallaxMinLayers, float parallaxMaxLayers, float parallaxFade, float parallaxRefine, float shininess, float specularStrength, float refractiveIndex){
+    this->brushIndex = brushIndex.bid;
     this->parallaxScale = parallaxScale;
     this->parallaxMinLayers = parallaxMinLayers;
     this->parallaxMaxLayers = parallaxMaxLayers;
@@ -28,7 +28,7 @@ Brush::Brush(uint textureIndex, glm::vec2 textureScale,float parallaxScale, floa
 
 void Brush::bindBrush(GLuint program, std::string objectName, std::string textureMap, Brush * brush){
 
-    glUniform1ui(glGetUniformLocation(program, (textureMap).c_str()), brush->textureIndex);
+    glUniform1ui(glGetUniformLocation(program, (textureMap).c_str()), brush->brushIndex);
     glUniform1f(glGetUniformLocation(program, (objectName +".parallaxScale").c_str() ), brush->parallaxScale);
     glUniform1f(glGetUniformLocation(program, (objectName +".parallaxMinLayers").c_str()), brush->parallaxMinLayers);
     glUniform1f(glGetUniformLocation(program, (objectName +".parallaxMaxLayers").c_str()), brush->parallaxMaxLayers);

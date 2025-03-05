@@ -1,14 +1,14 @@
 #include "ui.hpp"
 
 
-BrushEditor::BrushEditor(Camera * camera, std::vector<Brush*> * brushes, std::vector<Texture*> * textures, GLuint program, GLuint previewProgram) {
+BrushEditor::BrushEditor(Camera * camera, std::vector<Brush*> * brushes, GLuint program, GLuint previewProgram, TextureLayers layers) {
     this->program = program;
     glUseProgram(program);
     this->data = new ProgramData();
     this->camera = camera;
-    this->textures = textures;
+    this->layers = layers;
     this->brushes = brushes;
-    this->previewer = new TexturePreviewer(previewProgram, 256, 256, {"Color", "Normal", "Bump"});
+    this->previewer = new TexturePreviewer(previewProgram, 256, 256, {{"Color", layers.colorTextures }, {"Normal", layers.normalTextures}, {"Bump", layers.bumpTextures }});
     SphereGeometry sphereGeometry(40,80);
 	this->sphere = new DrawableGeometry(&sphereGeometry);
 
@@ -47,9 +47,8 @@ void BrushEditor::draw2d(){
     ImGui::Begin("Brush Editor", &open, ImGuiWindowFlags_AlwaysAutoResize);
 
     Brush * brush = brushes->at(selectedBrush);
-    Texture * texture = textures->at(brush->textureIndex);
 
-    previewer->draw2d(texture->texture);
+    previewer->draw2d(0);
 
     ImGui::Text("Selected brush: %d", selectedBrush);
     ImGui::SameLine();

@@ -25,6 +25,8 @@ void AtlasDrawer::draw(int atlasIndex,  std::vector<TileDraw> draws){
 }
 
 void AtlasDrawer::draw(){
+    std::cout << "AtlasDrawer::draw" << std::endl;
+
     glUseProgram(program);
 
     glBindFramebuffer(GL_FRAMEBUFFER, renderBuffer.frameBuffer);
@@ -36,6 +38,8 @@ void AtlasDrawer::draw(){
     if(atlasTextures->size() > 0) {
         AtlasTexture * atlas = atlasTextures->at(Math::mod(atlasIndex, atlasTextures->size()));
         glActiveTexture(GL_TEXTURE0); 
+        // TODO
+        /*
         glBindTexture(GL_TEXTURE_2D_ARRAY, atlas->texture);
         glUniform1i(samplerLoc, 0); 
         glUniform1ui(filterLoc, filterEnabled); 
@@ -44,11 +48,7 @@ void AtlasDrawer::draw(){
         for(TileDraw tileDraw : draws) {
             uint tileIndex = Math::mod(tileDraw.index, atlas->tiles.size());
 
-           /* std::cout << tileDraw.index << " -> " <<
-                    "o={"<< tileDraw.offset.x << ":" <<tileDraw.offset.y << 
-                    "},s={" << tileDraw.size.x << ":" << tileDraw.size.y << 
-                    "},p={" << tileDraw.pivot.x << ":" << tileDraw.pivot.y << 
-                    "},a=" << tileDraw.angle << std::endl;    */    
+
             Tile * tile = &atlas->tiles[tileIndex];
 
             glm::mat4 model = glm::mat4(1.0);
@@ -79,6 +79,8 @@ void AtlasDrawer::draw(){
         glActiveTexture(GL_TEXTURE0); 
         glBindTexture(GL_TEXTURE_2D_ARRAY, renderBuffer.colorTexture);
         glGenerateMipmap(GL_TEXTURE_2D_ARRAY);
+*/
+        glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
 
     } else {
         std::cerr << "No textures in AtlasDrawer!" << std::endl;

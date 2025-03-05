@@ -17,6 +17,7 @@ TextureArray AnimatedTexture::getTexture(){
 }
 
 void AnimatedTexture::animate(float time){
+
     glUseProgram(program);
 
     glBindFramebuffer(GL_FRAMEBUFFER, textureMixerBuffer.frameBuffer);
@@ -36,8 +37,9 @@ void AnimatedTexture::animate(float time){
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
     glActiveTexture(GL_TEXTURE0); 
-    glBindTexture(GL_TEXTURE_2D_ARRAY, textureMixerBuffer.colorTexture);
+    glBindTexture(GL_TEXTURE_2D_ARRAY, textureMixerBuffer.colorTexture.index);
     glGenerateMipmap(GL_TEXTURE_2D_ARRAY);
 
+    glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }

@@ -90,8 +90,21 @@ struct ProgramData {
 	void uniform(UniformBlock * block);
 };
 
-typedef GLuint TextureArray;
-typedef GLuint TextureImage;
+struct TextureArray {
+    GLuint index;
+};
+
+struct TextureImage {
+    GLuint idx;
+};
+
+struct BrushIndex {
+    uint bid;
+    BrushIndex(uint bid){
+        this->bid = bid;
+    }
+
+};
 
 struct Camera {
     glm::mat4 projection;
@@ -118,8 +131,16 @@ struct DirectionalLight {
 
 struct RenderBuffer {
     GLuint frameBuffer;
-    GLuint colorTexture;
-    GLuint depthTexture;
+    TextureImage colorTexture;
+    TextureImage depthTexture;
+    int width;
+    int height;
+};
+
+struct MultiLayerRenderBuffer {
+    GLuint frameBuffer;
+    TextureArray colorTexture;
+    TextureImage depthTexture;
     int width;
     int height;
 };
@@ -263,22 +284,16 @@ class InstanceBuilder : public IteratorHandler{
 
 class Texture {
 	public:
-	TextureArray texture;
-
-	Texture();
-	Texture(TextureArray texture);
-
-    static int bindTexture(GLuint program, GLuint type, int activeTexture, std::string objectName, GLuint texture);
-    static int bindTexture(GLuint program, GLuint type, int activeTexture, GLuint location, GLuint texture);
-
-    static int bindTextures(GLuint program, GLuint type,int activeTexture, std::string arrayName, std::vector<Texture*> * ts);
+    static int bindTexture(GLuint program, int activeTexture, GLuint location, TextureImage texture);
+    static int bindTexture(GLuint program, int activeTexture, std::string objectName, TextureImage texture);
+    static int bindTexture(GLuint program, int activeTexture, std::string objectName, TextureArray texture);
 
 };
 
 
+
 class Brush {
     public:
-    uint textureIndex;
     uint brushIndex;
 	float parallaxScale;
 	float parallaxMinLayers;
@@ -291,17 +306,31 @@ class Brush {
 	glm::vec2 textureScale;
 
 
-    Brush(uint textureIndex);
-    Brush(uint textureIndex, glm::vec2 textureScale,float parallaxScale, float parallaxMinLayers, float parallaxMaxLayers, float parallaxFade, float parallaxRefine, float shininess, float specularStrength, float refractiveIndex);
+    Brush(BrushIndex texture);
+    Brush(BrushIndex texture, glm::vec2 textureScale,float parallaxScale, float parallaxMinLayers, float parallaxMaxLayers, float parallaxFade, float parallaxRefine, float shininess, float specularStrength, float refractiveIndex);
 
     static void bindBrushes(GLuint program, std::string objectName, std::string mapName, std::vector<Brush*> * brushes);
     static void bindBrush(GLuint program, std::string objectName, std::string textureMap, Brush * brush);
 
 };
 
+struct TextureLayers {
+    TextureArray colorTextures;
+    TextureArray normalTextures;
+    TextureArray bumpTextures;    
+    int count;
+};
+
 class TextureMixer {
-    RenderBuffer textureMixerBuffer;
-    std::vector<Texture*> * textures;
+    TextureArray colorTextures;
+    TextureArray normalTextures;
+    TextureArray bumpTextures;
+
+    RenderBuffer baseTexture;
+    RenderBuffer overlayTexture;
+
+
+    MultiLayerRenderBuffer textureMixerBuffer;
     GLuint program;
     GLuint previewVao;
 
@@ -316,14 +345,14 @@ class TextureMixer {
     int baseTextureIndex;
     int overlayTextureIndex;
 
-    TextureMixer(int width, int height, GLuint program, std::vector<Texture*> * textures);
+    TextureMixer(int width, int height, GLuint program, TextureLayers layers);
     TextureArray getTexture();
-    void mix(int baseTexture, int overlayTexture);
-    void mix();
+    void mix(int baseTexture, int overlayTexture, int index);
+    void mix(int index);
 };
 
 class AnimatedTexture {
-    RenderBuffer textureMixerBuffer;
+    MultiLayerRenderBuffer textureMixerBuffer;
     GLuint program;
     GLuint previewVao;
 
@@ -381,14 +410,13 @@ class Vegetation3d : public Geometry {
     Vegetation3d();
 };
 
-class AtlasTexture: public Texture {
+class AtlasTexture {
     public:
-    using Texture::Texture;
     std::vector<Tile> tiles;
 };
 
 class AtlasDrawer {
-    RenderBuffer renderBuffer;
+    MultiLayerRenderBuffer renderBuffer;
     GLuint program;
     GLuint viewVao;
     GLuint samplerLoc;
@@ -412,7 +440,7 @@ class AtlasDrawer {
 class ImpostorDrawer {
     GLuint program;
 	DrawableInstanceGeometry * mesh;
-    RenderBuffer renderBuffer;
+    MultiLayerRenderBuffer renderBuffer;
     int width; 
     int height;
 
@@ -421,9 +449,10 @@ class ImpostorDrawer {
     void draw();
     TextureArray getTexture();
 };
-
-GLuint createTextureArray(int width, int height, int layers, GLuint channel); 
-RenderBuffer createMultiLayerRenderFrameBuffer(int width, int height, int layers, bool depth);
+void blitTextureArray(MultiLayerRenderBuffer buffer, TextureArray colorTextures, TextureArray normalTextures, TextureArray bumpTextures, int index);
+void blitRenderBuffer(TextureArray colorTextures, TextureArray normalTextures, TextureArray bumpTextures, RenderBuffer buffer, int index);
+TextureArray createTextureArray(int width, int height, int layers, GLuint channel); 
+MultiLayerRenderBuffer createMultiLayerRenderFrameBuffer(int width, int height, int layers, bool depth);
 RenderBuffer createDepthFrameBuffer(int width, int height);
 RenderBuffer createRenderFrameBuffer(int width, int height);
 RenderBuffer createRenderFrameBufferWithoutDepth(int width, int height);

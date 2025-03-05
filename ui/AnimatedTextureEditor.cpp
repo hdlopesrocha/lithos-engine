@@ -1,11 +1,11 @@
 #include "ui.hpp"
 
 
-AnimatedTextureEditor::AnimatedTextureEditor(std::vector<AnimatedTexture*> * animatedTextures, std::vector<Texture*> * textures, GLuint previewProgram, int width, int height) {
+AnimatedTextureEditor::AnimatedTextureEditor(std::vector<AnimatedTexture*> * animatedTextures, GLuint previewProgram, int width, int height, TextureLayers layers) {
     this->animatedTextures = animatedTextures;
-    this->textures = textures;
+    this->layers = layers;
     this->selectedAnimatedTexture = 0;
-    this->previewer = new TexturePreviewer(previewProgram, width, height, {"Color", "Normal", "Bump"});
+    this->previewer = new TexturePreviewer(previewProgram, width, height, {{"Color", layers.colorTextures }, {"Normal", layers.normalTextures}, {"Bump", layers.bumpTextures }});
 }
 
 void AnimatedTextureEditor::draw2d(){
@@ -14,7 +14,7 @@ void AnimatedTextureEditor::draw2d(){
     AnimatedTexture * animatedTexture = animatedTextures->at(selectedAnimatedTexture);
 
 
-    previewer->draw2d(animatedTexture->getTexture());
+    previewer->draw2d(0);
 
 
     ImGui::Text("Animated Texture: ");
