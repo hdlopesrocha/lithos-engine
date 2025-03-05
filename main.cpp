@@ -306,7 +306,7 @@ public:
 			textureLayers.count++;
 		}
 		{
-			loadTexture({{"textures/vegetation/foliage_color.jpg", textureLayers.colorTextures }, {"textures/vegetation/foliage_normal.jpg", textureLayers.normalTextures }, {"textures/vegetation/foliage_opacity.jpg", textureLayers.bumpTextures}}, billboardLayers.count);
+			loadTexture({{"textures/vegetation/foliage_color.jpg", billboardLayers.colorTextures }, {"textures/vegetation/foliage_normal.jpg", billboardLayers.normalTextures }, {"textures/vegetation/foliage_opacity.jpg", billboardLayers.bumpTextures}}, billboardLayers.count);
 			AtlasTexture * at = new AtlasTexture();
 			at->tiles.push_back(Tile(glm::vec2(1.0),glm::vec2(0.0)));
 			at->tiles.push_back(Tile(glm::vec2(0.15, 1.0),glm::vec2(0.0, 0.0)));
@@ -333,7 +333,7 @@ public:
 			++billboardLayers.count;
 		}
 		{
-			loadTexture({{"textures/vegetation/grass_color.jpg", textureLayers.colorTextures }, {"textures/vegetation/grass_normal.jpg", textureLayers.normalTextures }, {"textures/vegetation/grass_opacity.jpg", textureLayers.bumpTextures}}, billboardLayers.count);
+			loadTexture({{"textures/vegetation/grass_color.jpg", billboardLayers.colorTextures }, {"textures/vegetation/grass_normal.jpg", billboardLayers.normalTextures }, {"textures/vegetation/grass_opacity.jpg", billboardLayers.bumpTextures}}, billboardLayers.count);
 			AtlasTexture * at = new AtlasTexture();
 			at->tiles.push_back(Tile(glm::vec2(1.0),glm::vec2(0.0)));
 			
@@ -345,7 +345,7 @@ public:
 			ad->draw(1, draws);
 
 			atlasDrawers.push_back(ad);
-			billboardBrushes.push_back(new Brush(BrushIndex(billboardTextures.size())));
+			billboardBrushes.push_back(new Brush(billboardTextures.size()));
 			billboardTextures.push_back(ad->getTexture());
 			++billboardLayers.count;
 		}

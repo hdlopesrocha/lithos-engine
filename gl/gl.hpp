@@ -98,13 +98,7 @@ struct TextureImage {
     GLuint idx;
 };
 
-struct BrushIndex {
-    uint bid;
-    BrushIndex(uint bid){
-        this->bid = bid;
-    }
 
-};
 
 struct Camera {
     glm::mat4 projection;
@@ -295,6 +289,7 @@ class Texture {
 class Brush {
     public:
     uint brushIndex;
+    uint textureIndex;
 	float parallaxScale;
 	float parallaxMinLayers;
 	float parallaxMaxLayers;
@@ -306,8 +301,8 @@ class Brush {
 	glm::vec2 textureScale;
 
 
-    Brush(BrushIndex texture);
-    Brush(BrushIndex texture, glm::vec2 textureScale,float parallaxScale, float parallaxMinLayers, float parallaxMaxLayers, float parallaxFade, float parallaxRefine, float shininess, float specularStrength, float refractiveIndex);
+    Brush(uint textureIndex);
+    Brush(uint textureIndex, glm::vec2 textureScale,float parallaxScale, float parallaxMinLayers, float parallaxMaxLayers, float parallaxFade, float parallaxRefine, float shininess, float specularStrength, float refractiveIndex);
 
     static void bindBrushes(GLuint program, std::string objectName, std::string mapName, std::vector<Brush*> * brushes);
     static void bindBrush(GLuint program, std::string objectName, std::string textureMap, Brush * brush);
@@ -326,10 +321,8 @@ class TextureMixer {
     TextureArray normalTextures;
     TextureArray bumpTextures;
 
-    RenderBuffer baseTexture;
-    RenderBuffer overlayTexture;
-
-
+    MultiLayerRenderBuffer baseTexture;
+    MultiLayerRenderBuffer overlayTexture;
     MultiLayerRenderBuffer textureMixerBuffer;
     GLuint program;
     GLuint previewVao;
@@ -450,7 +443,10 @@ class ImpostorDrawer {
     TextureArray getTexture();
 };
 void blitTextureArray(MultiLayerRenderBuffer buffer, TextureArray colorTextures, TextureArray normalTextures, TextureArray bumpTextures, int index);
-void blitRenderBuffer(TextureArray colorTextures, TextureArray normalTextures, TextureArray bumpTextures, RenderBuffer buffer, int index);
+void blitRenderBuffer(TextureArray colorTextures, TextureArray normalTextures, TextureArray bumpTextures, RenderBuffer buffer, int sourceIndex, int destinationIndex);
+void blitRenderBuffer(TextureArray colorTextures, TextureArray normalTextures, TextureArray bumpTextures, MultiLayerRenderBuffer buffer, int sourceIndex);
+
+
 TextureArray createTextureArray(int width, int height, int layers, GLuint channel); 
 MultiLayerRenderBuffer createMultiLayerRenderFrameBuffer(int width, int height, int layers, bool depth);
 RenderBuffer createDepthFrameBuffer(int width, int height);

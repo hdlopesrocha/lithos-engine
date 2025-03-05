@@ -3,15 +3,11 @@ out vec4 FragColor;
 
 in vec2 TexCoord;
 
-uniform sampler2DArray textureSampler;
-uniform int textureLayer;
+uniform sampler2DArray sampler[3];
+
+uniform uint layer;
+uniform uint index;
 
 void main() {
-    vec4 color = texture(textureSampler, vec3(TexCoord, textureLayer));
-    if(textureLayer >= 2) {
-        FragColor = vec4(color.r, color.r, color.r, 1.0);
-    }
-    else {
-        FragColor = color;
-    }
+    FragColor = texture(sampler[layer], vec3(TexCoord, index));
 }

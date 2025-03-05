@@ -14,12 +14,6 @@ TexturePreviewer::TexturePreviewer(GLuint previewProgram, int width, int height,
 }
 
 void TexturePreviewer::draw2d(int index){
-     std::cout << "TexturePreviewer::draw2d" << std::endl;
-    
-    std::pair<std::string, TextureArray> layer = layers[selectedLayer];
-
-
-
     glUseProgram(previewProgram);
     glBindFramebuffer(GL_FRAMEBUFFER, previewBuffer.frameBuffer);
     glViewport(0, 0, previewBuffer.width, previewBuffer.height); 
@@ -28,13 +22,16 @@ void TexturePreviewer::draw2d(int index){
     glDisable(GL_CULL_FACE);
     glDisable(GL_DEPTH_TEST);
     
-    // TODO
-    //glActiveTexture(GL_TEXTURE0); 
-    //glBindTexture(GL_TEXTURE_2D_ARRAY, layers[selectedLayer].second);
-    //glUniform1i(glGetUniformLocation(previewProgram, "textureSampler"), 0); 
-    //glUniform1i(glGetUniformLocation(previewProgram, "textureLayer"), index); 
-    //glBindVertexArray(previewVao);
-    //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    for(int i = 0; i < layers.size() ; ++i) {
+        glActiveTexture(GL_TEXTURE0+ i); 
+        glBindTexture(GL_TEXTURE_2D_ARRAY, layers[i].second.index);
+        glUniform1i(glGetUniformLocation(previewProgram, ("sampler[" + std::to_string(i) + "]").c_str()), i);
+    }
+
+    glUniform1ui(glGetUniformLocation(previewProgram, "layer"), selectedLayer); 
+    glUniform1ui(glGetUniformLocation(previewProgram, "index"), index); 
+    glBindVertexArray(previewVao);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
     glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
 

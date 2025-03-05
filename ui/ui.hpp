@@ -13,6 +13,7 @@ enum BrushMode {
 
 class TexturePreviewer {
     RenderBuffer previewBuffer;
+    RenderBuffer renderBuffer;
     GLuint previewProgram;
     GLuint previewVao;
     std::vector<std::pair<std::string, TextureArray>> layers;
@@ -120,7 +121,6 @@ class BrushEditor: public Closable {
     TexturePreviewer * previewer;
     BrushMode mode;
   	int selectedBrush = 0;
-    Brush * brush;
     glm::vec3 brushPosition;
     float brushRadius;
 

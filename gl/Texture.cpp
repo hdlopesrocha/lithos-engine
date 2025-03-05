@@ -3,7 +3,6 @@
 // type = GL_TEXTURE_2D_ARRAY || GL_TEXTURE_2D
 
 int bindTextureInternal(GLuint program, GLuint type, int activeTexture, GLuint location, GLuint texture) {
-    std::cout << "Texture::bindTexture" << std::endl;
     glUseProgram(program);
 
     glActiveTexture(GL_TEXTURE0 + activeTexture); 
@@ -14,7 +13,6 @@ int bindTextureInternal(GLuint program, GLuint type, int activeTexture, GLuint l
 }
 
 int bindTextureInternal(GLuint program, GLuint type, int activeTexture, std::string objectName, GLuint texture) {
-    std::cout << "Texture::bindTexture" << std::endl;
     glUseProgram(program);
 
     glActiveTexture(GL_TEXTURE0 + activeTexture); 

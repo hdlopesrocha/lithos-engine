@@ -113,7 +113,6 @@ void LithosApplication::mainLoop() {
 
 
 RenderBuffer createRenderFrameBufferWithoutDepth(int width, int height) {
-    std::cout << "createRenderFrameBufferWithoutDepth" << std::endl;
     RenderBuffer buffer;
     buffer.width = width;
     buffer.height = height;
@@ -141,8 +140,6 @@ RenderBuffer createRenderFrameBufferWithoutDepth(int width, int height) {
 }
 
 RenderBuffer createRenderFrameBuffer(int width, int height) {
-    std::cout << "createRenderFrameBuffer" << std::endl;
-
     RenderBuffer buffer;
     buffer.width = width;
     buffer.height = height;
@@ -207,8 +204,6 @@ void LithosApplication::close() {
 static long allocatedTextureArrayMemory = 0;
 
 TextureArray createTextureArray(int width, int height, int layers, GLuint channel) {
-    std::cout <<  "createTextureArray = " << std::to_string(width) << "|"<< std::to_string(height) << "|"<< std::to_string(layers) << "|"<< std::to_string(channel) << std::endl;
-
     TextureArray texArray;
     glGenTextures(1, &texArray.index);
     glBindTexture(GL_TEXTURE_2D_ARRAY, texArray.index);
@@ -537,19 +532,36 @@ GLuint LithosApplication::createShaderProgram(std::initializer_list<GLuint> shad
 }
 
 
-void blitRenderBuffer(TextureArray colorTextures, TextureArray normalTextures, TextureArray bumpTextures, RenderBuffer buffer, int index) {
-    // Copy from texture array layers to framebuffer layers
+void blitRenderBuffer(TextureArray colorTextures, TextureArray normalTextures, TextureArray bumpTextures, MultiLayerRenderBuffer buffer, int sourceIndex) {
     glBindFramebuffer(GL_FRAMEBUFFER, buffer.frameBuffer);
 
-    // Copy color layer from texArrayColor to framebuffer layer 0
-    glCopyImageSubData(colorTextures.index, GL_TEXTURE_2D_ARRAY, 0, 0, 0, index, buffer.colorTexture.idx, GL_TEXTURE_2D_ARRAY, 0, 0, 0, 0, buffer.width, buffer.height, 1);
+    glCopyImageSubData(colorTextures.index, GL_TEXTURE_2D_ARRAY, 0, 0, 0, sourceIndex, buffer.colorTexture.index, GL_TEXTURE_2D_ARRAY, 0, 0, 0, 0, buffer.width, buffer.height, 1);
+    glCopyImageSubData(normalTextures.index, GL_TEXTURE_2D_ARRAY, 0, 0, 0, sourceIndex, buffer.colorTexture.index, GL_TEXTURE_2D_ARRAY, 0, 0, 0, 1, buffer.width, buffer.height, 1);
+    glCopyImageSubData(bumpTextures.index, GL_TEXTURE_2D_ARRAY, 0, 0, 0, sourceIndex, buffer.colorTexture.index, GL_TEXTURE_2D_ARRAY, 0, 0, 0, 2, buffer.width, buffer.height, 1);
+    
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
 
-    // Copy normal layer from texArrayNormal to framebuffer layer 1
-    glCopyImageSubData(normalTextures.index, GL_TEXTURE_2D_ARRAY, 0, 0, 0, index, buffer.colorTexture.idx, GL_TEXTURE_2D_ARRAY, 0, 0, 0, 1, buffer.width, buffer.height, 1);
 
-    // Copy bump layer from texArrayBump to framebuffer layer 2
-    glCopyImageSubData(bumpTextures.index, GL_TEXTURE_2D_ARRAY, 0, 0, 0, index, buffer.colorTexture.idx, GL_TEXTURE_2D_ARRAY, 0, 0, 0, 2, buffer.width, buffer.height, 1);
+void blitRenderBuffer(TextureArray colorTextures, TextureArray normalTextures, TextureArray bumpTextures, RenderBuffer buffer, int sourceIndex, int destinationIndex) {
+    glBindFramebuffer(GL_FRAMEBUFFER, buffer.frameBuffer);
 
+    switch (destinationIndex)
+    {
+    case 0:
+        glCopyImageSubData(colorTextures.index, GL_TEXTURE_2D_ARRAY, 0, 0, 0, sourceIndex, buffer.colorTexture.idx, GL_TEXTURE_2D, 0, 0, 0, 0, buffer.width, buffer.height, 1);
+        break;
+    case 1:
+        glCopyImageSubData(normalTextures.index, GL_TEXTURE_2D_ARRAY, 0, 0, 0, sourceIndex, buffer.colorTexture.idx, GL_TEXTURE_2D, 0, 0, 0, 0, buffer.width, buffer.height, 1);
+        break;
+    case 2:
+        glCopyImageSubData(bumpTextures.index, GL_TEXTURE_2D_ARRAY, 0, 0, 0, sourceIndex, buffer.colorTexture.idx, GL_TEXTURE_2D, 0, 0, 0, 0, buffer.width, buffer.height, 1);
+        break;
+    
+    default:
+        break;
+    }
+ 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 }

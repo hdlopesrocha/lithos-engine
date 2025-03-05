@@ -8,7 +8,11 @@ BrushEditor::BrushEditor(Camera * camera, std::vector<Brush*> * brushes, GLuint 
     this->camera = camera;
     this->layers = layers;
     this->brushes = brushes;
-    this->previewer = new TexturePreviewer(previewProgram, 256, 256, {{"Color", layers.colorTextures }, {"Normal", layers.normalTextures}, {"Bump", layers.bumpTextures }});
+    this->previewer = new TexturePreviewer(previewProgram, 256, 256, {
+        {"Color", layers.colorTextures }, 
+        {"Normal", layers.normalTextures},
+        {"Bump", layers.bumpTextures }
+    });
     SphereGeometry sphereGeometry(40,80);
 	this->sphere = new DrawableGeometry(&sphereGeometry);
 
@@ -18,7 +22,6 @@ BrushEditor::BrushEditor(Camera * camera, std::vector<Brush*> * brushes, GLuint 
 
     this->mode = BrushMode::ADD;
     this->selectedBrush = 0;
-    this->brush = brushes->at(this->selectedBrush);
 }
 
 
@@ -46,21 +49,20 @@ const char* toString(BrushMode v)
 void BrushEditor::draw2d(){
     ImGui::Begin("Brush Editor", &open, ImGuiWindowFlags_AlwaysAutoResize);
 
+    selectedBrush = Math::mod(selectedBrush, brushes->size());
     Brush * brush = brushes->at(selectedBrush);
 
-    previewer->draw2d(0);
+    previewer->draw2d(selectedBrush);
 
     ImGui::Text("Selected brush: %d", selectedBrush);
     ImGui::SameLine();
 
     if (ImGui::ArrowButton("##arrow_left", ImGuiDir_Left)) {
-        selectedBrush = Math::mod(selectedBrush - 1, brushes->size());
-        this->brush = brushes->at(this->selectedBrush);
+        --selectedBrush;
     }
     ImGui::SameLine();
     if (ImGui::ArrowButton("##arrow_right", ImGuiDir_Right)) {
-        selectedBrush = Math::mod(selectedBrush + 1, brushes->size());
-        this->brush = brushes->at(this->selectedBrush);
+        ++selectedBrush;
     }
 
 
@@ -118,6 +120,9 @@ void BrushEditor::draw2d(){
     ImGui::End();
 }
 void BrushEditor::draw3d(UniformBlock * block){
+     selectedBrush = Math::mod(selectedBrush, brushes->size());
+    Brush * brush = brushes->at(selectedBrush);
+
     Brush::bindBrush(program, "brushes[" + std::to_string(selectedBrush) + "]" , "brushTextures["+std::to_string(selectedBrush) + "]", brush);
 
     glm::mat4 model = glm::scale(
