@@ -9,7 +9,6 @@ int bindTextureInternal(GLuint program, GLuint type, int activeTexture, GLuint l
     glBindTexture(type, texture);    // Bind the texture to the active unit
     glUniform1i(location, activeTexture++);
 
-    glBindTexture(type, 0);
     return activeTexture;
 }
 
@@ -20,7 +19,6 @@ int bindTextureInternal(GLuint program, GLuint type, int activeTexture, std::str
     glBindTexture(type, texture);    // Bind the texture to the active unit
     glUniform1i(glGetUniformLocation(program, objectName.c_str()), activeTexture++);
 
-    glBindTexture(type, 0);
     return activeTexture;
 }
 
