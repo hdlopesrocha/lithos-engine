@@ -2,7 +2,7 @@
 
 
 ImpostorViewer::ImpostorViewer(std::vector<ImpostorDrawer*> * impostorDrawers, GLuint previewProgram, int width, int height) {
-    this->impostorDrawers= impostorDrawers;
+    this->impostorDrawers = impostorDrawers;
     this->previewer = new TexturePreviewer(previewProgram, width, height, {"Color", "Normal", "Opacity"});
     this->selectedDrawer = 0;
 }

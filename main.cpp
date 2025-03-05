@@ -370,7 +370,7 @@ public:
 		Brush::bindBrushes(programImpostor, "brushes", "brushTextures", &billboardBrushes);
 
 		for(ImpostorDrawer * drawer : impostorDrawers) {
-			drawer->draw();
+		//	drawer->draw();
 		}
 
 		mainScene = new Scene();
@@ -384,7 +384,7 @@ public:
 		* glm::angleAxis(glm::radians(135.0f), glm::vec3(0, 1, 0));  
 		camera.position = glm::vec3(48,48,48);
         light.direction = glm::normalize(glm::vec3(-1.0,-1.0,-1.0));
-
+		glUseProgram(0);
 		//tesselator->normalize();
 		uniformBlockViewer = new UniformBlockViewer(&viewerBlock);
 		atlasPainter = new AtlasPainter(&atlasTextures, &atlasDrawers, programAtlas, programTexture, 256,256);

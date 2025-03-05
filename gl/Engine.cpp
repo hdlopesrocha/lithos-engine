@@ -157,16 +157,14 @@ RenderBuffer createRenderFrameBuffer(int width, int height) {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 
-// Set the border color (default is black, but you can change it)
-GLfloat borderColor[] = { 0.0f, 0.0f, 0.0f, 1.0f }; // White border
-glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+    // Set the border color (default is black, but you can change it)
+    GLfloat borderColor[] = { 0.0f, 0.0f, 0.0f, 1.0f }; // White border
+    glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
 
     glGenFramebuffers(1, &buffer.frameBuffer);
     glBindFramebuffer(GL_FRAMEBUFFER, buffer.frameBuffer);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, buffer.colorTexture, 0);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, buffer.depthTexture, 0);
-
-
 
 
     GLenum drawBuffers[1] = {GL_COLOR_ATTACHMENT0 };
@@ -211,10 +209,11 @@ GLuint createTextureArray(int width, int height, int layers) {
 
 
     int mipLevels = 1 + floor(log2(glm::max(width, height)));
-    glTexStorage3D(GL_TEXTURE_2D_ARRAY, mipLevels, GL_RGBA8, width, height, layers);
+    glTexStorage3D(GL_TEXTURE_2D_ARRAY, mipLevels, GL_RGB8, width, height, layers);
     GLenum err = glGetError();
     if (err != GL_NO_ERROR) {
         std::cerr << "glTexStorage3D error: " << err << std::endl;
+        throw std::runtime_error("OpenGL error in glTexStorage3D");
     }
 
    // glGenerateMipmap(GL_TEXTURE_2D_ARRAY);
