@@ -9,9 +9,9 @@ BrushEditor::BrushEditor(Camera * camera, std::vector<Brush*> * brushes, GLuint 
     this->layers = layers;
     this->brushes = brushes;
     this->previewer = new TexturePreviewer(previewProgram, 256, 256, {
-        {"Color", layers.colorTextures }, 
-        {"Normal", layers.normalTextures},
-        {"Bump", layers.bumpTextures }
+        {"Color", layers.textures[0] }, 
+        {"Normal", layers.textures[1]},
+        {"Bump", layers.textures[2] }
     });
     SphereGeometry sphereGeometry(40,80);
 	this->sphere = new DrawableGeometry(&sphereGeometry);

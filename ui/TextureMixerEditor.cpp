@@ -1,11 +1,11 @@
 #include "ui.hpp"
 
 
-TextureMixerEditor::TextureMixerEditor(TextureMixer * mixer, std::vector<int> * mixers, GLuint previewProgram, TextureLayers layers) {
+TextureMixerEditor::TextureMixerEditor(TextureMixer * mixer, std::vector<MixerParams> * mixers, GLuint previewProgram, TextureLayers layers) {
     this->mixers = mixers;
     this->mixer = mixer;
     this->layers = layers;
-    this->previewer = new TexturePreviewer(previewProgram, 512, 512, {{"Color", layers.colorTextures }, {"Normal", layers.normalTextures}, {"Bump", layers.bumpTextures }});
+    this->previewer = new TexturePreviewer(previewProgram, 512, 512, {{"Color", layers.textures[0] }, {"Normal", layers.textures[1]}, {"Bump", layers.textures[2] }});
     this->selectedMixer = 0;
 }
 
@@ -13,11 +13,11 @@ TextureMixerEditor::TextureMixerEditor(TextureMixer * mixer, std::vector<int> * 
 void TextureMixerEditor::draw2d(){
     ImGui::Begin("Texture Mixer", &open, ImGuiWindowFlags_AlwaysAutoResize);
 
+    selectedMixer = Math::mod(selectedMixer, mixers->size());
 
-    int mixerIndex = mixers->at(Math::mod(selectedMixer, mixers->size()));
-    mixer->mix(mixerIndex);
-
-    previewer->draw2d(0);
+    MixerParams * params = &(*mixers)[selectedMixer];
+    mixer->mix(*params);
+    previewer->draw2d(params->targetTexture);
 
     ImGui::Text("Mixer: ");
     ImGui::SameLine();
@@ -29,53 +29,51 @@ void TextureMixerEditor::draw2d(){
         ++selectedMixer;
     }
 
-
-
     ImGui::Text("Base texture: ");
     ImGui::SameLine();
 
     if (ImGui::ArrowButton("##base_arrow_left", ImGuiDir_Left)) {
-        --mixer->baseTextureIndex;
+        --params->baseTexture;
     }
     ImGui::SameLine();
     if (ImGui::ArrowButton("##base_arrow_right", ImGuiDir_Right)) {
-        ++mixer->baseTextureIndex;
+        ++params->baseTexture;
     }
 
     ImGui::Text("Overlay texture: ");
     ImGui::SameLine();
 
     if (ImGui::ArrowButton("##overlay_arrow_left", ImGuiDir_Left)) {
-        --mixer->overlayTextureIndex;
+        --params->overlayTexture;
     }
     ImGui::SameLine();
     if (ImGui::ArrowButton("##overlay_arrow_right", ImGuiDir_Right)) {
-        ++mixer->overlayTextureIndex;
+        ++params->overlayTexture;
     }
+
+    params->baseTexture = Math::mod(params->baseTexture, layers.count);
+    params->overlayTexture = Math::mod(params->overlayTexture, layers.count);
 
 float step = 0.1f;
 float stepFast = 1.0f; // Faster step when holding Shift
 
     ImGui::Text("Perlin scale: ");
-    ImGui::InputInt("\%##perlinScale", &mixer->perlinScale);
+    ImGui::InputInt("\%##perlinScale", &params->perlinScale);
 
     ImGui::Text("Perlin time: ");
-    ImGui::InputFloat("s##perlinTime", &mixer->perlinTime, step, stepFast, "%.10f");
+    ImGui::InputFloat("s##perlinTime", &params->perlinTime, step, stepFast, "%.10f");
 
     ImGui::Text("Perlin iterations: ");
-    ImGui::InputInt("###perlinIterations", &mixer->perlinIterations);
+    ImGui::InputInt("###perlinIterations", &params->perlinIterations);
 
     ImGui::Text("Perlin lacunarity: ");
-    ImGui::InputInt("###lacunarity", &mixer->perlinLacunarity);
-
+    ImGui::InputInt("###lacunarity", &params->perlinLacunarity);
 
     ImGui::Text("Brightness: ");
-    ImGui::InputFloat("##brightness", &mixer->brightness, step, stepFast, "%.2f");
+    ImGui::InputFloat("##brightness", &params->brightness, step, stepFast, "%.2f");
 
     ImGui::Text("Contrast: ");
-    ImGui::InputFloat("##contrast", &mixer->contrast, step, stepFast, "%.2f");
-
-
+    ImGui::InputFloat("##contrast", &params->contrast, step, stepFast, "%.2f");
 
 	ImGui::End();
 }

@@ -5,7 +5,7 @@ AnimatedTextureEditor::AnimatedTextureEditor(std::vector<AnimatedTexture*> * ani
     this->animatedTextures = animatedTextures;
     this->layers = layers;
     this->selectedAnimatedTexture = 0;
-    this->previewer = new TexturePreviewer(previewProgram, width, height, {{"Color", layers.colorTextures }, {"Normal", layers.normalTextures}, {"Bump", layers.bumpTextures }});
+    this->previewer = new TexturePreviewer(previewProgram, width, height, {{"Color", layers.textures[0] }, {"Normal", layers.textures[1]}, {"Bump", layers.textures[2] }});
 }
 
 void AnimatedTextureEditor::draw2d(){

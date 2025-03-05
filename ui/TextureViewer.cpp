@@ -3,7 +3,7 @@
 
 TextureViewer::TextureViewer(GLuint previewProgram, TextureLayers layers) {
     this->layers = layers;
-    this->previewer = new TexturePreviewer(previewProgram, 256, 256, {{"Color", layers.colorTextures }, {"Normal", layers.normalTextures}, {"Bump", layers.bumpTextures }});
+    this->previewer = new TexturePreviewer(previewProgram, 256, 256, {{"Color", layers.textures[0] }, {"Normal", layers.textures[1]}, {"Bump", layers.textures[2] }});
     this->selectedTexture = 0;
 }
 

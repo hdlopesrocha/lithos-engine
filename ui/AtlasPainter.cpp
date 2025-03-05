@@ -5,7 +5,7 @@ AtlasPainter::AtlasPainter(std::vector<AtlasTexture*> * atlasTextures, std::vect
     this->atlasTextures = atlasTextures;
     this->atlasDrawers = atlasDrawers;
     this->layers = layers;
-    this->previewer = new TexturePreviewer(previewProgram, width, height, {{"Color", layers.colorTextures }, {"Normal", layers.normalTextures}, {"Opacity", layers.bumpTextures }});
+    this->previewer = new TexturePreviewer(previewProgram, width, height, {{"Color", layers.textures[0] }, {"Normal", layers.textures[1]}, {"Opacity", layers.textures[2] }});
     this->selectedDrawer = 0;
     this->selectedDraw = 0;
 }

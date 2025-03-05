@@ -70,7 +70,7 @@ class MainApplication : public LithosApplication {
 	std::vector<Brush*> billboardBrushes;
 	std::vector<AtlasTexture*> atlasTextures;
 	std::vector<AtlasDrawer*> atlasDrawers;
-	std::vector<int> mixers;
+	std::vector<MixerParams> mixers;
 	std::vector<AnimatedTexture*> animatedTextures;
 	std::vector<ImpostorDrawer*> impostorDrawers;
 
@@ -137,14 +137,14 @@ public:
 	}
 
     virtual void setup() {
-		textureLayers.colorTextures = createTextureArray(1024, 1024, 25, GL_RGBA8);
-		textureLayers.normalTextures = createTextureArray(1024, 1024, 25, GL_RGBA8);
-		textureLayers.bumpTextures = createTextureArray(1024, 1024, 25, GL_RGBA8);
+		textureLayers.textures[0] = createTextureArray(1024, 1024, 25, GL_RGBA8);
+		textureLayers.textures[1] = createTextureArray(1024, 1024, 25, GL_RGBA8);
+		textureLayers.textures[2] = createTextureArray(1024, 1024, 25, GL_RGBA8);
 		textureLayers.count = 0;
 
-		billboardLayers.colorTextures = createTextureArray(1024, 1024, 5, GL_RGBA8);
-		billboardLayers.normalTextures = createTextureArray(1024, 1024, 5, GL_RGBA8);
-		billboardLayers.bumpTextures = createTextureArray(1024, 1024, 5, GL_RGBA8);
+		billboardLayers.textures[0] = createTextureArray(1024, 1024, 5, GL_RGBA8);
+		billboardLayers.textures[1] = createTextureArray(1024, 1024, 5, GL_RGBA8);
+		billboardLayers.textures[2] = createTextureArray(1024, 1024, 5, GL_RGBA8);
 		billboardLayers.count = 0;
 
 		std::vector<GlslInclude> includes;
@@ -226,87 +226,82 @@ public:
 			textureLayers.count++;
 		}
 		{
-			loadTexture({{"textures/lava_color.jpg", textureLayers.colorTextures }, {"textures/lava_normal.jpg", textureLayers.normalTextures }, {"textures/lava_bump.jpg", textureLayers.bumpTextures}}, textureLayers.count);
+			loadTexture({{"textures/lava_color.jpg", textureLayers.textures[0] }, {"textures/lava_normal.jpg", textureLayers.textures[1] }, {"textures/lava_bump.jpg", textureLayers.textures[2]}}, textureLayers.count);
 			brushes.push_back(new Brush(textureLayers.count, glm::vec2(1.0), 0.1, 8, 32, 16,4 ,256, 0.4, 0.0));
 			textureLayers.count++;
 		}
 		{
-			loadTexture({{"textures/grass_color.jpg", textureLayers.colorTextures }, {"textures/grass_normal.jpg", textureLayers.normalTextures }, {"textures/grass_bump.jpg", textureLayers.bumpTextures}}, textureLayers.count);
+			loadTexture({{"textures/grass_color.jpg", textureLayers.textures[0] }, {"textures/grass_normal.jpg", textureLayers.textures[1] }, {"textures/grass_bump.jpg", textureLayers.textures[2]}}, textureLayers.count);
 			brushes.push_back(new Brush(textureLayers.count, glm::vec2(1.0), 0.01, 2, 8, 8,4 ,32, 0.03, 0.0));
 			textureLayers.count++;
         }
 		{
-			loadTexture({{"textures/sand_color.jpg", textureLayers.colorTextures }, {"textures/sand_normal.jpg", textureLayers.normalTextures }, {"textures/sand_bump.jpg", textureLayers.bumpTextures}}, textureLayers.count);
+			loadTexture({{"textures/sand_color.jpg", textureLayers.textures[0] }, {"textures/sand_normal.jpg", textureLayers.textures[1] }, {"textures/sand_bump.jpg", textureLayers.textures[2]}}, textureLayers.count);
 			brushes.push_back(new Brush(textureLayers.count, glm::vec2(1.0), 0.05, 8, 32, 16,4 ,32,0.02, 0.0));
 			textureLayers.count++;
         }
 		{
-			loadTexture({{"textures/rock_color.jpg", textureLayers.colorTextures }, {"textures/rock_normal.jpg", textureLayers.normalTextures }, {"textures/rock_bump.jpg", textureLayers.bumpTextures}}, textureLayers.count);
+			loadTexture({{"textures/rock_color.jpg", textureLayers.textures[0] }, {"textures/rock_normal.jpg", textureLayers.textures[1] }, {"textures/rock_bump.jpg", textureLayers.textures[2]}}, textureLayers.count);
 			brushes.push_back(new Brush(textureLayers.count, glm::vec2(1.0), 0.1, 8, 32, 16,4,128, 0.4, 0.0));
 			textureLayers.count++;
         }
 		{
-			loadTexture({{"textures/snow_color.jpg", textureLayers.colorTextures }, {"textures/snow_normal.jpg", textureLayers.normalTextures }, {"textures/snow_bump.jpg", textureLayers.bumpTextures}}, textureLayers.count);
+			loadTexture({{"textures/snow_color.jpg", textureLayers.textures[0] }, {"textures/snow_normal.jpg", textureLayers.textures[1] }, {"textures/snow_bump.jpg", textureLayers.textures[2]}}, textureLayers.count);
 			brushes.push_back(new Brush(textureLayers.count, glm::vec2(1.0), 0.1, 8, 32, 16,4, 32 , 0.4, 0.0));
 			textureLayers.count++;
         }
 		{
-			loadTexture({{"textures/metal_color.jpg", textureLayers.colorTextures }, {"textures/metal_normal.jpg", textureLayers.normalTextures }, {"textures/metal_bump.jpg", textureLayers.bumpTextures}}, textureLayers.count);
+			loadTexture({{"textures/metal_color.jpg", textureLayers.textures[0] }, {"textures/metal_normal.jpg", textureLayers.textures[1] }, {"textures/metal_bump.jpg", textureLayers.textures[2]}}, textureLayers.count);
 			brushes.push_back(new Brush(textureLayers.count, glm::vec2(1.0), 0.1, 8, 64, 64,4, 32, 0.6 , 0.0));
 			textureLayers.count++;
         }
 		{
-			loadTexture({{"textures/dirt_color.jpg", textureLayers.colorTextures }, {"textures/dirt_normal.jpg", textureLayers.normalTextures }, {"textures/dirt_bump.jpg", textureLayers.bumpTextures}}, textureLayers.count);
+			loadTexture({{"textures/dirt_color.jpg", textureLayers.textures[0] }, {"textures/dirt_normal.jpg", textureLayers.textures[1] }, {"textures/dirt_bump.jpg", textureLayers.textures[2]}}, textureLayers.count);
 			brushes.push_back(new Brush(textureLayers.count, glm::vec2(1.0), 0.1, 8, 32, 16,4 , 256, 0.02, 0.0));
 			textureLayers.count++;
         }
 		{
-			loadTexture({{"textures/bricks_color.jpg", textureLayers.colorTextures }, {"textures/bricks_normal.jpg", textureLayers.normalTextures }, {"textures/bricks_bump.jpg", textureLayers.bumpTextures}}, textureLayers.count);
+			loadTexture({{"textures/bricks_color.jpg", textureLayers.textures[0] }, {"textures/bricks_normal.jpg", textureLayers.textures[1] }, {"textures/bricks_bump.jpg", textureLayers.textures[2]}}, textureLayers.count);
 			brushes.push_back(new Brush(textureLayers.count, glm::vec2(1.0), 0.01, 8, 32, 16,4, 256, 0.2 , 0.0));
 			textureLayers.count++;
 		}
 		{
-			textureMixer->mix(2, 3, textureLayers.count);
-			mixers.push_back(textureLayers.count);
+			mixers.push_back(MixerParams(textureLayers.count, 2, 3));
 			brushes.push_back(new Brush(textureLayers.count, glm::vec2(1.0), 0.01, 8, 32, 16,4, 256, 0.2 , 0.0));
 			textureLayers.count++;
 		}
 		{
-			textureMixer->mix(2, 5, textureLayers.count);
-			mixers.push_back(textureLayers.count);
+			mixers.push_back(MixerParams(textureLayers.count, 2, 5));
 			brushes.push_back(new Brush(textureLayers.count, glm::vec2(1.0), 0.01, 8, 32, 16,4, 256, 0.2 , 0.0));
 			textureLayers.count++;
 		}
 		{
-			textureMixer->mix(4, 2, textureLayers.count);
-			mixers.push_back(textureLayers.count);
+			mixers.push_back(MixerParams(textureLayers.count, 4, 2));
 			brushes.push_back(new Brush(textureLayers.count, glm::vec2(1.0), 0.01, 8, 32, 16,4, 256, 0.2 , 0.0));
 			textureLayers.count++;
 		}
 		{
-			textureMixer->mix(4, 5, textureLayers.count);
-			mixers.push_back(textureLayers.count);
+			mixers.push_back(MixerParams(textureLayers.count, 4, 5));
 			brushes.push_back(new Brush(textureLayers.count, glm::vec2(1.0), 0.01, 8, 32, 16,4, 256, 0.2 , 0.0));
 			textureLayers.count++;
 		}
 		{
-			textureMixer->mix(4, 3, textureLayers.count);
-			mixers.push_back(textureLayers.count);
+			mixers.push_back(MixerParams(textureLayers.count, 4, 3));
 			brushes.push_back(new Brush(textureLayers.count, glm::vec2(1.0), 0.01, 8, 32, 16,4, 256, 0.2 , 0.0));
 			textureLayers.count++;
 		}
 		{
-			loadTexture({{"textures/soft_sand_color.jpg", textureLayers.colorTextures }, {"textures/soft_sand_normal.jpg", textureLayers.normalTextures }, {"textures/soft_sand_bump.jpg", textureLayers.bumpTextures}}, textureLayers.count);
+			loadTexture({{"textures/soft_sand_color.jpg", textureLayers.textures[0] }, {"textures/soft_sand_normal.jpg", textureLayers.textures[1] }, {"textures/soft_sand_bump.jpg", textureLayers.textures[2]}}, textureLayers.count);
 			brushes.push_back(new Brush(textureLayers.count, glm::vec2(1.0), 0.01, 4, 16, 8,4, 256, 0.2 , 0.0));
 			textureLayers.count++;
 		}
 		{
-			loadTexture({{"textures/forest_color.jpg", textureLayers.colorTextures }, {"textures/forest_normal.jpg", textureLayers.normalTextures }, {"textures/forest_bump.jpg", textureLayers.bumpTextures}}, textureLayers.count);
+			loadTexture({{"textures/forest_color.jpg", textureLayers.textures[0] }, {"textures/forest_normal.jpg", textureLayers.textures[1] }, {"textures/forest_bump.jpg", textureLayers.textures[2]}}, textureLayers.count);
 			brushes.push_back(new Brush(textureLayers.count, glm::vec2(1.0), 0.01, 4, 16, 8,4, 256, 0.2 , 0.0));
 			textureLayers.count++;
 		}
 		{
-			loadTexture({{"textures/vegetation/foliage_color.jpg", billboardLayers.colorTextures }, {"textures/vegetation/foliage_normal.jpg", billboardLayers.normalTextures }, {"textures/vegetation/foliage_opacity.jpg", billboardLayers.bumpTextures}}, billboardLayers.count);
+			loadTexture({{"textures/vegetation/foliage_color.jpg", billboardLayers.textures[0] }, {"textures/vegetation/foliage_normal.jpg", billboardLayers.textures[1] }, {"textures/vegetation/foliage_opacity.jpg", billboardLayers.textures[2]}}, billboardLayers.count);
 			AtlasTexture * at = new AtlasTexture();
 			at->tiles.push_back(Tile(glm::vec2(1.0),glm::vec2(0.0)));
 			at->tiles.push_back(Tile(glm::vec2(0.15, 1.0),glm::vec2(0.0, 0.0)));
@@ -333,7 +328,7 @@ public:
 			++billboardLayers.count;
 		}
 		{
-			loadTexture({{"textures/vegetation/grass_color.jpg", billboardLayers.colorTextures }, {"textures/vegetation/grass_normal.jpg", billboardLayers.normalTextures }, {"textures/vegetation/grass_opacity.jpg", billboardLayers.bumpTextures}}, billboardLayers.count);
+			loadTexture({{"textures/vegetation/grass_color.jpg", billboardLayers.textures[0] }, {"textures/vegetation/grass_normal.jpg", billboardLayers.textures[1] }, {"textures/vegetation/grass_opacity.jpg", billboardLayers.textures[2]}}, billboardLayers.count);
 			AtlasTexture * at = new AtlasTexture();
 			at->tiles.push_back(Tile(glm::vec2(1.0),glm::vec2(0.0)));
 			
@@ -348,6 +343,10 @@ public:
 			billboardBrushes.push_back(new Brush(billboardTextures.size()));
 			billboardTextures.push_back(ad->getTexture());
 			++billboardLayers.count;
+		}
+
+		for(MixerParams mp : mixers) {
+			textureMixer->mix(mp);
 		}
 
 		impostorDrawers.push_back(new ImpostorDrawer(programImpostor, 256, 256));
@@ -369,17 +368,17 @@ public:
 			activeTexture = Texture::bindTexture(programBillboard, activeTexture, glGetUniformLocation(programBillboard, shadowMapName.c_str()), shadowFrameBuffers[i].first.depthTexture);
 		}
 		
-		Texture::bindTexture(programImpostor, activeTexture, "colorTextures", billboardLayers.colorTextures);
-		activeTexture = Texture::bindTexture(programBillboard, activeTexture, "colorTextures", billboardLayers.colorTextures);
-		activeTexture = Texture::bindTexture(program3d, activeTexture, "colorTextures", textureLayers.colorTextures);
+		Texture::bindTexture(programImpostor, activeTexture, "textures[0]", billboardLayers.textures[0]);
+		activeTexture = Texture::bindTexture(programBillboard, activeTexture, "textures[0]", billboardLayers.textures[0]);
+		activeTexture = Texture::bindTexture(program3d, activeTexture, "textures[0]", textureLayers.textures[0]);
 
-		Texture::bindTexture(programImpostor, activeTexture, "normalTextures", billboardLayers.normalTextures);
-		activeTexture = Texture::bindTexture(programBillboard, activeTexture, "normalTextures", billboardLayers.normalTextures);
-		activeTexture = Texture::bindTexture(program3d, activeTexture, "normalTextures", textureLayers.normalTextures);
+		Texture::bindTexture(programImpostor, activeTexture, "textures[1]", billboardLayers.textures[1]);
+		activeTexture = Texture::bindTexture(programBillboard, activeTexture, "textures[1]", billboardLayers.textures[1]);
+		activeTexture = Texture::bindTexture(program3d, activeTexture, "textures[1]", textureLayers.textures[1]);
 
-		Texture::bindTexture(programImpostor, activeTexture, "bumpTextures", billboardLayers.bumpTextures);
-		activeTexture = Texture::bindTexture(programBillboard, activeTexture, "bumpTextures", billboardLayers.bumpTextures);
-		activeTexture = Texture::bindTexture(program3d, activeTexture, "bumpTextures", textureLayers.bumpTextures);
+		Texture::bindTexture(programImpostor, activeTexture, "textures[2]", billboardLayers.textures[2]);
+		activeTexture = Texture::bindTexture(programBillboard, activeTexture, "textures[2]", billboardLayers.textures[2]);
+		activeTexture = Texture::bindTexture(program3d, activeTexture, "textures[2]", textureLayers.textures[2]);
 
 		Brush::bindBrushes(program3d,"brushes", "brushTextures", &brushes);
 		Brush::bindBrushes(programBillboard, "brushes", "brushTextures", &billboardBrushes);

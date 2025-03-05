@@ -5,7 +5,7 @@ ImpostorViewer::ImpostorViewer(std::vector<ImpostorDrawer*> * impostorDrawers, G
     this->impostorDrawers = impostorDrawers;
     std::cout << "TexturePreviewer" << std::endl;
     this->layers = layers;
-    this->previewer = new TexturePreviewer(previewProgram, 256, 256, {{"Color", layers.colorTextures }, {"Normal", layers.normalTextures}, {"Opacity", layers.bumpTextures }});
+    this->previewer = new TexturePreviewer(previewProgram, 256, 256, {{"Color", layers.textures[0] }, {"Normal", layers.textures[1]}, {"Opacity", layers.textures[2] }});
     this->selectedDrawer = 0;
 }
 

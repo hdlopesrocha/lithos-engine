@@ -162,12 +162,13 @@ class DepthBufferViewer : public Closable{
 
 class TextureMixerEditor : public Closable{
     TextureMixer * mixer;
-    std::vector<int> * mixers;
+    std::vector<MixerParams> * mixers;
     TexturePreviewer * previewer;
   	int selectedMixer;
     TextureLayers layers;
+
     public:
-    TextureMixerEditor(TextureMixer * mixer, std::vector<int> * mixers, GLuint previewProgram, TextureLayers layers);
+    TextureMixerEditor(TextureMixer * mixer, std::vector<MixerParams> * mixers, GLuint previewProgram, TextureLayers layers);
     void draw2d();
     void draw3d(UniformBlock * block);
 };

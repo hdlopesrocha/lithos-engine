@@ -310,38 +310,39 @@ class Brush {
 };
 
 struct TextureLayers {
-    TextureArray colorTextures;
-    TextureArray normalTextures;
-    TextureArray bumpTextures;    
+    TextureArray textures[3];
     int count;
 };
 
-class TextureMixer {
-    TextureArray colorTextures;
-    TextureArray normalTextures;
-    TextureArray bumpTextures;
+struct MixerParams {
+    public:
+    int targetTexture = 0;
+    int baseTexture = 0; 
+    int overlayTexture =0;
+    float perlinTime = 0;
+    int perlinScale= 16;
+    int perlinLacunarity= 5;
+    int perlinIterations =2;
+    float brightness = 0;
+    float contrast =10;
+    MixerParams(int targetTexture,int baseTexture, int overlayTexture);
+};
 
-    MultiLayerRenderBuffer baseTexture;
-    MultiLayerRenderBuffer overlayTexture;
+
+class TextureMixer {
+    TextureLayers layers;
+
     MultiLayerRenderBuffer textureMixerBuffer;
     GLuint program;
     GLuint previewVao;
 
     public:
 
-    float perlinTime;
-    int perlinScale;
-    int perlinLacunarity;
-    int perlinIterations;
-    float brightness;
-    float contrast;
-    int baseTextureIndex;
-    int overlayTextureIndex;
+
 
     TextureMixer(int width, int height, GLuint program, TextureLayers layers);
     TextureArray getTexture();
-    void mix(int baseTexture, int overlayTexture, int index);
-    void mix(int index);
+    void mix(MixerParams params);
 };
 
 class AnimatedTexture {
@@ -442,9 +443,9 @@ class ImpostorDrawer {
     void draw();
     TextureArray getTexture();
 };
-void blitTextureArray(MultiLayerRenderBuffer buffer, TextureArray colorTextures, TextureArray normalTextures, TextureArray bumpTextures, int index);
-void blitRenderBuffer(TextureArray colorTextures, TextureArray normalTextures, TextureArray bumpTextures, RenderBuffer buffer, int sourceIndex, int destinationIndex);
-void blitRenderBuffer(TextureArray colorTextures, TextureArray normalTextures, TextureArray bumpTextures, MultiLayerRenderBuffer buffer, int sourceIndex);
+void blitTextureArray(MultiLayerRenderBuffer buffer, TextureLayers layers, int index);
+void blitRenderBuffer(TextureArray textures[0], TextureLayers layers, RenderBuffer buffer, int sourceIndex, int destinationIndex);
+void blitRenderBuffer(TextureArray textures[0], TextureLayers layers, MultiLayerRenderBuffer buffer, int sourceIndex);
 
 
 TextureArray createTextureArray(int width, int height, int layers, GLuint channel); 
