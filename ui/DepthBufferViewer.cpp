@@ -11,8 +11,6 @@ DepthBufferViewer::DepthBufferViewer(GLuint previewProgram, TextureImage depthTe
 }
 
 void DepthBufferViewer::draw2d(){
-    std::cout << "DepthBufferViewer::draw2d" << std::endl;
-
     glBindFramebuffer(GL_FRAMEBUFFER, previewBuffer.frameBuffer);
     glViewport(0, 0, previewBuffer.width, previewBuffer.height); 
 	glClearColor (0.0,0.0,0.0,0.0);    

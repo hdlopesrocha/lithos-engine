@@ -6,9 +6,7 @@ uniform sampler2D shadowMap[SHADOW_MATRIX_COUNT];
 uniform sampler2D noise;
 uniform sampler2D depthTexture;
 uniform sampler2D underTexture;
-uniform sampler2DArray colorTextures;
-uniform sampler2DArray normalTextures;
-uniform sampler2DArray bumpTextures;
+uniform sampler2DArray textures[3];
 
 #include<functions.glsl>
 #include<functions_fragment.glsl>
@@ -43,7 +41,7 @@ void main() {
     }
 
     if(opacityEnabled) {
-        vec4 opacity = textureBlend(bumpTextures, teTextureWeights, teTextureIndices, uv);
+        vec4 opacity = textureBlend(textures[2], teTextureWeights, teTextureIndices, uv);
         if(opacity.r < 0.98) {
             discard;
         }
@@ -73,15 +71,15 @@ void main() {
     vec3 viewDirectionTangent = normalize(transpose(TBN) * viewDirection);
 
     if(parallaxEnabled && distanceFactor * teProps.parallaxScale > 0.0) {
-       uv = parallaxMapping(bumpTextures, teTextureWeights, teTextureIndices, uv, viewDirectionTangent, distanceFactor*teProps.parallaxScale , distanceFactor*teProps.parallaxMinLayers, distanceFactor*teProps.parallaxMaxLayers, int(ceil(distanceFactor*teProps.parallaxRefine)));
+       uv = parallaxMapping(textures[2], teTextureWeights, teTextureIndices, uv, viewDirectionTangent, distanceFactor*teProps.parallaxScale , distanceFactor*teProps.parallaxMinLayers, distanceFactor*teProps.parallaxMaxLayers, int(ceil(distanceFactor*teProps.parallaxRefine)));
     }
   
-    vec4 mixedColor = textureBlend(colorTextures, teTextureWeights, teTextureIndices, uv);
+    vec4 mixedColor = textureBlend(textures[0], teTextureWeights, teTextureIndices, uv);
     if(mixedColor.a == 0.0) {
         discard;
     }
 
-    vec3 normalMap = textureBlend(normalTextures, teTextureWeights, teTextureIndices, uv).rgb * 2.0 - 1.0;
+    vec3 normalMap = textureBlend(textures[1], teTextureWeights, teTextureIndices, uv).rgb * 2.0 - 1.0;
     normalMap = normalize(normalMap); // Convert to range [-1, 1]
     vec3 worldNormal = normalize(TBN * normalMap);
 

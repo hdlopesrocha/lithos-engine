@@ -336,18 +336,15 @@ GLenum channelsToFormat(int channels) {
     return GL_DEPTH_COMPONENT;
 }
 
-void LithosApplication::loadTexture(std::initializer_list<std::pair<std::string, TextureArray>> fns, int index) {
-    std::cout << "loadTexture" << std::endl;
+void loadTexture(TextureLayers layers, std::initializer_list<std::string> fns, int index) {
+    std::vector<std::string> textures;
 
-    std::vector<std::pair<std::string, TextureArray>> textures;
-
-
-    for(std::pair<std::string, TextureArray> t : fns) {
+    for(std::string t : fns) {
         textures.push_back(t);
     }
 
     for(int i = 0; i < textures.size() ; ++i) {
-        std::string filename = textures[i].first;
+        std::string filename = textures[i];
         std::cout << "Loading " << filename << std::endl;
 
         int width, height, channel;
@@ -357,7 +354,7 @@ void LithosApplication::loadTexture(std::initializer_list<std::pair<std::string,
             std::cerr << "Failed to load texture: " << filename << std::endl;
             return;
         }
-        glBindTexture(GL_TEXTURE_2D_ARRAY, textures[i].second.index);
+        glBindTexture(GL_TEXTURE_2D_ARRAY, layers.textures[i].index);
         
         // Upload image data to the specific layer
         glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, index,  width, height, 1, channelsToFormat(channel), GL_UNSIGNED_BYTE, data);

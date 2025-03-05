@@ -161,7 +161,6 @@ public:
     virtual void clean() = 0;
     void run();
     void close();
-    void loadTexture(std::initializer_list<std::pair<std::string, TextureArray>> fns, int index);
     TextureImage loadTextureImage(const std::string& color);
     int getKeyboardStatus(int key);
     int getWidth();
@@ -281,7 +280,7 @@ class Texture {
     static int bindTexture(GLuint program, int activeTexture, GLuint location, TextureImage texture);
     static int bindTexture(GLuint program, int activeTexture, std::string objectName, TextureImage texture);
     static int bindTexture(GLuint program, int activeTexture, std::string objectName, TextureArray texture);
-
+    static int bindTexture(GLuint program, int activeTexture, GLuint location, TextureArray texture);
 };
 
 
@@ -321,8 +320,8 @@ struct MixerParams {
     int overlayTexture =0;
     float perlinTime = 0;
     int perlinScale= 16;
-    int perlinLacunarity= 5;
-    int perlinIterations =2;
+    int perlinLacunarity= 2;
+    int perlinIterations =5;
     float brightness = 0;
     float contrast =10;
     MixerParams(int targetTexture,int baseTexture, int overlayTexture);
@@ -447,7 +446,7 @@ void blitTextureArray(MultiLayerRenderBuffer buffer, TextureLayers layers, int i
 void blitRenderBuffer(TextureArray textures[0], TextureLayers layers, RenderBuffer buffer, int sourceIndex, int destinationIndex);
 void blitRenderBuffer(TextureArray textures[0], TextureLayers layers, MultiLayerRenderBuffer buffer, int sourceIndex);
 
-
+void loadTexture(TextureLayers layers,  std::initializer_list<std::string> fns, int index);
 TextureArray createTextureArray(int width, int height, int layers, GLuint channel); 
 MultiLayerRenderBuffer createMultiLayerRenderFrameBuffer(int width, int height, int layers, bool depth);
 RenderBuffer createDepthFrameBuffer(int width, int height);

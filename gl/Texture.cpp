@@ -9,6 +9,7 @@ int bindTextureInternal(GLuint program, GLuint type, int activeTexture, GLuint l
     glBindTexture(type, texture);    // Bind the texture to the active unit
     glUniform1i(location, activeTexture++);
 
+    glBindTexture(type, 0);
     return activeTexture;
 }
 
@@ -20,12 +21,17 @@ int bindTextureInternal(GLuint program, GLuint type, int activeTexture, std::str
     glUniform1i(glGetUniformLocation(program, objectName.c_str()), activeTexture++);
 
     glBindTexture(type, 0);
-
     return activeTexture;
 }
 
 
+int Texture::bindTexture(GLuint program, int activeTexture, GLuint location, TextureArray texture) {
+    return bindTextureInternal(program, GL_TEXTURE_2D_ARRAY, activeTexture, location, texture.index);
+}
+
+
 int Texture::bindTexture(GLuint program, int activeTexture, std::string objectName, TextureArray texture) {
+    std::cout << "Bind " << objectName << " | " << texture.index << std::endl;
     return bindTextureInternal(program, GL_TEXTURE_2D_ARRAY, activeTexture, objectName, texture.index);
 }
 
