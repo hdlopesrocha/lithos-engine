@@ -146,7 +146,7 @@ public:
     virtual void clean() = 0;
     void run();
     void close();
-    TextureArray loadTextureArray(std::initializer_list<std::string> fns);
+    void loadTexture(std::initializer_list<std::pair<std::string, TextureArray>> fns, int index);
     TextureImage loadTextureImage(const std::string& color);
     int getKeyboardStatus(int key);
     int getWidth();
@@ -422,7 +422,7 @@ class ImpostorDrawer {
     TextureArray getTexture();
 };
 
-GLuint createTextureArray(int width, int height, int layers); 
+GLuint createTextureArray(int width, int height, int layers, GLuint channel); 
 RenderBuffer createMultiLayerRenderFrameBuffer(int width, int height, int layers, bool depth);
 RenderBuffer createDepthFrameBuffer(int width, int height);
 RenderBuffer createRenderFrameBuffer(int width, int height);

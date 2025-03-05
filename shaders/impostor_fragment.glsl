@@ -1,7 +1,11 @@
 #version 460 core
 #include<structs.glsl>
 
-uniform sampler2DArray textures[25];
+
+uniform sampler2DArray colorTextures;
+uniform sampler2DArray normalTextures;
+uniform sampler2DArray bumpTextures;
+
 uniform bool triplanarEnabled;
 uniform bool opacityEnabled;
 uniform bool overrideEnabled;
@@ -30,7 +34,7 @@ void main() {
     }
 
     if(opacityEnabled) {
-        vec4 opacity = textureBlend(textures, gTextureWeights, gTextureIndices, uv, 3);
+        vec4 opacity = textureBlend(bumpTextures, gTextureWeights, gTextureIndices, uv);
         if(opacity.r < 0.98) {
             discard;
         }
@@ -42,12 +46,12 @@ void main() {
 
     mat3 TBN = getTBN(gPosition, correctedNormal, uv, gModel, false);
   
-    vec4 mixedColor = textureBlend(textures, gTextureWeights, gTextureIndices, uv, 0);
+    vec4 mixedColor = textureBlend(colorTextures, gTextureWeights, gTextureIndices, uv);
     if(mixedColor.a == 0.0) {
         discard;
     }
 
-    vec3 normalMap = textureBlend(textures, gTextureWeights, gTextureIndices, uv, 1).rgb * 2.0 - 1.0;
+    vec3 normalMap = textureBlend(normalTextures, gTextureWeights, gTextureIndices, uv).rgb * 2.0 - 1.0;
     normalMap = normalize(normalMap); // Convert to range [-1, 1]
     vec3 worldNormal = normalize(TBN * normalMap);
 

@@ -196,7 +196,7 @@ void LithosApplication::close() {
 	alive = false;
 }
 
-GLuint createTextureArray(int width, int height, int layers) {
+GLuint createTextureArray(int width, int height, int layers, GLuint channel) {
     GLuint texArray;
     glGenTextures(1, &texArray);
     glBindTexture(GL_TEXTURE_2D_ARRAY, texArray);
@@ -209,7 +209,7 @@ GLuint createTextureArray(int width, int height, int layers) {
 
 
     int mipLevels = 1 + floor(log2(glm::max(width, height)));
-    glTexStorage3D(GL_TEXTURE_2D_ARRAY, mipLevels, GL_RGB8, width, height, layers);
+    glTexStorage3D(GL_TEXTURE_2D_ARRAY, mipLevels, channel, width, height, layers);
     GLenum err = glGetError();
     if (err != GL_NO_ERROR) {
         std::cerr << "glTexStorage3D error: " << err << std::endl;
@@ -228,7 +228,7 @@ RenderBuffer createMultiLayerRenderFrameBuffer(int width, int height, int layers
     RenderBuffer buffer;
     buffer.width = width;
     buffer.height = height;
-    buffer.colorTexture = createTextureArray(width, height, layers);
+    buffer.colorTexture = createTextureArray(width, height, layers, GL_RGBA8);
 
     glGenFramebuffers(1, &buffer.frameBuffer);
     GLenum err = glGetError();
@@ -313,68 +313,48 @@ GLenum channelsToFormat(int channels) {
     return GL_DEPTH_COMPONENT;
 }
 
-TextureArray LithosApplication::loadTextureArray(std::initializer_list<std::string> fns) {
+void LithosApplication::loadTexture(std::initializer_list<std::pair<std::string, TextureArray>> fns, int index) {
 
-    // Generate a texture object
-    TextureArray textureArray;
-    glGenTextures(1, &textureArray);
-    glActiveTexture(GL_TEXTURE0); // Activate texture unit 0
-    glBindTexture(GL_TEXTURE_2D_ARRAY, textureArray);
+    std::vector<std::pair<std::string, TextureArray>> textures;
 
-    // Load the image
-    int width, height;
 
-    std::vector<std::string> filenames;
-    std::vector<unsigned char*> datas;
-    std::vector<int> channels;
-
-    for(std::string fn : fns) {
-        filenames.push_back(fn);
-        datas.push_back(NULL);
-        channels.push_back(0);
+    for(std::pair<std::string, TextureArray> t : fns) {
+        textures.push_back(t);
     }
-    
-    for(int i = 0; i < filenames.size() ; ++i) {
-        std::string filename = filenames[i];
 
-        if(filename.size()){
-            std::cout << "Loading " << filename << std::endl;
-            datas[i] = stbi_load(filename.c_str(), &width, &height, &channels[i], 0);
-            if (!datas[i]) {
-                std::cerr << "Failed to load texture: " << filename << std::endl;
-                return textureArray;
-            }
+    for(int i = 0; i < textures.size() ; ++i) {
+        std::string filename = textures[i].first;
+        std::cout << "Loading " << filename << std::endl;
+
+        int width, height, channel;
+        unsigned char* data = stbi_load(filename.c_str(), &width, &height, &channel, 0);
+       
+        if (!data) {
+            std::cerr << "Failed to load texture: " << filename << std::endl;
+            return;
         }
+        glBindTexture(GL_TEXTURE_2D_ARRAY, textures[i].second);
+        
+        // Upload image data to the specific layer
+        glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, index,  width, height, 1, channelsToFormat(channel), GL_UNSIGNED_BYTE, data);
+        stbi_image_free(data);    
+
+
+        // Upload the texture to OpenGL
+        glGenerateMipmap(GL_TEXTURE_2D_ARRAY);
+
+        // Set texture parameters
+        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
     }
-    int mipLevels = 1 + floor(log2(glm::max(width, height)));
-    glTexStorage3D(GL_TEXTURE_2D_ARRAY, mipLevels, GL_RGBA8, width, height, datas.size());
 
-    for(int i = 0; i < datas.size() ; ++i) {
-        if (datas[i]) {
-            glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, i, width, height, 1, channelsToFormat(channels[i]), GL_UNSIGNED_BYTE, datas[i]);
-        }
-    }
-
-    // Upload the texture to OpenGL
-    glGenerateMipmap(GL_TEXTURE_2D_ARRAY);
-
-    // Set texture parameters
-    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     // Free image data and unbind texture
 
-    for(int i = 0; i < datas.size() ; ++i) {
-        if (datas[i]) {
-            stbi_image_free(datas[i]);
-        }
-    }
-
-
     glBindTexture(GL_TEXTURE_2D_ARRAY, 0);    
-	return textureArray;
 }
 
 

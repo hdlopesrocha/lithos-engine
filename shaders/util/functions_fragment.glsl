@@ -25,12 +25,9 @@ mat3 getTBN(vec3 pos, vec3 normal, vec2 uv, mat4 model, bool rotateTBN) {
     return mat3(tangent, bitangent, normal);
 }
 
-
-
-
-vec4 textureBlend(sampler2DArray ts[25], vec3 ws, uvec3 ti, vec2 uv, int index) {
+vec4 textureBlend(sampler2DArray ts, vec3 ws, uvec3 ti, vec2 uv) {
     if(overrideEnabled) {
-        return texture(ts[overrideTexture], vec3(uv, index));
+        return texture(ts, vec3(uv, overrideTexture));
     }
     
     vec4 res = vec4(0.0);
@@ -38,7 +35,7 @@ vec4 textureBlend(sampler2DArray ts[25], vec3 ws, uvec3 ti, vec2 uv, int index) 
         float w = ws[i];
         uint t = ti[i];
         if(w>0.0) {      
-            res += texture(ts[t], vec3(uv, index))*w;
+            res += texture(ts, vec3(uv, t))*w;
         }
 	}
     return res;
