@@ -1,11 +1,11 @@
 #include "ui.hpp"
 
 
-TextureMixerEditor::TextureMixerEditor(TextureMixer * mixer, std::vector<MixerParams> * mixers, GLuint previewProgram, TextureLayers layers) {
+TextureMixerEditor::TextureMixerEditor(TextureMixer * mixer, std::vector<MixerParams> * mixers, GLuint previewProgram, TextureLayers * layers) {
     this->mixers = mixers;
     this->mixer = mixer;
     this->layers = layers;
-    this->previewer = new TexturePreviewer(previewProgram, 512, 512, {{"Color", layers.textures[0] }, {"Normal", layers.textures[1]}, {"Bump", layers.textures[2] }});
+    this->previewer = new TexturePreviewer(previewProgram, 512, 512, {"Color", "Normal", "Bump"}, layers);
     this->selectedMixer = 0;
 }
 
@@ -51,8 +51,8 @@ void TextureMixerEditor::draw2d(){
         ++params->overlayTexture;
     }
 
-    params->baseTexture = Math::mod(params->baseTexture, layers.count);
-    params->overlayTexture = Math::mod(params->overlayTexture, layers.count);
+    params->baseTexture = Math::mod(params->baseTexture, layers->count);
+    params->overlayTexture = Math::mod(params->overlayTexture, layers->count);
 
 float step = 0.1f;
 float stepFast = 1.0f; // Faster step when holding Shift

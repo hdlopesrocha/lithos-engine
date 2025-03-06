@@ -243,12 +243,12 @@ TextureArray createTextureArray(int width, int height, int layers, GLuint channe
     return texArray;
 }
 
-MultiLayerRenderBuffer createMultiLayerRenderFrameBuffer(int width, int height, int layers, bool depth) {
+MultiLayerRenderBuffer createMultiLayerRenderFrameBuffer(int width, int height, int layers, bool depth, GLuint color) {
    
     MultiLayerRenderBuffer buffer;
     buffer.width = width;
     buffer.height = height;
-    buffer.colorTexture = createTextureArray(width, height, layers, GL_RGBA8);
+    buffer.colorTexture = createTextureArray(width, height, layers, color);
 
     glGenFramebuffers(1, &buffer.frameBuffer);
     GLenum err = glGetError();

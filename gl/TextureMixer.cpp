@@ -1,7 +1,7 @@
 #include "gl.hpp"
 
-TextureMixer::TextureMixer(int width, int height, GLuint program, TextureLayers layers) {
-    this->textureMixerBuffer = createMultiLayerRenderFrameBuffer(width,height, 3, false);
+TextureMixer::TextureMixer(int width, int height, GLuint program, TextureLayers * layers) {
+    this->textureMixerBuffer = createMultiLayerRenderFrameBuffer(width,height, 3, false, GL_RGB8);
     this->program = program;
     this->previewVao = DrawableGeometry::create2DVAO(-1,-1, 1,1);
     this->layers = layers; 
@@ -29,7 +29,7 @@ void TextureMixer::mix(MixerParams params){
 
     for(int i = 0; i < 3 ; ++i) {
         glActiveTexture(GL_TEXTURE0+ i); 
-        glBindTexture(GL_TEXTURE_2D_ARRAY, layers.textures[i].index);
+        glBindTexture(GL_TEXTURE_2D_ARRAY, layers->textures[i].index);
         glUniform1i(glGetUniformLocation(program, ("sampler[" + std::to_string(i) + "]").c_str()), i);
     }
 
@@ -45,7 +45,7 @@ void TextureMixer::mix(MixerParams params){
 
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
-    blitTextureArray(textureMixerBuffer, layers, params.targetTexture);
+    blitTextureArray(textureMixerBuffer, *layers, params.targetTexture);
 
 
     glBindTexture(GL_TEXTURE_2D_ARRAY, 0);

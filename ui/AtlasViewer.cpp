@@ -1,15 +1,22 @@
 #include "ui.hpp"
 
 
-AtlasViewer::AtlasViewer(std::vector<AtlasTexture*> * atlasTextures, GLuint programAtlas, GLuint previewProgram, int width, int height, TextureLayers layers) {
+
+
+AtlasViewer::AtlasViewer(std::vector<AtlasTexture*> * atlasTextures, AtlasDrawer * drawer, GLuint programAtlas, GLuint previewProgram, int width, int height, TextureLayers * sourceLayers ) {
+    TextureLayers * targetLayers = new TextureLayers();
+    // TODO: dimenstions must have same dimensions of textures, not needed to preview, we could decrease this
+    targetLayers->textures[0] = createTextureArray(1024, 1024, 1, GL_RGB8);
+    targetLayers->textures[1] = createTextureArray(1024, 1024, 1, GL_RGB8);
+    targetLayers->textures[2] = createTextureArray(1024, 1024, 1, GL_RGB8);
+    targetLayers->count = 1;
+
+    this->drawer = new AtlasDrawer(programAtlas, 1024, 1024, sourceLayers, targetLayers);
     this->atlasTextures = atlasTextures;
-    this->drawer = new AtlasDrawer(programAtlas, width, height, atlasTextures);
-    this->layers = layers;
-    this->previewer = new TexturePreviewer(previewProgram, width, height, {{"Color", layers.textures[0] }, {"Normal", layers.textures[1]}, {"Opacity", layers.textures[2] }});
+    this->previewer = new TexturePreviewer(previewProgram, width, height, {"Color", "Normal", "Opacity" }, targetLayers);
     this->selectedTexture = 0;
     this->selectedTile = 0;
     this->drawer->filterEnabled = false;
-    this->draws.push_back(TileDraw(0, glm::vec2(1.0), glm::vec2(0.0), glm::vec2(0), 0));
 }
 
 
@@ -17,17 +24,20 @@ void AtlasViewer::draw2d(){
     ImGui::Begin("Atlas Viewer", &open, ImGuiWindowFlags_AlwaysAutoResize);
 
     selectedTexture = Math::mod(selectedTexture, atlasTextures->size());
-    AtlasTexture * atlas = atlasTextures->at(selectedTexture);
-    selectedTile =Math::mod(selectedTile, atlas->tiles.size());
+    AtlasTexture * atlasTexture = atlasTextures->at(selectedTexture);
 
-    Tile * tile = &atlas->tiles[selectedTile];
-    TileDraw * tileDraw = &this->draws[0];
-    tileDraw->offset = tile->offset;
-    tileDraw->size = tile->size;
-    tileDraw->index = selectedTile;
+    selectedTile =Math::mod(selectedTile, atlasTexture->tiles.size());
 
-    drawer->draw(selectedTexture, draws);
-    previewer->draw2d(0);
+    Tile * tile =  &(atlasTexture->tiles)[selectedTile];
+
+    int targetTexture = 0; //targetLayers has only one layer where the drawer is drawing the preview
+    // TODO: change TexturePreviewer in order to draw without extra overhead TextureArray
+
+    AtlasParams params(selectedTexture, targetTexture, atlasTexture);
+    params.draws.push_back(TileDraw(selectedTile, tile->size, tile->offset, glm::vec2(0), 0));
+    
+    drawer->draw(params);
+    previewer->draw2d(params.targetTexture);
 
     ImGui::Text("Selected texture: %d/%ld ", selectedTexture, atlasTextures->size());
     ImGui::SameLine();
@@ -39,7 +49,7 @@ void AtlasViewer::draw2d(){
         ++selectedTexture;
     }
 
-    ImGui::Text("Selected tile: %d/%ld ", selectedTile, atlas->tiles.size());
+    ImGui::Text("Selected tile: %d/%ld ", selectedTile, params.atlasTexture->tiles.size());
     ImGui::SameLine();
     if (ImGui::ArrowButton("##selectedTile_left", ImGuiDir_Left)) {
         --selectedTile;

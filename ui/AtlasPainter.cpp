@@ -1,11 +1,11 @@
 #include "ui.hpp"
 
 
-AtlasPainter::AtlasPainter(std::vector<AtlasTexture*> * atlasTextures, std::vector<AtlasDrawer*> * atlasDrawers, GLuint programAtlas, GLuint previewProgram, int width, int height, TextureLayers layers) {
+AtlasPainter::AtlasPainter(std::vector<AtlasParams> * atlasParams, std::vector<AtlasTexture*> * atlasTextures, AtlasDrawer * atlasDrawer, GLuint programAtlas, GLuint previewProgram, int width, int height, TextureLayers * layers) {
+    this->atlasParams = atlasParams;
+    this->atlasDrawer = atlasDrawer;
     this->atlasTextures = atlasTextures;
-    this->atlasDrawers = atlasDrawers;
-    this->layers = layers;
-    this->previewer = new TexturePreviewer(previewProgram, width, height, {{"Color", layers.textures[0] }, {"Normal", layers.textures[1]}, {"Opacity", layers.textures[2] }});
+    this->previewer = new TexturePreviewer(previewProgram, width, height, {"Color", "Normal", "Opacity" }, layers);
     this->selectedDrawer = 0;
     this->selectedDraw = 0;
 }
@@ -15,7 +15,7 @@ void AtlasPainter::draw2d(){
 
     ImGui::Begin("Atlas Painter", &open, ImGuiWindowFlags_AlwaysAutoResize);
 
-    ImGui::Text("Selected drawer: %d/%ld ", selectedDrawer, atlasDrawers->size());
+    ImGui::Text("Selected drawer: %d/%ld ", selectedDrawer, atlasParams->size());
     ImGui::SameLine();
     if (ImGui::ArrowButton("##selectedDrawer_left", ImGuiDir_Left)) {
         --selectedDrawer;
@@ -25,33 +25,36 @@ void AtlasPainter::draw2d(){
         ++selectedDrawer;
     }
 
-    selectedDrawer = Math::mod(selectedDrawer, atlasDrawers->size());
-    AtlasDrawer * drawer = atlasDrawers->at(selectedDrawer);
+    selectedDrawer = Math::mod(selectedDrawer, atlasParams->size());
+    AtlasParams * params = &(*atlasParams)[selectedDrawer];
 
-    drawer->atlasIndex = Math::mod(drawer->atlasIndex, atlasTextures->size());
-    AtlasTexture * atlas = atlasTextures->at(drawer->atlasIndex);
+    params->sourceTexture = Math::mod(params->sourceTexture, atlasParams->size());
+    AtlasTexture * atlas = params->atlasTexture;
 
-    selectedDraw = Math::mod(selectedDraw, drawer->draws.size());
-    TileDraw * tileDraw = &drawer->draws[selectedDraw];
+    selectedDraw = Math::mod(selectedDraw, params->draws.size());
+    TileDraw * tileDraw = &params->draws[selectedDraw];
 
     uint tileIndex = Math::mod(tileDraw->index, atlas->tiles.size());
+    
+
+    
     Tile * tile = &atlas->tiles[tileIndex];
     
-    drawer->draw(drawer->atlasIndex, drawer->draws);
-    previewer->draw2d(0);
+    atlasDrawer->draw(*params);
+    previewer->draw2d(params->targetTexture);
 
-    ImGui::Text("Selected texture: %d/%ld ", drawer->atlasIndex, atlasTextures->size());
+    ImGui::Text("Selected texture: %d/%ld ", params->sourceTexture, atlasParams->size());
     ImGui::SameLine();
     if (ImGui::ArrowButton("##selectedTexture_left", ImGuiDir_Left)) {
-        --drawer->atlasIndex;
+        --params->sourceTexture;
     }
     ImGui::SameLine();
     if (ImGui::ArrowButton("##selectedTexture_right", ImGuiDir_Right)) {
-        ++drawer->atlasIndex;
+        ++params->sourceTexture;
     }
 
 
-    ImGui::Text("Selected draw: %d/%ld ", selectedDraw, drawer->draws.size());
+    ImGui::Text("Selected draw: %d/%ld ", selectedDraw, params->draws.size());
     ImGui::SameLine();
     if (ImGui::ArrowButton("##selectedDraw_left", ImGuiDir_Left)) {
         --selectedDraw;
@@ -62,15 +65,15 @@ void AtlasPainter::draw2d(){
     }
     ImGui::SameLine();
     if (ImGui::Button("-##popDraws")) { 
-        if(drawer->draws.size()> 1) {
-            drawer->draws.pop_back();
+        if(params->draws.size()> 1) {
+            params->draws.pop_back();
         }
     } 
 
     ImGui::SameLine();
     if (ImGui::Button("+##pushDraws")) { 
-        selectedDraw = drawer->draws.size();
-        drawer->draws.push_back(TileDraw(0, glm::vec2(1.0), glm::vec2(0.0),glm::vec2(0.0), 0));
+        selectedDraw = params->draws.size();
+        params->draws.push_back(TileDraw(0, glm::vec2(1.0), glm::vec2(0.0),glm::vec2(0.0), 0));
     }
 
     ImGui::Separator();

@@ -1,11 +1,9 @@
 #include "ui.hpp"
 
 
-ImpostorViewer::ImpostorViewer(std::vector<ImpostorDrawer*> * impostorDrawers, GLuint previewProgram, int width, int height, TextureLayers layers) {
+ImpostorViewer::ImpostorViewer(std::vector<ImpostorDrawer*> * impostorDrawers, GLuint previewProgram, int width, int height, TextureLayers * layers) {
     this->impostorDrawers = impostorDrawers;
-    std::cout << "TexturePreviewer" << std::endl;
-    this->layers = layers;
-    this->previewer = new TexturePreviewer(previewProgram, 256, 256, {{"Color", layers.textures[0] }, {"Normal", layers.textures[1]}, {"Opacity", layers.textures[2] }});
+    this->previewer = new TexturePreviewer(previewProgram, width, height, {"Color", "Normal", "Opacity" }, layers);
     this->selectedDrawer = 0;
 }
 

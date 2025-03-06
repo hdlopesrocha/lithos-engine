@@ -1,18 +1,14 @@
 #include "ui.hpp"
 
 
-BrushEditor::BrushEditor(Camera * camera, std::vector<Brush*> * brushes, GLuint program, GLuint previewProgram, TextureLayers layers) {
+BrushEditor::BrushEditor(Camera * camera, std::vector<Brush*> * brushes, GLuint program, GLuint previewProgram, TextureLayers * layers) {
     this->program = program;
     glUseProgram(program);
     this->data = new ProgramData();
     this->camera = camera;
-    this->layers = layers;
     this->brushes = brushes;
-    this->previewer = new TexturePreviewer(previewProgram, 256, 256, {
-        {"Color", layers.textures[0] }, 
-        {"Normal", layers.textures[1]},
-        {"Bump", layers.textures[2] }
-    });
+    this->previewer = new TexturePreviewer(previewProgram, 256, 256, {"Color", "Normal", "Bump" }, layers);
+
     SphereGeometry sphereGeometry(40,80);
 	this->sphere = new DrawableGeometry(&sphereGeometry);
 

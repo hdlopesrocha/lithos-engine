@@ -12,7 +12,7 @@ AnimateParams::AnimateParams(int targetTexture) {
 }
 
 AnimatedTexture::AnimatedTexture(int width, int height, GLuint program, TextureLayers layers) {
-    this->textureMixerBuffer = createMultiLayerRenderFrameBuffer(width,height, 3, false);
+    this->textureMixerBuffer = createMultiLayerRenderFrameBuffer(width,height, 3, false, GL_RGB8);
     this->program = program;
     this->previewVao = DrawableGeometry::create2DVAO(-1,-1, 1,1);
 

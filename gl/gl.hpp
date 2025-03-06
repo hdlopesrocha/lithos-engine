@@ -329,7 +329,7 @@ struct MixerParams {
 
 
 class TextureMixer {
-    TextureLayers layers;
+    TextureLayers * layers;
 
     MultiLayerRenderBuffer textureMixerBuffer;
     GLuint program;
@@ -339,7 +339,7 @@ class TextureMixer {
 
 
 
-    TextureMixer(int width, int height, GLuint program, TextureLayers layers);
+    TextureMixer(int width, int height, GLuint program, TextureLayers * layers);
     TextureArray getTexture();
     void mix(MixerParams params);
 };
@@ -416,26 +416,35 @@ class AtlasTexture {
     std::vector<Tile> tiles;
 };
 
+struct AtlasParams {
+    public:
+    AtlasTexture * atlasTexture;
+    int targetTexture = 0;
+    int sourceTexture = 0;
+    std::vector<TileDraw> draws;
+    AtlasParams();
+    AtlasParams(int sourceTexture, int targetTexture, AtlasTexture * atlasTexture);
+
+};
+
 class AtlasDrawer {
     MultiLayerRenderBuffer renderBuffer;
     GLuint program;
     GLuint viewVao;
-    GLuint samplerLoc;
     GLuint layerLoc; 
     GLuint modelLoc; 
     GLuint tileOffsetLoc;
     GLuint tileSizeLoc;
     GLuint filterLoc;
-    std::vector<AtlasTexture*> * atlasTextures;
-    
+    GLuint atlasTextureLoc;
+    TextureLayers * sourceLayers;
+    TextureLayers * targetLayers;
+
     public:
     bool filterEnabled = true;
-    int atlasIndex;
-    std::vector<TileDraw> draws;
-    AtlasDrawer(GLuint program, int width, int height, std::vector<AtlasTexture*> * atlasTextures);
+    AtlasDrawer(GLuint program, int width, int height, TextureLayers * sourceLayers, TextureLayers * targetLayers);
     TextureArray getTexture();
-    void draw(int atlasIndex,  std::vector<TileDraw> draws);
-    void draw();
+    void draw(AtlasParams params);
 };
 
 class ImpostorDrawer {
@@ -456,7 +465,7 @@ void blitRenderBuffer(TextureArray textures[0], TextureLayers layers, MultiLayer
 
 void loadTexture(TextureLayers layers,  std::initializer_list<std::string> fns, int index);
 TextureArray createTextureArray(int width, int height, int layers, GLuint channel); 
-MultiLayerRenderBuffer createMultiLayerRenderFrameBuffer(int width, int height, int layers, bool depth);
+MultiLayerRenderBuffer createMultiLayerRenderFrameBuffer(int width, int height, int layers, bool depth, GLuint color);
 RenderBuffer createDepthFrameBuffer(int width, int height);
 RenderBuffer createRenderFrameBuffer(int width, int height);
 RenderBuffer createRenderFrameBufferWithoutDepth(int width, int height);

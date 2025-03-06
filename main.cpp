@@ -65,11 +65,12 @@ std::string replaceIncludes(std::vector<GlslInclude> includes, std::string code)
 
 
 class MainApplication : public LithosApplication {
-	std::vector<TextureArray> billboardTextures;
 	std::vector<Brush*> brushes;
 	std::vector<Brush*> billboardBrushes;
 	std::vector<AtlasTexture*> atlasTextures;
-	std::vector<AtlasDrawer*> atlasDrawers;
+
+	std::vector<AtlasParams> atlasParams;
+
 	std::vector<MixerParams> mixers;
 	std::vector<AnimateParams> animations;
 	std::vector<ImpostorDrawer*> impostorDrawers;
@@ -121,13 +122,14 @@ class MainApplication : public LithosApplication {
 	TextureViewer * textureViewer;
 	ImpostorViewer * impostorViewer;
 
+	TextureLayers atlasLayers;
 	TextureLayers textureLayers;
 	TextureLayers billboardLayers;
 	
 
 	TextureMixer * textureMixer;
 	AnimatedTexture * textureAnimator;
-
+	AtlasDrawer * atlasDrawer;
 
 public:
 	MainApplication() {
@@ -139,15 +141,21 @@ public:
 	}
 
     virtual void setup() {
-		textureLayers.textures[0] = createTextureArray(1024, 1024, 25, GL_RGBA8);
-		textureLayers.textures[1] = createTextureArray(1024, 1024, 25, GL_RGBA8);
-		textureLayers.textures[2] = createTextureArray(1024, 1024, 25, GL_RGBA8);
+		textureLayers.textures[0] = createTextureArray(1024, 1024, 25, GL_RGB8);
+		textureLayers.textures[1] = createTextureArray(1024, 1024, 25, GL_RGB8);
+		textureLayers.textures[2] = createTextureArray(1024, 1024, 25, GL_RGB8);
 		textureLayers.count = 0;
 
-		billboardLayers.textures[0] = createTextureArray(1024, 1024, 5, GL_RGBA8);
-		billboardLayers.textures[1] = createTextureArray(1024, 1024, 5, GL_RGBA8);
-		billboardLayers.textures[2] = createTextureArray(1024, 1024, 5, GL_RGBA8);
+		billboardLayers.textures[0] = createTextureArray(1024, 1024, 5, GL_RGB8);
+		billboardLayers.textures[1] = createTextureArray(1024, 1024, 5, GL_RGB8);
+		billboardLayers.textures[2] = createTextureArray(1024, 1024, 5, GL_RGB8);
 		billboardLayers.count = 0;
+
+		atlasLayers.textures[0] = createTextureArray(1024, 1024, 5, GL_RGB8);
+		atlasLayers.textures[1] = createTextureArray(1024, 1024, 5, GL_RGB8);
+		atlasLayers.textures[2] = createTextureArray(1024, 1024, 5, GL_RGB8);
+		atlasLayers.count = 0;
+
 
 		std::vector<GlslInclude> includes;
 		includes.push_back(GlslInclude("#include<functions.glsl>" , readFile("shaders/util/functions.glsl")));
@@ -218,8 +226,10 @@ public:
 		shadowFrameBuffers.push_back(std::pair(createDepthFrameBuffer(1024, 1024), 32));
 		shadowFrameBuffers.push_back(std::pair(createDepthFrameBuffer(1024, 1024), 128));
 		shadowFrameBuffers.push_back(std::pair(createDepthFrameBuffer(1024, 1024), 512));
-		textureMixer = new TextureMixer(1024,1024, programMixTexture, textureLayers);
+		textureMixer = new TextureMixer(1024,1024, programMixTexture, &textureLayers);
 		textureAnimator = new AnimatedTexture(1024,1024, programWaterTexture, textureLayers);
+		atlasDrawer = new AtlasDrawer(programAtlas, 1024, 1024, &atlasLayers, &billboardLayers);
+
 
 		{
 			animations.push_back(AnimateParams(textureLayers.count));
@@ -302,8 +312,9 @@ public:
 			textureLayers.count++;
 		}
 		{
-			loadTexture(billboardLayers, {"textures/vegetation/foliage_color.jpg", "textures/vegetation/foliage_normal.jpg", "textures/vegetation/foliage_opacity.jpg"}, billboardLayers.count);
+			loadTexture(atlasLayers, {"textures/vegetation/foliage_color.jpg", "textures/vegetation/foliage_normal.jpg", "textures/vegetation/foliage_opacity.jpg"}, billboardLayers.count);
 			AtlasTexture * at = new AtlasTexture();
+			
 			at->tiles.push_back(Tile(glm::vec2(1.0),glm::vec2(0.0)));
 			at->tiles.push_back(Tile(glm::vec2(0.15, 1.0),glm::vec2(0.0, 0.0)));
 			at->tiles.push_back(Tile(glm::vec2(0.15, 0.5),glm::vec2(0.15, 0.0)));
@@ -315,40 +326,40 @@ public:
 			at->tiles.push_back(Tile(glm::vec2(0.4, 0.5),glm::vec2(0.6, 0.0)));
 			at->tiles.push_back(Tile(glm::vec2(0.4, 0.5),glm::vec2(0.6, 0.5)));
 
-			atlasTextures.push_back(at);
 			//brushes.push_back(new Brush(at, glm::vec2(0.2), 0.02, 8, 32, 16,4, 10.0, 0.5 , 1.33));
 
-			AtlasDrawer * ad = new AtlasDrawer(programAtlas, 1024, 1024, &atlasTextures);
-			std::vector<TileDraw> draws;
-			draws.push_back(TileDraw(0,glm::vec2(1), glm::vec2(0.5), glm::vec2(0.5), 0.5));
-			ad->draw(0, draws);
+			AtlasParams ap(atlasTextures.size() ,atlasParams.size(), at);
+			ap.draws.push_back(TileDraw(0,glm::vec2(1), glm::vec2(0.5), glm::vec2(0.5), 0.5));
+			atlasParams.push_back(ap);
 
-			atlasDrawers.push_back(ad);
-			billboardBrushes.push_back(new Brush(billboardTextures.size()));
-			billboardTextures.push_back(ad->getTexture());
+			atlasTextures.push_back(at);
+			billboardBrushes.push_back(new Brush(billboardLayers.count));
 			++billboardLayers.count;
+			++atlasLayers.count;
 		}
 		{
-			loadTexture(billboardLayers, {"textures/vegetation/grass_color.jpg", "textures/vegetation/grass_normal.jpg", "textures/vegetation/grass_opacity.jpg"}, billboardLayers.count);
+			loadTexture(atlasLayers, {"textures/vegetation/grass_color.jpg", "textures/vegetation/grass_normal.jpg", "textures/vegetation/grass_opacity.jpg"}, billboardLayers.count);
 			AtlasTexture * at = new AtlasTexture();
 			at->tiles.push_back(Tile(glm::vec2(1.0),glm::vec2(0.0)));
 			
+			AtlasParams ap(atlasTextures.size() ,atlasParams.size(), at);
+			ap.draws.push_back(TileDraw(0,glm::vec2(1), glm::vec2(0.5), glm::vec2(0.5), 0.0));
+			atlasParams.push_back(ap);
+
 			atlasTextures.push_back(at);
-
-			AtlasDrawer * ad = new AtlasDrawer(programAtlas, 1024, 1024, &atlasTextures);
-			std::vector<TileDraw> draws;
-			draws.push_back(TileDraw(0,glm::vec2(1), glm::vec2(0.5), glm::vec2(0.5), 0.0));
-			ad->draw(1, draws);
-
-			atlasDrawers.push_back(ad);
-			billboardBrushes.push_back(new Brush(billboardTextures.size()));
-			billboardTextures.push_back(ad->getTexture());
+			billboardBrushes.push_back(new Brush(billboardLayers.count));
 			++billboardLayers.count;
+			++atlasLayers.count;
 		}
 
 		for(MixerParams mp : mixers) {
 			textureMixer->mix(mp);
 		}
+
+		for(AtlasParams ap : atlasParams) {
+			atlasDrawer->draw(ap);
+		}
+
 
 		impostorDrawers.push_back(new ImpostorDrawer(programImpostor, 256, 256));
 		
@@ -399,16 +410,16 @@ public:
 		glUseProgram(0);
 		//tesselator->normalize();
 		uniformBlockViewer = new UniformBlockViewer(&viewerBlock);
-		atlasPainter = new AtlasPainter(&atlasTextures, &atlasDrawers, programAtlas, programTexture, 256,256, billboardLayers);
-		atlasViewer = new AtlasViewer(&atlasTextures, programAtlas, programTexture, 256,256, billboardLayers);
-		brushEditor = new BrushEditor(&camera, &brushes, program3d, programTexture, textureLayers);
+		atlasPainter = new AtlasPainter(&atlasParams, &atlasTextures, atlasDrawer, programAtlas, programTexture, 256,256, &billboardLayers);
+		atlasViewer = new AtlasViewer(&atlasTextures, atlasDrawer, programAtlas, programTexture, 256,256, &atlasLayers);
+		brushEditor = new BrushEditor(&camera, &brushes, program3d, programTexture, &textureLayers);
 		shadowMapViewer = new ShadowMapViewer(&shadowFrameBuffers, 512, 512);
-		textureMixerEditor = new TextureMixerEditor(textureMixer, &mixers, programTexture, textureLayers);
-		animatedTextureEditor = new AnimatedTextureEditor(&animations, programTexture, 256,256, textureLayers);
+		textureMixerEditor = new TextureMixerEditor(textureMixer, &mixers, programTexture, &textureLayers);
+		animatedTextureEditor = new AnimatedTextureEditor(&animations, programTexture, 256,256, &textureLayers);
 		depthBufferViewer = new DepthBufferViewer(programDepth,depthFrameBuffer.depthTexture,512,512);
 		settingsEditor = new SettingsEditor(settings);
-		textureViewer = new TextureViewer(programTexture, textureLayers);
-		impostorViewer = new ImpostorViewer(&impostorDrawers, programTexture, 256, 256, billboardLayers);
+		textureViewer = new TextureViewer(programTexture, &textureLayers);
+		impostorViewer = new ImpostorViewer(&impostorDrawers, programTexture, 256, 256, &billboardLayers);
 
 		// ImGui
 		IMGUI_CHECKVERSION();

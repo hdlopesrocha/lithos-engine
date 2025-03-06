@@ -16,12 +16,13 @@ class TexturePreviewer {
     RenderBuffer renderBuffer;
     GLuint previewProgram;
     GLuint previewVao;
-    std::vector<std::pair<std::string, TextureArray>> layers;
+    TextureLayers * layers;
+    std::vector<std::string> layerNames;
     int selectedLayer;
     int width;
     int height;
 public:
-    TexturePreviewer(GLuint previewProgram, int width, int height, std::initializer_list<std::pair<std::string, TextureArray>> layers);
+    TexturePreviewer(GLuint previewProgram, int width, int height, std::initializer_list<std::string> layerNames, TextureLayers * layers);
     void draw2d(int index);
 
 };
@@ -52,9 +53,9 @@ class Closable {
 class TextureViewer: public Closable {
     TexturePreviewer * previewer;
   	int selectedTexture = 0;
-    TextureLayers layers;
+    TextureLayers * layers;
     public:
-    TextureViewer(GLuint previewProgram, TextureLayers layers);
+    TextureViewer(GLuint previewProgram, TextureLayers * layers);
     void draw2d();
     void draw3d(UniformBlock * block);
 };
@@ -73,27 +74,24 @@ class AtlasViewer: public Closable {
     std::vector<AtlasTexture*> * atlasTextures;
     TexturePreviewer * previewer;
     AtlasDrawer * drawer;
-    std::vector<TileDraw> draws;
   	int selectedTexture = 0;
   	int selectedTile = 0;
-    TextureLayers layers;
     public:
-    AtlasViewer(std::vector<AtlasTexture*> * atlasTextures, GLuint programAtlas, GLuint previewProgram, int width, int height, TextureLayers layers);
+    AtlasViewer(std::vector<AtlasTexture*> * atlasTextures, AtlasDrawer * drawer, GLuint programAtlas, GLuint previewProgram, int width, int height, TextureLayers * sourceLayers ) ;
     void draw2d();
     void draw3d(UniformBlock * block);
 };
 
 class AtlasPainter: public Closable {
+    std::vector<AtlasParams> * atlasParams;
     std::vector<AtlasTexture*> * atlasTextures;
-    std::vector<AtlasDrawer*> * atlasDrawers;
+    AtlasDrawer * atlasDrawer;
     TexturePreviewer * previewer;
-    TextureLayers layers;
-
   	int selectedDrawer = 0;
   	int selectedDraw = 0;
 
     public:
-    AtlasPainter(std::vector<AtlasTexture*> * atlasTextures, std::vector<AtlasDrawer*> * atlasDrawers, GLuint programAtlas, GLuint previewProgram, int width, int height,TextureLayers layers);
+    AtlasPainter(std::vector<AtlasParams> * atlasParams, std::vector<AtlasTexture*> * atlasTextures, AtlasDrawer * atlasDrawer, GLuint programAtlas, GLuint previewProgram, int width, int height, TextureLayers * layers);
     void draw2d();
     void draw3d(UniformBlock * block);
 };
@@ -101,10 +99,9 @@ class AtlasPainter: public Closable {
 class ImpostorViewer: public Closable {
     std::vector<ImpostorDrawer*> * impostorDrawers;
     TexturePreviewer * previewer;
-  	int selectedDrawer = 0;
-    TextureLayers layers;
+    int selectedDrawer = 0;
     public:
-    ImpostorViewer(std::vector<ImpostorDrawer*> * impostorDrawers, GLuint previewProgram, int width, int height, TextureLayers layers);
+    ImpostorViewer(std::vector<ImpostorDrawer*> * impostorDrawers, GLuint previewProgram, int width, int height, TextureLayers * layers);
     void draw2d();
     void draw3d(UniformBlock * block);
 };
@@ -116,7 +113,6 @@ class BrushEditor: public Closable {
     ProgramData * data;
 	DrawableGeometry * sphere;
     Camera * camera;
-    TextureLayers layers;
   
     TexturePreviewer * previewer;
     BrushMode mode;
@@ -125,7 +121,7 @@ class BrushEditor: public Closable {
     float brushRadius;
 
     public:
-    BrushEditor(Camera * camera,std::vector<Brush*> * brushes, GLuint program3d, GLuint previewProgram, TextureLayers layers);
+    BrushEditor(Camera * camera,std::vector<Brush*> * brushes, GLuint program3d, GLuint previewProgram, TextureLayers * layers);
     void draw2d();
     void draw3d(UniformBlock * block);
     int getSelectedBrush();
@@ -165,10 +161,9 @@ class TextureMixerEditor : public Closable{
     std::vector<MixerParams> * mixers;
     TexturePreviewer * previewer;
   	int selectedMixer;
-    TextureLayers layers;
-
+    TextureLayers * layers;
     public:
-    TextureMixerEditor(TextureMixer * mixer, std::vector<MixerParams> * mixers, GLuint previewProgram, TextureLayers layers);
+    TextureMixerEditor(TextureMixer * mixer, std::vector<MixerParams> * mixers, GLuint previewProgram, TextureLayers * layers);
     void draw2d();
     void draw3d(UniformBlock * block);
 };
@@ -177,9 +172,8 @@ class AnimatedTextureEditor : public Closable{
     std::vector<AnimateParams> * animations;
   	int selectedAnimatedTexture;
     TexturePreviewer * previewer;
-    TextureLayers layers;
     public:
-    AnimatedTextureEditor(std::vector<AnimateParams> * animations, GLuint previewProgram, int width, int height, TextureLayers layers);
+    AnimatedTextureEditor(std::vector<AnimateParams> * animations, GLuint previewProgram, int width, int height, TextureLayers * layers);
 
     void draw2d();
     void draw3d(UniformBlock * block);
