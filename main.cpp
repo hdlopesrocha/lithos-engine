@@ -6,7 +6,7 @@
 #include "HeightFunctions.hpp"
 #include "Scene.hpp"
 
-#define MEM_HEADER 1
+//#define MEM_HEADER 1
 
 #ifdef MEM_HEADER
 long usedMemory = 0;
