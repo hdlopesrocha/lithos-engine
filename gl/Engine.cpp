@@ -290,8 +290,6 @@ MultiLayerRenderBuffer createMultiLayerRenderFrameBuffer(int width, int height, 
 
 
 RenderBuffer createDepthFrameBuffer(int width, int height) {
-    std::cout << "createDepthFrameBuffer" << std::endl;
-
     RenderBuffer buffer;
     buffer.width = width;
     buffer.height = height;

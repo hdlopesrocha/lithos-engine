@@ -4,13 +4,11 @@ ImpostorDrawer::ImpostorDrawer(GLuint program, int width, int height) {
     this->height = height;
     this->width = width;
     this->program = program;
-    std::cout << "createMultiLayerRenderFrameBuffer" << std::endl;
     this->renderBuffer = createMultiLayerRenderFrameBuffer(width, height, 3, true, GL_RGB8);
 
     std::vector<InstanceData> vegetationInstances;
     vegetationInstances.push_back(InstanceData(glm::mat4(1.0), 0));
 
-    std::cout << "DrawableInstanceGeometry" << std::endl;
     this->mesh = new DrawableInstanceGeometry(new Vegetation3d(), &vegetationInstances, glm::vec3(0.0, 0.5, 0.0));
 }
 

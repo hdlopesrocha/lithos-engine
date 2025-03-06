@@ -29,7 +29,6 @@ int Texture::bindTexture(GLuint program, int activeTexture, GLuint location, Tex
 
 
 int Texture::bindTexture(GLuint program, int activeTexture, std::string objectName, TextureArray texture) {
-    std::cout << "Bind " << objectName << " | " << texture.index << std::endl;
     return bindTextureInternal(program, GL_TEXTURE_2D_ARRAY, activeTexture, objectName, texture.index);
 }
 
