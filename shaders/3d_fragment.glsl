@@ -84,7 +84,7 @@ void main() {
     vec3 worldNormal = normalize(TBN * normalMap);
 
     if(debugEnabled) {
-        color = vec4(visual(worldNormal),1.0);
+        color = textureBlend(textures[2], teTextureWeights, teTextureIndices, uv);
     } else if(lightEnabled) {
         vec3 specularColor = vec3(1.0,1.0,1.0);
         vec3 reflection = reflect(-lightDirection.xyz, worldNormal);

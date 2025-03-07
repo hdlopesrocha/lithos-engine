@@ -4,7 +4,7 @@ ImpostorDrawer::ImpostorDrawer(GLuint program, int width, int height) {
     this->height = height;
     this->width = width;
     this->program = program;
-    this->renderBuffer = createMultiLayerRenderFrameBuffer(width, height, 3, true, GL_RGB8);
+    this->renderBuffer = createMultiLayerRenderFrameBuffer(width, height, 3, 3, true, GL_RGB8);
 
     std::vector<InstanceData> vegetationInstances;
     vegetationInstances.push_back(InstanceData(glm::mat4(1.0), 0));
@@ -18,7 +18,7 @@ TextureArray ImpostorDrawer::getTexture() {
 
 void ImpostorDrawer::draw() {
     std::cout << "ImpostorDrawer::draw" << std::endl;
-    glm::mat4 view = glm::lookAt(glm::vec3(2.0), mesh->center, glm::vec3(0.0, 1.0, 0.0));
+  /*  glm::mat4 view = glm::lookAt(glm::vec3(2.0), mesh->center, glm::vec3(0.0, 1.0, 0.0));
     glm::mat4 projection = glm::perspective(glm::radians(45.0f), width / (float) height, 0.1f, 32.0f);
     glm::mat4 viewProjection = projection * view;
     glm::mat4 model(1.0);
@@ -46,4 +46,5 @@ void ImpostorDrawer::draw() {
 
     glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    */
 }

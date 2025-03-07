@@ -1,17 +1,19 @@
 #include "gl.hpp"
 
 
-AtlasDrawer::AtlasDrawer(GLuint program, int width, int height , TextureLayers * sourceLayers, TextureLayers * targetLayers) {
+AtlasDrawer::AtlasDrawer(GLuint program, int width, int height , TextureLayers * sourceLayers, TextureLayers * targetLayers, TextureBlitter * blitter) {
     this->program = program;
     this->sourceLayers = sourceLayers;
     this->targetLayers = targetLayers;
-    this->renderBuffer = createMultiLayerRenderFrameBuffer(width,height, 3, false, GL_RGB8);
+    this->renderBuffer = createMultiLayerRenderFrameBuffer(width,height, 3, 3, false, GL_RGB8);
     this->viewVao = DrawableGeometry::create2DVAO(-1,-1, 1,1);
     this->atlasTextureLoc = glGetUniformLocation(program, "atlasTexture");
     this->modelLoc = glGetUniformLocation(program, "model");
     this->tileOffsetLoc = glGetUniformLocation(program, "tileOffset");
     this->tileSizeLoc = glGetUniformLocation(program, "tileSize");
     this->filterLoc = glGetUniformLocation(program, "filterOpacity");
+    this->blitter = blitter;
+
 }
 
 TextureArray AtlasDrawer::getTexture(){
@@ -81,7 +83,10 @@ void AtlasDrawer::draw(AtlasParams params){
 
     }
 
-    blitTextureArray(renderBuffer, *targetLayers, params.targetTexture);
+    for(int i=0 ; i < 3 ; ++i) {
+        blitter->blit(&renderBuffer, i, &targetLayers->textures[i], params.targetTexture);
+    }
+
 
     glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
