@@ -1,8 +1,9 @@
 #include "gl.hpp"
 
-TextureMixer::TextureMixer(int width, int height, GLuint program, TextureLayers * layers) {
-    this->textureMixerBuffer = createMultiLayerRenderFrameBuffer(width,height, 3, false, GL_RGB8);
+TextureMixer::TextureMixer(int width, int height, GLuint program, TextureLayers * layers, TextureBlitter * blitter) {
+    this->textureMixerBuffer = createMultiLayerRenderFrameBuffer(width,height, 3, 3, false, GL_RGB8);
     this->program = program;
+    this->blitter = blitter;
     this->previewVao = DrawableGeometry::create2DVAO(-1,-1, 1,1);
     this->layers = layers; 
 }
@@ -45,8 +46,9 @@ void TextureMixer::mix(MixerParams params){
 
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
-    blitTextureArray(textureMixerBuffer, *layers, params.targetTexture);
-
+    for(int i=0 ; i < 3 ; ++i) {
+        blitter->blit(&textureMixerBuffer, i, &layers->textures[i], params.targetTexture);
+    }
 
     glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);

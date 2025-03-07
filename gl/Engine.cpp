@@ -11,7 +11,7 @@ void APIENTRY openglDebugCallback(GLenum source, GLenum type, GLuint id, GLenum 
     
     if(severity == GL_DEBUG_SEVERITY_HIGH) {
         std::cerr << "OpenGL Debug Message: " << message << std::endl;
-        throw std::runtime_error("OpenGL error in openglDebugCallback");
+       // throw std::runtime_error("OpenGL error in openglDebugCallback");
     }
 }
 
@@ -243,7 +243,7 @@ TextureArray createTextureArray(int width, int height, int layers, GLuint channe
     return texArray;
 }
 
-MultiLayerRenderBuffer createMultiLayerRenderFrameBuffer(int width, int height, int layers, bool depth, GLuint color) {
+MultiLayerRenderBuffer createMultiLayerRenderFrameBuffer(int width, int height, int layers, int attachments, bool depth, GLuint color) {
    
     MultiLayerRenderBuffer buffer;
     buffer.width = width;
@@ -271,14 +271,43 @@ MultiLayerRenderBuffer createMultiLayerRenderFrameBuffer(int width, int height, 
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, buffer.depthTexture.idx, 0);
     }
 
-    // Attach texture array layers to framebuffer
+
+
+
     std::vector<GLenum> buffers;
-    for(int layer = 0 ; layer < layers ; ++layer) {
-        GLenum attachment = GL_COLOR_ATTACHMENT0 + layer;
+
+    // Verificar quantos anexos de cor estão sendo usados (deve ser menor ou igual ao número de camadas)
+    int attachmentCount = std::min(attachments, layers); // 'attachments' ou 'layers', o que for menor
+    
+    // Se houver apenas 1 anexo, associamos todas as camadas a esse anexo
+    if (attachments == 1) {
+        GLenum attachment = GL_COLOR_ATTACHMENT0;
         buffers.push_back(attachment);
-        glFramebufferTextureLayer(GL_FRAMEBUFFER, attachment, buffer.colorTexture.index, 0, layer); 
+    
+        // Associar todas as camadas a esse único anexo
+        for (int l = 0; l < layers; ++l) {
+            glFramebufferTextureLayer(GL_FRAMEBUFFER, attachment, buffer.colorTexture.index, 0, l);
+        }
+    } else {
+        // Se houver múltiplos anexos, associamos as camadas de maneira mais flexível
+        for (int a = 0; a < attachmentCount; ++a) {
+            GLenum attachment = GL_COLOR_ATTACHMENT0 + a;
+            buffers.push_back(attachment);
+    
+            // Para cada anexo, associamos a camada correspondente
+            glFramebufferTextureLayer(GL_FRAMEBUFFER, attachment, buffer.colorTexture.index, 0, a);
+        }
     }
-    glDrawBuffers(layers, buffers.data()); 
+    
+    // Verifique se o número de buffers configurados é válido
+    if (!buffers.empty()) {
+        glDrawBuffers(buffers.size(), buffers.data());
+    } else {
+        std::cerr << "No color attachments configured!" << std::endl;
+    }
+    
+
+
 
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
         std::cerr << "Framebuffer is not complete!" << std::endl;
@@ -341,6 +370,7 @@ void loadTexture(TextureLayers layers, std::initializer_list<std::string> fns, i
         textures.push_back(t);
     }
 
+    int channel0;
     for(int i = 0; i < textures.size() ; ++i) {
         std::string filename = textures[i];
         std::cout << "Loading " << filename << std::endl;
@@ -529,29 +559,12 @@ GLuint LithosApplication::createShaderProgram(std::initializer_list<GLuint> shad
 
 void blitRenderBuffer(TextureLayers layers, MultiLayerRenderBuffer buffer, int sourceIndex) {
     for(int i =0 ; i < 3; ++i){
-        glCopyImageSubData(layers.textures[i].index, GL_TEXTURE_2D_ARRAY, 0, 0, 0, sourceIndex, buffer.colorTexture.index, GL_TEXTURE_2D_ARRAY, 0, 0, 0, i, buffer.width, buffer.height, 1);
+  //      glCopyImageSubData(layers.textures[i].colorTexture.index, GL_TEXTURE_2D_ARRAY, 0, 0, 0, sourceIndex, buffer.colorTexture.index, GL_TEXTURE_2D_ARRAY, 0, 0, 0, i, buffer.width, buffer.height, 1);
     }    
 }
 
 
 void blitRenderBuffer(TextureLayers layers, RenderBuffer buffer, int sourceIndex, int destinationIndex) {
-    glCopyImageSubData(layers.textures[destinationIndex].index, GL_TEXTURE_2D_ARRAY, 0, 0, 0, sourceIndex, buffer.colorTexture.idx, GL_TEXTURE_2D, 0, 0, 0, 0, buffer.width, buffer.height, 1);
+  //  glCopyImageSubData(layers.textures[destinationIndex].colorTexture.index, GL_TEXTURE_2D_ARRAY, 0, 0, 0, sourceIndex, buffer.colorTexture.idx, GL_TEXTURE_2D, 0, 0, 0, 0, buffer.width, buffer.height, 1);
 }
 
-void blitTextureArray(MultiLayerRenderBuffer buffer, TextureLayers layers, int index) {
-    for(int i =0 ; i < 3; ++i){
-        glCopyImageSubData(
-            buffer.colorTexture.index, GL_TEXTURE_2D_ARRAY, 0,   
-            0, 0, i,                 
-            layers.textures[i].index, GL_TEXTURE_2D_ARRAY, 0,     
-            0, 0, index,              
-            buffer.width, buffer.height, 1               
-        );
-    }
-
-    for (int i = 0; i < 3; ++i) {
-        glBindTexture(GL_TEXTURE_2D_ARRAY, layers.textures[i].index);
-        glGenerateMipmap(GL_TEXTURE_2D_ARRAY);
-    }
-    glBindTexture(GL_TEXTURE_2D_ARRAY, 0); // Unbind for safety
-}

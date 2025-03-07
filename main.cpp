@@ -88,6 +88,7 @@ class MainApplication : public LithosApplication {
 	GLuint programImpostor;
 	GLuint programAtlas;
 	GLuint programTexture;
+	GLuint programCopy;
 	GLuint programDepth;
 	GLuint programMixTexture;
 	GLuint programWaterTexture;
@@ -182,6 +183,12 @@ public:
 			compileShader(replaceIncludes(includes,readFile("shaders/texture/texture_array_fragment.glsl")),GL_FRAGMENT_SHADER)
 		});
 
+		programCopy = createShaderProgram({
+			compileShader(replaceIncludes(includes,readFile("shaders/texture/copy_vertex.glsl")),GL_VERTEX_SHADER), 
+			compileShader(replaceIncludes(includes,readFile("shaders/texture/copy_geometry.glsl")),GL_GEOMETRY_SHADER), 
+			compileShader(replaceIncludes(includes,readFile("shaders/texture/copy_fragment.glsl")),GL_FRAGMENT_SHADER)
+		});
+
 		programDepth = createShaderProgram({
 			compileShader(replaceIncludes(includes,readFile("shaders/texture/depth_vertex.glsl")),GL_VERTEX_SHADER), 
 			compileShader(replaceIncludes(includes,readFile("shaders/texture/depth_fragment.glsl")),GL_FRAGMENT_SHADER)
@@ -220,15 +227,16 @@ public:
 			compileShader(replaceIncludes(includes,readFile("shaders/impostor_fragment.glsl")),GL_FRAGMENT_SHADER) 
 		});
 
+		TextureBlitter * blitter = new TextureBlitter(programCopy);
 		renderBuffer = createRenderFrameBuffer(getWidth(), getHeight());
 		solidBuffer = createRenderFrameBuffer(getWidth(), getHeight());
 		depthFrameBuffer = createDepthFrameBuffer(getWidth(), getHeight());
 		shadowFrameBuffers.push_back(std::pair(createDepthFrameBuffer(1024, 1024), 32));
 		shadowFrameBuffers.push_back(std::pair(createDepthFrameBuffer(1024, 1024), 128));
 		shadowFrameBuffers.push_back(std::pair(createDepthFrameBuffer(1024, 1024), 512));
-		textureMixer = new TextureMixer(1024,1024, programMixTexture, &textureLayers);
-		textureAnimator = new AnimatedTexture(1024,1024, programWaterTexture, textureLayers);
-		atlasDrawer = new AtlasDrawer(programAtlas, 1024, 1024, &atlasLayers, &billboardLayers);
+		textureMixer = new TextureMixer(1024,1024, programMixTexture, &textureLayers, blitter);
+		textureAnimator = new AnimatedTexture(1024,1024, programWaterTexture ,&textureLayers, blitter);
+		atlasDrawer = new AtlasDrawer(programAtlas, 1024, 1024, &atlasLayers, &billboardLayers, blitter);
 
 
 		{
@@ -411,7 +419,7 @@ public:
 		//tesselator->normalize();
 		uniformBlockViewer = new UniformBlockViewer(&viewerBlock);
 		atlasPainter = new AtlasPainter(&atlasParams, &atlasTextures, atlasDrawer, programAtlas, programTexture, 256,256, &billboardLayers);
-		atlasViewer = new AtlasViewer(&atlasTextures, atlasDrawer, programAtlas, programTexture, 256,256, &atlasLayers);
+		atlasViewer = new AtlasViewer(&atlasTextures, atlasDrawer, programAtlas, programTexture, 256,256, &atlasLayers, blitter);
 		brushEditor = new BrushEditor(&camera, &brushes, program3d, programTexture, &textureLayers);
 		shadowMapViewer = new ShadowMapViewer(&shadowFrameBuffers, 512, 512);
 		textureMixerEditor = new TextureMixerEditor(textureMixer, &mixers, programTexture, &textureLayers);

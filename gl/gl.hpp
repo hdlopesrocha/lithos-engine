@@ -313,6 +313,16 @@ struct TextureLayers {
     int count;
 };
 
+class TextureBlitter {
+    GLuint program;
+    GLuint programCopy;
+    GLuint resizeVao;
+
+    public:
+    TextureBlitter(GLuint program);
+    void blit(MultiLayerRenderBuffer * sourceBuffer, int sourceIndex, TextureArray * targetBuffer, int targetIndex);
+};
+
 struct MixerParams {
     public:
     int targetTexture = 0;
@@ -327,19 +337,16 @@ struct MixerParams {
     MixerParams(int targetTexture,int baseTexture, int overlayTexture);
 };
 
-
 class TextureMixer {
     TextureLayers * layers;
 
     MultiLayerRenderBuffer textureMixerBuffer;
     GLuint program;
+    TextureBlitter * blitter;
     GLuint previewVao;
 
     public:
-
-
-
-    TextureMixer(int width, int height, GLuint program, TextureLayers * layers);
+    TextureMixer(int width, int height, GLuint program, TextureLayers * layers, TextureBlitter * blitter);
     TextureArray getTexture();
     void mix(MixerParams params);
 };
@@ -361,14 +368,18 @@ class AnimateParams {
 class AnimatedTexture {
     MultiLayerRenderBuffer textureMixerBuffer;
     GLuint program;
+
     GLuint previewVao;
-    TextureLayers layers;
+    TextureLayers * layers;
+    TextureBlitter * blitter;
     public:
 
-    AnimatedTexture(int width, int height, GLuint program, TextureLayers layers);
+    AnimatedTexture(int width, int height, GLuint program, TextureLayers * layers, TextureBlitter * blitter);
     TextureArray getTexture();
     void animate(float time, AnimateParams params);
 };
+
+
 
 class Settings {
     public:
@@ -439,10 +450,11 @@ class AtlasDrawer {
     GLuint atlasTextureLoc;
     TextureLayers * sourceLayers;
     TextureLayers * targetLayers;
+    TextureBlitter * blitter;
 
     public:
     bool filterEnabled = true;
-    AtlasDrawer(GLuint program, int width, int height, TextureLayers * sourceLayers, TextureLayers * targetLayers);
+    AtlasDrawer(GLuint program, int width, int height, TextureLayers * sourceLayers, TextureLayers * targetLayers, TextureBlitter * blitter);
     TextureArray getTexture();
     void draw(AtlasParams params);
 };
@@ -459,13 +471,13 @@ class ImpostorDrawer {
     void draw();
     TextureArray getTexture();
 };
-void blitTextureArray(MultiLayerRenderBuffer buffer, TextureLayers layers, int index);
+void blitTextureArray(GLuint programCopy, MultiLayerRenderBuffer buffer, TextureLayers * layers, int index);
 void blitRenderBuffer(TextureArray textures[0], TextureLayers layers, RenderBuffer buffer, int sourceIndex, int destinationIndex);
 void blitRenderBuffer(TextureArray textures[0], TextureLayers layers, MultiLayerRenderBuffer buffer, int sourceIndex);
 
 void loadTexture(TextureLayers layers,  std::initializer_list<std::string> fns, int index);
 TextureArray createTextureArray(int width, int height, int layers, GLuint channel); 
-MultiLayerRenderBuffer createMultiLayerRenderFrameBuffer(int width, int height, int layers, bool depth, GLuint color);
+MultiLayerRenderBuffer createMultiLayerRenderFrameBuffer(int width, int height, int layers, int attachments, bool depth, GLuint color);
 RenderBuffer createDepthFrameBuffer(int width, int height);
 RenderBuffer createRenderFrameBuffer(int width, int height);
 RenderBuffer createRenderFrameBufferWithoutDepth(int width, int height);
