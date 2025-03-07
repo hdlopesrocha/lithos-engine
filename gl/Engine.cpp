@@ -139,37 +139,39 @@ RenderBuffer createRenderFrameBufferWithoutDepth(int width, int height) {
     return buffer;
 }
 
-RenderBuffer createRenderFrameBuffer(int width, int height) {
+RenderBuffer createRenderFrameBuffer(int width, int height, bool depth, GLuint channels) {
     RenderBuffer buffer;
     buffer.width = width;
     buffer.height = height;
     
     glGenTextures(1, &buffer.colorTexture.idx);
     glBindTexture(GL_TEXTURE_2D, buffer.colorTexture.idx);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+    glTexImage2D(GL_TEXTURE_2D, 0, channels, width, height, 0, channels, GL_UNSIGNED_BYTE, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
+    if(depth) {
+        glGenTextures(1, &buffer.depthTexture.idx);
+        glBindTexture(GL_TEXTURE_2D, buffer.depthTexture.idx);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 
-    glGenTextures(1, &buffer.depthTexture.idx);
-    glBindTexture(GL_TEXTURE_2D, buffer.depthTexture.idx);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-
-    // Set the border color (default is black, but you can change it)
-    GLfloat borderColor[] = { 0.0f, 0.0f, 0.0f, 1.0f }; // White border
-    glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
-
+        // Set the border color (default is black, but you can change it)
+        GLfloat borderColor[] = { 0.0f, 0.0f, 0.0f, 1.0f }; // White border
+        glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+    }
     glGenFramebuffers(1, &buffer.frameBuffer);
     glBindFramebuffer(GL_FRAMEBUFFER, buffer.frameBuffer);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, buffer.colorTexture.idx, 0);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, buffer.depthTexture.idx, 0);
 
+    if(depth) {
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, buffer.depthTexture.idx, 0);
+    }
 
     GLenum drawBuffers[1] = {GL_COLOR_ATTACHMENT0 };
     glDrawBuffers(1, drawBuffers);

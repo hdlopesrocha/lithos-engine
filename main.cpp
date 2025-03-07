@@ -144,17 +144,17 @@ public:
     virtual void setup() {
 		textureLayers.textures[0] = createTextureArray(1024, 1024, 25, GL_RGB8);
 		textureLayers.textures[1] = createTextureArray(1024, 1024, 25, GL_RGB8);
-		textureLayers.textures[2] = createTextureArray(1024, 1024, 25, GL_RGB8);
+		textureLayers.textures[2] = createTextureArray(1024, 1024, 25, GL_R8);
 		textureLayers.count = 0;
 
 		billboardLayers.textures[0] = createTextureArray(1024, 1024, 5, GL_RGB8);
 		billboardLayers.textures[1] = createTextureArray(1024, 1024, 5, GL_RGB8);
-		billboardLayers.textures[2] = createTextureArray(1024, 1024, 5, GL_RGB8);
+		billboardLayers.textures[2] = createTextureArray(1024, 1024, 5, GL_R8);
 		billboardLayers.count = 0;
 
 		atlasLayers.textures[0] = createTextureArray(1024, 1024, 5, GL_RGB8);
 		atlasLayers.textures[1] = createTextureArray(1024, 1024, 5, GL_RGB8);
-		atlasLayers.textures[2] = createTextureArray(1024, 1024, 5, GL_RGB8);
+		atlasLayers.textures[2] = createTextureArray(1024, 1024, 5, GL_R8);
 		atlasLayers.count = 0;
 
 
@@ -227,9 +227,9 @@ public:
 			compileShader(replaceIncludes(includes,readFile("shaders/impostor_fragment.glsl")),GL_FRAGMENT_SHADER) 
 		});
 
-		TextureBlitter * blitter = new TextureBlitter(programCopy);
-		renderBuffer = createRenderFrameBuffer(getWidth(), getHeight());
-		solidBuffer = createRenderFrameBuffer(getWidth(), getHeight());
+		TextureBlitter * blitter = new TextureBlitter(programCopy, 1024, 1024);
+		renderBuffer = createRenderFrameBuffer(getWidth(), getHeight(), true, GL_RGB8);
+		solidBuffer = createRenderFrameBuffer(getWidth(), getHeight(), true, GL_RGB8);
 		depthFrameBuffer = createDepthFrameBuffer(getWidth(), getHeight());
 		shadowFrameBuffers.push_back(std::pair(createDepthFrameBuffer(1024, 1024), 32));
 		shadowFrameBuffers.push_back(std::pair(createDepthFrameBuffer(1024, 1024), 128));
