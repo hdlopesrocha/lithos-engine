@@ -77,7 +77,7 @@ class AtlasViewer: public Closable {
   	int selectedTexture = 0;
   	int selectedTile = 0;
     public:
-    AtlasViewer(std::vector<AtlasTexture*> * atlasTextures, AtlasDrawer * drawer, GLuint programAtlas, GLuint previewProgram, int width, int height, TextureLayers * sourceLayers ,TextureBlitter * blitter) ;
+    AtlasViewer(std::vector<AtlasTexture*> * atlasTextures, AtlasDrawer * drawer, GLuint programAtlas, GLuint previewProgram, int width, int height, TextureLayers * sourceLayers, GLuint copyProgram) ;
     void draw2d();
     void draw3d(UniformBlock * block);
 };

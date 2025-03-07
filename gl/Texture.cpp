@@ -22,11 +22,9 @@ int bindTextureInternal(GLuint program, GLuint type, int activeTexture, std::str
     return activeTexture;
 }
 
-
 int Texture::bindTexture(GLuint program, int activeTexture, GLuint location, TextureArray texture) {
     return bindTextureInternal(program, GL_TEXTURE_2D_ARRAY, activeTexture, location, texture.index);
 }
-
 
 int Texture::bindTexture(GLuint program, int activeTexture, std::string objectName, TextureArray texture) {
     return bindTextureInternal(program, GL_TEXTURE_2D_ARRAY, activeTexture, objectName, texture.index);

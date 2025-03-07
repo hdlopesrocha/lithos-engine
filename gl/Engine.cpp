@@ -133,20 +133,20 @@ RenderBuffer createRenderFrameBufferWithoutDepth(int width, int height) {
     glDrawBuffers(1, drawBuffers);
     
     if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE){
-        std::cerr << "createRenderFrameBuffer error!" << std::endl;
+        std::cerr << "createRenderFrameBufferWithoutDepth error!" << std::endl;
     }
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     return buffer;
 }
 
-RenderBuffer createRenderFrameBuffer(int width, int height, bool depth, GLuint channels) {
+RenderBuffer createRenderFrameBuffer(int width, int height, bool depth) {
     RenderBuffer buffer;
     buffer.width = width;
     buffer.height = height;
-    
+    buffer.colorTexture.channel = GL_RGBA8;
     glGenTextures(1, &buffer.colorTexture.idx);
     glBindTexture(GL_TEXTURE_2D, buffer.colorTexture.idx);
-    glTexImage2D(GL_TEXTURE_2D, 0, channels, width, height, 0, channels, GL_UNSIGNED_BYTE, NULL);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -207,6 +207,7 @@ static long allocatedTextureArrayMemory = 0;
 
 TextureArray createTextureArray(int width, int height, int layers, GLuint channel) {
     TextureArray texArray;
+    texArray.channel = channel;
     glGenTextures(1, &texArray.index);
     glBindTexture(GL_TEXTURE_2D_ARRAY, texArray.index);
 
@@ -431,7 +432,7 @@ TextureImage LithosApplication::loadTextureImage(const std::string& filename) {
             format = GL_RGB;
         else if (channels == 4)
             format = GL_RGBA;
-
+        image.channel = format;
         // Upload the texture to OpenGL
         glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
         glGenerateMipmap(GL_TEXTURE_2D);

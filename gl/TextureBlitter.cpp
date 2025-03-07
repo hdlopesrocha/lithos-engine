@@ -4,12 +4,12 @@
 TextureBlitter::TextureBlitter(GLuint program, int width, int height){
     this->program = program;
     this->resizeVao = DrawableGeometry::create2DVAO(-1,-1, 1,1);
-    this->bufferRGB8 = createRenderFrameBuffer(width, height, false, GL_RGB);
-    this->bufferR8 = createRenderFrameBuffer(width, height, false, GL_RED);
+    this->bufferRGB8 = createMultiLayerRenderFrameBuffer(width, height, 1,1, false, GL_RGB8);
+    this->bufferR8 = createMultiLayerRenderFrameBuffer(width, height, 1,1, false, GL_R8);
 }
 
-void TextureBlitter::blit(MultiLayerRenderBuffer * sourceBuffer, int sourceIndex, TextureArray * targetBuffer, int targetIndex, GLuint channels) {
-    RenderBuffer * buffer = channels == GL_RGB8 ? &bufferRGB8 : &bufferR8;
+void TextureBlitter::blit(MultiLayerRenderBuffer * sourceBuffer, int sourceIndex, TextureArray * targetBuffer, int targetIndex) {
+    MultiLayerRenderBuffer * buffer = targetBuffer->channel == GL_RGB8 ? &bufferRGB8 : &bufferR8;
     
     glUseProgram(program);
     glBindFramebuffer(GL_FRAMEBUFFER, buffer->frameBuffer);
@@ -30,17 +30,17 @@ void TextureBlitter::blit(MultiLayerRenderBuffer * sourceBuffer, int sourceIndex
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, buffer->colorTexture.idx);
-    glGenerateMipmap(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D_ARRAY, buffer->colorTexture.index);
+    glGenerateMipmap(GL_TEXTURE_2D_ARRAY);
 
 
     glBindTexture(GL_TEXTURE_2D, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     
-   glCopyImageSubData(
-    buffer->colorTexture.idx, GL_TEXTURE_2D, 0, 0, 0, 0, // Source
-    targetBuffer->index, GL_TEXTURE_2D_ARRAY, 0, 0, 0, targetIndex, // Destination
-    buffer->width, buffer->height, 1 // Copy a single layer
+    glCopyImageSubData(
+        buffer->colorTexture.index, GL_TEXTURE_2D_ARRAY, 0, 0, 0, 0, // Source
+        targetBuffer->index, GL_TEXTURE_2D_ARRAY, 0, 0, 0, targetIndex, // Destination
+        buffer->width, buffer->height, 1 // Copy a single layer
     );
 
     glActiveTexture(GL_TEXTURE0);

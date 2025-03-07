@@ -43,10 +43,10 @@ void AnimatedTexture::animate(float time, AnimateParams params){
 
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
-    blitter->blit(&textureMixerBuffer, 0, &layers->textures[0], params.targetTexture, GL_RGB8);
-    blitter->blit(&textureMixerBuffer, 1, &layers->textures[1], params.targetTexture, GL_RGB8);
-    blitter->blit(&textureMixerBuffer, 2, &layers->textures[2], params.targetTexture, GL_R8);
-    
+    for(int i = 0 ; i < 3 ; ++i) {
+        blitter->blit(&textureMixerBuffer, i, &layers->textures[i], params.targetTexture);
+    }
+
     glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }

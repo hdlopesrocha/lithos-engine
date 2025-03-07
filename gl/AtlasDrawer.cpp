@@ -83,10 +83,9 @@ void AtlasDrawer::draw(AtlasParams params){
 
     }
 
-    blitter->blit(&renderBuffer, 0, &targetLayers->textures[0], params.targetTexture, GL_RGB8);
-    blitter->blit(&renderBuffer, 1, &targetLayers->textures[1], params.targetTexture, GL_RGB8);
-    blitter->blit(&renderBuffer, 2, &targetLayers->textures[2], params.targetTexture, GL_R8);
-
+    for(int i =0 ; i < 3; ++i) {
+        blitter->blit(&renderBuffer, i, &targetLayers->textures[i], params.targetTexture);
+    }
 
     glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
