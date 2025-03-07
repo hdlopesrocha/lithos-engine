@@ -97,11 +97,12 @@ class AtlasPainter: public Closable {
 };
 
 class ImpostorViewer: public Closable {
-    std::vector<ImpostorDrawer*> * impostorDrawers;
+    ImpostorDrawer* impostorDrawer;
     TexturePreviewer * previewer;
+    TextureLayers * layers;
     int selectedDrawer = 0;
     public:
-    ImpostorViewer(std::vector<ImpostorDrawer*> * impostorDrawers, GLuint previewProgram, int width, int height, TextureLayers * layers);
+    ImpostorViewer(ImpostorDrawer* impostorDrawer, GLuint previewProgram, int width, int height, TextureLayers * layers);
     void draw2d();
     void draw3d(UniformBlock * block);
 };

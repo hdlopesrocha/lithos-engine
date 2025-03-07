@@ -319,11 +319,10 @@ class TextureBlitter {
     GLuint program;
     GLuint programCopy;
     GLuint resizeVao;
-    MultiLayerRenderBuffer bufferRGB8;
-    MultiLayerRenderBuffer bufferR8;
+    std::map<GLuint, MultiLayerRenderBuffer> buffers;
 
     public:
-    TextureBlitter(GLuint program, int width, int height);
+    TextureBlitter(GLuint program, int width, int height, std::initializer_list<GLuint> formats);
     void blit(MultiLayerRenderBuffer * sourceBuffer, int sourceIndex, TextureArray * targetBuffer, int targetIndex);
 };
 
@@ -463,6 +462,15 @@ class AtlasDrawer {
     void draw(AtlasParams params);
 };
 
+class ImpostorParams {
+    public:
+    int targetTexture = 0;
+  
+    ImpostorParams(int targetTexture);
+
+};
+
+
 class ImpostorDrawer {
     GLuint program;
 	DrawableInstanceGeometry * mesh;
@@ -471,8 +479,8 @@ class ImpostorDrawer {
     int height;
 
     public:
-    ImpostorDrawer(GLuint program, int width, int height);
-    void draw();
+    ImpostorDrawer(GLuint program, int width, int height, TextureLayers* sourceLayers, TextureLayers * targetLayers);
+    void draw(ImpostorParams params);
     TextureArray getTexture();
 };
 void blitTextureArray(GLuint programCopy, MultiLayerRenderBuffer buffer, TextureLayers * layers, int index);
