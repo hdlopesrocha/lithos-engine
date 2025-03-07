@@ -317,10 +317,12 @@ class TextureBlitter {
     GLuint program;
     GLuint programCopy;
     GLuint resizeVao;
+    RenderBuffer bufferRGB8;
+    RenderBuffer bufferR8;
 
     public:
-    TextureBlitter(GLuint program);
-    void blit(MultiLayerRenderBuffer * sourceBuffer, int sourceIndex, TextureArray * targetBuffer, int targetIndex);
+    TextureBlitter(GLuint program, int width, int height);
+    void blit(MultiLayerRenderBuffer * sourceBuffer, int sourceIndex, TextureArray * targetBuffer, int targetIndex, GLuint channels);
 };
 
 struct MixerParams {
@@ -479,6 +481,6 @@ void loadTexture(TextureLayers layers,  std::initializer_list<std::string> fns, 
 TextureArray createTextureArray(int width, int height, int layers, GLuint channel); 
 MultiLayerRenderBuffer createMultiLayerRenderFrameBuffer(int width, int height, int layers, int attachments, bool depth, GLuint color);
 RenderBuffer createDepthFrameBuffer(int width, int height);
-RenderBuffer createRenderFrameBuffer(int width, int height);
+RenderBuffer createRenderFrameBuffer(int width, int height, bool depth, GLuint channels);
 RenderBuffer createRenderFrameBufferWithoutDepth(int width, int height);
 #endif

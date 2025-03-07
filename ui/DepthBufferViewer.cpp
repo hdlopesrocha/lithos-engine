@@ -4,7 +4,7 @@
 DepthBufferViewer::DepthBufferViewer(GLuint previewProgram, TextureImage depthTexture, int width, int height) {
     this->depthTexture = depthTexture;
     this->previewProgram = previewProgram;
-    this->previewBuffer = createRenderFrameBuffer(width,height);
+    this->previewBuffer = createRenderFrameBuffer(width,height, false, GL_RGB8);
     this->previewVao = DrawableGeometry::create2DVAO(-1,-1, 1,1);
     this->width = width;
     this->height = height;
