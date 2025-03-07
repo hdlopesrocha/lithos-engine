@@ -228,8 +228,8 @@ public:
 		});
 
 		TextureBlitter * blitter = new TextureBlitter(programCopy, 1024, 1024);
-		renderBuffer = createRenderFrameBuffer(getWidth(), getHeight(), true, GL_RGB8);
-		solidBuffer = createRenderFrameBuffer(getWidth(), getHeight(), true, GL_RGB8);
+		renderBuffer = createRenderFrameBuffer(getWidth(), getHeight(), true);
+		solidBuffer = createRenderFrameBuffer(getWidth(), getHeight(), true);
 		depthFrameBuffer = createDepthFrameBuffer(getWidth(), getHeight());
 		shadowFrameBuffers.push_back(std::pair(createDepthFrameBuffer(1024, 1024), 32));
 		shadowFrameBuffers.push_back(std::pair(createDepthFrameBuffer(1024, 1024), 128));
@@ -419,7 +419,7 @@ public:
 		//tesselator->normalize();
 		uniformBlockViewer = new UniformBlockViewer(&viewerBlock);
 		atlasPainter = new AtlasPainter(&atlasParams, &atlasTextures, atlasDrawer, programAtlas, programTexture, 256,256, &billboardLayers);
-		atlasViewer = new AtlasViewer(&atlasTextures, atlasDrawer, programAtlas, programTexture, 256,256, &atlasLayers, blitter);
+		atlasViewer = new AtlasViewer(&atlasTextures, atlasDrawer, programAtlas, programTexture, 256,256, &atlasLayers, programCopy);
 		brushEditor = new BrushEditor(&camera, &brushes, program3d, programTexture, &textureLayers);
 		shadowMapViewer = new ShadowMapViewer(&shadowFrameBuffers, 512, 512);
 		textureMixerEditor = new TextureMixerEditor(textureMixer, &mixers, programTexture, &textureLayers);

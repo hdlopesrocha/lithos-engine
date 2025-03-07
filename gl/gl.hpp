@@ -92,10 +92,12 @@ struct ProgramData {
 
 struct TextureArray {
     GLuint index;
+    GLuint channel;
 };
 
 struct TextureImage {
     GLuint idx;
+    GLuint channel;
 };
 
 
@@ -317,12 +319,12 @@ class TextureBlitter {
     GLuint program;
     GLuint programCopy;
     GLuint resizeVao;
-    RenderBuffer bufferRGB8;
-    RenderBuffer bufferR8;
+    MultiLayerRenderBuffer bufferRGB8;
+    MultiLayerRenderBuffer bufferR8;
 
     public:
     TextureBlitter(GLuint program, int width, int height);
-    void blit(MultiLayerRenderBuffer * sourceBuffer, int sourceIndex, TextureArray * targetBuffer, int targetIndex, GLuint channels);
+    void blit(MultiLayerRenderBuffer * sourceBuffer, int sourceIndex, TextureArray * targetBuffer, int targetIndex);
 };
 
 struct MixerParams {
@@ -481,6 +483,6 @@ void loadTexture(TextureLayers layers,  std::initializer_list<std::string> fns, 
 TextureArray createTextureArray(int width, int height, int layers, GLuint channel); 
 MultiLayerRenderBuffer createMultiLayerRenderFrameBuffer(int width, int height, int layers, int attachments, bool depth, GLuint color);
 RenderBuffer createDepthFrameBuffer(int width, int height);
-RenderBuffer createRenderFrameBuffer(int width, int height, bool depth, GLuint channels);
+RenderBuffer createRenderFrameBuffer(int width, int height, bool depth);
 RenderBuffer createRenderFrameBufferWithoutDepth(int width, int height);
 #endif
