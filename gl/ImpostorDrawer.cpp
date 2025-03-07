@@ -1,6 +1,11 @@
 #include "gl.hpp"
 
-ImpostorDrawer::ImpostorDrawer(GLuint program, int width, int height) {
+
+ImpostorParams::ImpostorParams(int targetTexture){
+    this->targetTexture = targetTexture;
+}
+
+ImpostorDrawer::ImpostorDrawer(GLuint program, int width, int height, TextureLayers* sourceLayers, TextureLayers * targetLayers) {
     this->height = height;
     this->width = width;
     this->program = program;
@@ -16,7 +21,7 @@ TextureArray ImpostorDrawer::getTexture() {
     return renderBuffer.colorTexture;
 }
 
-void ImpostorDrawer::draw() {
+void ImpostorDrawer::draw(ImpostorParams params) {
     std::cout << "ImpostorDrawer::draw" << std::endl;
   /*  glm::mat4 view = glm::lookAt(glm::vec3(2.0), mesh->center, glm::vec3(0.0, 1.0, 0.0));
     glm::mat4 projection = glm::perspective(glm::radians(45.0f), width / (float) height, 0.1f, 32.0f);

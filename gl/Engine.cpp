@@ -376,10 +376,10 @@ void loadTexture(TextureLayers layers, std::initializer_list<std::string> fns, i
     int channel0;
     for(int i = 0; i < textures.size() ; ++i) {
         std::string filename = textures[i];
-        std::cout << "Loading " << filename << std::endl;
 
         int width, height, channel;
         unsigned char* data = stbi_load(filename.c_str(), &width, &height, &channel, 0);
+        std::cout << "Loading " << filename << " [index="<< std::to_string(i) <<", channels=" << std::to_string(channel) <<  "]"<< std::endl;
        
         if (!data) {
             std::cerr << "Failed to load texture: " << filename << std::endl;

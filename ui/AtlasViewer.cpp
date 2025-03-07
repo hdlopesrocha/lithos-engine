@@ -5,13 +5,12 @@
 
 AtlasViewer::AtlasViewer(std::vector<AtlasTexture*> * atlasTextures, AtlasDrawer * drawer, GLuint programAtlas, GLuint previewProgram, int width, int height, TextureLayers * sourceLayers, GLuint copyProgram) {
     TextureLayers * targetLayers = new TextureLayers();
-    // TODO: dimenstions must have same dimensions of textures, not needed to preview, we could decrease this
     targetLayers->textures[0] = createTextureArray(width, height, 1, GL_RGB8);
     targetLayers->textures[1] = createTextureArray(width, height, 1, GL_RGB8);
     targetLayers->textures[2] = createTextureArray(width, height, 1, GL_R8);
     targetLayers->count = 1;
 
-    TextureBlitter * blitter = new TextureBlitter(copyProgram, width, height);
+    TextureBlitter * blitter = new TextureBlitter(copyProgram, width, height, {GL_RGB8, GL_R8});
     this->drawer = new AtlasDrawer(programAtlas, width, height, sourceLayers, targetLayers, blitter);
     this->atlasTextures = atlasTextures;
     this->previewer = new TexturePreviewer(previewProgram, width, height, {"Color", "Normal", "Opacity" }, targetLayers);

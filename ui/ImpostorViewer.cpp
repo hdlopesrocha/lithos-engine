@@ -1,22 +1,22 @@
 #include "ui.hpp"
 
 
-ImpostorViewer::ImpostorViewer(std::vector<ImpostorDrawer*> * impostorDrawers, GLuint previewProgram, int width, int height, TextureLayers * layers) {
-    this->impostorDrawers = impostorDrawers;
+ImpostorViewer::ImpostorViewer(ImpostorDrawer* impostorDrawer, GLuint previewProgram, int width, int height, TextureLayers * layers) {
+    this->impostorDrawer = impostorDrawer;
     this->previewer = new TexturePreviewer(previewProgram, width, height, {"Color", "Normal", "Opacity" }, layers);
     this->selectedDrawer = 0;
+    this->layers = layers;
 }
 
 
 void ImpostorViewer::draw2d(){
     ImGui::Begin("Impostor Viewer", &open, ImGuiWindowFlags_AlwaysAutoResize);
 
-    selectedDrawer = Math::mod(selectedDrawer, impostorDrawers->size());
+    selectedDrawer = Math::mod(selectedDrawer, layers->count);
 
-    ImpostorDrawer * drawer = impostorDrawers->at(selectedDrawer);
     previewer->draw2d(0);
 
-    ImGui::Text("Selected impostor: %d/%ld ", selectedDrawer, impostorDrawers->size());
+    ImGui::Text("Selected impostor: %d/%d ", selectedDrawer, layers->count);
     ImGui::SameLine();
     if (ImGui::ArrowButton("##selectedDrawer_left", ImGuiDir_Left)) {
         --selectedDrawer;

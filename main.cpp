@@ -73,7 +73,7 @@ class MainApplication : public LithosApplication {
 
 	std::vector<MixerParams> mixers;
 	std::vector<AnimateParams> animations;
-	std::vector<ImpostorDrawer*> impostorDrawers;
+	std::vector<ImpostorParams> impostors;
 
 	Scene * mainScene;
 	Settings * settings = new Settings();
@@ -99,7 +99,7 @@ class MainApplication : public LithosApplication {
 
 
 	TextureImage noiseTexture;
-
+	TextureBlitter * textureBlitter1024;
 	RenderBuffer depthFrameBuffer;
 	RenderBuffer renderBuffer;
 	RenderBuffer solidBuffer;
@@ -127,7 +127,7 @@ class MainApplication : public LithosApplication {
 	TextureLayers textureLayers;
 	TextureLayers billboardLayers;
 	
-
+	ImpostorDrawer * impostorDrawer;
 	TextureMixer * textureMixer;
 	AnimatedTexture * textureAnimator;
 	AtlasDrawer * atlasDrawer;
@@ -142,22 +142,6 @@ public:
 	}
 
     virtual void setup() {
-		textureLayers.textures[0] = createTextureArray(1024, 1024, 25, GL_RGB8);
-		textureLayers.textures[1] = createTextureArray(1024, 1024, 25, GL_RGB8);
-		textureLayers.textures[2] = createTextureArray(1024, 1024, 25, GL_R8);
-		textureLayers.count = 0;
-
-		billboardLayers.textures[0] = createTextureArray(1024, 1024, 5, GL_RGB8);
-		billboardLayers.textures[1] = createTextureArray(1024, 1024, 5, GL_RGB8);
-		billboardLayers.textures[2] = createTextureArray(1024, 1024, 5, GL_R8);
-		billboardLayers.count = 0;
-
-		atlasLayers.textures[0] = createTextureArray(1024, 1024, 5, GL_RGB8);
-		atlasLayers.textures[1] = createTextureArray(1024, 1024, 5, GL_RGB8);
-		atlasLayers.textures[2] = createTextureArray(1024, 1024, 5, GL_R8);
-		atlasLayers.count = 0;
-
-
 		std::vector<GlslInclude> includes;
 		includes.push_back(GlslInclude("#include<functions.glsl>" , readFile("shaders/util/functions.glsl")));
 		includes.push_back(GlslInclude("#include<perlin.glsl>" , readFile("shaders/util/perlin.glsl")));
@@ -204,8 +188,6 @@ public:
 			compileShader(replaceIncludes(includes,readFile("shaders/texture/water_fragment.glsl")),GL_FRAGMENT_SHADER)
 		});
 
-
-
 		program3d = createShaderProgram({
 			compileShader(replaceIncludes(includes,readFile("shaders/3d_vertex.glsl")),GL_VERTEX_SHADER), 
 			compileShader(replaceIncludes(includes,readFile("shaders/3d_tessControl.glsl")),GL_TESS_CONTROL_SHADER), 
@@ -227,16 +209,33 @@ public:
 			compileShader(replaceIncludes(includes,readFile("shaders/impostor_fragment.glsl")),GL_FRAGMENT_SHADER) 
 		});
 
-		TextureBlitter * blitter = new TextureBlitter(programCopy, 1024, 1024);
+		textureLayers.textures[0] = createTextureArray(1024, 1024, 25, GL_RGB8);
+		textureLayers.textures[1] = createTextureArray(1024, 1024, 25, GL_RGB8);
+		textureLayers.textures[2] = createTextureArray(1024, 1024, 25, GL_R8);
+		textureLayers.count = 0;
+
+		billboardLayers.textures[0] = createTextureArray(1024, 1024, 5, GL_RGB8);
+		billboardLayers.textures[1] = createTextureArray(1024, 1024, 5, GL_RGB8);
+		billboardLayers.textures[2] = createTextureArray(1024, 1024, 5, GL_R8);
+		billboardLayers.count = 0;
+
+		atlasLayers.textures[0] = createTextureArray(1024, 1024, 5, GL_RGB8);
+		atlasLayers.textures[1] = createTextureArray(1024, 1024, 5, GL_RGB8);
+		atlasLayers.textures[2] = createTextureArray(1024, 1024, 5, GL_R8);
+		atlasLayers.count = 0;
+
+		textureBlitter1024 = new TextureBlitter(programCopy, 1024, 1024, {GL_RGB8, GL_R8});
+
 		renderBuffer = createRenderFrameBuffer(getWidth(), getHeight(), true);
 		solidBuffer = createRenderFrameBuffer(getWidth(), getHeight(), true);
 		depthFrameBuffer = createDepthFrameBuffer(getWidth(), getHeight());
 		shadowFrameBuffers.push_back(std::pair(createDepthFrameBuffer(1024, 1024), 32));
 		shadowFrameBuffers.push_back(std::pair(createDepthFrameBuffer(1024, 1024), 128));
 		shadowFrameBuffers.push_back(std::pair(createDepthFrameBuffer(1024, 1024), 512));
-		textureMixer = new TextureMixer(1024,1024, programMixTexture, &textureLayers, blitter);
-		textureAnimator = new AnimatedTexture(1024,1024, programWaterTexture ,&textureLayers, blitter);
-		atlasDrawer = new AtlasDrawer(programAtlas, 1024, 1024, &atlasLayers, &billboardLayers, blitter);
+
+		textureMixer = new TextureMixer(1024,1024, programMixTexture, &textureLayers, textureBlitter1024);
+		textureAnimator = new AnimatedTexture(1024,1024, programWaterTexture ,&textureLayers, textureBlitter1024);
+		atlasDrawer = new AtlasDrawer(programAtlas, 1024, 1024, &atlasLayers, &billboardLayers, textureBlitter1024);
 
 
 		{
@@ -360,16 +359,7 @@ public:
 			++atlasLayers.count;
 		}
 
-		for(MixerParams mp : mixers) {
-			textureMixer->mix(mp);
-		}
-
-		for(AtlasParams ap : atlasParams) {
-			atlasDrawer->draw(ap);
-		}
-
-
-		impostorDrawers.push_back(new ImpostorDrawer(programImpostor, 256, 256));
+		impostorDrawer = new ImpostorDrawer(programImpostor, 256, 256, NULL, NULL);
 		
 		noiseTexture = loadTextureImage("textures/noise.jpg");
 
@@ -400,7 +390,17 @@ public:
 		Brush::bindBrushes(programBillboard, "brushes", "brushTextures", &billboardBrushes);
 		Brush::bindBrushes(programImpostor, "brushes", "brushTextures", &billboardBrushes);
 
-		for(ImpostorDrawer * drawer : impostorDrawers) {
+
+		for(MixerParams mp : mixers) {
+			textureMixer->mix(mp);
+		}
+
+		for(AtlasParams ap : atlasParams) {
+			atlasDrawer->draw(ap);
+		}
+
+		for(ImpostorParams params : impostors) {
+			impostorDrawer->draw(params);
 		//	drawer->draw();
 		}
 
@@ -427,7 +427,7 @@ public:
 		depthBufferViewer = new DepthBufferViewer(programDepth,depthFrameBuffer.depthTexture,512,512);
 		settingsEditor = new SettingsEditor(settings);
 		textureViewer = new TextureViewer(programTexture, &textureLayers);
-		impostorViewer = new ImpostorViewer(&impostorDrawers, programTexture, 256, 256, &billboardLayers);
+		impostorViewer = new ImpostorViewer(impostorDrawer, programTexture, 256, 256, &billboardLayers);
 
 		// ImGui
 		IMGUI_CHECKVERSION();
