@@ -477,9 +477,11 @@ class ImpostorDrawer {
     MultiLayerRenderBuffer renderBuffer;
     int width; 
     int height;
-
+    TextureBlitter * blitter;
+    TextureLayers* sourceLayers;
+    TextureLayers * targetLayers;
     public:
-    ImpostorDrawer(GLuint program, int width, int height, TextureLayers* sourceLayers, TextureLayers * targetLayers);
+    ImpostorDrawer(GLuint program, int width, int height, TextureLayers* sourceLayers, TextureLayers * targetLayers, TextureBlitter * blitter);
     void draw(ImpostorParams params);
     TextureArray getTexture();
 };

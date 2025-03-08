@@ -3,7 +3,9 @@
 
 
 uniform sampler2DArray sampler[3];
-
+layout(location = 0) out vec4 FragColor0; // First render target (color)
+layout(location = 1) out vec4 FragColor1; // Second render target (normals)
+layout(location = 2) out vec4 FragColor2; // Third render target (bump)
 
 uniform bool triplanarEnabled;
 uniform bool opacityEnabled;
@@ -32,30 +34,17 @@ void main() {
         uv = triplanarMapping(gPosition, plane, gProps.textureScale) * 0.1;
     }
 
+    vec4 opacity = textureBlend(sampler[2], gTextureWeights, gTextureIndices, uv);
+
     if(opacityEnabled) {
-        vec4 opacity = textureBlend(sampler[2], gTextureWeights, gTextureIndices, uv);
         if(opacity.r < 0.98) {
             discard;
         }
     }
-
-    vec3 correctedNormal = gl_FrontFacing ? gNormal : -gNormal;
-    mat3 normalMatrix = transpose(inverse(mat3(gModel)));
-    vec3 normal = normalize(normalMatrix * correctedNormal);
-
-    mat3 TBN = getTBN(gPosition, correctedNormal, uv, gModel, false);
-  
-    vec4 mixedColor = textureBlend(sampler[0], gTextureWeights, gTextureIndices, uv);
-    if(mixedColor.a == 0.0) {
-        discard;
-    }
-
-    vec3 normalMap = textureBlend(sampler[1], gTextureWeights, gTextureIndices, uv).rgb * 2.0 - 1.0;
-    normalMap = normalize(normalMap); // Convert to range [-1, 1]
-    vec3 worldNormal = normalize(TBN * normalMap);
-
-    //    color = vec4(visual(worldNormal),1.0);
-    color = mixedColor;
+    
+    FragColor0 = textureBlend(sampler[0], gTextureWeights, gTextureIndices, uv);
+    FragColor1 = textureBlend(sampler[1], gTextureWeights, gTextureIndices, uv);
+    FragColor2 = opacity;
  }
 
 
