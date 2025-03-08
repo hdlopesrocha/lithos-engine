@@ -11,11 +11,11 @@ ImpostorViewer::ImpostorViewer(ImpostorDrawer* impostorDrawer, GLuint previewPro
 
 void ImpostorViewer::draw2d(){
     ImGui::Begin("Impostor Viewer", &open, ImGuiWindowFlags_AlwaysAutoResize);
-
-    selectedDrawer = Math::mod(selectedDrawer, layers->count);
-
-    previewer->draw2d(0);
-
+    if(layers->count) {
+        selectedDrawer = Math::mod(selectedDrawer, layers->count);
+        previewer->draw2d(0);
+    }
+    
     ImGui::Text("Selected impostor: %d/%d ", selectedDrawer, layers->count);
     ImGui::SameLine();
     if (ImGui::ArrowButton("##selectedDrawer_left", ImGuiDir_Left)) {
