@@ -1,7 +1,6 @@
 #version 460 core
 #include<structs.glsl>
 #include<uniforms.glsl>
-
 layout(triangles, equal_spacing, ccw) in; // Define primitive type and tessellation spacing
 
 
@@ -13,12 +12,13 @@ in TextureProperties tcProps[];
 in uvec3 tcTextureIndices[];
 in mat4 tcModel[];
 in mat3 tcNormalMatrix[];
-#include<functions.glsl>
-in vec4 tcTangent[];
+in vec3 tcT[];
+in vec3 tcB[];
+in vec3 tcN[];
 
+#include<functions.glsl>
 
 out vec3 teSharpNormal;
-out vec3 teNormal;
 out vec2 teTextureCoord;
 out vec3 teTextureWeights;
 out vec3 tePosition;
@@ -27,12 +27,13 @@ out vec4 teLightViewPosition[SHADOW_MATRIX_COUNT];
 flat out uvec3 teTextureIndices;
 out mat4 teModel;
 uniform TextureProperties overrideProps;
-
+out vec3 teT;
+out vec3 teB;
+out vec3 teN;
 
 void main() {
     if(!depthEnabled) {
         teSharpNormal = normalize(cross(tcPosition[1] - tcPosition[0], tcPosition[2] - tcPosition[0]));
-        teNormal = gl_TessCoord[0] * tcNormal[0] + gl_TessCoord[1] * tcNormal[1] + gl_TessCoord[2] * tcNormal[2];
 
         if(overrideEnabled) {
             teProps = overrideProps;
@@ -79,9 +80,13 @@ void main() {
         teTextureCoord = triplanarMapping(tePosition, plane, teProps.textureScale) * 0.1;
     }
 
-
-            
     if(!depthEnabled) {
+        
+        // Output TBN vectors
+        teT = tcT[0]* gl_TessCoord[0]+tcT[1]* gl_TessCoord[1]+tcT[2]* gl_TessCoord[2];
+        teB = tcB[0]* gl_TessCoord[0]+tcB[1]* gl_TessCoord[1]+tcB[2]* gl_TessCoord[2];
+        teN = tcN[0]* gl_TessCoord[0]+tcN[1]* gl_TessCoord[1]+tcN[2]* gl_TessCoord[2];
+        
         for(int i = 0; i < SHADOW_MATRIX_COUNT ; ++i ) {
             teLightViewPosition[i] = matrixShadow[i] * vec4(tePosition, 1.0);  
         }
