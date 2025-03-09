@@ -109,6 +109,11 @@ struct Camera {
     glm::quat quaternion;
     glm::vec3 position;
 
+    glm::vec3 getCameraDirection() {
+        glm::vec3 forward = glm::vec3(0.0f, 0.0f, -1.0f);
+        return glm::normalize(glm::rotate(quaternion, forward));
+    }
+
     glm::mat4 getVP() {
 		return projection * view;
 	}
@@ -119,10 +124,22 @@ struct DirectionalLight {
     glm::vec3 direction;
 
     glm::mat4 getVP(Camera * camera, float orthoSize, float near, float far) {
-        float dist = far/2.0;
-		glm::mat4 projection = glm::ortho(-orthoSize, orthoSize, -orthoSize, orthoSize, near, far);
-		glm::mat4 view = glm::lookAt(camera->position - direction*dist, camera->position, glm::vec3(0,1,0));
-		return projection * view;
+        // Calculate a distance for the light based on the far plane, used to capture the scene.
+        float dist = far / 2.0f;
+        
+        // Create an orthographic projection matrix for shadow mapping.
+        glm::mat4 projection = glm::ortho(-orthoSize, orthoSize, -orthoSize, orthoSize, near, far);
+        
+        // Set up the view matrix so that the light looks at the camera's position,
+        // but it is positioned along the light's direction, offset by dist to capture the scene's visible range.
+
+        glm::vec3 lightLootAt = camera->position;
+        glm::vec3 lightPosition = camera->position -direction*dist;
+
+        glm::mat4 view = glm::lookAt(lightPosition, lightLootAt, glm::vec3(0.0f, 1.0f, 0.0f));
+        
+        // Return the combined projection * view matrix for shadow mapping.
+        return projection * view;
     }
 };
 
