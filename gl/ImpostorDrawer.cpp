@@ -1,8 +1,9 @@
 #include "gl.hpp"
 
 
-ImpostorParams::ImpostorParams(int targetTexture){
+ImpostorParams::ImpostorParams(int targetTexture, DrawableInstanceGeometry * mesh){
     this->targetTexture = targetTexture;
+    this->mesh = mesh;
 }
 
 ImpostorDrawer::ImpostorDrawer(GLuint program, int width, int height, TextureLayers* sourceLayers, TextureLayers * targetLayers, TextureBlitter * blitter) {
@@ -13,21 +14,16 @@ ImpostorDrawer::ImpostorDrawer(GLuint program, int width, int height, TextureLay
     this->sourceLayers = sourceLayers;
     this->targetLayers = targetLayers;
     this->renderBuffer = createMultiLayerRenderFrameBuffer(width, height, 3, 3, true, GL_RGB8);
-
-    std::vector<InstanceData> vegetationInstances;
-    vegetationInstances.push_back(InstanceData(glm::mat4(1.0), 0));
-
-    this->mesh = new DrawableInstanceGeometry(new Vegetation3d(), &vegetationInstances, glm::vec3(0.0, 0.5, 0.0));
 }
 
 TextureArray ImpostorDrawer::getTexture() {
     return renderBuffer.colorTexture;
 }
 
-void ImpostorDrawer::draw(ImpostorParams params) {
+void ImpostorDrawer::draw(ImpostorParams &params) {
     std::cout << "ImpostorDrawer::draw" << std::endl;
     
-    glm::mat4 view = glm::lookAt(glm::vec3(2.0), mesh->center, glm::vec3(0.0, 1.0, 0.0));
+    glm::mat4 view = glm::lookAt(glm::vec3(2.0), params.mesh->center, glm::vec3(0.0, 1.0, 0.0));
     glm::mat4 projection = glm::perspective(glm::radians(45.0f), width / (float) height, 0.1f, 32.0f);
     glm::mat4 viewProjection = projection * view;
     glm::mat4 model(1.0);
@@ -36,24 +32,20 @@ void ImpostorDrawer::draw(ImpostorParams params) {
     glBindFramebuffer(GL_FRAMEBUFFER, renderBuffer.frameBuffer);
     glViewport(0, 0, renderBuffer.width, renderBuffer.height);
     glClearColor (1.0,0.0,0.0,1.0);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    for(int i = 0; i < 3 ; ++i) {
-        glActiveTexture(GL_TEXTURE0+ i); 
-        glBindTexture(GL_TEXTURE_2D_ARRAY, sourceLayers->textures[i].index);
-        glUniform1i(glGetUniformLocation(program, ("sampler[" + std::to_string(i) + "]").c_str()), i);
-    }
+    //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glUniform1i(glGetUniformLocation(program, "triplanarEnabled"), false); 
-    glUniform1i(glGetUniformLocation(program, "opacityEnabled"), true); 
+    glUniform1i(glGetUniformLocation(program, "opacityEnabled"), false); // TODO: true
     glUniform1i(glGetUniformLocation(program, "overrideEnabled"), false); 
     glUniform1ui(glGetUniformLocation(program, "overrideTexture"), 0u); 
     glUniformMatrix4fv(glGetUniformLocation(program, "model"), 1, GL_FALSE, glm::value_ptr(model));
     glUniformMatrix4fv(glGetUniformLocation(program, "viewProjection"), 1, GL_FALSE, glm::value_ptr(viewProjection));
-
+   
+    glDisable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);
-    mesh->draw(GL_TRIANGLES);
+    params.mesh->draw(GL_TRIANGLES);
     glEnable(GL_CULL_FACE);
+    glEnable(GL_DEPTH_TEST);
 
     for(int i=0 ; i < 3 ; ++i ) {
         blitter->blit(&renderBuffer, i, &targetLayers->textures[i], params.targetTexture);

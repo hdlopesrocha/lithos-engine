@@ -20,15 +20,13 @@ out vec2 vTextureCoord;
 out vec3 vPosition;
 out vec3 vNormal;
 out TextureProperties vProps;
-out mat4 vModel;
 
 
 void main() {
     vTextureIndex = brushTextures[brushIndex];
     vTextureCoord = textureCoord;
-    vModel = world*model;
     vProps = brushes[brushIndex];
     vNormal = normal;
-    vPosition = (vModel*vec4(position, 1.0)).xyz;
+    vPosition = (world*model*vec4(position, 1.0)).xyz;
     gl_Position = viewProjection * vec4(vPosition, 1.0);    
 }

@@ -12,29 +12,26 @@ in vec3 tcPosition[];
 in TextureProperties tcProps[];
 in uvec3 tcTextureIndices[];
 in mat4 tcModel[];
-
+in mat3 tcNormalMatrix[];
 #include<functions.glsl>
+in vec4 tcTangent[];
 
-out vec3 teNormal;
+
+out vec3 teSharpNormal;
+
 out vec2 teTextureCoord;
 out vec3 teTextureWeights;
 out vec3 tePosition;
-out vec3 teSharpNormal;
 out TextureProperties teProps;
 out vec4 teLightViewPosition[SHADOW_MATRIX_COUNT];
 flat out uvec3 teTextureIndices;
 out mat4 teModel;
-
-
 uniform TextureProperties overrideProps;
 
 
 void main() {
     if(!depthEnabled) {
-        teNormal = normalize(tcNormal[0] * gl_TessCoord[0] + tcNormal[1] * gl_TessCoord[1] + tcNormal[2] * gl_TessCoord[2]);
         teSharpNormal = normalize(cross(tcPosition[1] - tcPosition[0], tcPosition[2] - tcPosition[0]));
-
-
 
         if(overrideEnabled) {
             teProps = overrideProps;
@@ -76,6 +73,13 @@ void main() {
     tePosition = gl_TessCoord[0] * tcPosition[0] + gl_TessCoord[1] * tcPosition[1] + gl_TessCoord[2] * tcPosition[2];
     teModel = tcModel[0];
 
+    if(triplanarEnabled) {
+        int plane = triplanarPlane(tePosition, teSharpNormal);
+        teTextureCoord = triplanarMapping(tePosition, plane, teProps.textureScale) * 0.1;
+    }
+
+
+            
     if(!depthEnabled) {
         for(int i = 0; i < SHADOW_MATRIX_COUNT ; ++i ) {
             teLightViewPosition[i] = matrixShadow[i] * vec4(tePosition, 1.0);  

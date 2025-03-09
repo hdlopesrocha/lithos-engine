@@ -178,6 +178,9 @@ void Octree::handleQuadNodes(OctreeNode &node,  OctreeNode** corners, OctreeNode
 				OctreeNode * n = corners[quad[i]];
 				quads[i] = (n != NULL && n->solid == ContainmentType::Intersects) ? n : NULL;
 			}
+
+
+			
 			handler.handle(quads[0],quads[2],quads[1],sign1);
 			handler.handle(quads[0],quads[3],quads[2],sign1);
 		} 

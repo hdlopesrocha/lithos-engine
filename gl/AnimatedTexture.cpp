@@ -23,7 +23,7 @@ TextureArray AnimatedTexture::getTexture(){
     return textureMixerBuffer.colorTexture;
 }
 
-void AnimatedTexture::animate(float time, AnimateParams params){
+void AnimatedTexture::animate(float time, AnimateParams &params){
 
     glUseProgram(program);
 

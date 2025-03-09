@@ -47,6 +47,7 @@ struct Vertex {
     glm::vec3 normal;
     glm::vec2 texCoord;
     int brushIndex;
+	glm::vec4 tangent;
 
     Vertex(){
 		this->position = glm::vec3(0);

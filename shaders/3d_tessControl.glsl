@@ -10,6 +10,9 @@ in vec3 vPosition[];
 in vec3 vNormal[];
 in TextureProperties vProps[];
 in mat4 vModel[];
+in mat3 vNormalMatrix[];
+in vec4 vTangent[];
+
 #include<functions.glsl>
 
 flat out uvec3 tcTextureIndices[];
@@ -18,6 +21,7 @@ out vec3 tcNormal[];
 out vec3 tcPosition[];
 out TextureProperties tcProps[];
 out mat4 tcModel[];
+out vec4 tcTangent[];
 
 
 void main() {
@@ -40,4 +44,5 @@ void main() {
         tcNormal[gl_InvocationID] = vNormal[gl_InvocationID];
         tcProps[gl_InvocationID] = vProps[gl_InvocationID];
     }
+    tcTangent[gl_InvocationID] = vTangent[gl_InvocationID];
 }

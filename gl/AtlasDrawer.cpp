@@ -30,7 +30,7 @@ AtlasParams::AtlasParams(){
     this->atlasTexture = atlasTexture;
  }
 
-void AtlasDrawer::draw(AtlasParams params){
+void AtlasDrawer::draw(AtlasParams &params){
 
     glUseProgram(program);
 

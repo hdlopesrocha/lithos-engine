@@ -74,7 +74,7 @@ class MainApplication : public LithosApplication {
 	std::vector<MixerParams> mixers;
 	std::vector<AnimateParams> animations;
 	std::vector<ImpostorParams> impostors;
-
+	DrawableInstanceGeometry * vegetationMesh;
 	Scene * mainScene;
 	Settings * settings = new Settings();
 	glm::mat4 worldModel = glm::mat4(1.0f); // Identity matrix
@@ -253,48 +253,52 @@ public:
 		atlasDrawer = new AtlasDrawer(programAtlas, 1024, 1024, &atlasLayers, &billboardLayers, textureBlitter1024);
 		impostorDrawer = new ImpostorDrawer(programDeferred, 256, 256, &billboardLayers, &impostorLayers, textureBlitter256);
 
+		std::vector<InstanceData> vegetationInstances;
+		vegetationInstances.push_back(InstanceData(glm::mat4(1.0), 0));
+		vegetationMesh = new DrawableInstanceGeometry(new Vegetation3d(), &vegetationInstances, glm::vec3(0.0, 0.5, 0.0));
+
 		{
 			animations.push_back(AnimateParams(textureLayers.count));
 			brushes.push_back(new Brush(textureLayers.count, glm::vec2(0.2), 0.02, 8, 32, 16,4, 10.0, 0.5 , 1.33));
 			textureLayers.count++;
 		}
 		{
-			loadTexture(textureLayers, {"textures/lava_color.jpg", "textures/lava_normal.jpg", "textures/lava_bump.jpg"}, textureLayers.count);
+			loadTexture(&textureLayers, {"textures/lava_color.jpg", "textures/lava_normal.jpg", "textures/lava_bump.jpg"}, textureLayers.count);
 			brushes.push_back(new Brush(textureLayers.count, glm::vec2(1.0), 0.1, 8, 32, 16,4 ,256, 0.4, 0.0));
 			textureLayers.count++;
 		}
 		{
-			loadTexture(textureLayers, {"textures/grass_color.jpg", "textures/grass_normal.jpg", "textures/grass_bump.jpg"}, textureLayers.count);
+			loadTexture(&textureLayers, {"textures/grass_color.jpg", "textures/grass_normal.jpg", "textures/grass_bump.jpg"}, textureLayers.count);
 			brushes.push_back(new Brush(textureLayers.count, glm::vec2(1.0), 0.01, 2, 8, 8,4 ,32, 0.03, 0.0));
 			textureLayers.count++;
         }
 		{
-			loadTexture(textureLayers, {"textures/sand_color.jpg", "textures/sand_normal.jpg", "textures/sand_bump.jpg"}, textureLayers.count);
+			loadTexture(&textureLayers, {"textures/sand_color.jpg", "textures/sand_normal.jpg", "textures/sand_bump.jpg"}, textureLayers.count);
 			brushes.push_back(new Brush(textureLayers.count, glm::vec2(1.0), 0.05, 8, 32, 16,4 ,32,0.02, 0.0));
 			textureLayers.count++;
         }
 		{
-			loadTexture(textureLayers, {"textures/rock_color.jpg", "textures/rock_normal.jpg", "textures/rock_bump.jpg"}, textureLayers.count);
+			loadTexture(&textureLayers, {"textures/rock_color.jpg", "textures/rock_normal.jpg", "textures/rock_bump.jpg"}, textureLayers.count);
 			brushes.push_back(new Brush(textureLayers.count, glm::vec2(1.0), 0.1, 8, 32, 16,4,128, 0.4, 0.0));
 			textureLayers.count++;
         }
 		{
-			loadTexture(textureLayers, {"textures/snow_color.jpg", "textures/snow_normal.jpg", "textures/snow_bump.jpg"}, textureLayers.count);
+			loadTexture(&textureLayers, {"textures/snow_color.jpg", "textures/snow_normal.jpg", "textures/snow_bump.jpg"}, textureLayers.count);
 			brushes.push_back(new Brush(textureLayers.count, glm::vec2(1.0), 0.1, 8, 32, 16,4, 32 , 0.4, 0.0));
 			textureLayers.count++;
         }
 		{
-			loadTexture(textureLayers, {"textures/metal_color.jpg", "textures/metal_normal.jpg", "textures/metal_bump.jpg"}, textureLayers.count);
+			loadTexture(&textureLayers, {"textures/metal_color.jpg", "textures/metal_normal.jpg", "textures/metal_bump.jpg"}, textureLayers.count);
 			brushes.push_back(new Brush(textureLayers.count, glm::vec2(1.0), 0.1, 8, 64, 64,4, 32, 0.6 , 0.0));
 			textureLayers.count++;
         }
 		{
-			loadTexture(textureLayers, {"textures/dirt_color.jpg", "textures/dirt_normal.jpg", "textures/dirt_bump.jpg"}, textureLayers.count);
+			loadTexture(&textureLayers, {"textures/dirt_color.jpg", "textures/dirt_normal.jpg", "textures/dirt_bump.jpg"}, textureLayers.count);
 			brushes.push_back(new Brush(textureLayers.count, glm::vec2(1.0), 0.1, 8, 32, 16,4 , 256, 0.02, 0.0));
 			textureLayers.count++;
         }
 		{
-			loadTexture(textureLayers, {"textures/bricks_color.jpg", "textures/bricks_normal.jpg", "textures/bricks_bump.jpg"}, textureLayers.count);
+			loadTexture(&textureLayers, {"textures/bricks_color.jpg", "textures/bricks_normal.jpg", "textures/bricks_bump.jpg"}, textureLayers.count);
 			brushes.push_back(new Brush(textureLayers.count, glm::vec2(1.0), 0.01, 8, 32, 16,4, 256, 0.2 , 0.0));
 			textureLayers.count++;
 		}
@@ -324,17 +328,17 @@ public:
 			textureLayers.count++;
 		}
 		{
-			loadTexture(textureLayers, {"textures/soft_sand_color.jpg", "textures/soft_sand_normal.jpg", "textures/soft_sand_bump.jpg"}, textureLayers.count);
+			loadTexture(&textureLayers, {"textures/soft_sand_color.jpg", "textures/soft_sand_normal.jpg", "textures/soft_sand_bump.jpg"}, textureLayers.count);
 			brushes.push_back(new Brush(textureLayers.count, glm::vec2(1.0), 0.01, 4, 16, 8,4, 256, 0.2 , 0.0));
 			textureLayers.count++;
 		}
 		{
-			loadTexture(textureLayers, {"textures/forest_color.jpg", "textures/forest_normal.jpg", "textures/forest_bump.jpg"}, textureLayers.count);
+			loadTexture(&textureLayers, {"textures/forest_color.jpg", "textures/forest_normal.jpg", "textures/forest_bump.jpg"}, textureLayers.count);
 			brushes.push_back(new Brush(textureLayers.count, glm::vec2(1.0), 0.01, 4, 16, 8,4, 256, 0.2 , 0.0));
 			textureLayers.count++;
 		}
 		{
-			loadTexture(atlasLayers, {"textures/vegetation/foliage_color.jpg", "textures/vegetation/foliage_normal.jpg", "textures/vegetation/foliage_opacity.jpg"}, billboardLayers.count);
+			loadTexture(&atlasLayers, {"textures/vegetation/foliage_color.jpg", "textures/vegetation/foliage_normal.jpg", "textures/vegetation/foliage_opacity.jpg"}, billboardLayers.count);
 			AtlasTexture * at = new AtlasTexture();
 			
 			at->tiles.push_back(Tile(glm::vec2(1.0),glm::vec2(0.0)));
@@ -360,7 +364,7 @@ public:
 			++atlasLayers.count;
 		}
 		{
-			loadTexture(atlasLayers, {"textures/vegetation/grass_color.jpg", "textures/vegetation/grass_normal.jpg", "textures/vegetation/grass_opacity.jpg"}, billboardLayers.count);
+			loadTexture(&atlasLayers, {"textures/vegetation/grass_color.jpg", "textures/vegetation/grass_normal.jpg", "textures/vegetation/grass_opacity.jpg"}, billboardLayers.count);
 			AtlasTexture * at = new AtlasTexture();
 			at->tiles.push_back(Tile(glm::vec2(1.0),glm::vec2(0.0)));
 			
@@ -374,7 +378,7 @@ public:
 			++atlasLayers.count;
 		}
 		{
-			impostors.push_back(ImpostorParams(impostorLayers.count));
+			impostors.push_back(ImpostorParams(impostorLayers.count, vegetationMesh));
 			++impostorLayers.count;
 		}
 		
@@ -399,6 +403,7 @@ public:
 			std::string objectName = "textures[" + std::to_string(i) + "]";
 
 			Texture::bindTexture(programImpostor, activeTexture, objectName, billboardLayers.textures[i]);
+			Texture::bindTexture(programDeferred, activeTexture, objectName, billboardLayers.textures[i]);
 			activeTexture = Texture::bindTexture(programBillboard, activeTexture, objectName, billboardLayers.textures[i]);
 			activeTexture = Texture::bindTexture(program3d, activeTexture, objectName, textureLayers.textures[i]);
 		}
@@ -406,17 +411,18 @@ public:
 		Brush::bindBrushes(program3d,"brushes", "brushTextures", &brushes);
 		Brush::bindBrushes(programBillboard, "brushes", "brushTextures", &billboardBrushes);
 		Brush::bindBrushes(programImpostor, "brushes", "brushTextures", &billboardBrushes);
+		Brush::bindBrushes(programDeferred, "brushes", "brushTextures", &billboardBrushes);
 
 
-		for(MixerParams mp : mixers) {
-			textureMixer->mix(mp);
+		for(MixerParams &params : mixers) {
+			textureMixer->mix(params);
 		}
 
-		for(AtlasParams ap : atlasParams) {
-			atlasDrawer->draw(ap);
+		for(AtlasParams &params : atlasParams) {
+			atlasDrawer->draw(params);
 		}
 
-		for(ImpostorParams params : impostors) {
+		for(ImpostorParams &params : impostors) {
 			impostorDrawer->draw(params);
 		}
 
@@ -504,15 +510,10 @@ public:
 	   		camera.position -= xAxis*tsense;
 		}
 
-	
-
-
-		for(AnimateParams params : animations) {
+		for(AnimateParams &params : animations) {
 			textureAnimator->animate(time, params);
 		}
     }
-
-	
 
     virtual void draw3d() {
 		float far = 512.0f;
@@ -677,6 +678,7 @@ public:
 		brushEditor->draw3dIfOpen(&uniformBlock);
 		
 		glPolygonMode(GL_FRONT, GL_FILL);
+
 
 		// ==========
 		// Final Pass

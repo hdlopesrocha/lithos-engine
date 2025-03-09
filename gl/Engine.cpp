@@ -366,7 +366,7 @@ GLenum channelsToFormat(int channels) {
     return GL_DEPTH_COMPONENT;
 }
 
-void loadTexture(TextureLayers layers, std::initializer_list<std::string> fns, int index) {
+void loadTexture(TextureLayers * layers, std::initializer_list<std::string> fns, int index) {
     std::vector<std::string> textures;
 
     for(std::string t : fns) {
@@ -385,7 +385,7 @@ void loadTexture(TextureLayers layers, std::initializer_list<std::string> fns, i
             std::cerr << "Failed to load texture: " << filename << std::endl;
             return;
         }
-        glBindTexture(GL_TEXTURE_2D_ARRAY, layers.textures[i].index);
+        glBindTexture(GL_TEXTURE_2D_ARRAY, layers->textures[i].index);
         
         // Upload image data to the specific layer
         glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, index,  width, height, 1, channelsToFormat(channel), GL_UNSIGNED_BYTE, data);
