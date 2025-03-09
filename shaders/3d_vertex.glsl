@@ -7,8 +7,10 @@ layout(location = 0) in vec3 position;
 layout(location = 1) in vec3 normal;    
 layout(location = 2) in vec2 textureCoord;    
 layout(location = 3) in uint brushIndex;     
-layout(location = 4) in mat4 model; 
-layout(location = 8) in float shift; 
+layout(location = 4) in vec4 inTangent;
+layout(location = 5) in mat4 model; 
+layout(location = 9) in float shift; 
+
 
 #include<functions.glsl>
 
@@ -19,6 +21,7 @@ out vec3 vPosition;
 out vec3 vNormal;
 out TextureProperties vProps;
 out mat4 vModel;
+out vec4 vTangent;  // Tangent.xyz and Handedness.w
 
 uniform TextureProperties brushes[25];
 uniform uint brushTextures[25];
@@ -53,4 +56,10 @@ void main() {
     }
     vPosition = (vModel*vec4(iPosition, 1.0)).xyz;
     gl_Position = vec4(vPosition, 1.0);
+
+    mat3 normalMatrix = transpose(inverse(mat3(vModel)));
+    vec3 T = normalize(normalMatrix * inTangent.xyz);
+
+    // Store transformed tangent
+    vTangent = vec4(T, inTangent.w);
 }

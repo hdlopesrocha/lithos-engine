@@ -2,7 +2,7 @@
 #include<structs.glsl>
 
 
-uniform sampler2DArray sampler[3];
+uniform sampler2DArray textures[3];
 layout(location = 0) out vec4 FragColor0; // First render target (color)
 layout(location = 1) out vec4 FragColor1; // Second render target (normals)
 layout(location = 2) out vec4 FragColor2; // Third render target (bump)
@@ -22,7 +22,6 @@ in TextureProperties gProps;
 in vec3 gPosition;
 in vec3 gNormal;
 in vec3 gSharpNormal;
-in mat4 gModel;
 
 out vec4 color;    // Final fragment color
 
@@ -34,17 +33,23 @@ void main() {
         uv = triplanarMapping(gPosition, plane, gProps.textureScale) * 0.1;
     }
 
-    vec4 opacity = textureBlend(sampler[2], gTextureWeights, gTextureIndices, uv);
+    vec4 opacity = textureBlend(textures[2], gTextureWeights, gTextureIndices, uv);
 
     if(opacityEnabled) {
         if(opacity.r < 0.98) {
-            discard;
+            //discard;
         }
     }
     
-    FragColor0 = textureBlend(sampler[0], gTextureWeights, gTextureIndices, uv);
-    FragColor1 = textureBlend(sampler[1], gTextureWeights, gTextureIndices, uv);
+    FragColor0 = textureBlend(textures[0], gTextureWeights, gTextureIndices, uv);
+    FragColor1 = textureBlend(textures[1], gTextureWeights, gTextureIndices, uv);
     FragColor2 = opacity;
+
+    FragColor0 = vec4(1.0);
+    FragColor1 = vec4(1.0);
+    FragColor2 = vec4(1.0);
+
+
  }
 
 

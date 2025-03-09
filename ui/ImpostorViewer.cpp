@@ -13,7 +13,7 @@ void ImpostorViewer::draw2d(){
     ImGui::Begin("Impostor Viewer", &open, ImGuiWindowFlags_AlwaysAutoResize);
     if(layers->count) {
         selectedDrawer = Math::mod(selectedDrawer, layers->count);
-        previewer->draw2d(0);
+        previewer->draw2d(selectedDrawer);
     }
     
     ImGui::Text("Selected impostor: %d/%d ", selectedDrawer, layers->count);

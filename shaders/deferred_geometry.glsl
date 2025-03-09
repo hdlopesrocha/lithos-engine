@@ -14,7 +14,6 @@ out vec3 gTextureWeights;
 out vec3 gPosition;
 out vec3 gNormal;
 out TextureProperties gProps; 
-out mat4 gModel;
 out vec3 gSharpNormal;
 flat out uvec3 gTextureIndices;
 
@@ -26,6 +25,7 @@ void main() {
         gTextureIndices[i] = vTextureIndex[i];
     }
     gSharpNormal = normalize(cross(vPosition[1] - vPosition[0], vPosition[2] - vPosition[0]));
+    gl_Layer = 0;
 
 
     for (int i = 0; i < 3; ++i) {
@@ -38,7 +38,6 @@ void main() {
         gPosition = vPosition[i];
         gNormal = vNormal[i];
         gProps = vProps[i];
-        gModel = vModel[i];
 
         gl_Position = gl_in[i].gl_Position;
         EmitVertex();

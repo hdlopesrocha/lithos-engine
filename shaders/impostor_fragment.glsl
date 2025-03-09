@@ -2,7 +2,7 @@
 #include<structs.glsl>
 
 
-uniform sampler2DArray sampler[3];
+uniform sampler2DArray textures[3];
 
 
 uniform bool triplanarEnabled;
@@ -33,7 +33,7 @@ void main() {
     }
 
     if(opacityEnabled) {
-        vec4 opacity = textureBlend(sampler[2], gTextureWeights, gTextureIndices, uv);
+        vec4 opacity = textureBlend(textures[2], gTextureWeights, gTextureIndices, uv);
         if(opacity.r < 0.98) {
             discard;
         }
@@ -45,12 +45,12 @@ void main() {
 
     mat3 TBN = getTBN(gPosition, correctedNormal, uv, gModel, false);
   
-    vec4 mixedColor = textureBlend(sampler[0], gTextureWeights, gTextureIndices, uv);
+    vec4 mixedColor = textureBlend(textures[0], gTextureWeights, gTextureIndices, uv);
     if(mixedColor.a == 0.0) {
         discard;
     }
 
-    vec3 normalMap = textureBlend(sampler[1], gTextureWeights, gTextureIndices, uv).rgb * 2.0 - 1.0;
+    vec3 normalMap = textureBlend(textures[1], gTextureWeights, gTextureIndices, uv).rgb * 2.0 - 1.0;
     normalMap = normalize(normalMap); // Convert to range [-1, 1]
     vec3 worldNormal = normalize(TBN * normalMap);
 

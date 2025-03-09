@@ -21,7 +21,6 @@ flat in uvec3 teTextureIndices;
 
 in TextureProperties teProps;
 in vec3 tePosition;
-in vec3 teNormal;
 in vec3 teSharpNormal;
 in vec4 teLightViewPosition[SHADOW_MATRIX_COUNT];
 in mat4 teModel;
@@ -30,15 +29,13 @@ out vec4 color;    // Final fragment color
 
 
 void main() {
-    vec2 uv = teTextureCoord;
-    if(uv.y < 0.0) {
-        discard;
-    } 
 
-    if(triplanarEnabled) {
-        int plane = triplanarPlane(tePosition, teSharpNormal);
-        uv = triplanarMapping(tePosition, plane, teProps.textureScale) * 0.1;
-    }
+   // color = vec4(visual(teTBN[2].xyz),1.0);
+   // return;
+    vec2 uv = teTextureCoord;
+    if(!triplanarEnabled && uv.y < 0.0) {
+       // discard;
+    } 
 
     if(opacityEnabled) {
         vec4 opacity = textureBlend(textures[2], teTextureWeights, teTextureIndices, uv);
@@ -58,16 +55,15 @@ void main() {
         discard;
     }
 
-    vec3 correctedNormal = gl_FrontFacing ? teNormal : -teNormal;
-    mat3 normalMatrix = transpose(inverse(mat3(teModel)));
-    vec3 normal = normalize(normalMatrix * correctedNormal);
 
     float effectAmount = sin(time*3.14/4.0)*0.5 + 0.5;
     float distance = length(cameraPosition.xyz - tePosition);
     float distanceFactor = clamp(teProps.parallaxFade / distance, 0.0, 1.0); // Adjust these numbers to fit your scene
 
+    mat3 TBN = getTBN(tePosition, teSharpNormal, uv, teModel, false);
+
+
     vec3 viewDirection = normalize(tePosition-cameraPosition.xyz);
-    mat3 TBN = getTBN(tePosition, correctedNormal, uv, teModel, false);
     vec3 viewDirectionTangent = normalize(transpose(TBN) * viewDirection);
 
     if(parallaxEnabled && distanceFactor * teProps.parallaxScale > 0.0) {

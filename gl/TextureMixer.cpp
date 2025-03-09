@@ -19,7 +19,7 @@ MixerParams::MixerParams(int targetTexture, int baseTexture, int overlayTexture)
     this->overlayTexture = overlayTexture;
 }
 
-void TextureMixer::mix(MixerParams params){
+void TextureMixer::mix(MixerParams &params){
     glUseProgram(program);
     glBindFramebuffer(GL_FRAMEBUFFER, textureMixerBuffer.frameBuffer);
     glViewport(0, 0, textureMixerBuffer.width, textureMixerBuffer.height);

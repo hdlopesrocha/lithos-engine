@@ -351,7 +351,7 @@ class TextureMixer {
     public:
     TextureMixer(int width, int height, GLuint program, TextureLayers * layers, TextureBlitter * blitter);
     TextureArray getTexture();
-    void mix(MixerParams params);
+    void mix(MixerParams &params);
 };
 
 class AnimateParams {
@@ -379,7 +379,7 @@ class AnimatedTexture {
 
     AnimatedTexture(int width, int height, GLuint program, TextureLayers * layers, TextureBlitter * blitter);
     TextureArray getTexture();
-    void animate(float time, AnimateParams params);
+    void animate(float time, AnimateParams &params);
 };
 
 
@@ -459,21 +459,20 @@ class AtlasDrawer {
     bool filterEnabled = true;
     AtlasDrawer(GLuint program, int width, int height, TextureLayers * sourceLayers, TextureLayers * targetLayers, TextureBlitter * blitter);
     TextureArray getTexture();
-    void draw(AtlasParams params);
+    void draw(AtlasParams &params);
 };
 
 class ImpostorParams {
     public:
     int targetTexture = 0;
-  
-    ImpostorParams(int targetTexture);
+    DrawableInstanceGeometry * mesh;
+    ImpostorParams(int targetTexture, DrawableInstanceGeometry * mesh);
 
 };
 
 
 class ImpostorDrawer {
     GLuint program;
-	DrawableInstanceGeometry * mesh;
     MultiLayerRenderBuffer renderBuffer;
     int width; 
     int height;
@@ -482,14 +481,14 @@ class ImpostorDrawer {
     TextureLayers * targetLayers;
     public:
     ImpostorDrawer(GLuint program, int width, int height, TextureLayers* sourceLayers, TextureLayers * targetLayers, TextureBlitter * blitter);
-    void draw(ImpostorParams params);
+    void draw(ImpostorParams &params);
     TextureArray getTexture();
 };
 void blitTextureArray(GLuint programCopy, MultiLayerRenderBuffer buffer, TextureLayers * layers, int index);
 void blitRenderBuffer(TextureArray textures[0], TextureLayers layers, RenderBuffer buffer, int sourceIndex, int destinationIndex);
 void blitRenderBuffer(TextureArray textures[0], TextureLayers layers, MultiLayerRenderBuffer buffer, int sourceIndex);
 
-void loadTexture(TextureLayers layers,  std::initializer_list<std::string> fns, int index);
+void loadTexture(TextureLayers * layers,  std::initializer_list<std::string> fns, int index);
 TextureArray createTextureArray(int width, int height, int layers, GLuint channel); 
 MultiLayerRenderBuffer createMultiLayerRenderFrameBuffer(int width, int height, int layers, int attachments, bool depth, GLuint color);
 RenderBuffer createDepthFrameBuffer(int width, int height);
