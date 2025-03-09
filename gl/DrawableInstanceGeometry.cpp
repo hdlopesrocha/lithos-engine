@@ -38,20 +38,21 @@ DrawableInstanceGeometry::DrawableInstanceGeometry(Geometry * t, std::vector<Ins
 		glEnableVertexAttribArray(4);
 		glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) offsetof(Vertex, tangent));
 		
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-
+		
 		// Instance data (matrices for instancing)
 		glBindBuffer(GL_ARRAY_BUFFER, instanceBuffer);
 		glBufferData(GL_ARRAY_BUFFER, instancesCount * sizeof(InstanceData), instances->data(), GL_STATIC_DRAW);
 
+		glVertexAttribPointer(5, 1, GL_FLOAT, GL_FALSE, sizeof(InstanceData), (void*) offsetof(InstanceData, shift));
+		glEnableVertexAttribArray(5);
+		glVertexAttribDivisor(5, 1); // Enable instancing
+		
 		for (int i = 0; i < 4; i++) {
-			glVertexAttribPointer(5 + i, 4, GL_FLOAT, GL_FALSE, sizeof(InstanceData), (void*)(sizeof(glm::vec4) * i));
-			glEnableVertexAttribArray(5 + i);
-			glVertexAttribDivisor(5 + i, 1); // Use for instancing
+			glVertexAttribPointer(6 + i, 4, GL_FLOAT, GL_FALSE, sizeof(InstanceData), 
+				(void*)(offsetof(InstanceData, matrix) + i * sizeof(glm::vec4)));
+			glEnableVertexAttribArray(6 + i);
+			glVertexAttribDivisor(6 + i, 1); // Enable instancing
 		}
-		glVertexAttribPointer(9, 1, GL_FLOAT, GL_FALSE, sizeof(InstanceData), (void*) offsetof(InstanceData, shift));
-		glEnableVertexAttribArray(9);
-		glVertexAttribDivisor(9, 1); // Use for instancing
 
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 

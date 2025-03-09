@@ -21,6 +21,7 @@ in vec3 gPosition;
 in vec3 gNormal;
 in vec3 gSharpNormal;
 in mat4 gModel;
+in mat3 gTBN;
 
 out vec4 color;    // Final fragment color
 
@@ -42,8 +43,6 @@ void main() {
     vec3 correctedNormal = gl_FrontFacing ? gNormal : -gNormal;
     mat3 normalMatrix = transpose(inverse(mat3(gModel)));
     vec3 normal = normalize(normalMatrix * correctedNormal);
-
-    mat3 TBN = getTBN(gPosition, correctedNormal, uv, gModel, false);
   
     vec4 mixedColor = textureBlend(textures[0], gTextureWeights, gTextureIndices, uv);
     if(mixedColor.a == 0.0) {
@@ -52,7 +51,7 @@ void main() {
 
     vec3 normalMap = textureBlend(textures[1], gTextureWeights, gTextureIndices, uv).rgb * 2.0 - 1.0;
     normalMap = normalize(normalMap); // Convert to range [-1, 1]
-    vec3 worldNormal = normalize(TBN * normalMap);
+    vec3 worldNormal = normalize(gTBN * normalMap);
 
     //    color = vec4(visual(worldNormal),1.0);
     color = mixedColor;

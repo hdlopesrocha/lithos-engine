@@ -55,6 +55,7 @@
 #define TESSELATION_FLAG    0,0x80  
 
 #define OPACITY_FLAG      1,0x01  
+#define BILLBOARD_FLAG      1,0x02 
 
 #define OVERRIDE_TEXTURE_FLAG 0xff000000
 #define SHADOW_MATRIX_COUNT 3
@@ -213,8 +214,8 @@ class OctreeProcessor : public IteratorHandler{
 
 struct InstanceData {
     public:
-    glm::mat4 matrix;
     float shift;
+    glm::mat4 matrix;
 
     InstanceData(glm::mat4 matrix,  float shift) {
         this->matrix = matrix;

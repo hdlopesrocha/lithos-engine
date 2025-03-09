@@ -22,20 +22,21 @@ flat in uvec3 teTextureIndices;
 in TextureProperties teProps;
 in vec3 tePosition;
 in vec3 teSharpNormal;
-in vec3 teNormal;
 in vec4 teLightViewPosition[SHADOW_MATRIX_COUNT];
 in mat4 teModel;
+in vec3 teT;
+in vec3 teB;
+in vec3 teN;
 
 out vec4 color;    // Final fragment color
 
 
 void main() {
 
-   // color = vec4(visual(teTBN[2].xyz),1.0);
-   // return;
+
     vec2 uv = teTextureCoord;
-    if(!triplanarEnabled && uv.y < 0.0) {
-       // discard;
+    if(billboardEnabled && uv.y < 0.0) {
+        discard;
     } 
 
     if(opacityEnabled) {
@@ -61,8 +62,11 @@ void main() {
     float distance = length(cameraPosition.xyz - tePosition);
     float distanceFactor = clamp(teProps.parallaxFade / distance, 0.0, 1.0); // Adjust these numbers to fit your scene
 
-    mat3 TBN = getTBN(tePosition, teNormal, uv, teModel, false);
 
+    mat3 TBN = mat3(normalize(teT), normalize(teB), normalize(teN));
+
+   //color = vec4(visual(teT),1.0);
+   //return;
 
     vec3 viewDirection = normalize(tePosition-cameraPosition.xyz);
     vec3 viewDirectionTangent = normalize(transpose(TBN) * viewDirection);

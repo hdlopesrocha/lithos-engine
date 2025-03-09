@@ -154,6 +154,7 @@ public:
 		includes.push_back(GlslInclude("#include<depth.glsl>" , readFile("shaders/util/depth.glsl")));
 		includes.push_back(GlslInclude("#include<uniforms.glsl>" , readFile("shaders/util/uniforms.glsl")));
 		includes.push_back(GlslInclude("#include<shadow.glsl>" , readFile("shaders/util/shadow.glsl")));
+		includes.push_back(GlslInclude("#include<tbn.glsl>" , readFile("shaders/util/tbn.glsl")));
 
 		programAtlas = createShaderProgram({
 			compileShader(replaceIncludes(includes,readFile("shaders/texture/atlas_vertex.glsl")),GL_VERTEX_SHADER), 
@@ -568,6 +569,7 @@ public:
 		uniformBlock.set(OVERRIDE_FLAG, false);
 		uniformBlock.set(OPACITY_FLAG, false);
 		uniformBlock.set(TRIPLANAR_FLAG, false); 
+		uniformBlock.set(BILLBOARD_FLAG, false); 
 
 
 
@@ -596,6 +598,7 @@ public:
 				if(settings->billboardEnabled) {
 					glUseProgram(programBillboard);
 					uniformBlock.set(OPACITY_FLAG, true);
+					uniformBlock.set(BILLBOARD_FLAG, true); 
 					programData->uniform(&uniformBlock);
 					mainScene->drawBillboards(camera.position, settings, &mainScene->visibleShadowNodes[i]);
 				}
@@ -615,10 +618,13 @@ public:
 
 		glUseProgram(program3d);
 		uniformBlock.set(OPACITY_FLAG, false);
+		uniformBlock.set(BILLBOARD_FLAG, false); 
+
 		programData->uniform(&uniformBlock);
 		mainScene->draw3dSolid(camera.position, settings, &mainScene->visibleSolidNodes);
 
 		uniformBlock.set(TESSELATION_FLAG, false);
+		uniformBlock.set(BILLBOARD_FLAG, settings->billboardEnabled); 
 		uniformBlock.set(OPACITY_FLAG, settings->opacityEnabled);
 		if(settings->billboardEnabled) {
 			glUseProgram(programBillboard);
@@ -640,13 +646,14 @@ public:
 			uniformBlock.set(LIGHT_FLAG, false); 
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		} 
+		uniformBlock.set(BILLBOARD_FLAG, settings->billboardEnabled); 
 		if(settings->billboardEnabled) {
 			glUseProgram(programBillboard);
 			programData->uniform(&uniformBlock);
 			mainScene->drawBillboards(camera.position, settings, &mainScene->visibleSolidNodes);
 		}
 
-
+		uniformBlock.set(BILLBOARD_FLAG, false); 
 		uniformBlock.set(TESSELATION_FLAG, settings->tesselationEnabled);
 		uniformBlock.set(OPACITY_FLAG, false);
 		uniformBlock.set(TRIPLANAR_FLAG, true); 

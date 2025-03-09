@@ -46,14 +46,14 @@ int triplanarPlane(glm::vec3 position, glm::vec3 normal) {
     }
 }
 
-glm::vec2 triplanarMapping(glm::vec3 position, int plane, glm::vec2 scale) {
+glm::vec2 triplanarMapping(glm::vec3 position, int plane) {
     switch (plane) {
-        case 0: return glm::vec2(-position.z, -position.y)*scale;
-        case 1: return glm::vec2(position.z, -position.y)*scale;
-        case 2: return glm::vec2(position.x, position.z)*scale;
-        case 3: return glm::vec2(position.x, -position.z)*scale;
-        case 4: return glm::vec2(position.x, -position.y)*scale;
-        case 5: return glm::vec2(-position.x, -position.y)*scale;
+        case 0: return glm::vec2(-position.z, -position.y);
+        case 1: return glm::vec2(position.z, -position.y);
+        case 2: return glm::vec2(position.x, position.z);
+        case 3: return glm::vec2(position.x, -position.z);
+        case 4: return glm::vec2(position.x, -position.y);
+        case 5: return glm::vec2(-position.x, -position.y);
         default: return glm::vec2(0.0,0.0);
     }
 }
@@ -70,9 +70,9 @@ int addTriangle(OctreeNode* c0, OctreeNode* c1, OctreeNode* c2, Geometry * chunk
         if(c0!= c1 && c1 != c2 && c0!=c2 && c0->vertex.brushIndex>=0 && c1->vertex.brushIndex>=0 && c2->vertex.brushIndex>=0){
 
             int plane = triplanarPlane(v0.position, v0.normal);//TODO calculate normal from positions
-            v0.texCoord = triplanarMapping(v0.position, plane, glm::vec2(0.1f));
-            v1.texCoord = triplanarMapping(v1.position, plane, glm::vec2(0.1f));
-            v2.texCoord = triplanarMapping(v2.position, plane, glm::vec2(0.1f));
+            v0.texCoord = triplanarMapping(v0.position, plane) * 0.1f;
+            v1.texCoord = triplanarMapping(v1.position, plane) * 0.1f;
+            v2.texCoord = triplanarMapping(v2.position, plane) * 0.1f;
             
             glm::vec4 bitangent;
             glm::vec4 tangent;

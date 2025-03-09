@@ -509,6 +509,8 @@ std::string removeExtraSpaces(const std::string& str) {
 
 std::string LithosApplication::readFile(const std::string& filePath) {
     std::ifstream shaderFile(filePath);
+    std::cerr << "Read file: " << filePath << std::endl;
+
     if (!shaderFile.is_open()) {
         std::cerr << "Failed to open shader file: " << filePath << std::endl;
         return "";
