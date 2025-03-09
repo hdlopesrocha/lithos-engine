@@ -22,6 +22,7 @@ flat in uvec3 teTextureIndices;
 in TextureProperties teProps;
 in vec3 tePosition;
 in vec3 teSharpNormal;
+in vec3 teNormal;
 in vec4 teLightViewPosition[SHADOW_MATRIX_COUNT];
 in mat4 teModel;
 
@@ -60,7 +61,7 @@ void main() {
     float distance = length(cameraPosition.xyz - tePosition);
     float distanceFactor = clamp(teProps.parallaxFade / distance, 0.0, 1.0); // Adjust these numbers to fit your scene
 
-    mat3 TBN = getTBN(tePosition, teSharpNormal, uv, teModel, false);
+    mat3 TBN = getTBN(tePosition, teNormal, uv, teModel, false);
 
 
     vec3 viewDirection = normalize(tePosition-cameraPosition.xyz);

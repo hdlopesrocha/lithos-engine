@@ -18,7 +18,7 @@ in vec4 tcTangent[];
 
 
 out vec3 teSharpNormal;
-
+out vec3 teNormal;
 out vec2 teTextureCoord;
 out vec3 teTextureWeights;
 out vec3 tePosition;
@@ -32,6 +32,7 @@ uniform TextureProperties overrideProps;
 void main() {
     if(!depthEnabled) {
         teSharpNormal = normalize(cross(tcPosition[1] - tcPosition[0], tcPosition[2] - tcPosition[0]));
+        teNormal = gl_TessCoord[0] * tcNormal[0] + gl_TessCoord[1] * tcNormal[1] + gl_TessCoord[2] * tcNormal[2];
 
         if(overrideEnabled) {
             teProps = overrideProps;
