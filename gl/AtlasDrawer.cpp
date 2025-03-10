@@ -39,7 +39,6 @@ void AtlasDrawer::draw(AtlasParams &params){
     glClearColor (0.0,0.0,0.0,1.0);    
     glClear(GL_COLOR_BUFFER_BIT);
     glDisable(GL_CULL_FACE);
-    glDisable(GL_DEPTH_TEST);
         
 
     for(int i = 0; i < 3 ; ++i) {
