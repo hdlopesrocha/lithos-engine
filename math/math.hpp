@@ -265,7 +265,7 @@ struct NodeInfo {
 	void * data;
 	void * temp;
 	int type;
-	bool dirty = false;
+	bool dirty = true;
 
 	NodeInfo(int type, void * data, void * temp, bool dirty) {
 		this->type = type;

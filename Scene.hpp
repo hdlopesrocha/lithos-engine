@@ -24,7 +24,6 @@ class Scene {
 		int solidInstancesVisible = 0;
 		int liquidInstancesVisible = 0;
 		int vegetationInstancesVisible = 0;
-		int shadowInstancesVisible = 0;
 		std::vector<IteratorData> visibleSolidNodes;
 		std::vector<IteratorData> visibleLiquidNodes;
 		std::vector<IteratorData> visibleShadowNodes[SHADOW_MATRIX_COUNT];
@@ -83,8 +82,6 @@ class Scene {
 							solidInstancesVisible += drawable->instancesCount;
 						}else if(drawableType == TYPE_INSTANCE_LIQUID_DRAWABLE) {
 							liquidInstancesVisible += drawable->instancesCount;
-						}else if(drawableType == TYPE_INSTANCE_SHADOW_DRAWABLE) {
-							shadowInstancesVisible += drawable->instancesCount;
 						}
 					}
 				

@@ -38,7 +38,9 @@ void markNeighborsAsDirty(Octree * tree, const BoundingCube &cube, int level, in
 
 void * OctreeProcessor::before(int level, int height, OctreeNode * node, const BoundingCube &cube, void * context) {		
 	if(loadCount > 0) {
-		bool canGenerate = true;
+		bool canGenerate = false;
+		NodeInfo * genetator;
+
 		for(NodeInfo &info : node->info) {
 			if(info.type == INFO_TYPE_FILE && info.dirty) {
 				OctreeNodeFile *f = (OctreeNodeFile*) info.data;
@@ -46,34 +48,46 @@ void * OctreeProcessor::before(int level, int height, OctreeNode * node, const B
 				markNeighborsAsDirty(tree, cube, level, drawableType);
 				info.dirty = false;
 			}
-			if(info.type == drawableType && !info.dirty) {
-				canGenerate = false;
+			if(info.dirty) {
+				genetator = &info;
+				canGenerate = true;
 			}
 		}
+		if(genetator == NULL) {
+			canGenerate = true;
+		}
+
 		int currentLod = height - geometryLevel;
 
 
 		if(currentLod>=0){
+		
 			if(canGenerate && createInstances) {
+				if(genetator) {
+					genetator->dirty = false;
+				}
+			
+
 				if(drawableType == TYPE_INSTANCE_SOLID_DRAWABLE || drawableType == TYPE_INSTANCE_LIQUID_DRAWABLE || drawableType == TYPE_INSTANCE_SHADOW_DRAWABLE) {
-
-					// Simplify
-					Simplifier simplifier(tree, cube, simplificationAngle, simplificationDistance, simplificationTexturing, simplification); 
-					simplifier.iterateFlatOut(level, height, node, cube, NULL);
-
-					// Tesselate
-					Geometry * geometry = new Geometry();
-					Tesselator tesselator(tree, geometry, simplification);
-					tesselator.iterateFlatIn(level, height, node, cube, NULL);
-					drawableType = drawableType == TYPE_INSTANCE_SHADOW_DRAWABLE ? TYPE_INSTANCE_SOLID_DRAWABLE : drawableType;
-					NodeInfo * info = node->getNodeInfo(drawableType);
+					int tempDrawableType = drawableType == TYPE_INSTANCE_SHADOW_DRAWABLE ? TYPE_INSTANCE_SOLID_DRAWABLE : drawableType;
+					NodeInfo * info = node->getNodeInfo(tempDrawableType);
 					if(info == NULL) {
+						// Simplify
+						Simplifier simplifier(tree, cube, simplificationAngle, simplificationDistance, simplificationTexturing, simplification); 
+						simplifier.iterateFlatOut(level, height, node, cube, NULL);
+
+						// Tesselate
+						Geometry * geometry = new Geometry();
+						Tesselator tesselator(tree, geometry, simplification);
+						tesselator.iterateFlatIn(level, height, node, cube, NULL);
+
+					
 						PreLoadedGeometry * pre = new PreLoadedGeometry();
 						pre->center = cube.getCenter();
 						pre->instances.push_back(InstanceData(glm::mat4(1.0), 0.0f));
 						pre->geometry = geometry;
 
-						node->info.push_back(NodeInfo(drawableType, NULL, pre, false));
+						node->info.push_back(NodeInfo(tempDrawableType, NULL, pre, false));
 						*instancesCount += 1;
 						--loadCount;
 					}
@@ -81,8 +95,10 @@ void * OctreeProcessor::before(int level, int height, OctreeNode * node, const B
 
 
 				// Instances with LOD
-				if(drawableType == TYPE_INSTANCE_VEGETATION_DRAWABLE) {
-					NodeInfo * info = node->getNodeInfo(drawableType);
+				if(drawableType == TYPE_INSTANCE_VEGETATION_DRAWABLE || drawableType == TYPE_INSTANCE_SHADOW_DRAWABLE) {
+					int tempDrawableType = drawableType == TYPE_INSTANCE_SHADOW_DRAWABLE ? TYPE_INSTANCE_VEGETATION_DRAWABLE : drawableType;
+
+					NodeInfo * info = node->getNodeInfo(tempDrawableType);
 					if(info == NULL) {
 						PreLoadedGeometry * pre = new PreLoadedGeometry();
 						pre->center = cube.getCenter();
@@ -94,7 +110,7 @@ void * OctreeProcessor::before(int level, int height, OctreeNode * node, const B
 						// Shuffle the vector
 						std::shuffle(pre->instances.begin(), pre->instances.end(), g);
 						
-						node->info.push_back(NodeInfo(drawableType, NULL, pre, false));
+						node->info.push_back(NodeInfo(tempDrawableType, NULL, pre, false));
 						*instancesCount += instanceBuilder.instanceCount;
 						--loadCount;
 					}

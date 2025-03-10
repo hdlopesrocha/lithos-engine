@@ -265,42 +265,42 @@ public:
 			textureLayers.count++;
 		}
 		{
-			loadTexture(&textureLayers, {"textures/lava_color.jpg", "textures/lava_normal.jpg", "textures/lava_bump.jpg"}, textureLayers.count);
+			loadTexture(&textureLayers, {"textures/lava_color.jpg", "textures/lava_normal.jpg", "textures/lava_bump.jpg"}, textureLayers.count, true);
 			brushes.push_back(new Brush(textureLayers.count, glm::vec2(1.0), 0.1, 8, 32, 16,4 ,256, 0.4, 0.0));
 			textureLayers.count++;
 		}
 		{
-			loadTexture(&textureLayers, {"textures/grass_color.jpg", "textures/grass_normal.jpg", "textures/grass_bump.jpg"}, textureLayers.count);
+			loadTexture(&textureLayers, {"textures/grass_color.jpg", "textures/grass_normal.jpg", "textures/grass_bump.jpg"}, textureLayers.count, true);
 			brushes.push_back(new Brush(textureLayers.count, glm::vec2(1.0), 0.01, 2, 8, 8,4 ,32, 0.03, 0.0));
 			textureLayers.count++;
         }
 		{
-			loadTexture(&textureLayers, {"textures/sand_color.jpg", "textures/sand_normal.jpg", "textures/sand_bump.jpg"}, textureLayers.count);
+			loadTexture(&textureLayers, {"textures/sand_color.jpg", "textures/sand_normal.jpg", "textures/sand_bump.jpg"}, textureLayers.count, true);
 			brushes.push_back(new Brush(textureLayers.count, glm::vec2(1.0), 0.05, 8, 32, 16,4 ,32,0.02, 0.0));
 			textureLayers.count++;
         }
 		{
-			loadTexture(&textureLayers, {"textures/rock_color.jpg", "textures/rock_normal.jpg", "textures/rock_bump.jpg"}, textureLayers.count);
+			loadTexture(&textureLayers, {"textures/rock_color.jpg", "textures/rock_normal.jpg", "textures/rock_bump.jpg"}, textureLayers.count, true);
 			brushes.push_back(new Brush(textureLayers.count, glm::vec2(1.0), 0.1, 8, 32, 16,4,128, 0.4, 0.0));
 			textureLayers.count++;
         }
 		{
-			loadTexture(&textureLayers, {"textures/snow_color.jpg", "textures/snow_normal.jpg", "textures/snow_bump.jpg"}, textureLayers.count);
+			loadTexture(&textureLayers, {"textures/snow_color.jpg", "textures/snow_normal.jpg", "textures/snow_bump.jpg"}, textureLayers.count, true);
 			brushes.push_back(new Brush(textureLayers.count, glm::vec2(1.0), 0.1, 8, 32, 16,4, 32 , 0.4, 0.0));
 			textureLayers.count++;
         }
 		{
-			loadTexture(&textureLayers, {"textures/metal_color.jpg", "textures/metal_normal.jpg", "textures/metal_bump.jpg"}, textureLayers.count);
+			loadTexture(&textureLayers, {"textures/metal_color.jpg", "textures/metal_normal.jpg", "textures/metal_bump.jpg"}, textureLayers.count, true);
 			brushes.push_back(new Brush(textureLayers.count, glm::vec2(1.0), 0.1, 8, 64, 64,4, 32, 0.6 , 0.0));
 			textureLayers.count++;
         }
 		{
-			loadTexture(&textureLayers, {"textures/dirt_color.jpg", "textures/dirt_normal.jpg", "textures/dirt_bump.jpg"}, textureLayers.count);
+			loadTexture(&textureLayers, {"textures/dirt_color.jpg", "textures/dirt_normal.jpg", "textures/dirt_bump.jpg"}, textureLayers.count, true);
 			brushes.push_back(new Brush(textureLayers.count, glm::vec2(1.0), 0.1, 8, 32, 16,4 , 256, 0.02, 0.0));
 			textureLayers.count++;
         }
 		{
-			loadTexture(&textureLayers, {"textures/bricks_color.jpg", "textures/bricks_normal.jpg", "textures/bricks_bump.jpg"}, textureLayers.count);
+			loadTexture(&textureLayers, {"textures/bricks_color.jpg", "textures/bricks_normal.jpg", "textures/bricks_bump.jpg"}, textureLayers.count, true);
 			brushes.push_back(new Brush(textureLayers.count, glm::vec2(1.0), 0.01, 8, 32, 16,4, 256, 0.2 , 0.0));
 			textureLayers.count++;
 		}
@@ -330,17 +330,17 @@ public:
 			textureLayers.count++;
 		}
 		{
-			loadTexture(&textureLayers, {"textures/soft_sand_color.jpg", "textures/soft_sand_normal.jpg", "textures/soft_sand_bump.jpg"}, textureLayers.count);
+			loadTexture(&textureLayers, {"textures/soft_sand_color.jpg", "textures/soft_sand_normal.jpg", "textures/soft_sand_bump.jpg"}, textureLayers.count, true);
 			brushes.push_back(new Brush(textureLayers.count, glm::vec2(1.0), 0.01, 4, 16, 8,4, 256, 0.2 , 0.0));
 			textureLayers.count++;
 		}
 		{
-			loadTexture(&textureLayers, {"textures/forest_color.jpg", "textures/forest_normal.jpg", "textures/forest_bump.jpg"}, textureLayers.count);
+			loadTexture(&textureLayers, {"textures/forest_color.jpg", "textures/forest_normal.jpg", "textures/forest_bump.jpg"}, textureLayers.count, true);
 			brushes.push_back(new Brush(textureLayers.count, glm::vec2(1.0), 0.01, 4, 16, 8,4, 256, 0.2 , 0.0));
 			textureLayers.count++;
 		}
 		{
-			loadTexture(&atlasLayers, {"textures/vegetation/foliage_color.jpg", "textures/vegetation/foliage_normal.jpg", "textures/vegetation/foliage_opacity.jpg"}, billboardLayers.count);
+			loadTexture(&atlasLayers, {"textures/vegetation/foliage_color.jpg", "textures/vegetation/foliage_normal.jpg", "textures/vegetation/foliage_opacity.jpg"}, billboardLayers.count, false);
 			AtlasTexture * at = new AtlasTexture();
 			
 			at->tiles.push_back(Tile(glm::vec2(1.0),glm::vec2(0.0)));
@@ -366,7 +366,7 @@ public:
 			++atlasLayers.count;
 		}
 		{
-			loadTexture(&atlasLayers, {"textures/vegetation/grass_color.jpg", "textures/vegetation/grass_normal.jpg", "textures/vegetation/grass_opacity.jpg"}, billboardLayers.count);
+			loadTexture(&atlasLayers, {"textures/vegetation/grass_color.jpg", "textures/vegetation/grass_normal.jpg", "textures/vegetation/grass_opacity.jpg"}, billboardLayers.count, false);
 			AtlasTexture * at = new AtlasTexture();
 			at->tiles.push_back(Tile(glm::vec2(1.0),glm::vec2(0.0)));
 			
@@ -384,7 +384,7 @@ public:
 			++impostorLayers.count;
 		}
 		
-		noiseTexture = loadTextureImage("textures/noise.jpg");
+		noiseTexture = loadTextureImage("textures/noise.jpg", false);
 
 		Texture::bindTexture(program3d, activeTexture, glGetUniformLocation(program3d, "noise"), noiseTexture);
 		activeTexture = Texture::bindTexture(programBillboard, activeTexture, glGetUniformLocation(programBillboard, "noise"), noiseTexture);
@@ -600,6 +600,7 @@ public:
 					glUseProgram(programBillboard);
 					uniformBlock.set(OPACITY_FLAG, settings->opacityEnabled);
 					uniformBlock.set(BILLBOARD_FLAG, settings->billboardEnabled); 
+					uniformBlock.set(TRIPLANAR_FLAG, false); 
 					programData->uniform(&uniformBlock);
 					mainScene->drawBillboards(camera.position, settings, &mainScene->visibleShadowNodes[i]);
 				}
@@ -630,6 +631,7 @@ public:
 			uniformBlock.set(TESSELATION_FLAG, false);
 			uniformBlock.set(BILLBOARD_FLAG, settings->billboardEnabled); 
 			uniformBlock.set(OPACITY_FLAG, settings->opacityEnabled);
+			uniformBlock.set(TRIPLANAR_FLAG, false); 
 
 			glUseProgram(programBillboard);
 			programData->uniform(&uniformBlock);
@@ -646,7 +648,6 @@ public:
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		uniformBlock.set(DEPTH_FLAG, false);
-		uniformBlock.set(TRIPLANAR_FLAG, false); 
 
 		if(settings->wireFrameEnabled) {
 			uniformBlock.set(LIGHT_FLAG, false); 
@@ -655,6 +656,7 @@ public:
 		uniformBlock.set(BILLBOARD_FLAG, settings->billboardEnabled); 
 		if(settings->billboardEnabled) {
 			glUseProgram(programBillboard);
+			uniformBlock.set(TRIPLANAR_FLAG, false); 
 			programData->uniform(&uniformBlock);
 			mainScene->drawBillboards(camera.position, settings, &mainScene->visibleSolidNodes);
 		}
@@ -804,7 +806,6 @@ public:
 			ImGui::Text("%d/%d solid instances", mainScene->solidInstancesVisible, mainScene->solidInstancesCount);
 			ImGui::Text("%d/%d liquid instances", mainScene->liquidInstancesVisible, mainScene->liquidInstancesCount);
 			ImGui::Text("%d/%d vegetation instances", mainScene->vegetationInstancesVisible, mainScene->vegetationInstancesCount);
-			ImGui::Text("%d/%d shadow instances", mainScene->shadowInstancesVisible, mainScene->shadowInstancesCount);
 			#ifdef MEM_HEADER
 			ImGui::Text("%ld KB", usedMemory/1024);
 			#endif

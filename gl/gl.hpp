@@ -98,6 +98,7 @@ struct TextureArray {
 };
 
 struct TextureImage {
+    bool mipmapEnabled;
     GLuint index;
     GLuint channel;
 };
@@ -184,7 +185,7 @@ public:
     virtual void clean() = 0;
     void run();
     void close();
-    TextureImage loadTextureImage(const std::string& color);
+    TextureImage loadTextureImage(const std::string& color, bool mipmapEnabled);
     int getKeyboardStatus(int key);
     int getWidth();
     int getHeight();
@@ -511,7 +512,7 @@ void blitTextureArray(GLuint programCopy, MultiLayerRenderBuffer buffer, Texture
 void blitRenderBuffer(TextureArray textures[0], TextureLayers layers, RenderBuffer buffer, int sourceIndex, int destinationIndex);
 void blitRenderBuffer(TextureArray textures[0], TextureLayers layers, MultiLayerRenderBuffer buffer, int sourceIndex);
 
-void loadTexture(TextureLayers * layers,  std::initializer_list<std::string> fns, int index);
+void loadTexture(TextureLayers * layers, std::initializer_list<std::string> fns, int index, bool mipMapping);
 TextureArray createTextureArray(int width, int height, int layers, GLuint channel); 
 MultiLayerRenderBuffer createMultiLayerRenderFrameBuffer(int width, int height, int layers, int attachments, bool depth, GLuint color);
 RenderBuffer createDepthFrameBuffer(int width, int height);
