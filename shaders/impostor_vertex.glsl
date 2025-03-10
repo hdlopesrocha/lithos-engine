@@ -23,7 +23,6 @@ out vec3 vPosition;
 out vec3 vNormal;
 out TextureProperties vProps;
 out mat4 vModel;
-out vec4 vTangent;
 
 void main() {
     vTextureIndex = brushTextures[brushIndex];
@@ -32,6 +31,5 @@ void main() {
     vProps = brushes[brushIndex];
     vNormal = normal;
     vPosition = (vModel*vec4(position, 1.0)).xyz;
-    vTangent = tangent;
     gl_Position = viewProjection * vec4(vPosition, 1.0);    
 }

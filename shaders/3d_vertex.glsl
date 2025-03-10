@@ -19,7 +19,6 @@ out vec2 vTextureCoord;
 out vec3 vPosition;
 out TextureProperties vProps;
 out mat4 vModel;
-out vec4 vTangent;  // Tangent.xyz and Handedness.w
 out vec3 vT;
 out vec3 vB;
 out vec3 vN;
@@ -27,26 +26,7 @@ out vec3 vN;
 uniform TextureProperties brushes[25];
 uniform uint brushTextures[25];
 
-vec4 computeTriplanarTangentVec4(vec3 normal) {
-    vec3 T, B;
-    
-    if (abs(normal.y) > abs(normal.x) && abs(normal.y) > abs(normal.z)) {
-        // Y-dominant plane
-        T = vec3(1, 0, 0);
-        B = vec3(0, 0, 1);
-    } else if (abs(normal.x) > abs(normal.z)) {
-        // X-dominant plane
-        T = vec3(0, 0, 1);
-        B = vec3(0, 1, 0);
-    } else {
-        // Z-dominant plane
-        T = vec3(1, 0, 0);
-        B = vec3(0, 1, 0);
-    }
-
-    float handedness = (dot(cross(T, B), normal) < 0.0) ? -1.0 : 1.0;
-    return vec4(normalize(T), handedness);
-}
+#include<triplanar.glsl>
 
 void main() {
     vTextureIndex = brushTextures[brushIndex];
@@ -54,35 +34,37 @@ void main() {
     vTextureCoord.y -= shift;
 
     vModel = world*model;
-    vec3 iPosition = position;
-    mat3 normalMatrix = transpose(inverse(mat3(vModel)));
-    vec3 iNormal = normalize(normalMatrix * normal);
+
     float freq = 1.0/ PI;
 
-    vec3 wPosition = (vModel*vec4(iPosition, 1.0)).xyz;
+    vec3 wPosition = (vModel*vec4(position, 1.0)).xyz;
+ 
+    mat3 normalMatrix = transpose(inverse(mat3(vModel)));
+    vN = normalize(normalMatrix * normal);
 
-    if(billboardEnabled) {
-        if(iPosition.y > 0.0) {
-            wPosition.x += sin(wPosition.x*freq + time);
-            wPosition.z += cos(wPosition.z*freq + time);
-        }
-        iNormal.x += sin(wPosition.x*freq + time);
-        iNormal.z += cos(wPosition.z*freq + time);
-
-        iNormal = normalize(iNormal);
-    } 
 
     if(!depthEnabled) {
         vProps = brushes[brushIndex];
 
-        vec4 t = computeTriplanarTangentVec4(iNormal);
+        vec4 t = computeTriplanarTangentVec4(vN);
         vec3 iTangent = t.xyz;
-        vec3 iBitangent = cross(iNormal, iTangent) * t.w;
+        vec3 iBitangent = cross(vN, iTangent) * t.w;
 
         vT = iTangent;
         vB = iBitangent;
-        vN = iNormal;
     }
+    if(billboardEnabled) {
+        if(position.y > 0.0) {
+            wPosition.x += sin(wPosition.x*freq + time);
+            wPosition.z += cos(wPosition.z*freq + time);
+        }
+        vN.x += sin(wPosition.x*freq + time);
+        vN.z += cos(wPosition.z*freq + time);
+
+        vN = normalize(vN);
+    } 
+
+
     vPosition = wPosition;
     gl_Position = vec4(vPosition, 1.0);
 
