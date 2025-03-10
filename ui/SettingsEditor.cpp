@@ -31,20 +31,20 @@ void SettingsEditor::draw2d(){
     debugModes.push_back("Tangent");
     debugModes.push_back("Bitangent");
     debugModes.push_back("Normal");
+    debugModes.push_back("SharpNormal");
     debugModes.push_back("WorldNormal");
+    debugModes.push_back("Triplanar");
 
-    if (ImGui::BeginTabBar("Debug Mode")) {
-        for(int i=0 ; i < debugModes.size(); ++i) {
-            std::string name = debugModes[i];
-            if (ImGui::BeginTabItem(name.c_str())) {
-                settings->debugMode = i;
-                ImGui::EndTabItem();
+
+    if(settings->debugEnabled) {
+        for (int i = 0; i < debugModes.size(); i++) {
+            if (ImGui::RadioButton(debugModes[i].c_str(), this->selectedDebugMode == i)) {
+                this->selectedDebugMode = i;
             }
         }
-        ImGui::EndTabBar();
     }
 
-
+    settings->debugMode = this->selectedDebugMode;
 
     ImGui::Checkbox("Light", &settings->lightEnabled);
     ImGui::Checkbox("Opacity", &settings->opacityEnabled);

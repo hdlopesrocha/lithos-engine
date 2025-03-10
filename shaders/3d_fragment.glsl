@@ -39,7 +39,7 @@ void main() {
     } 
 
     if(opacityEnabled) {
-        if(textureBlend(textures[2], teTextureWeights, teTextureIndices, uv).r < 0.98) {
+        if(textureBlend(textures[2], teTextureWeights, teTextureIndices, uv).r < 0.9) {
             discard;
         }
     }
@@ -99,8 +99,15 @@ void main() {
             color = vec4(visual(TBN[2]),1.0);
         } 
         else if(debugMode == 6) {
+            color = vec4(visual(teSharpNormal),1.0);
+        }
+        else if(debugMode == 7) {
             color = vec4(visual(worldNormal),1.0);
         }
+        else if(debugMode == 8) {
+            color = vec4(mod(uv,vec2(1.0)),1.0,1.0);
+        }
+
         return;
     } else if(lightEnabled) {
         vec3 specularColor = vec3(1.0,1.0,1.0);

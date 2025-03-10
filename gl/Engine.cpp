@@ -366,7 +366,7 @@ GLenum channelsToFormat(int channels) {
     return GL_DEPTH_COMPONENT;
 }
 
-void loadTexture(TextureLayers * layers, std::initializer_list<std::string> fns, int index) {
+void loadTexture(TextureLayers * layers, std::initializer_list<std::string> fns, int index, bool mipMapping) {
     std::vector<std::string> textures;
 
     for(std::string t : fns) {
@@ -391,14 +391,17 @@ void loadTexture(TextureLayers * layers, std::initializer_list<std::string> fns,
         glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, index,  width, height, 1, channelsToFormat(channel), GL_UNSIGNED_BYTE, data);
         stbi_image_free(data);    
 
-
-        // Upload the texture to OpenGL
-        glGenerateMipmap(GL_TEXTURE_2D_ARRAY);
-
+        if(mipMapping) {
+            // Upload the texture to OpenGL
+            glGenerateMipmap(GL_TEXTURE_2D_ARRAY);
+            glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        }else {
+            glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        }
         // Set texture parameters
         glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_REPEAT);
         glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+
         glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     }
@@ -410,10 +413,10 @@ void loadTexture(TextureLayers * layers, std::initializer_list<std::string> fns,
 }
 
 
-TextureImage LithosApplication::loadTextureImage(const std::string& filename) {
+TextureImage LithosApplication::loadTextureImage(const std::string& filename, bool mipmapEnabled) {
     std::cout << "Loading " << filename << std::endl;
 	TextureImage image;
-
+    image.mipmapEnabled = mipmapEnabled;
 // Generate a texture object
     glGenTextures(1, &image.index);
     glBindTexture(GL_TEXTURE_2D, image.index);
@@ -435,12 +438,15 @@ TextureImage LithosApplication::loadTextureImage(const std::string& filename) {
         image.channel = format;
         // Upload the texture to OpenGL
         glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
-        glGenerateMipmap(GL_TEXTURE_2D);
-
+        if(mipmapEnabled) {
+            glGenerateMipmap(GL_TEXTURE_2D);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        }else {
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        }
         // Set texture parameters
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
         // Free image data and unbind texture
