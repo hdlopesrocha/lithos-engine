@@ -86,7 +86,7 @@ void main() {
         float phongSpec = pow(max(dot(reflection, teViewDirection), 0.0), teProps.shininess);
         float diffuse = clamp(max(dot(worldNormal, -lightDirection.xyz), 0.0), 0.2, 1.0);
 
-        float shadowAmount = 0.0;
+        float shadowAmount = 1.0;
         float shadowAlpha = 0.6;
         if(shadowEnabled) {
             shadowAmount = getShadow(shadowMap, noise, teLightViewPosition, tePosition, teSharpNormal);

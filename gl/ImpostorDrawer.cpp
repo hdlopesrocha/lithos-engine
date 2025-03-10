@@ -41,11 +41,9 @@ void ImpostorDrawer::draw(ImpostorParams &params) {
     glUniformMatrix4fv(glGetUniformLocation(program, "model"), 1, GL_FALSE, glm::value_ptr(model));
     glUniformMatrix4fv(glGetUniformLocation(program, "viewProjection"), 1, GL_FALSE, glm::value_ptr(viewProjection));
    
-    glDisable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);
     params.mesh->draw(GL_TRIANGLES);
     glEnable(GL_CULL_FACE);
-    glEnable(GL_DEPTH_TEST);
 
     for(int i=0 ; i < 3 ; ++i ) {
         blitter->blit(&renderBuffer, i, &targetLayers->textures[i], params.targetTexture);

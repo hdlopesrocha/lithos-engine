@@ -25,7 +25,6 @@ void TextureMixer::mix(MixerParams &params){
     glViewport(0, 0, textureMixerBuffer.width, textureMixerBuffer.height);
     glClear(GL_COLOR_BUFFER_BIT);
     glDisable(GL_CULL_FACE);
-    glDisable(GL_DEPTH_TEST);
     
 
     for(int i = 0; i < 3 ; ++i) {
