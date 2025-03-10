@@ -6,7 +6,6 @@ layout(triangles, equal_spacing, ccw) in; // Define primitive type and tessellat
 
 in vec3 tcTextureWeights[];
 in vec2 tcTextureCoord[];
-in vec3 tcNormal[];
 in vec3 tcPosition[];
 in TextureProperties tcProps[];
 in uvec3 tcTextureIndices[];
@@ -30,8 +29,14 @@ uniform TextureProperties overrideProps;
 out vec3 teT;
 out vec3 teB;
 out vec3 teN;
+out vec3 teViewDirection;
+out vec3 teViewDirectionTangent;
 
 void main() {
+
+    tePosition = gl_TessCoord[0] * tcPosition[0] + gl_TessCoord[1] * tcPosition[1] + gl_TessCoord[2] * tcPosition[2];
+    teModel = tcModel[0];
+
     if(!depthEnabled) {
         teSharpNormal = normalize(cross(tcPosition[1] - tcPosition[0], tcPosition[2] - tcPosition[0]));
 
@@ -68,25 +73,25 @@ void main() {
                                 tcProps[1].refractiveIndex * gl_TessCoord[1] + 
                                 tcProps[2].refractiveIndex * gl_TessCoord[2];                                                
         }
-    }
-    teTextureWeights = gl_TessCoord;
-    teTextureIndices = tcTextureIndices[0];
-    teTextureCoord = tcTextureCoord[0] * gl_TessCoord[0] + tcTextureCoord[1] * gl_TessCoord[1] + tcTextureCoord[2] * gl_TessCoord[2];
-    tePosition = gl_TessCoord[0] * tcPosition[0] + gl_TessCoord[1] * tcPosition[1] + gl_TessCoord[2] * tcPosition[2];
-    teModel = tcModel[0];
 
-    if(triplanarEnabled) {
-        int plane = triplanarPlane(tePosition, teSharpNormal);
-        teTextureCoord = triplanarMapping(tePosition, plane, teProps.textureScale) * 0.1;
-    }
+        teTextureWeights = gl_TessCoord;
+        teTextureIndices = tcTextureIndices[0];
 
-    if(!depthEnabled) {
+        if(triplanarEnabled) {
+            int plane = triplanarPlane(tePosition, teSharpNormal);
+            teTextureCoord = triplanarMapping(tePosition, plane, teProps.textureScale) * 0.1;
+        } else {
+            teTextureCoord = tcTextureCoord[0] * gl_TessCoord[0] + tcTextureCoord[1] * gl_TessCoord[1] + tcTextureCoord[2] * gl_TessCoord[2];
+        }
         
         // Output TBN vectors
         teT = tcT[0]* gl_TessCoord[0]+tcT[1]* gl_TessCoord[1]+tcT[2]* gl_TessCoord[2];
         teB = tcB[0]* gl_TessCoord[0]+tcB[1]* gl_TessCoord[1]+tcB[2]* gl_TessCoord[2];
         teN = tcN[0]* gl_TessCoord[0]+tcN[1]* gl_TessCoord[1]+tcN[2]* gl_TessCoord[2];
         
+        mat3 TBN = mat3(teT,teB, teN);
+        teViewDirection = normalize(tePosition-cameraPosition.xyz);
+        teViewDirectionTangent = normalize(transpose(TBN) * teViewDirection);
         for(int i = 0; i < SHADOW_MATRIX_COUNT ; ++i ) {
             teLightViewPosition[i] = matrixShadow[i] * vec4(tePosition, 1.0);  
         }

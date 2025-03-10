@@ -7,8 +7,8 @@ layout(location = 0) in vec3 position;
 layout(location = 1) in vec3 normal;    
 layout(location = 2) in vec2 textureCoord;    
 layout(location = 3) in uint brushIndex;     
-layout(location = 5) in float shift; 
-layout(location = 6) in mat4 model; 
+layout(location = 4) in float shift; 
+layout(location = 5) in mat4 model; 
 
 
 #include<functions.glsl>
@@ -17,7 +17,6 @@ layout(location = 6) in mat4 model;
 out uint vTextureIndex;
 out vec2 vTextureCoord;
 out vec3 vPosition;
-out vec3 vNormal;
 out TextureProperties vProps;
 out mat4 vModel;
 out vec4 vTangent;  // Tangent.xyz and Handedness.w
@@ -62,10 +61,10 @@ void main() {
 
     vec3 wPosition = (vModel*vec4(iPosition, 1.0)).xyz;
 
-    if(opacityEnabled) {
+    if(billboardEnabled) {
         if(iPosition.y > 0.0) {
-            iPosition.x += sin(wPosition.x*freq + time);
-            iPosition.z += cos(wPosition.z*freq + time);
+            wPosition.x += sin(wPosition.x*freq + time);
+            wPosition.z += cos(wPosition.z*freq + time);
         }
         iNormal.x += sin(wPosition.x*freq + time);
         iNormal.z += cos(wPosition.z*freq + time);
@@ -75,18 +74,16 @@ void main() {
 
     if(!depthEnabled) {
         vProps = brushes[brushIndex];
-        vNormal = iNormal;
+
+        vec4 t = computeTriplanarTangentVec4(iNormal);
+        vec3 iTangent = t.xyz;
+        vec3 iBitangent = cross(iNormal, iTangent) * t.w;
+
+        vT = iTangent;
+        vB = iBitangent;
+        vN = iNormal;
     }
-    vPosition = (vModel*vec4(iPosition, 1.0)).xyz;
+    vPosition = wPosition;
     gl_Position = vec4(vPosition, 1.0);
-    vec4 t = computeTriplanarTangentVec4(iNormal);
-    vec3 iTangent = t.xyz;
-    vec3 iBitangent = cross(iNormal, iTangent) * t.w;
 
-    vT = iTangent;
-    vB = iBitangent;
-    vN = iNormal;
-
-    // Store transformed tangent
-   //vtan = computeTriplanarTangentVec4(iNormal);
 }

@@ -7,7 +7,6 @@ layout(vertices = 3) out;
 in uint vTextureIndex[];
 in vec2 vTextureCoord[];
 in vec3 vPosition[];
-in vec3 vNormal[];
 in TextureProperties vProps[];
 in mat4 vModel[];
 in mat3 vNormalMatrix[];
@@ -19,7 +18,6 @@ in vec3 vN[];
 
 flat out uvec3 tcTextureIndices[];
 out vec2 tcTextureCoord[];
-out vec3 tcNormal[];
 out vec3 tcPosition[];
 out TextureProperties tcProps[];
 out mat4 tcModel[];
@@ -44,11 +42,11 @@ void main() {
     }    
 
     if(!depthEnabled) {
-        tcNormal[gl_InvocationID] = vNormal[gl_InvocationID];
+        tcT[gl_InvocationID] = vT[gl_InvocationID];
+        tcB[gl_InvocationID] = vB[gl_InvocationID];
+        tcN[gl_InvocationID] = vN[gl_InvocationID];
         tcProps[gl_InvocationID] = vProps[gl_InvocationID];
     }
 
-    tcT[gl_InvocationID] = vT[gl_InvocationID];
-    tcB[gl_InvocationID] = vB[gl_InvocationID];
-    tcN[gl_InvocationID] = vN[gl_InvocationID];
+
 }
