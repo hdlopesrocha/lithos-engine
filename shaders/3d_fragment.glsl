@@ -91,7 +91,7 @@ void main() {
         if(shadowEnabled) {
             shadowAmount = getShadow(shadowMap, noise, teLightViewPosition, tePosition, teSharpNormal);
         }
-        
+        shadowAmount = shadowAmount*(1.0-shadowAlpha)+shadowAlpha; 
 
         vec4 refractedColor = vec4(0.0,0.0,0.0,0.0);
         if(teProps.refractiveIndex > 0.0) {
