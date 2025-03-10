@@ -246,8 +246,8 @@ public:
 		renderBuffer = createRenderFrameBuffer(getWidth(), getHeight(), true);
 		solidBuffer = createRenderFrameBuffer(getWidth(), getHeight(), true);
 		depthFrameBuffer = createDepthFrameBuffer(getWidth(), getHeight());
-		shadowFrameBuffers.push_back(std::pair(createDepthFrameBuffer(1024, 1024), 32));
-		shadowFrameBuffers.push_back(std::pair(createDepthFrameBuffer(1024, 1024), 128));
+		shadowFrameBuffers.push_back(std::pair(createDepthFrameBuffer(1024, 1024), 64));
+		shadowFrameBuffers.push_back(std::pair(createDepthFrameBuffer(1024, 1024), 256));
 		shadowFrameBuffers.push_back(std::pair(createDepthFrameBuffer(1024, 1024), 512));
 
 		textureMixer = new TextureMixer(1024,1024, programMixTexture, &textureLayers, textureBlitter1024);
@@ -599,7 +599,7 @@ public:
 				if(settings->billboardEnabled) {
 					glUseProgram(programBillboard);
 					uniformBlock.set(OPACITY_FLAG, settings->opacityEnabled);
-					uniformBlock.set(BILLBOARD_FLAG, true); 
+					uniformBlock.set(BILLBOARD_FLAG, settings->billboardEnabled); 
 					programData->uniform(&uniformBlock);
 					mainScene->drawBillboards(camera.position, settings, &mainScene->visibleShadowNodes[i]);
 				}
@@ -657,12 +657,13 @@ public:
 			mainScene->drawBillboards(camera.position, settings, &mainScene->visibleSolidNodes);
 		}
 
+
+
+		glUseProgram(program3d);
 		uniformBlock.set(BILLBOARD_FLAG, false); 
 		uniformBlock.set(TESSELATION_FLAG, settings->tesselationEnabled);
 		uniformBlock.set(OPACITY_FLAG, false);
 		uniformBlock.set(TRIPLANAR_FLAG, true); 
-
-		glUseProgram(program3d);
 		programData->uniform(&uniformBlock);
 		mainScene->draw3dSolid(camera.position, settings, &mainScene->visibleSolidNodes);
 		if(settings->wireFrameEnabled) {
@@ -801,6 +802,7 @@ public:
 			ImGui::Text("%d/%d solid instances", mainScene->solidInstancesVisible, mainScene->solidInstancesCount);
 			ImGui::Text("%d/%d liquid instances", mainScene->liquidInstancesVisible, mainScene->liquidInstancesCount);
 			ImGui::Text("%d/%d vegetation instances", mainScene->vegetationInstancesVisible, mainScene->vegetationInstancesCount);
+			ImGui::Text("%d/%d shadow instances", mainScene->shadowInstancesVisible, mainScene->shadowInstancesCount);
 			#ifdef MEM_HEADER
 			ImGui::Text("%ld KB", usedMemory/1024);
 			#endif

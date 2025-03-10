@@ -55,7 +55,7 @@ void * OctreeProcessor::before(int level, int height, OctreeNode * node, const B
 
 		if(height==geometryLevel){
 			if(canGenerate && createInstances) {
-				if(drawableType == TYPE_INSTANCE_SOLID_DRAWABLE || drawableType == TYPE_INSTANCE_LIQUID_DRAWABLE) {
+				if(drawableType == TYPE_INSTANCE_SOLID_DRAWABLE || drawableType == TYPE_INSTANCE_LIQUID_DRAWABLE || drawableType == TYPE_INSTANCE_SHADOW_DRAWABLE) {
 
 					// Simplify
 					Simplifier simplifier(tree, cube, simplificationAngle, simplificationDistance, simplificationTexturing, simplification); 
@@ -65,7 +65,7 @@ void * OctreeProcessor::before(int level, int height, OctreeNode * node, const B
 					Geometry * geometry = new Geometry();
 					Tesselator tesselator(tree, geometry, simplification);
 					tesselator.iterateFlatIn(level, height, node, cube, NULL);
-
+					drawableType = drawableType == TYPE_INSTANCE_SHADOW_DRAWABLE ? TYPE_INSTANCE_SOLID_DRAWABLE : drawableType;
 					NodeInfo * info = node->getNodeInfo(drawableType);
 					if(info == NULL) {
 						PreLoadedGeometry * pre = new PreLoadedGeometry();

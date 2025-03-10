@@ -17,6 +17,7 @@
 #define TYPE_INSTANCE_VEGETATION_DRAWABLE 1
 #define TYPE_INSTANCE_SOLID_DRAWABLE 2
 #define TYPE_INSTANCE_LIQUID_DRAWABLE 3
+#define TYPE_INSTANCE_SHADOW_DRAWABLE 4
 
 
 #include <imgui/imgui.h>
@@ -125,11 +126,13 @@ struct DirectionalLight {
 
     glm::mat4 getVP(Camera * camera, float orthoSize, float near, float far) {
         // Calculate a distance for the light based on the far plane, used to capture the scene.
-        float dist = far / 2.0f;
+        float dist = far / 4.0f;
         
         // Create an orthographic projection matrix for shadow mapping.
         glm::mat4 projection = glm::ortho(-orthoSize, orthoSize, -orthoSize, orthoSize, near, far);
         
+
+
         // Set up the view matrix so that the light looks at the camera's position,
         // but it is positioned along the light's direction, offset by dist to capture the scene's visible range.
 

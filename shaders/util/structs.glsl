@@ -13,7 +13,6 @@ struct TextureProperties {
 };
 
 struct ShadowProperties {
-    float lightAmount;
     float shadowAmount;
 };
 
