@@ -597,7 +597,7 @@ public:
 				
 				if(settings->billboardEnabled) {
 					glUseProgram(programBillboard);
-					uniformBlock.set(OPACITY_FLAG, true);
+					uniformBlock.set(OPACITY_FLAG, settings->opacityEnabled);
 					uniformBlock.set(BILLBOARD_FLAG, true); 
 					programData->uniform(&uniformBlock);
 					mainScene->drawBillboards(camera.position, settings, &mainScene->visibleShadowNodes[i]);
@@ -623,10 +623,13 @@ public:
 		programData->uniform(&uniformBlock);
 		mainScene->draw3dSolid(camera.position, settings, &mainScene->visibleSolidNodes);
 
-		uniformBlock.set(TESSELATION_FLAG, false);
-		uniformBlock.set(BILLBOARD_FLAG, settings->billboardEnabled); 
-		uniformBlock.set(OPACITY_FLAG, settings->opacityEnabled);
+
 		if(settings->billboardEnabled) {
+
+			uniformBlock.set(TESSELATION_FLAG, false);
+			uniformBlock.set(BILLBOARD_FLAG, settings->billboardEnabled); 
+			uniformBlock.set(OPACITY_FLAG, settings->opacityEnabled);
+			
 			glUseProgram(programBillboard);
 			programData->uniform(&uniformBlock);
 			mainScene->drawBillboards(camera.position, settings, &mainScene->visibleSolidNodes);

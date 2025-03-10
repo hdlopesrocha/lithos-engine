@@ -27,7 +27,8 @@ in mat4 teModel;
 in vec3 teT;
 in vec3 teB;
 in vec3 teN;
-
+in vec3 teViewDirection;
+in vec3 teViewDirectionTangent;
 out vec4 color;    // Final fragment color
 
 
@@ -63,11 +64,8 @@ void main() {
    //color = vec4(visual(teT),1.0);
    //return;
 
-    vec3 viewDirection = normalize(tePosition-cameraPosition.xyz);
-    vec3 viewDirectionTangent = normalize(transpose(TBN) * viewDirection);
-
     if(parallaxEnabled && distanceFactor * teProps.parallaxScale > 0.0) {
-       uv = parallaxMapping(textures[2], teTextureWeights, teTextureIndices, uv, viewDirectionTangent, distanceFactor*teProps.parallaxScale , distanceFactor*teProps.parallaxMinLayers, distanceFactor*teProps.parallaxMaxLayers, int(ceil(distanceFactor*teProps.parallaxRefine)));
+       uv = parallaxMapping(textures[2], teTextureWeights, teTextureIndices, uv, teViewDirectionTangent, distanceFactor*teProps.parallaxScale , distanceFactor*teProps.parallaxMinLayers, distanceFactor*teProps.parallaxMaxLayers, int(ceil(distanceFactor*teProps.parallaxRefine)));
     }
   
     vec4 mixedColor = textureBlend(textures[0], teTextureWeights, teTextureIndices, uv);
@@ -85,7 +83,7 @@ void main() {
         vec3 specularColor = vec3(1.0,1.0,1.0);
         vec3 reflection = reflect(-lightDirection.xyz, worldNormal);
 
-        float phongSpec = pow(max(dot(reflection, viewDirection), 0.0), teProps.shininess);
+        float phongSpec = pow(max(dot(reflection, teViewDirection), 0.0), teProps.shininess);
         float diffuse = clamp(max(dot(worldNormal, -lightDirection.xyz), 0.0), 0.2, 1.0);
 
         ShadowProperties shadow; 
@@ -101,7 +99,7 @@ void main() {
             // Compute refraction
 
             float eta = 1.0 / teProps.refractiveIndex; // Air to water
-            vec3 refractedDir = refract(viewDirectionTangent, normalMap, eta);
+            vec3 refractedDir = refract(teViewDirectionTangent, normalMap, eta);
             vec2 refractedUV = pixelUV + refractedDir.xy * 0.1; // UV distortion
         
             float d2 = texture(depthTexture, refractedUV).r;
