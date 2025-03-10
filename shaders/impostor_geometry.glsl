@@ -7,7 +7,6 @@ in vec2 vTextureCoord[];
 in uint vTextureIndex[];
 in mat4 vModel[];
 in TextureProperties vProps[];
-in vec4 vTangent[];
 
 out uint gTextureIndex;
 out vec2 gTextureCoord;
@@ -18,11 +17,14 @@ out TextureProperties gProps;
 out mat4 gModel;
 out vec3 gSharpNormal;
 flat out uvec3 gTextureIndices;
-out mat3 gTBN;
-out vec4 gTangent;
+out vec3 gT;
+out vec3 gB;
+out vec3 gN;
 
 layout(triangles) in;
 layout(triangle_strip, max_vertices = 3) out;
+
+#include<triplanar.glsl>
 
 void main() {
     for (int i = 0; i < 3; ++i) {
@@ -43,14 +45,16 @@ void main() {
         gNormal = vNormal[i];
         gProps = vProps[i];
         gModel = vModel[i];
-        gTangent = vTangent[i];
 
-        // Compute bitangent in GS
-        vec3 T = normalize(gTangent.xyz);
-        vec3 N = normalize(vNormal[i]);
-        vec3 B = cross(N, T) * gTangent.w; // Use handedness
+        mat3 normalMatrix = transpose(inverse(mat3(gModel)));
+        gN = normalize(normalMatrix * gNormal);
 
-        gTBN = mat3(T, B, N);
+        vec4 t = computeTriplanarTangentVec4(gN);
+        vec3 iTangent = t.xyz;
+        vec3 iBitangent = cross(gN, iTangent) * t.w;
+
+        gT = iTangent;
+        gB = iBitangent;
 
         gl_Position = gl_in[i].gl_Position;
         EmitVertex();

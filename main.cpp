@@ -155,6 +155,7 @@ public:
 		includes.push_back(GlslInclude("#include<uniforms.glsl>" , readFile("shaders/util/uniforms.glsl")));
 		includes.push_back(GlslInclude("#include<shadow.glsl>" , readFile("shaders/util/shadow.glsl")));
 		includes.push_back(GlslInclude("#include<tbn.glsl>" , readFile("shaders/util/tbn.glsl")));
+		includes.push_back(GlslInclude("#include<triplanar.glsl>" , readFile("shaders/util/triplanar.glsl")));
 
 		programAtlas = createShaderProgram({
 			compileShader(replaceIncludes(includes,readFile("shaders/texture/atlas_vertex.glsl")),GL_VERTEX_SHADER), 
@@ -629,7 +630,7 @@ public:
 			uniformBlock.set(TESSELATION_FLAG, false);
 			uniformBlock.set(BILLBOARD_FLAG, settings->billboardEnabled); 
 			uniformBlock.set(OPACITY_FLAG, settings->opacityEnabled);
-			
+
 			glUseProgram(programBillboard);
 			programData->uniform(&uniformBlock);
 			mainScene->drawBillboards(camera.position, settings, &mainScene->visibleSolidNodes);
