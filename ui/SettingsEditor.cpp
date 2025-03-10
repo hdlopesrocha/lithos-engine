@@ -34,6 +34,7 @@ void SettingsEditor::draw2d(){
     debugModes.push_back("SharpNormal");
     debugModes.push_back("WorldNormal");
     debugModes.push_back("Triplanar");
+    debugModes.push_back("Depth");
 
 
     if(settings->debugEnabled) {
