@@ -556,7 +556,7 @@ public:
 
 
 		UniformBlock uniformBlock;
-        uniformBlock.uintData = glm::vec4(0);
+        uniformBlock.uintData = glm::vec4(0.0, 0.0, settings->debugMode, settings->overrideTexture);
 		uniformBlock.floatData = glm::vec4( time, 0.0, 0.0 ,0.0);
 		uniformBlock.world = worldModel;
 		uniformBlock.lightDirection = glm::vec4(light.direction, 0.0f);
@@ -567,7 +567,7 @@ public:
 		uniformBlock.set(LIGHT_FLAG, settings->lightEnabled);
 		uniformBlock.set(PARALLAX_FLAG, settings->parallaxEnabled);
 		uniformBlock.set(DEPTH_FLAG, true);
-		uniformBlock.set(OVERRIDE_FLAG, false);
+		uniformBlock.set(OVERRIDE_FLAG, settings->overrideEnabled);
 		uniformBlock.set(OPACITY_FLAG, false);
 		uniformBlock.set(TRIPLANAR_FLAG, false); 
 		uniformBlock.set(BILLBOARD_FLAG, false); 
@@ -581,7 +581,7 @@ public:
 			for(int i=0 ; i < shadowFrameBuffers.size() ; ++i) {
 				std::pair<RenderBuffer, int> pair = shadowFrameBuffers[i];
 				RenderBuffer buffer = pair.first;
-
+// TODO : shadowmap nao tem vegetation
 				glBindFramebuffer(GL_FRAMEBUFFER, buffer.frameBuffer);
 				glViewport(0, 0, buffer.width, buffer.height);
 				glClear(GL_DEPTH_BUFFER_BIT);
@@ -633,6 +633,7 @@ public:
 
 			glUseProgram(programBillboard);
 			programData->uniform(&uniformBlock);
+			// TODO : depthmap nao tem vegetation
 			mainScene->drawBillboards(camera.position, settings, &mainScene->visibleSolidNodes);
 		}
 
@@ -645,6 +646,7 @@ public:
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		uniformBlock.set(DEPTH_FLAG, false);
+		uniformBlock.set(TRIPLANAR_FLAG, false); 
 
 		if(settings->wireFrameEnabled) {
 			uniformBlock.set(LIGHT_FLAG, false); 

@@ -11,4 +11,7 @@ Settings::Settings() {
     this->opacityEnabled = true;
     this->billboardEnabled = true;
     this->billboardRange = 128;
+    this->opacityEnabled = false;
+    this->overrideTexture = 0;
+    this->debugMode = 0;
 }

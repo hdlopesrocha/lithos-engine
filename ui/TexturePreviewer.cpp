@@ -46,5 +46,5 @@ void TexturePreviewer::draw2d(int index){
         ImGui::EndTabBar();
     }
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	ImGui::Image((ImTextureID)(intptr_t)previewBuffer.colorTexture.idx, ImVec2(width, height));
+	ImGui::Image((ImTextureID)(intptr_t)previewBuffer.colorTexture.index, ImVec2(width, height));
 }

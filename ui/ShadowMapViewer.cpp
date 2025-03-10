@@ -24,7 +24,7 @@ void ShadowMapViewer::draw2d(){
     selectedBuffer = Math::mod(selectedBuffer, shadowBuffers->size());
 
 
-	ImGui::Image((ImTextureID)(intptr_t)shadowBuffers->at(selectedBuffer).first.depthTexture.idx, ImVec2(width, height));
+	ImGui::Image((ImTextureID)(intptr_t)shadowBuffers->at(selectedBuffer).first.depthTexture.index, ImVec2(width, height));
 	ImGui::End();
 }
 

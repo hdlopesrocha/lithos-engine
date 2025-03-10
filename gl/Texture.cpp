@@ -31,9 +31,9 @@ int Texture::bindTexture(GLuint program, int activeTexture, std::string objectNa
 }
 
 int Texture::bindTexture(GLuint program, int activeTexture, std::string objectName, TextureImage texture) {
-    return bindTextureInternal(program, GL_TEXTURE_2D, activeTexture, objectName, texture.idx);
+    return bindTextureInternal(program, GL_TEXTURE_2D, activeTexture, objectName, texture.index);
 }
 
 int Texture::bindTexture(GLuint program, int activeTexture, GLuint location, TextureImage texture) {
-    return bindTextureInternal(program, GL_TEXTURE_2D, activeTexture, location, texture.idx);
+    return bindTextureInternal(program, GL_TEXTURE_2D, activeTexture, location, texture.index);
 }
