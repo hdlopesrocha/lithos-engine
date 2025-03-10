@@ -98,7 +98,7 @@ struct TextureArray {
 };
 
 struct TextureImage {
-    GLuint idx;
+    GLuint index;
     GLuint channel;
 };
 
@@ -415,8 +415,10 @@ class Settings {
         bool tesselationEnabled;
         bool opacityEnabled;
         bool billboardEnabled;
-        int billboardRange;
-
+        bool overrideEnabled;
+        uint billboardRange;
+        uint overrideTexture;
+        uint debugMode;
         Settings();
 
 };

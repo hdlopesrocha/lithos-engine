@@ -34,10 +34,12 @@ out vec4 color;    // Final fragment color
 
 void main() {
     vec2 uv = teTextureCoord;
+    if(billboardEnabled && uv.y < 0.0) {
+       // discard;
+    } 
 
     if(opacityEnabled) {
-        vec4 opacity = textureBlend(textures[2], teTextureWeights, teTextureIndices, uv);
-        if(opacity.r < 0.98) {
+        if(textureBlend(textures[2], teTextureWeights, teTextureIndices, uv).r < 0.98) {
             discard;
         }
     }
@@ -78,7 +80,28 @@ void main() {
     vec3 worldNormal = normalize(TBN * normalMap);
 
     if(debugEnabled) {
-        color = textureBlend(textures[0], teTextureWeights, teTextureIndices, uv);
+        if(debugMode == 0){
+            color = textureBlend(textures[0], teTextureWeights, teTextureIndices, uv);
+        }
+        else if(debugMode == 1){
+            color = textureBlend(textures[1], teTextureWeights, teTextureIndices, uv);
+        }
+        else if(debugMode == 2){
+            color = textureBlend(textures[2], teTextureWeights, teTextureIndices, uv);
+        }
+        else if(debugMode == 3) {
+            color = vec4(visual(TBN[0]),1.0);
+        }
+        else if(debugMode == 4) {
+            color = vec4(visual(TBN[1]),1.0);
+        }
+        else if(debugMode == 5) {
+            color = vec4(visual(TBN[2]),1.0);
+        } 
+        else if(debugMode == 6) {
+            color = vec4(visual(worldNormal),1.0);
+        }
+        return;
     } else if(lightEnabled) {
         vec3 specularColor = vec3(1.0,1.0,1.0);
         vec3 reflection = reflect(-lightDirection.xyz, worldNormal);

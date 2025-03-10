@@ -36,6 +36,6 @@ bool tesselationEnabled  = (uintData.x & uint(TESSELATION_FLAG)) != 0u;
 bool opacityEnabled  = (uintData.y & uint(OPACITY_FLAG)) != 0u;
 bool billboardEnabled  = (uintData.y & uint(BILLBOARD_FLAG)) != 0u;
 
-
+uint debugMode  = uintData.z;
 uint overrideTexture  = uintData.w;
 float time = floatData.x;

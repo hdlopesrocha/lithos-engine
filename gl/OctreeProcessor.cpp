@@ -53,7 +53,7 @@ void * OctreeProcessor::before(int level, int height, OctreeNode * node, const B
 		int currentLod = height - geometryLevel;
 
 
-		if(height==geometryLevel){
+		if(currentLod>=0){
 			if(canGenerate && createInstances) {
 				if(drawableType == TYPE_INSTANCE_SOLID_DRAWABLE || drawableType == TYPE_INSTANCE_LIQUID_DRAWABLE || drawableType == TYPE_INSTANCE_SHADOW_DRAWABLE) {
 
