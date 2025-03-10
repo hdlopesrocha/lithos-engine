@@ -14,14 +14,17 @@ class Scene {
 		OctreeProcessor * solidProcessor;
 		OctreeProcessor * liquidProcessor;
 		OctreeProcessor * vegetationProcessor;
+		OctreeProcessor * shadowProcessor;
 
 		int solidInstancesCount = 0;
 		int liquidInstancesCount = 0;
 		int vegetationInstancesCount = 0;
+		int shadowInstancesCount = 0;
 
 		int solidInstancesVisible = 0;
 		int liquidInstancesVisible = 0;
 		int vegetationInstancesVisible = 0;
+		int shadowInstancesVisible = 0;
 		std::vector<IteratorData> visibleSolidNodes;
 		std::vector<IteratorData> visibleLiquidNodes;
 		std::vector<IteratorData> visibleShadowNodes[SHADOW_MATRIX_COUNT];
@@ -35,6 +38,7 @@ class Scene {
 		solidProcessor = new OctreeProcessor(solidSpace, &solidInstancesCount, TYPE_INSTANCE_SOLID_DRAWABLE, 5, 0.9, 0.2, true, true, 5);
 		liquidProcessor = new OctreeProcessor(liquidSpace, &liquidInstancesCount, TYPE_INSTANCE_LIQUID_DRAWABLE, 5, 0.9, 0.2, true, true, 5);
 		vegetationProcessor = new OctreeProcessor(solidSpace, &vegetationInstancesCount, TYPE_INSTANCE_VEGETATION_DRAWABLE, 5, 0.9, 0.2, true, true, 5);
+		shadowProcessor = new OctreeProcessor(solidSpace, &shadowInstancesCount, TYPE_INSTANCE_SHADOW_DRAWABLE, 5, 0.9, 0.2, true, true, 5);
 
 		solidRenderer = new OctreeVisibilityChecker(solidSpace, 5, &visibleSolidNodes);
 		liquidRenderer = new OctreeVisibilityChecker(liquidSpace, 5, &visibleLiquidNodes);
@@ -79,6 +83,8 @@ class Scene {
 							solidInstancesVisible += drawable->instancesCount;
 						}else if(drawableType == TYPE_INSTANCE_LIQUID_DRAWABLE) {
 							liquidInstancesVisible += drawable->instancesCount;
+						}else if(drawableType == TYPE_INSTANCE_SHADOW_DRAWABLE) {
+							shadowInstancesVisible += drawable->instancesCount;
 						}
 					}
 				
@@ -92,10 +98,17 @@ class Scene {
 		solidProcessor->loadCount = 1;
 		liquidProcessor->loadCount = 1;
 		vegetationProcessor->loadCount = 1;
-
+		shadowProcessor->loadCount = 1;
 		solidInstancesVisible = 0;
 		liquidInstancesVisible = 0;
 		vegetationInstancesVisible = 0;
+
+		for(int i =0 ; i < 3 ; ++i){
+			for(IteratorData &data : visibleShadowNodes[i]) {
+				shadowProcessor->before(data.level,data.height, data.node, data.cube, NULL);
+			}
+		}
+
 
 		for(IteratorData &data : visibleSolidNodes){
 			solidProcessor->before(data.level,data.height, data.node, data.cube, NULL);
@@ -112,7 +125,7 @@ class Scene {
 		setVisibleNodes(viewProjection, camera->position, *solidRenderer);
 		setVisibleNodes(viewProjection, camera->position, *liquidRenderer);
 		if(settings->shadowEnabled) {
-			glm::vec3 fakeLightPosition = camera->position - light->direction * far;
+			glm::vec3 fakeLightPosition = camera->position - light->direction * far *0.5f;
 			for(int i=0 ; i < shadowMatrices.size() ; ++i) {
 				setVisibleNodes(shadowMatrices[i], fakeLightPosition, *shadowRenderer[i]);
 			}

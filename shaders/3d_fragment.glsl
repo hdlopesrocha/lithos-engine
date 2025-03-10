@@ -78,7 +78,7 @@ void main() {
     vec3 worldNormal = normalize(TBN * normalMap);
 
     if(debugEnabled) {
-        color = textureBlend(textures[2], teTextureWeights, teTextureIndices, uv);
+        color = textureBlend(textures[0], teTextureWeights, teTextureIndices, uv);
     } else if(lightEnabled) {
         vec3 specularColor = vec3(1.0,1.0,1.0);
         vec3 reflection = reflect(-lightDirection.xyz, worldNormal);
@@ -86,11 +86,10 @@ void main() {
         float phongSpec = pow(max(dot(reflection, teViewDirection), 0.0), teProps.shininess);
         float diffuse = clamp(max(dot(worldNormal, -lightDirection.xyz), 0.0), 0.2, 1.0);
 
-        ShadowProperties shadow; 
-        shadow.shadowAmount = 1.0;
-        shadow.lightAmount = 1.0;
+        float shadowAmount = 0.0;
+        float shadowAlpha = 0.6;
         if(shadowEnabled) {
-            shadow = getShadow(shadowMap, noise, teLightViewPosition, tePosition, teSharpNormal);
+            shadowAmount = getShadow(shadowMap, noise, teLightViewPosition, tePosition, teSharpNormal);
         }
         
 
@@ -107,7 +106,7 @@ void main() {
             refractedColor = texture(underTexture, currentDepth < d2 ? refractedUV : pixelUV);
         }
 
-        color = refractedColor + vec4((mixedColor.rgb*diffuse + specularColor * teProps.specularStrength * phongSpec *  shadow.lightAmount)*shadow.shadowAmount , mixedColor.a+teProps.specularStrength * phongSpec *  shadow.lightAmount); 
+        color = refractedColor + vec4((mixedColor.rgb*diffuse + specularColor * teProps.specularStrength * phongSpec)*shadowAmount , mixedColor.a+teProps.specularStrength * phongSpec); 
 
     }else {
         color = mixedColor;

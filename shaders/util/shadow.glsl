@@ -1,4 +1,4 @@
-ShadowProperties getShadow(sampler2D shadowMap[SHADOW_MATRIX_COUNT], sampler2D noise, vec4 lightViewPosition[SHADOW_MATRIX_COUNT], vec3 position, vec3 normal) {
+float getShadow(sampler2D shadowMap[SHADOW_MATRIX_COUNT], sampler2D noise, vec4 lightViewPosition[SHADOW_MATRIX_COUNT], vec3 position, vec3 normal) {
     int selectedMap = 0;
     vec3 shadowPosition= lightViewPosition[selectedMap].xyz / lightViewPosition[selectedMap].w; 
 
@@ -52,10 +52,5 @@ ShadowProperties getShadow(sampler2D shadowMap[SHADOW_MATRIX_COUNT], sampler2D n
             break;
         }
     }
-
-    ShadowProperties props;
-    float shadowAlpha = 0.6;
-    props.lightAmount = sumShadow/totalSamples;
-    props.shadowAmount = (1.0 - shadowAlpha) + props.lightAmount*shadowAlpha;
-    return props;
+    return sumShadow/totalSamples;
 }
