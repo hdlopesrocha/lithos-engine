@@ -34,13 +34,16 @@ out vec4 color;    // Final fragment color
 
 
 void main() {
+
+
     vec2 uv = teTextureCoord;
-    if(billboardEnabled && uv.y < 0.0) {
+  
+    if(billboardEnabled && (uv.y < 0.0 || uv.y > 1.0 || uv.x < 0.0 || uv.x > 1.0)) {
         discard;
     } 
-
     if(opacityEnabled) {
-        if(textureBlend(textures[2], teTextureIndices, uv, teTextureWeights, teTextureWeights).r < 0.98) {
+        float b = textureBlend(textures[2], teTextureIndices, uv, teTextureWeights, teBlendFactors).r;
+        if(b < 0.98) {
             discard;
         }
     }
@@ -58,14 +61,11 @@ void main() {
 
     mat3 TBN = mat3(normalize(teT), normalize(teB), normalize(teN));
 
-
-
     float effectAmount = sin(time*3.14/4.0)*0.5 + 0.5;
     float distance = length(cameraPosition.xyz - tePosition);
     float distanceFactor = 1.0 - clamp(distance/parallaxDistance, 0.0, 1.0); 
     distanceFactor = pow(distanceFactor, parallaxPower);
     distanceFactor = clamp(distanceFactor, 0.0, 1.0);
-
 
     if(parallaxEnabled && distanceFactor * teProps.parallaxScale > 0.0) {
        uv = parallaxMapping(
@@ -98,7 +98,8 @@ void main() {
             color = textureBlend(textures[1], teTextureIndices, uv, teTextureWeights, teBlendFactors);
         }
         else if(debugMode == 2){
-            color = textureBlend(textures[2], teTextureIndices, uv, teTextureWeights, teBlendFactors);
+            vec4 b = textureBlend(textures[2], teTextureIndices, uv, teTextureWeights, teBlendFactors); 
+            color = vec4(vec3(b.r), 1.0);
         }
         else if(debugMode == 3) {
             color = vec4(visual(TBN[0]),1.0);

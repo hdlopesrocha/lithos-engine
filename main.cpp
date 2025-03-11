@@ -596,6 +596,7 @@ public:
 				uniformBlock.viewProjection = lightProjection;
 
 				glUseProgram(program3d);
+				uniformBlock.set(TRIPLANAR_FLAG, true); 
 				uniformBlock.set(OPACITY_FLAG, false);
 				programData->uniform(&uniformBlock);
 
@@ -605,6 +606,7 @@ public:
 					glUseProgram(programBillboard);
 					uniformBlock.set(OPACITY_FLAG, settings->opacityEnabled);
 					uniformBlock.set(BILLBOARD_FLAG, settings->billboardEnabled); 
+					uniformBlock.set(TRIPLANAR_FLAG, false); 
 					programData->uniform(&uniformBlock);
 					// visibleSolidNodes because theres a lot of vegetation to render from the point of view of the light
 					// drawing from visibleSolidNodes is enough
@@ -625,15 +627,16 @@ public:
 
 
 		glUseProgram(program3d);
-		uniformBlock.set(OPACITY_FLAG, false);
 		uniformBlock.set(BILLBOARD_FLAG, false); 
+		uniformBlock.set(OPACITY_FLAG, false);
+		uniformBlock.set(TRIPLANAR_FLAG, true); 
 
 		programData->uniform(&uniformBlock);
 		mainScene->draw3dSolid(camera->position, &mainScene->visibleSolidNodes);
 
 
 		if(settings->billboardEnabled) {
-
+			uniformBlock.set(TRIPLANAR_FLAG, false); 
 			uniformBlock.set(TESSELATION_FLAG, false);
 			uniformBlock.set(BILLBOARD_FLAG, settings->billboardEnabled); 
 			uniformBlock.set(OPACITY_FLAG, settings->opacityEnabled);
@@ -658,8 +661,13 @@ public:
 			uniformBlock.set(LIGHT_FLAG, false); 
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		} 
-		uniformBlock.set(BILLBOARD_FLAG, settings->billboardEnabled); 
+
+
 		if(settings->billboardEnabled) {
+			uniformBlock.set(BILLBOARD_FLAG, settings->billboardEnabled); 
+			uniformBlock.set(OPACITY_FLAG, settings->opacityEnabled);
+			uniformBlock.set(TRIPLANAR_FLAG, false); 
+
 			glUseProgram(programBillboard);
 			programData->uniform(&uniformBlock);
 			mainScene->drawBillboards(camera->position, &mainScene->visibleSolidNodes);
@@ -668,6 +676,7 @@ public:
 
 
 		glUseProgram(program3d);
+		uniformBlock.set(TRIPLANAR_FLAG, true); 
 		uniformBlock.set(BILLBOARD_FLAG, false); 
 		uniformBlock.set(TESSELATION_FLAG, settings->tesselationEnabled);
 		uniformBlock.set(OPACITY_FLAG, false);

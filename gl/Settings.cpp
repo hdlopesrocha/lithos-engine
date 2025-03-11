@@ -15,6 +15,6 @@ Settings::Settings() {
     this->debugMode = 0;
     this->overrideEnabled = false;
     this->blendSharpness = 10.0;
-    this->parallaxDistance = 512.0;
-    this->parallaxPower = 25.0;
+    this->parallaxDistance = 1024.0;
+    this->parallaxPower = 100.0;
 }

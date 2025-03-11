@@ -76,7 +76,6 @@ void main() {
         
         }
 
-        teTextureWeights = gl_TessCoord;
         teTextureIndices = tcTextureIndices[0];
 
         if(triplanarEnabled) {
@@ -98,11 +97,15 @@ void main() {
             teLightViewPosition[i] = matrixShadow[i] * vec4(tePosition, 1.0);  
         }
 
-        vec3 normal = abs(teN);
-        vec3 blend = pow(abs(normal), vec3(blendSharpness));
-        blend /= (blend.x + blend.y + blend.z);
-        teBlendFactors = blend;
+
     }
+
+    teTextureWeights = gl_TessCoord;
+
+    vec3 normal = abs(teN);
+    vec3 blend = pow(abs(normal), vec3(blendSharpness));
+    blend /= (blend.x + blend.y + blend.z);
+    teBlendFactors = blend;
 
     gl_Position = viewProjection * vec4(tePosition, 1.0);    
 
