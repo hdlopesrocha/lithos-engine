@@ -37,19 +37,30 @@ void SettingsEditor::draw2d(){
     debugModes.push_back("Triplanar");
     debugModes.push_back("Depth");
     debugModes.push_back("BlendingWeights");
-
+    debugModes.push_back("TextureWeights");
+    debugModes.push_back("TextureWeights*BlendingWeights");
+    debugModes.push_back("normalize(TextureWeights*BlendingWeights)");
+    debugModes.push_back("distanceFactor");
 
     if(settings->debugEnabled) {
-        for (int i = 0; i < debugModes.size(); i++) {
-            if (ImGui::RadioButton(debugModes[i].c_str(), this->selectedDebugMode == i)) {
-                this->selectedDebugMode = i;
+
+        
+        if (ImGui::BeginCombo("DebugMode", debugModes[settings->debugMode].c_str())) {
+            for (int i = 0; i < debugModes.size(); i++) {
+                bool isSelected = (i == settings->debugMode);
+                if (ImGui::Selectable(debugModes[i].c_str(), isSelected)) {
+                    settings->debugMode = i;
+                }
+                if (isSelected) {
+                    ImGui::SetItemDefaultFocus(); // Highlight selected item
+                }
             }
+            ImGui::EndCombo();
         }
     }
     ImGui::DragFloat("BlendSharpness", &settings->blendSharpness, 0.01f, 0.0f, 100.0f, "%.2f");
 
     
-    settings->debugMode = this->selectedDebugMode;
 
     ImGui::Checkbox("Light", &settings->lightEnabled);
     ImGui::Checkbox("Opacity", &settings->opacityEnabled);
@@ -61,6 +72,10 @@ void SettingsEditor::draw2d(){
     }
 
     ImGui::Checkbox("Parallax", &settings->parallaxEnabled);
+    ImGui::DragFloat("Parallax Distance", &settings->parallaxDistance, 0.1f, 0.0f, 2048.0f, "%.1f");
+    ImGui::DragFloat("Parallax Power", &settings->parallaxPower, 0.1f, 0.0f, 256.0f, "%.1f");
+
+
     ImGui::Checkbox("Shadow", &settings->shadowEnabled);
     ImGui::Checkbox("Tesselation", &settings->tesselationEnabled);
     ImGui::Checkbox("WireFrame", &settings->wireFrameEnabled);

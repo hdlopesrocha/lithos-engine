@@ -40,3 +40,5 @@ uint debugMode  = uintData.z;
 uint overrideTexture  = uintData.w;
 float time = floatData.x;
 float blendSharpness = floatData.y;
+float parallaxDistance = floatData.z;
+float parallaxPower = floatData.w;

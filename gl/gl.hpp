@@ -422,6 +422,8 @@ class Settings {
         uint overrideTexture;
         uint debugMode;
         float blendSharpness;
+        float parallaxDistance;
+        float parallaxPower;
         Settings();
 
 };

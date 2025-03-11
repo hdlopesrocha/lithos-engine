@@ -1,17 +1,17 @@
 
 
 
-vec4 textureBlend(sampler2DArray ts, vec3 ws, uvec3 ti, vec2 uv, vec3 blendFactors) {
+vec4 textureBlend(sampler2DArray ts, uvec3 textureIndices, vec2 uv, vec3 textureWeights, vec3 blendFactors) {
     if(overrideEnabled) {
         return texture(ts, vec3(uv, overrideTexture));
     }
     
-    vec4 res = vec4(0.0);
+    vec4 res = vec4(vec3(0.0),1.0);
     for(int i=0 ; i < 3; ++i) {
-        float w = ws[i];
-        uint t = ti[i];
-        if(w>0.0) {      
-            res += texture(ts, vec3(uv, t))*w;
+        float weight = textureWeights[i];
+        uint textureIndice = textureIndices[i];
+        if(weight>0.0) {      
+            res.rgb += texture(ts, vec3(uv, textureIndice)).rgb*weight;
         }
 	}
     return res;

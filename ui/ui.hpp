@@ -194,7 +194,6 @@ class ImageViewer : public Closable{
 
 class SettingsEditor : public Closable {
     Settings * settings;
-    int selectedDebugMode = 0;
 
     public:
     SettingsEditor(Settings * settings);

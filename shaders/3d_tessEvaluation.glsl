@@ -19,7 +19,6 @@ in vec3 tcN[];
 
 out vec3 teSharpNormal;
 out vec2 teTextureCoord;
-out vec3 teTextureWeights;
 out vec3 tePosition;
 out TextureProperties teProps;
 out vec4 teLightViewPosition[SHADOW_MATRIX_COUNT];
@@ -31,6 +30,8 @@ out vec3 teB;
 out vec3 teN;
 out vec3 teViewDirection;
 out vec3 teViewDirectionTangent;
+out vec3 teTextureWeights;
+out vec3 teBlendFactors;
 
 void main() {
 
@@ -71,7 +72,8 @@ void main() {
 
             teProps.refractiveIndex = tcProps[0].refractiveIndex * gl_TessCoord[0] + 
                                 tcProps[1].refractiveIndex * gl_TessCoord[1] + 
-                                tcProps[2].refractiveIndex * gl_TessCoord[2];                                                
+                                tcProps[2].refractiveIndex * gl_TessCoord[2];                                                                                           
+        
         }
 
         teTextureWeights = gl_TessCoord;
@@ -95,6 +97,11 @@ void main() {
         for(int i = 0; i < SHADOW_MATRIX_COUNT ; ++i ) {
             teLightViewPosition[i] = matrixShadow[i] * vec4(tePosition, 1.0);  
         }
+
+        vec3 normal = abs(teN);
+        vec3 blend = pow(abs(normal), vec3(blendSharpness));
+        blend /= (blend.x + blend.y + blend.z);
+        teBlendFactors = blend;
     }
 
     gl_Position = viewProjection * vec4(tePosition, 1.0);    
