@@ -17,7 +17,6 @@
 #define TYPE_INSTANCE_VEGETATION_DRAWABLE 1
 #define TYPE_INSTANCE_SOLID_DRAWABLE 2
 #define TYPE_INSTANCE_LIQUID_DRAWABLE 3
-#define TYPE_INSTANCE_SHADOW_DRAWABLE 4
 
 
 #include <imgui/imgui.h>
@@ -105,29 +104,32 @@ struct TextureImage {
 
 
 
-struct Camera {
+class Camera {
+    public:
     glm::mat4 projection;
     glm::mat4 view;
     glm::quat quaternion;
     glm::vec3 position;
+    float near;
+    float far;
 
-    glm::vec3 getCameraDirection() {
-        glm::vec3 forward = glm::vec3(0.0f, 0.0f, -1.0f);
-        return glm::normalize(glm::rotate(quaternion, forward));
-    }
-
-    glm::mat4 getVP() {
-		return projection * view;
-	}
-
+    Camera(float near, float far);
+    glm::vec3 getCameraDirection();
+    glm::mat4 getVP();
 };
 
 struct DirectionalLight {
     glm::vec3 direction;
+    glm::vec3 position;
+
+    void updatePosition(const Camera &camera) {
+        // Calculate a distance for the light based on the far plane, used to capture the scene.
+        float dist = camera.far / 4.0f;
+        this->position = camera.position -direction*dist;
+    }
 
     glm::mat4 getVP(Camera * camera, float orthoSize, float near, float far) {
-        // Calculate a distance for the light based on the far plane, used to capture the scene.
-        float dist = far / 4.0f;
+
         
         // Create an orthographic projection matrix for shadow mapping.
         glm::mat4 projection = glm::ortho(-orthoSize, orthoSize, -orthoSize, orthoSize, near, far);
@@ -138,9 +140,8 @@ struct DirectionalLight {
         // but it is positioned along the light's direction, offset by dist to capture the scene's visible range.
 
         glm::vec3 lightLootAt = camera->position;
-        glm::vec3 lightPosition = camera->position -direction*dist;
 
-        glm::mat4 view = glm::lookAt(lightPosition, lightLootAt, glm::vec3(0.0f, 1.0f, 0.0f));
+        glm::mat4 view = glm::lookAt(position, lightLootAt, glm::vec3(0.0f, 1.0f, 0.0f));
         
         // Return the combined projection * view matrix for shadow mapping.
         return projection * view;
@@ -275,7 +276,7 @@ class DrawableInstanceGeometry {
 	int indicesCount;
     int instancesCount;
 
-	DrawableInstanceGeometry(Geometry * t, std::vector<InstanceData> * instances, glm::vec3 center);
+	DrawableInstanceGeometry(Geometry * t, std::vector<InstanceData> * instances);
     ~DrawableInstanceGeometry();
     void draw(uint mode);
     void draw(uint mode, float amount);

@@ -79,7 +79,7 @@ class MainApplication : public LithosApplication {
 	Settings * settings = new Settings();
 	glm::mat4 worldModel = glm::mat4(1.0f); // Identity matrix
 
-	Camera camera;
+	Camera * camera = new Camera(0.1, 512);
 	DirectionalLight light;
 
 	GLuint programSwap;
@@ -257,7 +257,7 @@ public:
 
 		std::vector<InstanceData> vegetationInstances;
 		vegetationInstances.push_back(InstanceData(glm::mat4(1.0), 0));
-		vegetationMesh = new DrawableInstanceGeometry(new Vegetation3d(), &vegetationInstances, glm::vec3(0.0, 0.5, 0.0));
+		vegetationMesh = new DrawableInstanceGeometry(new Vegetation3d(), &vegetationInstances);
 
 		{
 			animations.push_back(AnimateParams(textureLayers.count));
@@ -429,22 +429,22 @@ public:
 		}
 
 		mainScene = new Scene();
-		mainScene->setup();
+		mainScene->setup(settings);
 		mainScene->load();
 	
 
 		
-		camera.quaternion =   glm::angleAxis(glm::radians(180.0f), glm::vec3(0, 0, 1))
+		camera->quaternion =   glm::angleAxis(glm::radians(180.0f), glm::vec3(0, 0, 1))
 		* glm::angleAxis(glm::radians(145.0f), glm::vec3(1, 0, 0))
 		* glm::angleAxis(glm::radians(135.0f), glm::vec3(0, 1, 0));  
-		camera.position = glm::vec3(48,48,48);
+		camera->position = glm::vec3(48,48,48);
         light.direction = glm::normalize(glm::vec3(-1.0,-1.0,-1.0));
 		glUseProgram(0);
 		//tesselator->normalize();
 		uniformBlockViewer = new UniformBlockViewer(&viewerBlock);
 		atlasPainter = new AtlasPainter(&atlasParams, &atlasTextures, atlasDrawer, programAtlas, programTexture, 256,256, &billboardLayers);
 		atlasViewer = new AtlasViewer(&atlasTextures, atlasDrawer, programAtlas, programTexture, 256,256, &atlasLayers, programCopy);
-		brushEditor = new BrushEditor(&camera, &brushes, program3d, programTexture, &textureLayers);
+		brushEditor = new BrushEditor(camera, &brushes, program3d, programTexture, &textureLayers);
 		shadowMapViewer = new ShadowMapViewer(&shadowFrameBuffers, 512, 512);
 		textureMixerEditor = new TextureMixerEditor(textureMixer, &mixers, programTexture, &textureLayers);
 		animatedTextureEditor = new AnimatedTextureEditor(&animations, programTexture, 256,256, &textureLayers);
@@ -470,46 +470,46 @@ public:
 		   	close();
 		}
 
-	//    camera.projection[1][1] *= -1;
+	//    camera->projection[1][1] *= -1;
 	 //   modelMatrix = glm::rotate(modelMatrix, deltaTime * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 
 	   	float rsense = 0.01;
 
 	   	if (getKeyboardStatus(GLFW_KEY_W) != GLFW_RELEASE) {
-	   	   	camera.quaternion = glm::angleAxis(+rsense, glm::vec3(1,0,0))*camera.quaternion;
+	   	   	camera->quaternion = glm::angleAxis(+rsense, glm::vec3(1,0,0))*camera->quaternion;
 		}
 	   	if (getKeyboardStatus(GLFW_KEY_S) != GLFW_RELEASE) {
-	   	   	camera.quaternion = glm::angleAxis(-rsense, glm::vec3(1,0,0))*camera.quaternion;
+	   	   	camera->quaternion = glm::angleAxis(-rsense, glm::vec3(1,0,0))*camera->quaternion;
 		}
    		if (getKeyboardStatus(GLFW_KEY_A) != GLFW_RELEASE) {
-	   	   	camera.quaternion = glm::angleAxis(-rsense, glm::vec3(0,1,0))*camera.quaternion;
+	   	   	camera->quaternion = glm::angleAxis(-rsense, glm::vec3(0,1,0))*camera->quaternion;
 		}
 	   	if (getKeyboardStatus(GLFW_KEY_D) != GLFW_RELEASE) {
-	   	   	camera.quaternion = glm::angleAxis(+rsense, glm::vec3(0,1,0))*camera.quaternion;
+	   	   	camera->quaternion = glm::angleAxis(+rsense, glm::vec3(0,1,0))*camera->quaternion;
 		}
 		if (getKeyboardStatus(GLFW_KEY_Q) != GLFW_RELEASE) {
-	   	   	camera.quaternion = glm::angleAxis(+rsense, glm::vec3(0,0,1))*camera.quaternion;
+	   	   	camera->quaternion = glm::angleAxis(+rsense, glm::vec3(0,0,1))*camera->quaternion;
 		}
 	   	if (getKeyboardStatus(GLFW_KEY_E) != GLFW_RELEASE) {
-	   	   	camera.quaternion = glm::angleAxis(-rsense, glm::vec3(0,0,1))*camera.quaternion;
+	   	   	camera->quaternion = glm::angleAxis(-rsense, glm::vec3(0,0,1))*camera->quaternion;
 		}
 
-		glm::vec3 xAxis = glm::vec3(1.0f, 0.0f, 0.0f)*camera.quaternion;
-		glm::vec3 yAxis = glm::vec3(0.0f, 1.0f, 0.0f)*camera.quaternion;
-		glm::vec3 zAxis = glm::vec3(0.0f, 0.0f, 1.0f)*camera.quaternion;
+		glm::vec3 xAxis = glm::vec3(1.0f, 0.0f, 0.0f)*camera->quaternion;
+		glm::vec3 yAxis = glm::vec3(0.0f, 1.0f, 0.0f)*camera->quaternion;
+		glm::vec3 zAxis = glm::vec3(0.0f, 0.0f, 1.0f)*camera->quaternion;
 
 	   	float tsense = deltaTime*10;
 	   	if (getKeyboardStatus(GLFW_KEY_UP) != GLFW_RELEASE) {
-	   		camera.position -= zAxis*tsense;
+	   		camera->position -= zAxis*tsense;
 		}
 	   	if (getKeyboardStatus(GLFW_KEY_DOWN) != GLFW_RELEASE) {
-	   		camera.position += zAxis*tsense;
+	   		camera->position += zAxis*tsense;
 		}
 	   	if (getKeyboardStatus(GLFW_KEY_RIGHT) != GLFW_RELEASE) {
-	   		camera.position += xAxis*tsense;
+	   		camera->position += xAxis*tsense;
 		}
    		if (getKeyboardStatus(GLFW_KEY_LEFT) != GLFW_RELEASE) {
-	   		camera.position -= xAxis*tsense;
+	   		camera->position -= xAxis*tsense;
 		}
 
 		for(AnimateParams &params : animations) {
@@ -521,13 +521,13 @@ public:
 		float far = 512.0f;
 		float near = 0.1f;
 
-		glm::mat4 rotate = glm::mat4_cast(camera.quaternion);
-		glm::mat4 translate = glm::translate(glm::mat4(1.0f), -camera.position);
+		glm::mat4 rotate = glm::mat4_cast(camera->quaternion);
+		glm::mat4 translate = glm::translate(glm::mat4(1.0f), -camera->position);
 	   
-		camera.projection = glm::perspective(glm::radians(45.0f), getWidth() / (float) getHeight(), near, far);
-		camera.view = rotate * translate;
-		camera.quaternion = glm::normalize(camera.quaternion);
-		//glm::vec3 cameraDirection = glm::vec3(0.0f, 0.0f, -1.0f)*camera.quaternion;
+		camera->projection = glm::perspective(glm::radians(45.0f), getWidth() / (float) getHeight(), near, far);
+		camera->view = rotate * translate;
+		camera->quaternion = glm::normalize(camera->quaternion);
+		//glm::vec3 cameraDirection = glm::vec3(0.0f, 0.0f, -1.0f)*camera->quaternion;
 
 		std::vector<glm::mat4> shadowMatrices;
 		if(settings->shadowEnabled) {
@@ -535,13 +535,15 @@ public:
 				std::pair<RenderBuffer, int> pair = shadowFrameBuffers[i];
 				RenderBuffer buffer = pair.first;
 				int orthoSize = pair.second;
-				shadowMatrices.push_back(light.getVP(&camera, orthoSize, near, far));	
+
+				light.updatePosition(*camera);
+				shadowMatrices.push_back(light.getVP(camera, orthoSize, near, far));	
 			}
 		}
 
-		glm::mat4 viewProjection = camera.getVP();
+		glm::mat4 viewProjection = camera->getVP();
 
-		mainScene->setVisibility(viewProjection, shadowMatrices, &camera, &light, settings);
+		mainScene->setVisibility(viewProjection, camera);
 		mainScene->processSpace();
 
 	
@@ -556,11 +558,11 @@ public:
 
 
 		UniformBlock uniformBlock;
-        uniformBlock.uintData = glm::vec4(0.0, 0.0, settings->debugMode, settings->overrideTexture);
+        uniformBlock.uintData = glm::uvec4(0u, 0u, settings->debugMode, settings->overrideTexture);
 		uniformBlock.floatData = glm::vec4( time, 0.0, 0.0 ,0.0);
 		uniformBlock.world = worldModel;
 		uniformBlock.lightDirection = glm::vec4(light.direction, 0.0f);
-		uniformBlock.cameraPosition = glm::vec4(camera.position, 0.0f);
+		uniformBlock.cameraPosition = glm::vec4(camera->position, 0.0f);
 		uniformBlock.set(DEBUG_FLAG, settings->debugEnabled);
 		uniformBlock.set(TESSELATION_FLAG, settings->tesselationEnabled);
 		uniformBlock.set(SHADOW_FLAG, settings->shadowEnabled);
@@ -571,6 +573,7 @@ public:
 		uniformBlock.set(OPACITY_FLAG, false);
 		uniformBlock.set(TRIPLANAR_FLAG, false); 
 		uniformBlock.set(BILLBOARD_FLAG, false); 
+		viewerBlock = uniformBlock;
 
 
 
@@ -578,14 +581,15 @@ public:
 		// Shadow component
 		// ================
 		if(settings->shadowEnabled) {
-			for(int i=0 ; i < shadowFrameBuffers.size() ; ++i) {
+			for(int i =0; i < shadowMatrices.size() ; ++i){
+
 				std::pair<RenderBuffer, int> pair = shadowFrameBuffers[i];
 				RenderBuffer buffer = pair.first;
-// TODO : shadowmap nao tem vegetation
+	// TODO : shadowmap nao tem vegetation
 				glBindFramebuffer(GL_FRAMEBUFFER, buffer.frameBuffer);
 				glViewport(0, 0, buffer.width, buffer.height);
 				glClear(GL_DEPTH_BUFFER_BIT);
-		
+			
 				glm::mat4 lightProjection = shadowMatrices[i];
 				uniformBlock.matrixShadow[i] = Math::getCanonicalMVP(lightProjection);
 				uniformBlock.viewProjection = lightProjection;
@@ -594,7 +598,7 @@ public:
 				uniformBlock.set(OPACITY_FLAG, false);
 				programData->uniform(&uniformBlock);
 
-				mainScene->draw3dSolid(camera.position, settings, &mainScene->visibleShadowNodes[i]);
+				mainScene->draw3dSolid(camera->position, &mainScene->visibleSolidNodes);
 				
 				if(settings->billboardEnabled) {
 					glUseProgram(programBillboard);
@@ -602,10 +606,12 @@ public:
 					uniformBlock.set(BILLBOARD_FLAG, settings->billboardEnabled); 
 					uniformBlock.set(TRIPLANAR_FLAG, false); 
 					programData->uniform(&uniformBlock);
-					mainScene->drawBillboards(camera.position, settings, &mainScene->visibleShadowNodes[i]);
+					// visibleSolidNodes because theres a lot of vegetation to render from the point of view of the light
+					// drawing from visibleSolidNodes is enough
+					mainScene->drawBillboards(camera->position, &mainScene->visibleSolidNodes);
+					
 				}
 			}
-			viewerBlock = uniformBlock;
 		}
 
 		uniformBlock.viewProjection = viewProjection;
@@ -623,7 +629,7 @@ public:
 		uniformBlock.set(BILLBOARD_FLAG, false); 
 
 		programData->uniform(&uniformBlock);
-		mainScene->draw3dSolid(camera.position, settings, &mainScene->visibleSolidNodes);
+		mainScene->draw3dSolid(camera->position, &mainScene->visibleSolidNodes);
 
 
 		if(settings->billboardEnabled) {
@@ -636,7 +642,7 @@ public:
 			glUseProgram(programBillboard);
 			programData->uniform(&uniformBlock);
 			// TODO : depthmap nao tem vegetation
-			mainScene->drawBillboards(camera.position, settings, &mainScene->visibleSolidNodes);
+			mainScene->drawBillboards(camera->position, &mainScene->visibleSolidNodes);
 		}
 
 		// ==================
@@ -658,7 +664,7 @@ public:
 			glUseProgram(programBillboard);
 			uniformBlock.set(TRIPLANAR_FLAG, false); 
 			programData->uniform(&uniformBlock);
-			mainScene->drawBillboards(camera.position, settings, &mainScene->visibleSolidNodes);
+			mainScene->drawBillboards(camera->position, &mainScene->visibleSolidNodes);
 		}
 
 
@@ -669,7 +675,7 @@ public:
 		uniformBlock.set(OPACITY_FLAG, false);
 		uniformBlock.set(TRIPLANAR_FLAG, true); 
 		programData->uniform(&uniformBlock);
-		mainScene->draw3dSolid(camera.position, settings, &mainScene->visibleSolidNodes);
+		mainScene->draw3dSolid(camera->position, &mainScene->visibleSolidNodes);
 		if(settings->wireFrameEnabled) {
 			glPolygonMode(GL_FRONT, GL_FILL);
 		}
@@ -688,7 +694,7 @@ public:
 
 		glUseProgram(program3d);
 		programData->uniform(&uniformBlock);
-		mainScene->draw3dLiquid(camera.position, settings, &mainScene->visibleLiquidNodes);
+		mainScene->draw3dLiquid(camera->position, &mainScene->visibleLiquidNodes);
 
 		//glUseProgram(program3d);
 		brushEditor->draw3dIfOpen(&uniformBlock);

@@ -1,7 +1,17 @@
 #include "gl.hpp"
 
-DrawableInstanceGeometry::DrawableInstanceGeometry(Geometry * t, std::vector<InstanceData> * instances, glm::vec3 center){
-	this->center = center;
+DrawableInstanceGeometry::DrawableInstanceGeometry(Geometry * t, std::vector<InstanceData> * instances){
+
+	if(t->vertices.size()) {
+		glm::vec3 sum(0.0f);
+		int count =0;
+		for(Vertex &vertex : t->vertices){
+			sum += vertex.position;
+			++count;
+		}
+		this->center = sum/float(count);
+	}
+	
 	this->indicesCount = t ? t->indices.size() : 0;
 	this->instancesCount = instances ? instances->size() : 0;
 	if(instancesCount && indicesCount) {

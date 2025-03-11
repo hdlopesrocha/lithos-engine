@@ -38,38 +38,35 @@ void markNeighborsAsDirty(Octree * tree, const BoundingCube &cube, int level, in
 
 void * OctreeProcessor::before(int level, int height, OctreeNode * node, const BoundingCube &cube, void * context) {		
 	if(loadCount > 0) {
-		bool canGenerate = false;
-		NodeInfo * genetator;
+		bool canGenerate = true;
 
 		for(NodeInfo &info : node->info) {
-			if(info.type == INFO_TYPE_FILE && info.dirty) {
+			/*if(info.type == INFO_TYPE_FILE && info.dirty) {
 				OctreeNodeFile *f = (OctreeNodeFile*) info.data;
 				f->load();
 				markNeighborsAsDirty(tree, cube, level, drawableType);
 				info.dirty = false;
-			}
+			}*/
 			if(info.dirty) {
-				genetator = &info;
+				info.dirty = false;
 				canGenerate = true;
+				break;
+			}
+			if(info.type == drawableType) {
+				canGenerate = false;
+				info.dirty = false;
+				break;
 			}
 		}
-		if(genetator == NULL) {
-			canGenerate = true;
-		}
+	
 
 		int currentLod = height - geometryLevel;
 
-
-		if(currentLod>=0){
-		
+	
+		if(currentLod==0){
 			if(canGenerate && createInstances) {
-				if(genetator) {
-					genetator->dirty = false;
-				}
-			
-
-				if(drawableType == TYPE_INSTANCE_SOLID_DRAWABLE || drawableType == TYPE_INSTANCE_LIQUID_DRAWABLE || drawableType == TYPE_INSTANCE_SHADOW_DRAWABLE) {
-					int tempDrawableType = drawableType == TYPE_INSTANCE_SHADOW_DRAWABLE ? TYPE_INSTANCE_SOLID_DRAWABLE : drawableType;
+				if(drawableType == TYPE_INSTANCE_SOLID_DRAWABLE || drawableType == TYPE_INSTANCE_LIQUID_DRAWABLE) {
+					int tempDrawableType = drawableType;
 					NodeInfo * info = node->getNodeInfo(tempDrawableType);
 					if(info == NULL) {
 						// Simplify
@@ -95,8 +92,8 @@ void * OctreeProcessor::before(int level, int height, OctreeNode * node, const B
 
 
 				// Instances with LOD
-				if(drawableType == TYPE_INSTANCE_VEGETATION_DRAWABLE || drawableType == TYPE_INSTANCE_SHADOW_DRAWABLE) {
-					int tempDrawableType = drawableType == TYPE_INSTANCE_SHADOW_DRAWABLE ? TYPE_INSTANCE_VEGETATION_DRAWABLE : drawableType;
+				if(drawableType == TYPE_INSTANCE_VEGETATION_DRAWABLE) {
+					int tempDrawableType = drawableType;
 
 					NodeInfo * info = node->getNodeInfo(tempDrawableType);
 					if(info == NULL) {

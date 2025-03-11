@@ -35,11 +35,11 @@ out vec4 color;    // Final fragment color
 void main() {
     vec2 uv = teTextureCoord;
     if(billboardEnabled && uv.y < 0.0) {
-       // discard;
+        discard;
     } 
 
     if(opacityEnabled) {
-        if(textureBlend(textures[2], teTextureWeights, teTextureIndices, uv).r < 0.9) {
+        if(textureBlend(textures[2], teTextureWeights, teTextureIndices, uv).r < 0.98) {
             discard;
         }
     }

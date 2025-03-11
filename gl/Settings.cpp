@@ -13,4 +13,5 @@ Settings::Settings() {
     this->billboardRange = 128;
     this->overrideTexture = 0;
     this->debugMode = 0;
+    this->overrideEnabled = false;
 }
