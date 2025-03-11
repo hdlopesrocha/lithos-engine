@@ -559,10 +559,11 @@ public:
 
 		UniformBlock uniformBlock;
         uniformBlock.uintData = glm::uvec4(0u, 0u, settings->debugMode, settings->overrideTexture);
-		uniformBlock.floatData = glm::vec4( time, 0.0, 0.0 ,0.0);
+		uniformBlock.floatData = glm::vec4( time, settings->blendSharpness, 0.0 ,0.0);
 		uniformBlock.world = worldModel;
 		uniformBlock.lightDirection = glm::vec4(light.direction, 0.0f);
 		uniformBlock.cameraPosition = glm::vec4(camera->position, 0.0f);
+
 		uniformBlock.set(DEBUG_FLAG, settings->debugEnabled);
 		uniformBlock.set(TESSELATION_FLAG, settings->tesselationEnabled);
 		uniformBlock.set(SHADOW_FLAG, settings->shadowEnabled);

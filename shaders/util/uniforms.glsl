@@ -39,3 +39,4 @@ bool billboardEnabled  = (uintData.y & uint(BILLBOARD_FLAG)) != 0u;
 uint debugMode  = uintData.z;
 uint overrideTexture  = uintData.w;
 float time = floatData.x;
+float blendSharpness = floatData.y;

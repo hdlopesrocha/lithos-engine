@@ -39,7 +39,7 @@ void main() {
     }
 
     if(opacityEnabled) {
-        vec4 opacity = textureBlend(textures[2], gTextureWeights, gTextureIndices, uv);
+        vec4 opacity = textureBlend(textures[2], gTextureWeights, gTextureIndices, uv, vec3(1.0,0.0,0.0));
         if(opacity.r < 0.98) {
             discard;
         }
@@ -49,12 +49,12 @@ void main() {
     mat3 normalMatrix = transpose(inverse(mat3(gModel)));
     vec3 normal = normalize(normalMatrix * correctedNormal);
   
-    vec4 mixedColor = textureBlend(textures[0], gTextureWeights, gTextureIndices, uv);
+    vec4 mixedColor = textureBlend(textures[0], gTextureWeights, gTextureIndices, uv, vec3(1.0,0.0,0.0));
     if(mixedColor.a == 0.0) {
         discard;
     }
     mat3 TBN = mat3(normalize(gT),normalize(gB),normalize(gN));
-    vec3 normalMap = textureBlend(textures[1], gTextureWeights, gTextureIndices, uv).rgb * 2.0 - 1.0;
+    vec3 normalMap = textureBlend(textures[1], gTextureWeights, gTextureIndices, uv, vec3(1.0,0.0,0.0)).rgb * 2.0 - 1.0;
     normalMap = normalize(normalMap); // Convert to range [-1, 1]
     vec3 worldNormal = normalize(TBN * normalMap);
 

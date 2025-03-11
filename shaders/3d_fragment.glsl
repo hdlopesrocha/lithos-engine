@@ -40,7 +40,7 @@ void main() {
     } 
 
     if(opacityEnabled) {
-        if(textureBlend(textures[2], teTextureWeights, teTextureIndices, uv).r < 0.98) {
+        if(textureBlend(textures[2], teTextureWeights, teTextureIndices, uv, vec3(1.0, 0.0, 0.0)).r < 0.98) {
             discard;
         }
     }
@@ -56,39 +56,54 @@ void main() {
         discard;
     }
 
+    mat3 TBN = mat3(normalize(teT), normalize(teB), normalize(teN));
+    vec3 normal = abs(TBN[2]);
+    vec3 blend = pow(abs(normal), vec3(blendSharpness));
+    blend /= (blend.x + blend.y + blend.z);
+    vec3 blendFactors = blend;
+
 
     float effectAmount = sin(time*3.14/4.0)*0.5 + 0.5;
     float distance = length(cameraPosition.xyz - tePosition);
     float distanceFactor = clamp(teProps.parallaxFade / distance, 0.0, 1.0); // Adjust these numbers to fit your scene
 
 
-    mat3 TBN = mat3(normalize(teT), normalize(teB), normalize(teN));
 
-   //color = vec4(visual(teT),1.0);
-   //return;
 
     if(parallaxEnabled && distanceFactor * teProps.parallaxScale > 0.0) {
-       uv = parallaxMapping(textures[2], teTextureWeights, teTextureIndices, uv, teViewDirectionTangent, distanceFactor*teProps.parallaxScale , distanceFactor*teProps.parallaxMinLayers, distanceFactor*teProps.parallaxMaxLayers, int(ceil(distanceFactor*teProps.parallaxRefine)));
+       uv = parallaxMapping(
+            textures[2], 
+            teTextureWeights, 
+            teTextureIndices, 
+            uv, 
+            teViewDirectionTangent, 
+            distanceFactor*teProps.parallaxScale , 
+            distanceFactor*teProps.parallaxMinLayers, 
+            distanceFactor*teProps.parallaxMaxLayers, 
+            int(ceil(distanceFactor*teProps.parallaxRefine)),
+            blendFactors
+        );
     }
   
-    vec4 mixedColor = textureBlend(textures[0], teTextureWeights, teTextureIndices, uv);
+    vec4 mixedColor = textureBlend(textures[0], teTextureWeights, teTextureIndices, uv, blendFactors);
     if(mixedColor.a == 0.0) {
         discard;
     }
+   
 
-    vec3 normalMap = textureBlend(textures[1], teTextureWeights, teTextureIndices, uv).rgb * 2.0 - 1.0;
+    vec3 normalMap = textureBlend(textures[1], teTextureWeights, teTextureIndices, uv, blendFactors).rgb * 2.0 - 1.0;
     normalMap = normalize(normalMap); // Convert to range [-1, 1]
     vec3 worldNormal = normalize(TBN * normalMap);
 
     if(debugEnabled) {
         if(debugMode == 0){
-            color = textureBlend(textures[0], teTextureWeights, teTextureIndices, uv);
+            color = textureBlend(textures[0], teTextureWeights, teTextureIndices, uv, blendFactors);
         }
         else if(debugMode == 1){
-            color = textureBlend(textures[1], teTextureWeights, teTextureIndices, uv);
+            color = textureBlend(textures[1], teTextureWeights, teTextureIndices, uv, blendFactors);
         }
         else if(debugMode == 2){
-            color = textureBlend(textures[2], teTextureWeights, teTextureIndices, uv);
+            color = textureBlend(textures[2], teTextureWeights, teTextureIndices, uv, blendFactors);
         }
         else if(debugMode == 3) {
             color = vec4(visual(TBN[0]),1.0);
@@ -114,12 +129,8 @@ void main() {
             color = vec4(vec3(linearizeDepth(currentDepth, near, far)/far),1.0);
         }
         else if(debugMode == 10) {
-            float sharpness = 1.0; // Adjust blending smoothness
 
-            vec3 normal = abs(TBN[2]);
-            vec3 blend = pow(abs(normal), vec3(sharpness));
-            blend /= (blend.x + blend.y + blend.z);
-            color = vec4(blend,1.0);
+            color = vec4(blendFactors,1.0);
         }
         return;
     } else if(lightEnabled) {

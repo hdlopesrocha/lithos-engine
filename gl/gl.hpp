@@ -421,6 +421,7 @@ class Settings {
         uint billboardRange;
         uint overrideTexture;
         uint debugMode;
+        float blendSharpness;
         Settings();
 
 };

@@ -1,7 +1,7 @@
 
 
 
-vec4 textureBlend(sampler2DArray ts, vec3 ws, uvec3 ti, vec2 uv) {
+vec4 textureBlend(sampler2DArray ts, vec3 ws, uvec3 ti, vec2 uv, vec3 blendFactors) {
     if(overrideEnabled) {
         return texture(ts, vec3(uv, overrideTexture));
     }

@@ -33,7 +33,7 @@ void main() {
         uv = triplanarMapping(gPosition, plane, gProps.textureScale) * 0.1;
     }
 
-    vec4 opacity = textureBlend(textures[2], gTextureWeights, gTextureIndices, uv);
+    vec4 opacity = textureBlend(textures[2], gTextureWeights, gTextureIndices, uv, vec3(1.0,0.0,0.0));
 
     if(opacityEnabled) {
         if(opacity.r < 0.98) {
@@ -41,8 +41,8 @@ void main() {
         }
     }
     
-    FragColor0 = textureBlend(textures[0], gTextureWeights, gTextureIndices, uv);
-    FragColor1 = textureBlend(textures[1], gTextureWeights, gTextureIndices, uv);
+    FragColor0 = textureBlend(textures[0], gTextureWeights, gTextureIndices, uv, vec3(1.0,0.0,0.0));
+    FragColor1 = textureBlend(textures[1], gTextureWeights, gTextureIndices, uv, vec3(1.0,0.0,0.0));
     FragColor2 = opacity;
 
     FragColor0 = vec4(1.0);

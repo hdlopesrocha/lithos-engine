@@ -23,7 +23,8 @@ void SettingsEditor::draw2d(){
     }
     ImGui::Checkbox("Debug", &settings->debugEnabled);
 
-  
+
+
     std::vector<std::string> debugModes;
     debugModes.push_back("TextureColor");
     debugModes.push_back("TextureNormal");
@@ -45,7 +46,9 @@ void SettingsEditor::draw2d(){
             }
         }
     }
+    ImGui::DragFloat("BlendSharpness", &settings->blendSharpness, 0.01f, 0.0f, 100.0f, "%.2f");
 
+    
     settings->debugMode = this->selectedDebugMode;
 
     ImGui::Checkbox("Light", &settings->lightEnabled);

@@ -14,4 +14,5 @@ Settings::Settings() {
     this->overrideTexture = 0;
     this->debugMode = 0;
     this->overrideEnabled = false;
+    this->blendSharpness = 10.0;
 }
