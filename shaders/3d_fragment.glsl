@@ -21,7 +21,6 @@ flat in uvec3 teTextureIndices;
 
 in TextureProperties teProps;
 in vec3 tePosition;
-in vec3 teSharpNormal;
 in vec4 teLightViewPosition[SHADOW_MATRIX_COUNT];
 in mat4 teModel;
 in vec3 teT;
@@ -29,6 +28,8 @@ in vec3 teB;
 in vec3 teN;
 in vec3 teViewDirection;
 in vec3 teViewDirectionTangent;
+in vec3 teSharpNormal;
+
 out vec4 color;    // Final fragment color
 
 
@@ -111,6 +112,14 @@ void main() {
             float near = 0.1;
             float far = 512.0;
             color = vec4(vec3(linearizeDepth(currentDepth, near, far)/far),1.0);
+        }
+        else if(debugMode == 10) {
+            float sharpness = 1.0; // Adjust blending smoothness
+
+            vec3 normal = abs(TBN[2]);
+            vec3 blend = pow(abs(normal), vec3(sharpness));
+            blend /= (blend.x + blend.y + blend.z);
+            color = vec4(blend,1.0);
         }
         return;
     } else if(lightEnabled) {

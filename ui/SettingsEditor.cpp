@@ -35,6 +35,7 @@ void SettingsEditor::draw2d(){
     debugModes.push_back("WorldNormal");
     debugModes.push_back("Triplanar");
     debugModes.push_back("Depth");
+    debugModes.push_back("BlendingWeights");
 
 
     if(settings->debugEnabled) {

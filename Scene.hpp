@@ -10,19 +10,22 @@ class Scene {
 	    Octree * liquidSpace;
 		OctreeVisibilityChecker * solidRenderer;
 		OctreeVisibilityChecker * liquidRenderer;
+		OctreeVisibilityChecker * shadowRenderer[SHADOW_MATRIX_COUNT];
 		OctreeProcessor * solidProcessor;
 		OctreeProcessor * liquidProcessor;
 		OctreeProcessor * vegetationProcessor;
+		OctreeProcessor * shadowProcessor;
 
 		int solidInstancesCount = 0;
 		int liquidInstancesCount = 0;
 		int vegetationInstancesCount = 0;
-
+		int shadowInstancesCount = 0;
 		int solidInstancesVisible = 0;
 		int liquidInstancesVisible = 0;
 		int vegetationInstancesVisible = 0;
 		std::vector<IteratorData> visibleSolidNodes;
 		std::vector<IteratorData> visibleLiquidNodes;
+		std::vector<IteratorData> visibleShadowNodes[SHADOW_MATRIX_COUNT];
 		Settings * settings;
 
 
@@ -34,11 +37,14 @@ class Scene {
 		solidProcessor = new OctreeProcessor(solidSpace, &solidInstancesCount, TYPE_INSTANCE_SOLID_DRAWABLE, 5, 0.9, 0.2, true, true, 5);
 		liquidProcessor = new OctreeProcessor(liquidSpace, &liquidInstancesCount, TYPE_INSTANCE_LIQUID_DRAWABLE, 5, 0.9, 0.2, true, true, 5);
 		vegetationProcessor = new OctreeProcessor(solidSpace, &vegetationInstancesCount, TYPE_INSTANCE_VEGETATION_DRAWABLE, 5, 0.9, 0.2, true, true, 5);
+		shadowProcessor = new OctreeProcessor(solidSpace, &shadowInstancesCount, TYPE_INSTANCE_SHADOW_DRAWABLE, 5, 0.9, 0.2, false, true, 5);
 
 		solidRenderer = new OctreeVisibilityChecker(solidSpace, 5, &visibleSolidNodes);
 		liquidRenderer = new OctreeVisibilityChecker(liquidSpace, 5, &visibleLiquidNodes);
 
-
+		shadowRenderer[0] = new OctreeVisibilityChecker(solidSpace, 5, &visibleShadowNodes[0]);
+		shadowRenderer[1] = new OctreeVisibilityChecker(solidSpace, 5, &visibleShadowNodes[1]);
+		shadowRenderer[2] = new OctreeVisibilityChecker(solidSpace, 5, &visibleShadowNodes[2]);
     }
 
 	void draw (int drawableType, int mode, glm::vec3 cameraPosition, std::vector<IteratorData> * list) {
@@ -63,7 +69,7 @@ class Scene {
 
 					//std::cout << "Draw " << std::to_string(drawable->instancesCount) << " | " << std::to_string(drawableType) << std::endl;
 					if(drawableType == TYPE_INSTANCE_VEGETATION_DRAWABLE) {
-						float amount = 1.0 - glm::length(cameraPosition -  drawable->center)/(float(settings->billboardRange));
+						float amount = glm::clamp( 1.0 - glm::length(cameraPosition -  drawable->center)/(float(settings->billboardRange)), 0.0, 1.0);
 
 						if(amount > 0.8){
 							amount = 1.0;
@@ -90,9 +96,17 @@ class Scene {
 		solidProcessor->loadCount = 1;
 		liquidProcessor->loadCount = 1;
 		vegetationProcessor->loadCount = 1;
+		shadowProcessor->loadCount = 1;
 		solidInstancesVisible = 0;
 		liquidInstancesVisible = 0;
 		vegetationInstancesVisible = 0;
+		
+		for(int i =0 ; i < SHADOW_MATRIX_COUNT ; ++i){
+			std::vector<IteratorData> &vec = visibleShadowNodes[i];
+			for(IteratorData &data : vec) {
+				shadowProcessor->before(data.level,data.height, data.node, data.cube, NULL);
+			}
+		}
 
 		for(IteratorData &data : visibleSolidNodes){
 			solidProcessor->before(data.level,data.height, data.node, data.cube, NULL);

@@ -78,7 +78,7 @@ void main() {
         teTextureIndices = tcTextureIndices[0];
 
         if(triplanarEnabled) {
-            int plane = triplanarPlane(tePosition, teSharpNormal);
+            int plane = triplanarPlane(tcPosition[0], teSharpNormal);
             teTextureCoord = triplanarMapping(tePosition, plane, teProps.textureScale) * 0.1;
         } else {
             teTextureCoord = tcTextureCoord[0] * gl_TessCoord[0] + tcTextureCoord[1] * gl_TessCoord[1] + tcTextureCoord[2] * gl_TessCoord[2];

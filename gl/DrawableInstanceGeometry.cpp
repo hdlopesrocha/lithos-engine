@@ -3,13 +3,13 @@
 DrawableInstanceGeometry::DrawableInstanceGeometry(Geometry * t, std::vector<InstanceData> * instances){
 
 	if(t->vertices.size()) {
-		glm::vec3 sum(0.0f);
-		int count =0;
+		this->center =glm::vec3(0.0f);
+		int count = t->vertices.size();
+		float invCount = 1.0f/float(count);
+
 		for(Vertex &vertex : t->vertices){
-			sum += vertex.position;
-			++count;
+			this->center += vertex.position*invCount;
 		}
-		this->center = sum/float(count);
 	}
 	
 	this->indicesCount = t ? t->indices.size() : 0;
