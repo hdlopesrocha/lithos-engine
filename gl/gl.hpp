@@ -113,9 +113,8 @@ struct UniformBlockBrush {
 class TextureBrush {
     public:
     UniformBlockBrush brush;
-    uint textureIndex;
 
-    TextureBrush(uint textureIndex, UniformBlockBrush brush);
+    TextureBrush(UniformBlockBrush brush);
 
 };
 

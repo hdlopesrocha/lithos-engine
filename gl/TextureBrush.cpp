@@ -1,8 +1,7 @@
 #include "gl.hpp"
 
-TextureBrush::TextureBrush(uint textureIndex, UniformBlockBrush brush){
+TextureBrush::TextureBrush(UniformBlockBrush brush){
     this->brush = brush;
-    this->textureIndex = textureIndex;
 }
 
 
