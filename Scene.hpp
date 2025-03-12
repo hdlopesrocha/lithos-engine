@@ -16,13 +16,13 @@ class Scene {
 		OctreeProcessor * vegetationProcessor;
 		OctreeProcessor * shadowProcessor;
 
-		int solidInstancesCount = 0;
-		int liquidInstancesCount = 0;
-		int vegetationInstancesCount = 0;
-		int shadowInstancesCount = 0;
-		int solidInstancesVisible = 0;
-		int liquidInstancesVisible = 0;
-		int vegetationInstancesVisible = 0;
+		long solidInstancesCount = 0;
+		long liquidInstancesCount = 0;
+		long vegetationInstancesCount = 0;
+		long shadowInstancesCount = 0;
+		long solidInstancesVisible = 0;
+		long liquidInstancesVisible = 0;
+		long vegetationInstancesVisible = 0;
 		std::vector<IteratorData> visibleSolidNodes;
 		std::vector<IteratorData> visibleLiquidNodes;
 		std::vector<IteratorData> visibleShadowNodes[SHADOW_MATRIX_COUNT];
@@ -76,7 +76,7 @@ class Scene {
 						}
 					
 						drawable->draw(mode, amount);
-						vegetationInstancesVisible += int(float(drawable->instancesCount)*amount);
+						vegetationInstancesVisible += long(ceil(drawable->instancesCount*amount));
 					} else {
 						drawable->draw(mode);
 						if(drawableType == TYPE_INSTANCE_SOLID_DRAWABLE) {

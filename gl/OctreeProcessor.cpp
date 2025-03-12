@@ -8,7 +8,7 @@
 std::random_device rd;
 std::mt19937 g(rd());  // Mersenne Twister engine
 
-OctreeProcessor::OctreeProcessor(Octree * tree, int * instancesCount,  int drawableType, int geometryLevel, float simplificationAngle, float simplificationDistance, bool simplificationTexturing, bool createInstances, int simplification) {
+OctreeProcessor::OctreeProcessor(Octree * tree, long * instancesCount,  int drawableType, int geometryLevel, float simplificationAngle, float simplificationDistance, bool simplificationTexturing, bool createInstances, int simplification) {
 	this->tree = tree;
 	this->simplification= simplification;
 	this->simplificationAngle = simplificationAngle;

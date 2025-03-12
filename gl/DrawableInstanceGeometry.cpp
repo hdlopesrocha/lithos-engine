@@ -1,16 +1,26 @@
 #include "gl.hpp"
 
 DrawableInstanceGeometry::DrawableInstanceGeometry(Geometry * t, std::vector<InstanceData> * instances){
-
-	if(instances->size()) {
-		this->center =glm::vec3(0.0f);
-		int count = instances->size();
+	glm::vec3 meshCenter(0);
+	int count = t->vertices.size();
+	if(count > 0){
 		float invCount = 1.0f/float(count);
-
-		for(InstanceData &data : *instances){
-			this->center += glm::vec3(data.matrix[3])*invCount;
+		for(Vertex &data : t->vertices){
+			meshCenter += data.position *invCount;
 		}
 	}
+	
+
+	this->center = glm::vec3(0);
+
+	count = instances->size();
+	if(instances->size()) {
+		float invCount = 1.0f/float(count);
+		for(InstanceData &data : *instances){
+			this->center += (glm::vec3(data.matrix[3])+meshCenter)*invCount;
+		}
+	}
+
 	
 	this->indicesCount = t ? t->indices.size() : 0;
 	this->instancesCount = instances ? instances->size() : 0;

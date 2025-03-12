@@ -242,8 +242,8 @@ class OctreeProcessor : public IteratorHandler{
 		int loadCount = 0;
 		int geometryLevel;
         glm::vec3 cameraPosition;
-        int * instancesCount;
-		OctreeProcessor(Octree * tree, int * instancesCount, int drawableType, int geometryLevel, float simplificationAngle, float simplificationDistance, bool simplificationTexturing, bool createInstances, int simplification);
+        long * instancesCount;
+		OctreeProcessor(Octree * tree, long * instancesCount, int drawableType, int geometryLevel, float simplificationAngle, float simplificationDistance, bool simplificationTexturing, bool createInstances, int simplification);
 
 		void * before(int level, int height, OctreeNode * node, const BoundingCube &cube, void * context) override;
 		void after(int level, int height, OctreeNode * node, const BoundingCube &cube, void * context) override;

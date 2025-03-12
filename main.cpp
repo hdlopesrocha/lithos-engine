@@ -672,6 +672,7 @@ public:
 			uniformBlock.set(OPACITY_FLAG, settings->opacityEnabled);
 			UniformBlock::uniform(&uniformBlock, sizeof(UniformBlock), 0, uniformBlockData);
 			// TODO : depthmap nao tem vegetation
+			std::cout << "mainScene->drawBillboards()" << std::endl;
 			mainScene->drawBillboards(camera->position, &mainScene->visibleSolidNodes);
 		}
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -841,9 +842,9 @@ public:
 		
 			
 			ImGui::Text("%d FPS", framesPerSecond);
-			ImGui::Text("%d/%d solid instances", mainScene->solidInstancesVisible, mainScene->solidInstancesCount);
-			ImGui::Text("%d/%d liquid instances", mainScene->liquidInstancesVisible, mainScene->liquidInstancesCount);
-			ImGui::Text("%d/%d vegetation instances", mainScene->vegetationInstancesVisible, mainScene->vegetationInstancesCount);
+			ImGui::Text("%ld/%ld solid instances", mainScene->solidInstancesVisible, mainScene->solidInstancesCount);
+			ImGui::Text("%ld/%ld liquid instances", mainScene->liquidInstancesVisible, mainScene->liquidInstancesCount);
+			ImGui::Text("%ld/%ld vegetation instances", mainScene->vegetationInstancesVisible, mainScene->vegetationInstancesCount);
 			#ifdef MEM_HEADER
 			ImGui::Text("%ld KB", usedMemory/1024);
 			#endif
