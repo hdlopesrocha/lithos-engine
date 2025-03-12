@@ -120,10 +120,9 @@ void BrushEditor::draw2d(){
 void BrushEditor::draw3d(UniformBlock * block){
      selectedBrush = Math::mod(selectedBrush, brushes->size());
     TextureProperties * brush = &(*brushes)[selectedBrush];
-//TODO: check here
-    UniformBlockBrush::uniform(program, brushes,"brushes", "brushTextures");
 
-    //data->uniform(textureProperties, sizeof(TextureProperties) , 0);
+    //TODO Could bind only one
+    UniformBlockBrush::uniform(program, brushes,"brushes", "brushTextures");
 
     glm::mat4 model = glm::scale(
         glm::translate(  
@@ -140,6 +139,7 @@ void BrushEditor::draw3d(UniformBlock * block){
     block->uintData.w = (uint) selectedBrush;
 
     UniformBlock::uniform(block, sizeof(TextureProperties) , 0, data);
+    //TODO fix not drawing, maybe uniformBlock needs more data
     sphere->draw(GL_PATCHES);
 }
 

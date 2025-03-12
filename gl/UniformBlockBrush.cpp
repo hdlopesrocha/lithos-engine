@@ -31,7 +31,7 @@ UniformBlockBrush::UniformBlockBrush(glm::vec2 textureScale,float parallaxScale,
 }
 
 
-void UniformBlockBrush::uniform(GLuint program, TextureProperties * brush, std::string objectName, std::string textureMap, int index) {
+void UniformBlockBrush::uniform(GLuint program, TextureProperties * brush, std::string objectName, std::string textureMap, int index, uint textureIndex) {
 
 
 		std::string propName = objectName + "[" + std::to_string(index)  +"]";
@@ -41,7 +41,7 @@ void UniformBlockBrush::uniform(GLuint program, TextureProperties * brush, std::
 	
 		UniformBlockBrush *b = &brush->brush;
 	
-	    glUniform1ui(glGetUniformLocation(program, (mapName).c_str()), brush->textureIndex);
+	    glUniform1ui(glGetUniformLocation(program, (mapName).c_str()), textureIndex);
 
 		glUniform1f(glGetUniformLocation(program, (propName +".parallaxScale").c_str() ), b->parallaxScale);
 		glUniform1f(glGetUniformLocation(program, (propName +".parallaxMinLayers").c_str()), b->parallaxMinLayers);
@@ -52,7 +52,6 @@ void UniformBlockBrush::uniform(GLuint program, TextureProperties * brush, std::
 		glUniform1f(glGetUniformLocation(program, (propName +".specularStrength").c_str()), b->specularStrength);
 		glUniform1f(glGetUniformLocation(program, (propName +".refractiveIndex").c_str()), b->refractiveIndex);
 		glUniform2fv(glGetUniformLocation(program, (propName +".textureScale").c_str()), 1, glm::value_ptr(b->textureScale));
-		glUniform1ui(glGetUniformLocation(program, (propName +".textureIndex").c_str()),  brush->textureIndex);
 
 
 }
@@ -60,7 +59,7 @@ void UniformBlockBrush::uniform(GLuint program, TextureProperties * brush, std::
 void UniformBlockBrush::uniform(GLuint program, std::vector<TextureProperties> *brushes, std::string objectName, std::string textureMap) {
 	for(int i = 0; i < brushes->size() ; ++i) {
 		TextureProperties * brush = &(*brushes)[i];
-		UniformBlockBrush::uniform(program, brush, objectName, textureMap, i);
+		UniformBlockBrush::uniform(program, brush, objectName, textureMap, i, brush->textureIndex);
 	}
 }
 
