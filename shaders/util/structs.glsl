@@ -1,6 +1,6 @@
 #define PI 3.1415926535897932384626433832795
 
-struct TextureProperties {
+struct TextureBrush {
     float parallaxScale;
     float parallaxMinLayers;
     float parallaxMaxLayers;

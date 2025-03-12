@@ -1,6 +1,6 @@
 #include "tools.hpp"
 
-OctreeContainmentHandler::OctreeContainmentHandler(Octree * octree, BoundingBox box, const TextureBrush &b): brush(b) {
+OctreeContainmentHandler::OctreeContainmentHandler(Octree * octree, BoundingBox box, const TexturePainter &b): brush(b) {
     this->octree = octree;
     this->box = box;
 }

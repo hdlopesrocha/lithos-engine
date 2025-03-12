@@ -475,7 +475,7 @@ private:
 	glm::vec3   m_points[8];
 };
 
-class TextureBrush {
+class TexturePainter {
 	public:
 	virtual void paint(Vertex &v) const = 0;
 };
@@ -484,9 +484,9 @@ class TextureBrush {
 class SphereContainmentHandler : public ContainmentHandler {
 	public:
 	BoundingSphere sphere;
-    const TextureBrush &brush;
+    const TexturePainter &brush;
 
-	SphereContainmentHandler(BoundingSphere s, const TextureBrush &b);
+	SphereContainmentHandler(BoundingSphere s, const TexturePainter &b);
 	glm::vec3 getCenter() const override;
 	bool contains(const glm::vec3 p) const override;
 	glm::vec3 getNormal(const glm::vec3 pos) const ;
@@ -498,9 +498,9 @@ class SphereContainmentHandler : public ContainmentHandler {
 class BoxContainmentHandler : public ContainmentHandler {
 	public: 
 	BoundingBox box;
-    const TextureBrush &brush;
+    const TexturePainter &brush;
 
-	BoxContainmentHandler(BoundingBox box, const TextureBrush &b);
+	BoxContainmentHandler(BoundingBox box, const TexturePainter &b);
 	glm::vec3 getCenter() const;
 	bool contains(const glm::vec3 p) const ;
 	bool isContained(const BoundingCube &cube) const override;
@@ -511,9 +511,9 @@ class BoxContainmentHandler : public ContainmentHandler {
 class HeightMapContainmentHandler : public ContainmentHandler {
 	public: 
 	const HeightMap &map;
-    const TextureBrush &brush;
+    const TexturePainter &brush;
 
-	HeightMapContainmentHandler(const HeightMap &map, const TextureBrush &b);
+	HeightMapContainmentHandler(const HeightMap &map, const TexturePainter &b);
 	glm::vec3 getCenter() const;
 	bool contains(const glm::vec3 p) const ;
 	float intersection(const glm::vec3 a, const glm::vec3 b) const ;

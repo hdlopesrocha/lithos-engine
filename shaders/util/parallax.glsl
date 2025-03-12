@@ -5,7 +5,7 @@ vec2 parallaxMapping(
         uvec3 textureIndices, 
         vec2 uv, 
         vec3 viewDir, 
-        TextureProperties props, 
+        TextureBrush props, 
         vec3 textureWeights, 
         vec3 blendFactors, 
         float distanceFactor

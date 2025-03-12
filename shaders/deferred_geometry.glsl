@@ -6,14 +6,14 @@ in vec3 vNormal[];
 in vec2 vTextureCoord[];
 in uint vTextureIndex[];
 in mat4 vModel[];
-in TextureProperties vProps[];
+in TextureBrush vProps[];
 
 out uint gTextureIndex;
 out vec2 gTextureCoord;
 out vec3 gTextureWeights;
 out vec3 gPosition;
 out vec3 gNormal;
-out TextureProperties gProps; 
+out TextureBrush gProps; 
 out vec3 gSharpNormal;
 flat out uvec3 gTextureIndices;
 

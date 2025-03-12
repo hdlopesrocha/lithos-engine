@@ -17,7 +17,7 @@ uniform uint overrideTexture;
 in vec2 gTextureCoord;
 in vec3 gTextureWeights;
 flat in uvec3 gTextureIndices;
-in TextureProperties gProps;
+in TextureBrush gProps;
 in vec3 gPosition;
 in vec3 gNormal;
 in vec3 gSharpNormal;

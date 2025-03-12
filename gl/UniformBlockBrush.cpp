@@ -31,7 +31,7 @@ UniformBlockBrush::UniformBlockBrush(glm::vec2 textureScale,float parallaxScale,
 }
 
 
-void UniformBlockBrush::uniform(GLuint program, TextureProperties * brush, std::string objectName, std::string textureMap, int index, uint textureIndex) {
+void UniformBlockBrush::uniform(GLuint program, TextureBrush * brush, std::string objectName, std::string textureMap, int index, uint textureIndex) {
 
 
 		std::string propName = objectName + "[" + std::to_string(index)  +"]";
@@ -56,9 +56,9 @@ void UniformBlockBrush::uniform(GLuint program, TextureProperties * brush, std::
 
 }
 
-void UniformBlockBrush::uniform(GLuint program, std::vector<TextureProperties> *brushes, std::string objectName, std::string textureMap) {
+void UniformBlockBrush::uniform(GLuint program, std::vector<TextureBrush> *brushes, std::string objectName, std::string textureMap) {
 	for(int i = 0; i < brushes->size() ; ++i) {
-		TextureProperties * brush = &(*brushes)[i];
+		TextureBrush * brush = &(*brushes)[i];
 		UniformBlockBrush::uniform(program, brush, objectName, textureMap, i, brush->textureIndex);
 	}
 }

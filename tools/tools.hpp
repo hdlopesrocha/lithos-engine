@@ -6,7 +6,7 @@
 
 
 
-class LandBrush : public TextureBrush {
+class LandBrush : public TexturePainter {
 	int underground;
 	int grass;
 	int sand;
@@ -24,7 +24,7 @@ class LandBrush : public TextureBrush {
 	void paint(Vertex &vertex) const override;
 };
 
-class SimpleBrush : public TextureBrush {
+class SimpleBrush : public TexturePainter {
 	int brush;
 
 	public: 
@@ -34,7 +34,7 @@ class SimpleBrush : public TextureBrush {
 
 
 
-class WaterBrush : public TextureBrush {
+class WaterBrush : public TexturePainter {
 	int water;
 
 	public: 
@@ -47,10 +47,10 @@ class WaterBrush : public TextureBrush {
 class OctreeContainmentHandler : public ContainmentHandler {
 	public:
 	Octree * octree;
-    const TextureBrush &brush;
+    const TexturePainter &brush;
 	BoundingBox box;
 
-	OctreeContainmentHandler(Octree * octree, BoundingBox box, const TextureBrush &b);
+	OctreeContainmentHandler(Octree * octree, BoundingBox box, const TexturePainter &b);
 	glm::vec3 getNormal(const glm::vec3 pos) const;
 	glm::vec3 getCenter() const override;
 	bool contains(const glm::vec3 p) const override;

@@ -79,7 +79,7 @@ ContainmentType BoundingSphere::test(const AbstractBoundingBox& cube) const {
 }
 
 
-SphereContainmentHandler::SphereContainmentHandler(BoundingSphere s, const TextureBrush &b) : ContainmentHandler(), sphere(s), brush(b){
+SphereContainmentHandler::SphereContainmentHandler(BoundingSphere s, const TexturePainter &b) : ContainmentHandler(), sphere(s), brush(b){
 
 }
 

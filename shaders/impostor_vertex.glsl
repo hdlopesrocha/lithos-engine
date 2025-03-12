@@ -19,10 +19,10 @@ out uint vTextureIndex;
 out vec2 vTextureCoord;
 out vec3 vPosition;
 out vec3 vNormal;
-out TextureProperties vProps;
+out TextureBrush vProps;
 out mat4 vModel;
 uniform uint brushTextures[32];
-uniform TextureProperties brushes[32];
+uniform TextureBrush brushes[32];
 
 void main() {
     vTextureIndex = brushTextures[brushIndex];

@@ -1,7 +1,7 @@
 #include "ui.hpp"
 
 
-BrushEditor::BrushEditor(Camera * camera, std::vector<TextureProperties> * brushes, GLuint program, GLuint previewProgram, TextureLayers * layers) {
+BrushEditor::BrushEditor(Camera * camera, std::vector<TextureBrush> * brushes, GLuint program, GLuint previewProgram, TextureLayers * layers) {
     this->program = program;
     glUseProgram(program);
     this->data = new ProgramData();
@@ -46,7 +46,7 @@ void BrushEditor::draw2d(){
     ImGui::Begin("Brush Editor", &open, ImGuiWindowFlags_AlwaysAutoResize);
 
     selectedBrush = Math::mod(selectedBrush, brushes->size());
-    TextureProperties * brush = &(*brushes)[selectedBrush];
+    TextureBrush * brush = &(*brushes)[selectedBrush];
 
     previewer->draw2d(selectedBrush);
 
@@ -119,7 +119,7 @@ void BrushEditor::draw2d(){
 }
 void BrushEditor::draw3d(UniformBlock * block){
      selectedBrush = Math::mod(selectedBrush, brushes->size());
-    TextureProperties * brush = &(*brushes)[selectedBrush];
+    TextureBrush * brush = &(*brushes)[selectedBrush];
 
     //TODO Could bind only one
     UniformBlockBrush::uniform(program, brushes,"brushes", "brushTextures");
@@ -138,7 +138,7 @@ void BrushEditor::draw3d(UniformBlock * block){
     block->set(OVERRIDE_FLAG, true);
     block->uintData.w = (uint) selectedBrush;
 
-    UniformBlock::uniform(block, sizeof(TextureProperties) , 0, data);
+    UniformBlock::uniform(block, sizeof(TextureBrush) , 0, data);
     //TODO fix not drawing, maybe uniformBlock needs more data
     sphere->draw(GL_PATCHES);
 }

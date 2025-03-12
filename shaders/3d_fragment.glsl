@@ -28,7 +28,7 @@ in vec3 teSharpNormal;
 in vec3 teTextureWeights;
 in vec3 teBlendFactors;
 flat in uvec3 teTextureIndices;
-in TextureProperties teProps;
+in TextureBrush teProps;
 
 out vec4 color;    // Final fragment color
 

@@ -14,12 +14,12 @@ layout(location = 5) in mat4 model;
 #include<functions.glsl>
 
 uniform uint brushTextures[32];
-uniform TextureProperties brushes[32];
+uniform TextureBrush brushes[32];
 
 out uint vTextureIndex;
 out vec2 vTextureCoord;
 out vec3 vPosition;
-out TextureProperties vProps;
+out TextureBrush vProps;
 out mat4 vModel;
 out vec3 vT;
 out vec3 vB;

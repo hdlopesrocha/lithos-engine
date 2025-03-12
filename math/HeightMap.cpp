@@ -110,7 +110,7 @@ ContainmentType HeightMap::test(const BoundingCube &cube) const {
 }
 
 
-HeightMapContainmentHandler::HeightMapContainmentHandler(const HeightMap &m, const TextureBrush &b) : ContainmentHandler(), map(m), brush(b){
+HeightMapContainmentHandler::HeightMapContainmentHandler(const HeightMap &m, const TexturePainter &b) : ContainmentHandler(), map(m), brush(b){
 
 }
 
