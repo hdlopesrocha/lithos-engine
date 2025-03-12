@@ -1,7 +1,7 @@
 #include "ui.hpp"
 
 
-BrushEditor::BrushEditor(Camera * camera, std::vector<TextureBrush*> * brushes, GLuint program, GLuint previewProgram, TextureLayers * layers) {
+BrushEditor::BrushEditor(Camera * camera, std::vector<UniformBlockBrush*> * brushes, GLuint program, GLuint previewProgram, TextureLayers * layers) {
     this->program = program;
     glUseProgram(program);
     this->data = new ProgramData();
@@ -46,7 +46,7 @@ void BrushEditor::draw2d(){
     ImGui::Begin("Brush Editor", &open, ImGuiWindowFlags_AlwaysAutoResize);
 
     selectedBrush = Math::mod(selectedBrush, brushes->size());
-    TextureBrush * brush = (*brushes)[selectedBrush];
+    UniformBlockBrush * brush = (*brushes)[selectedBrush];
 
     previewer->draw2d(selectedBrush);
 
@@ -83,7 +83,6 @@ void BrushEditor::draw2d(){
         }
     }
 
-    UniformBlockBrush * b = &brush->brush;
 
     ImGui::Text("Position: ");
     ImGui::InputFloat3("m##brushPosition", &brushPosition[0]);
@@ -92,36 +91,36 @@ void BrushEditor::draw2d(){
     ImGui::InputFloat("m##brushRadius", &brushRadius);
 
     ImGui::Text("Texture Scale: ");
-    ImGui::InputFloat2("\%##textureScale", &b->textureScale[0]);
+    ImGui::InputFloat2("\%##textureScale", &brush->textureScale[0]);
 
     ImGui::Text("Parallax Scale: ");
-    ImGui::InputFloat("m##parallaxScale", &b->parallaxScale);
+    ImGui::InputFloat("m##parallaxScale", &brush->parallaxScale);
 
     ImGui::Text("Parallax Min Layers: ");
-    ImGui::InputFloat("# ##parallaxMinLayers", &b->parallaxMinLayers);
+    ImGui::InputFloat("# ##parallaxMinLayers", &brush->parallaxMinLayers);
 
     ImGui::Text("Parallax Max Layers: ");
-    ImGui::InputFloat("# ##parallaxMaxLayers", &b->parallaxMaxLayers);
+    ImGui::InputFloat("# ##parallaxMaxLayers", &brush->parallaxMaxLayers);
 
     ImGui::Text("Parallax Fade: ");
-    ImGui::InputFloat("# ##parallaxFade", &b->parallaxFade);
+    ImGui::InputFloat("# ##parallaxFade", &brush->parallaxFade);
 
     ImGui::Text("Parallax Refine: ");
-    ImGui::InputFloat("# ##parallaxRefine", &b->parallaxRefine);
+    ImGui::InputFloat("# ##parallaxRefine", &brush->parallaxRefine);
 
     ImGui::Text("Specular Strength: ");
-    ImGui::InputFloat("\%##specularStrength", &b->specularStrength);
+    ImGui::InputFloat("\%##specularStrength", &brush->specularStrength);
 
     ImGui::Text("Shininess: ");
-    ImGui::InputFloat("\%##shininess", &b->shininess);
+    ImGui::InputFloat("\%##shininess", &brush->shininess);
 
     ImGui::End();
 }
 void BrushEditor::draw3d(UniformBlock * block){
      selectedBrush = Math::mod(selectedBrush, brushes->size());
-    TextureBrush * brush = (*brushes)[selectedBrush];
+     UniformBlockBrush * brush = (*brushes)[selectedBrush];
 
-    std::map<TextureBrush*, GLuint > textureMapper;
+    std::map<UniformBlockBrush*, GLuint > textureMapper;
     textureMapper.insert({ brush , selectedBrush});
 
     //TODO Could bind only one
@@ -141,7 +140,7 @@ void BrushEditor::draw3d(UniformBlock * block){
     block->set(OVERRIDE_FLAG, true);
     block->uintData.w = (uint) selectedBrush;
 
-    UniformBlock::uniform(block, sizeof(TextureBrush) , 0, data);
+    UniformBlock::uniform(block, sizeof(UniformBlockBrush) , 0, data);
     //TODO fix not drawing, maybe uniformBlock needs more data
     sphere->draw(GL_PATCHES);
 }

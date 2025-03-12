@@ -109,7 +109,7 @@ class ImpostorViewer: public Closable {
 
 
 class BrushEditor: public Closable {
-    std::vector<TextureBrush*> * brushes;
+    std::vector<UniformBlockBrush*> * brushes;
     GLuint program;
     ProgramData * data;
 	DrawableGeometry * sphere;
@@ -122,7 +122,7 @@ class BrushEditor: public Closable {
     float brushRadius;
 
     public:
-    BrushEditor(Camera * camera,std::vector<TextureBrush*> * brushes, GLuint program3d, GLuint previewProgram, TextureLayers * layers);
+    BrushEditor(Camera * camera,std::vector<UniformBlockBrush*> * brushes, GLuint program3d, GLuint previewProgram, TextureLayers * layers);
     void draw2d();
     void draw3d(UniformBlock * block);
     int getSelectedBrush();
