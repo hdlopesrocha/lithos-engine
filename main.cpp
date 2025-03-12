@@ -440,7 +440,7 @@ public:
 
 		glUseProgram(programImpostor);
 		UniformBlockBrush::uniform(programImpostor,&billboardBrushes, "brushes", "brushTextures", &textureMapper);
-		
+
 		glUseProgram(programDeferred);
 		UniformBlockBrush::uniform(programDeferred,&billboardBrushes, "brushes", "brushTextures", &textureMapper);
 
@@ -623,6 +623,7 @@ public:
 				glm::mat4 lightProjection = shadowMatrices[i];
 				uniformBlock.matrixShadow[i] = Math::getCanonicalMVP(lightProjection);
 				uniformBlock.viewProjection = lightProjection;
+				uniformBlock.cameraPosition = glm::vec4(light.position, 0.0f);
 
 				glUseProgram(program3d);
 				uniformBlock.set(OPACITY_FLAG, false);
@@ -638,6 +639,7 @@ public:
 					UniformBlock::uniform(&uniformBlock, sizeof(UniformBlock), 0, uniformBlockData);
 					// visibleSolidNodes because theres a lot of vegetation to render from the point of view of the light
 					// drawing from visibleSolidNodes is enough
+					
 					mainScene->drawBillboards(camera->position, &mainScene->visibleSolidNodes);
 					
 				}
@@ -645,6 +647,7 @@ public:
 		}
 
 		uniformBlock.viewProjection = viewProjection;
+		uniformBlock.cameraPosition = glm::vec4(camera->position, 0.0f);
 
 		// =================
 		// First Pass: Depth
