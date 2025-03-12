@@ -7,15 +7,3 @@ TextureBrush::TextureBrush(uint textureIndex, UniformBlockBrush brush){
 
 
 
-
-std::vector<UniformBlockBrush> convert(std::vector<TextureBrush> &vec) {
-    std::vector<UniformBlockBrush> data;
-
-    for(TextureBrush &tp : vec) {
-        data.push_back(tp.brush);
-    }
-
-    return data;
-}
-
-

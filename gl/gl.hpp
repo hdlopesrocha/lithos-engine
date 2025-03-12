@@ -102,7 +102,7 @@ struct UniformBlockBrush {
     UniformBlockBrush();
     UniformBlockBrush(glm::vec2 textureScale);
     UniformBlockBrush(glm::vec2 textureScale,float parallaxScale, float parallaxMinLayers, float parallaxMaxLayers, float parallaxFade, float parallaxRefine, float shininess, float specularStrength, float refractiveIndex);
-    static void uniform(GLuint program, std::vector<TextureBrush> *brushes, std::string objectName, std::string textureMap);
+    static void uniform(GLuint program, std::vector<TextureBrush*> *brushes, std::string objectName, std::string textureMap,std::map<TextureBrush*, GLuint > *textureMapper);
     static void uniform(GLuint program, TextureBrush * brush, std::string objectName, std::string textureMap, int index,uint textureIndex);
 
     static std::string toString(UniformBlockBrush * block);
@@ -117,7 +117,6 @@ class TextureBrush {
 
     TextureBrush(uint textureIndex, UniformBlockBrush brush);
 
-    
 };
 
 struct TextureArray {

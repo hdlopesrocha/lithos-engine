@@ -56,10 +56,19 @@ void UniformBlockBrush::uniform(GLuint program, TextureBrush * brush, std::strin
 
 }
 
-void UniformBlockBrush::uniform(GLuint program, std::vector<TextureBrush> *brushes, std::string objectName, std::string textureMap) {
+void UniformBlockBrush::uniform(GLuint program, std::vector<TextureBrush*> *brushes, std::string objectName, std::string textureMap,std::map<TextureBrush*, GLuint > *textureMapper) {
 	for(int i = 0; i < brushes->size() ; ++i) {
-		TextureBrush * brush = &(*brushes)[i];
-		UniformBlockBrush::uniform(program, brush, objectName, textureMap, i, brush->textureIndex);
+		TextureBrush * brush = (*brushes)[i];
+       // Correct way to find the texture index
+	   auto it = textureMapper->find(brush);
+	   if (it == textureMapper->end()) {
+		   std::cerr << "Warning: TextureBrush not found in textureMapper!" << std::endl;
+		   continue;  // Skip if not found
+	   }
+
+	   GLuint index = it->second;
+	   
+	   UniformBlockBrush::uniform(program, brush, objectName, textureMap, i,  index);
 	}
 }
 

@@ -144,7 +144,7 @@ class Scene {
 		draw(TYPE_INSTANCE_LIQUID_DRAWABLE, GL_PATCHES, cameraPosition, list);
 	}
 
-	void create(std::vector<TextureBrush> * brushes) {
+	void create() {
 
 		BoundingBox mapBox(glm::vec3(-200,-60,-200), glm::vec3(200,50,200));
 		

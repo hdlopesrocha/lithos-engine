@@ -36,8 +36,8 @@ std::string replaceIncludes(std::vector<GlslInclude> includes, std::string code)
 
 
 class MainApplication : public LithosApplication {
-	std::vector<TextureBrush> brushes;
-	std::vector<TextureBrush> billboardBrushes;
+	std::vector<TextureBrush*> brushes;
+	std::vector<TextureBrush*> billboardBrushes;
 	std::vector<AtlasTexture*> atlasTextures;
 	std::vector<UniformBlockBrush> uniformBlockBrushes;
 
@@ -239,85 +239,117 @@ public:
 		vegetationInstances.push_back(InstanceData(glm::mat4(1.0), 0));
 		vegetationMesh = new DrawableInstanceGeometry(new Vegetation3d(), &vegetationInstances);
 
+		std::map<TextureBrush*, GLuint > textureMapper;
 		{
-			
+			TextureBrush * tb = new TextureBrush(textureLayers.count, UniformBlockBrush( glm::vec2(0.2), 0.02, 8, 32, 16,4, 10.0, 0.5 , 1.33));
+			textureMapper.insert({tb, textureLayers.count});
 			animations.push_back(AnimateParams(textureLayers.count));
-			brushes.push_back(TextureBrush(textureLayers.count, UniformBlockBrush( glm::vec2(0.2), 0.02, 8, 32, 16,4, 10.0, 0.5 , 1.33)));
+			brushes.push_back(tb);
 			textureLayers.count++;
 		}
 		{
+			TextureBrush * tb = new TextureBrush(textureLayers.count, UniformBlockBrush( glm::vec2(0.2), 0.1, 8, 32, 16,4 ,256, 0.4, 0.0));
+			textureMapper.insert({tb, textureLayers.count});
 			loadTexture(&textureLayers, {"textures/lava_color.jpg", "textures/lava_normal.jpg", "textures/lava_bump.jpg"}, textureLayers.count, true);
-			brushes.push_back(TextureBrush(textureLayers.count, UniformBlockBrush( glm::vec2(0.2), 0.1, 8, 32, 16,4 ,256, 0.4, 0.0)));
+			brushes.push_back(tb);
 			textureLayers.count++;
 		}
 		{
+			TextureBrush * tb = new TextureBrush(textureLayers.count, UniformBlockBrush( glm::vec2(0.2), 0.01, 2, 8, 8,4 ,32, 0.03, 0.0));
+			textureMapper.insert({tb, textureLayers.count});
 			loadTexture(&textureLayers, {"textures/grass_color.jpg", "textures/grass_normal.jpg", "textures/grass_bump.jpg"}, textureLayers.count, true);
-			brushes.push_back(TextureBrush(textureLayers.count, UniformBlockBrush( glm::vec2(0.2), 0.01, 2, 8, 8,4 ,32, 0.03, 0.0)));
+			brushes.push_back(tb);
 			textureLayers.count++;
         }
 		{
+			TextureBrush * tb = new TextureBrush(textureLayers.count, UniformBlockBrush( glm::vec2(0.2), 0.05, 8, 32, 16,4 ,32,0.02, 0.0));
+			textureMapper.insert({tb, textureLayers.count});
 			loadTexture(&textureLayers, {"textures/sand_color.jpg", "textures/sand_normal.jpg", "textures/sand_bump.jpg"}, textureLayers.count, true);
-			brushes.push_back(TextureBrush(textureLayers.count, UniformBlockBrush( glm::vec2(0.2), 0.05, 8, 32, 16,4 ,32,0.02, 0.0)));
+			brushes.push_back(tb);
 			textureLayers.count++;
         }
 		{
+			TextureBrush * tb = new TextureBrush(textureLayers.count, UniformBlockBrush( glm::vec2(0.2), 0.1, 8, 32, 16,4,128, 0.4, 0.0));
+			textureMapper.insert({tb, textureLayers.count});
 			loadTexture(&textureLayers, {"textures/rock_color.jpg", "textures/rock_normal.jpg", "textures/rock_bump.jpg"}, textureLayers.count, true);
-			brushes.push_back(TextureBrush(textureLayers.count, UniformBlockBrush( glm::vec2(0.2), 0.1, 8, 32, 16,4,128, 0.4, 0.0)));
+			brushes.push_back(tb);
 			textureLayers.count++;
         }
 		{
+			TextureBrush * tb = new TextureBrush(textureLayers.count, UniformBlockBrush( glm::vec2(0.2), 0.1, 8, 32, 16,4, 32 , 0.4, 0.0));
+			textureMapper.insert({tb, textureLayers.count});
 			loadTexture(&textureLayers, {"textures/snow_color.jpg", "textures/snow_normal.jpg", "textures/snow_bump.jpg"}, textureLayers.count, true);
-			brushes.push_back(TextureBrush(textureLayers.count, UniformBlockBrush( glm::vec2(0.2), 0.1, 8, 32, 16,4, 32 , 0.4, 0.0)));
+			brushes.push_back(tb);
 			textureLayers.count++;
         }
 		{
+			TextureBrush * tb = new TextureBrush(textureLayers.count, UniformBlockBrush( glm::vec2(0.2), 0.1, 8, 64, 64,4, 32, 0.6 , 0.0));
+			textureMapper.insert({tb, textureLayers.count});
 			loadTexture(&textureLayers, {"textures/metal_color.jpg", "textures/metal_normal.jpg", "textures/metal_bump.jpg"}, textureLayers.count, true);
-			brushes.push_back(TextureBrush(textureLayers.count, UniformBlockBrush( glm::vec2(0.2), 0.1, 8, 64, 64,4, 32, 0.6 , 0.0)));
+			brushes.push_back(tb);
 			textureLayers.count++;
         }
 		{
+			TextureBrush * tb = new TextureBrush(textureLayers.count, UniformBlockBrush( glm::vec2(0.2), 0.1, 8, 32, 16,4 , 256, 0.02, 0.0));
+			textureMapper.insert({tb, textureLayers.count});
 			loadTexture(&textureLayers, {"textures/dirt_color.jpg", "textures/dirt_normal.jpg", "textures/dirt_bump.jpg"}, textureLayers.count, true);
-			brushes.push_back(TextureBrush(textureLayers.count, UniformBlockBrush( glm::vec2(0.2), 0.1, 8, 32, 16,4 , 256, 0.02, 0.0)));
+			brushes.push_back(tb);
 			textureLayers.count++;
         }
 		{
+			TextureBrush * tb = new TextureBrush(textureLayers.count, UniformBlockBrush( glm::vec2(0.2), 0.01, 8, 32, 16,4, 256, 0.2 , 0.0));
+			textureMapper.insert({tb, textureLayers.count});
 			loadTexture(&textureLayers, {"textures/bricks_color.jpg", "textures/bricks_normal.jpg", "textures/bricks_bump.jpg"}, textureLayers.count, true);
-			brushes.push_back(TextureBrush(textureLayers.count, UniformBlockBrush( glm::vec2(0.2), 0.01, 8, 32, 16,4, 256, 0.2 , 0.0)));
+			brushes.push_back(tb);
 			textureLayers.count++;
 		}
 		{
+			TextureBrush * tb = new TextureBrush(textureLayers.count, UniformBlockBrush( glm::vec2(0.2), 0.01, 8, 32, 16,4, 256, 0.2 , 0.0));
+			textureMapper.insert({tb, textureLayers.count});
 			mixers.push_back(MixerParams(textureLayers.count, 2, 3));
-			brushes.push_back(TextureBrush(textureLayers.count, UniformBlockBrush( glm::vec2(0.2), 0.01, 8, 32, 16,4, 256, 0.2 , 0.0)));
+			brushes.push_back(tb);
 			textureLayers.count++;
 		}
 		{
+			TextureBrush * tb = new TextureBrush(textureLayers.count, UniformBlockBrush( glm::vec2(0.2), 0.01, 8, 32, 16,4, 256, 0.2 , 0.0));
+			textureMapper.insert({tb, textureLayers.count});
 			mixers.push_back(MixerParams(textureLayers.count, 2, 5));
-			brushes.push_back(TextureBrush(textureLayers.count, UniformBlockBrush( glm::vec2(0.2), 0.01, 8, 32, 16,4, 256, 0.2 , 0.0)));
+			brushes.push_back(tb);
 			textureLayers.count++;
 		}
 		{
+			TextureBrush * tb = new TextureBrush(textureLayers.count, UniformBlockBrush( glm::vec2(0.2), 0.01, 8, 32, 16,4, 256, 0.2 , 0.0));
+			textureMapper.insert({tb, textureLayers.count});
 			mixers.push_back(MixerParams(textureLayers.count, 4, 2));
-			brushes.push_back(TextureBrush(textureLayers.count, UniformBlockBrush( glm::vec2(0.2), 0.01, 8, 32, 16,4, 256, 0.2 , 0.0)));
+			brushes.push_back(tb);
 			textureLayers.count++;
 		}
 		{
+			TextureBrush * tb = new TextureBrush(textureLayers.count, UniformBlockBrush( glm::vec2(0.2), 0.01, 8, 32, 16,4, 256, 0.2 , 0.0));
+			textureMapper.insert({tb, textureLayers.count});
 			mixers.push_back(MixerParams(textureLayers.count, 4, 5));
-			brushes.push_back(TextureBrush(textureLayers.count, UniformBlockBrush( glm::vec2(0.2), 0.01, 8, 32, 16,4, 256, 0.2 , 0.0)));
+			brushes.push_back(tb);
 			textureLayers.count++;
 		}
 		{
+			TextureBrush * tb = new TextureBrush(textureLayers.count, UniformBlockBrush( glm::vec2(0.2), 0.01, 8, 32, 16,4, 256, 0.2 , 0.0));
+			textureMapper.insert({tb, textureLayers.count});
 			mixers.push_back(MixerParams(textureLayers.count, 4, 3));
-			brushes.push_back(TextureBrush(textureLayers.count, UniformBlockBrush( glm::vec2(0.2), 0.01, 8, 32, 16,4, 256, 0.2 , 0.0)));
+			brushes.push_back(tb);
 			textureLayers.count++;
 		}
 		{
+			TextureBrush * tb = new TextureBrush(textureLayers.count, UniformBlockBrush( glm::vec2(0.2), 0.01, 4, 16, 8,4, 256, 0.2 , 0.0));
+			textureMapper.insert({tb, textureLayers.count});
 			loadTexture(&textureLayers, {"textures/soft_sand_color.jpg", "textures/soft_sand_normal.jpg", "textures/soft_sand_bump.jpg"}, textureLayers.count, true);
-			brushes.push_back(TextureBrush(textureLayers.count, UniformBlockBrush( glm::vec2(0.2), 0.01, 4, 16, 8,4, 256, 0.2 , 0.0)));
+			brushes.push_back(tb);
 			textureLayers.count++;
 		}
 		{
+			TextureBrush * tb = new TextureBrush(textureLayers.count, UniformBlockBrush( glm::vec2(0.2), 0.01, 4, 16, 8,4, 256, 0.2 , 0.0));
+			textureMapper.insert({tb, textureLayers.count});
 			loadTexture(&textureLayers, {"textures/forest_color.jpg", "textures/forest_normal.jpg", "textures/forest_bump.jpg"}, textureLayers.count, true);
-			brushes.push_back(TextureBrush(textureLayers.count, UniformBlockBrush( glm::vec2(0.2), 0.01, 4, 16, 8,4, 256, 0.2 , 0.0)));
+			brushes.push_back(tb);
 			textureLayers.count++;
 		}
 		{
@@ -342,7 +374,10 @@ public:
 			atlasParams.push_back(ap);
 
 			atlasTextures.push_back(at);
-			billboardBrushes.push_back(TextureBrush(billboardLayers.count, glm::vec2(1.0)));
+			TextureBrush * tb = new TextureBrush(billboardLayers.count, glm::vec2(1.0));
+			textureMapper.insert({tb, billboardLayers.count});
+
+			billboardBrushes.push_back(tb);
 			++billboardLayers.count;
 			++atlasLayers.count;
 		}
@@ -356,7 +391,11 @@ public:
 			atlasParams.push_back(ap);
 
 			atlasTextures.push_back(at);
-			billboardBrushes.push_back(TextureBrush(billboardLayers.count, glm::vec2(1.0)));
+			TextureBrush * tb = new TextureBrush(billboardLayers.count, glm::vec2(1.0));
+			
+			textureMapper.insert({tb, billboardLayers.count});
+
+			billboardBrushes.push_back(tb);
 			++billboardLayers.count;
 			++atlasLayers.count;
 		}
@@ -392,16 +431,17 @@ public:
 		}
 
 
+
 		glUseProgram(program3d);
-		
-		UniformBlockBrush::uniform(program3d,&brushes, "brushes", "brushTextures");
+
+		UniformBlockBrush::uniform(program3d,&brushes, "brushes", "brushTextures", &textureMapper);
 		glUseProgram(programBillboard);
 
-		UniformBlockBrush::uniform(programBillboard,&billboardBrushes, "brushes", "brushTextures");
+		UniformBlockBrush::uniform(programBillboard,&billboardBrushes, "brushes", "brushTextures", &textureMapper);
 		glUseProgram(programImpostor);
-		UniformBlockBrush::uniform(programImpostor,&billboardBrushes, "brushes", "brushTextures");
+		UniformBlockBrush::uniform(programImpostor,&billboardBrushes, "brushes", "brushTextures", &textureMapper);
 		glUseProgram(programDeferred);
-		UniformBlockBrush::uniform(programDeferred,&billboardBrushes, "brushes", "brushTextures");
+		UniformBlockBrush::uniform(programDeferred,&billboardBrushes, "brushes", "brushTextures", &textureMapper);
 
 
 		for(MixerParams &params : mixers) {
@@ -718,7 +758,7 @@ public:
 			// File Menu
 			if (ImGui::BeginMenu("File")) {
 				if (ImGui::MenuItem("New")) {
-					mainScene->create(&brushes);
+					mainScene->create();
 				}
 				if (ImGui::MenuItem("Open", "Ctrl+O")) {
 					mainScene->load();

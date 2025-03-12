@@ -1,7 +1,7 @@
 #include "ui.hpp"
 
 
-BrushEditor::BrushEditor(Camera * camera, std::vector<TextureBrush> * brushes, GLuint program, GLuint previewProgram, TextureLayers * layers) {
+BrushEditor::BrushEditor(Camera * camera, std::vector<TextureBrush*> * brushes, GLuint program, GLuint previewProgram, TextureLayers * layers) {
     this->program = program;
     glUseProgram(program);
     this->data = new ProgramData();
@@ -46,7 +46,7 @@ void BrushEditor::draw2d(){
     ImGui::Begin("Brush Editor", &open, ImGuiWindowFlags_AlwaysAutoResize);
 
     selectedBrush = Math::mod(selectedBrush, brushes->size());
-    TextureBrush * brush = &(*brushes)[selectedBrush];
+    TextureBrush * brush = (*brushes)[selectedBrush];
 
     previewer->draw2d(selectedBrush);
 
@@ -119,10 +119,13 @@ void BrushEditor::draw2d(){
 }
 void BrushEditor::draw3d(UniformBlock * block){
      selectedBrush = Math::mod(selectedBrush, brushes->size());
-    TextureBrush * brush = &(*brushes)[selectedBrush];
+    TextureBrush * brush = (*brushes)[selectedBrush];
+
+    std::map<TextureBrush*, GLuint > textureMapper;
+    textureMapper.insert({ brush , selectedBrush});
 
     //TODO Could bind only one
-    UniformBlockBrush::uniform(program, brushes,"brushes", "brushTextures");
+    UniformBlockBrush::uniform(program, brushes,"brushes", "brushTextures", &textureMapper);
 
     glm::mat4 model = glm::scale(
         glm::translate(  
