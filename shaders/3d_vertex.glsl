@@ -41,11 +41,10 @@ void main() {
  
     mat3 normalMatrix = transpose(inverse(mat3(vModel)));
     vN = normalize(normalMatrix * normal);
+    vProps = brushes[brushIndex];
 
 
     if(!depthEnabled) {
-        vProps = brushes[brushIndex];
-
         vec4 t = computeTriplanarTangentVec4(vN);
         vec3 iTangent = t.xyz;
         vec3 iBitangent = cross(vN, iTangent) * t.w;

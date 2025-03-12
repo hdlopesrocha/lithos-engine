@@ -40,12 +40,12 @@ void main() {
     for (int i = 0; i < 3; ++i) {
         tcTextureIndices[gl_InvocationID][i] = vTextureIndex[i];
     }    
+    tcProps[gl_InvocationID] = vProps[gl_InvocationID];
 
     if(!depthEnabled) {
         tcT[gl_InvocationID] = vT[gl_InvocationID];
         tcB[gl_InvocationID] = vB[gl_InvocationID];
         tcN[gl_InvocationID] = vN[gl_InvocationID];
-        tcProps[gl_InvocationID] = vProps[gl_InvocationID];
     }
 
 
