@@ -60,6 +60,15 @@
 #define OVERRIDE_TEXTURE_FLAG 0xff000000
 #define SHADOW_MATRIX_COUNT 3
 
+class TextureProperties;
+
+struct ProgramData {
+	public:
+	GLuint ubo;
+
+	ProgramData();
+};
+
 #pragma pack(16)  // Ensure 16-byte alignment for UBO
 struct UniformBlock {
     glm::mat4 world;          
@@ -72,23 +81,44 @@ struct UniformBlock {
 
     public:
     static std::string toString(UniformBlock * block);
-    void set(uint index, uint flag, bool value) {
-        if(value){
-            uintData[index] |= flag;
-        }else {
-            uintData[index] &= ~flag;
-        }
-    }
+    void set(uint index, uint flag, bool value);
+	static void uniform(void * block, size_t size, GLuint bindingIndex, ProgramData * data);
+};
+#pragma pack()  // Reset to default packing
+
+#pragma pack(16)  // Ensure 16-byte alignment for UBO
+struct UniformBlockBrush {
+    public:
+    float parallaxScale;
+    float parallaxMinLayers;
+    float parallaxMaxLayers;
+    float parallaxFade;
+    float parallaxRefine;
+    float shininess;
+    float specularStrength;
+    float refractiveIndex;
+    glm::vec2 textureScale;
+
+    UniformBlockBrush();
+    UniformBlockBrush(glm::vec2 textureScale);
+    UniformBlockBrush(glm::vec2 textureScale,float parallaxScale, float parallaxMinLayers, float parallaxMaxLayers, float parallaxFade, float parallaxRefine, float shininess, float specularStrength, float refractiveIndex);
+    static void uniform(GLuint program, std::vector<TextureProperties> *brushes, std::string objectName, std::string textureMap);
+    static void uniform(GLuint program, TextureProperties * brush, std::string objectName, std::string textureMap, int index);
+
+    static std::string toString(UniformBlockBrush * block);
 };
 #pragma pack()  // Reset to default packing
 
 
-struct ProgramData {
-	public:
-	GLuint ubo;
+class TextureProperties {
+    public:
+    uint textureIndex;
+    UniformBlockBrush brush;
 
-	ProgramData();
-	void uniform(UniformBlock * block);
+
+    TextureProperties(uint textureIndex, UniformBlockBrush brush);
+
+    
 };
 
 struct TextureArray {
@@ -310,28 +340,7 @@ class Texture {
 
 
 
-class Brush {
-    public:
-    uint brushIndex;
-    uint textureIndex;
-	float parallaxScale;
-	float parallaxMinLayers;
-	float parallaxMaxLayers;
-	float parallaxFade;
-	float parallaxRefine;
-	float shininess;
-	float specularStrength;
-    float refractiveIndex;
-	glm::vec2 textureScale;
 
-
-    Brush(uint textureIndex);
-    Brush(uint textureIndex, glm::vec2 textureScale,float parallaxScale, float parallaxMinLayers, float parallaxMaxLayers, float parallaxFade, float parallaxRefine, float shininess, float specularStrength, float refractiveIndex);
-
-    static void bindBrushes(GLuint program, std::string objectName, std::string mapName, std::vector<Brush*> * brushes);
-    static void bindBrush(GLuint program, std::string objectName, std::string textureMap, Brush * brush);
-
-};
 
 struct TextureLayers {
     TextureArray textures[3];

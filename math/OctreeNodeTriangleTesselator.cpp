@@ -24,7 +24,7 @@ glm::vec2 triplanarMapping(glm::vec3 position, int plane) {
     }
 }
 
-int addTriangle(OctreeNode* c0, OctreeNode* c1, OctreeNode* c2, Geometry * chunk, bool reverse, bool triplanar) {
+int addTriangle(OctreeNode* c0, OctreeNode* c1, OctreeNode* c2, Geometry * chunk, bool reverse, bool triplanar, float triplanarScale) {
    
 
     int count = 0;
@@ -40,9 +40,9 @@ int addTriangle(OctreeNode* c0, OctreeNode* c1, OctreeNode* c2, Geometry * chunk
 
             if(triplanar) {
                 int plane = triplanarPlane(v0.position, n);//TODO calculate normal from positions
-                v0.texCoord = triplanarMapping(v0.position, plane) * 0.1f;
-                v1.texCoord = triplanarMapping(v1.position, plane) * 0.1f;
-                v2.texCoord = triplanarMapping(v2.position, plane) * 0.1f;
+                v0.texCoord = triplanarMapping(v0.position, plane)*triplanarScale;
+                v1.texCoord = triplanarMapping(v1.position, plane)*triplanarScale;
+                v2.texCoord = triplanarMapping(v2.position, plane)*triplanarScale;
             }
             chunk->addVertex(reverse ? v2 : v0);
             chunk->addVertex(reverse ? v1 : v1);
@@ -59,6 +59,6 @@ OctreeNodeTriangleTesselator::OctreeNodeTriangleTesselator(Geometry * chunk, int
 
 void OctreeNodeTriangleTesselator::handle(OctreeNode* c0,OctreeNode* c1,OctreeNode* c2, bool sign) {
     if(c0 != NULL && c1 != NULL && c2!=NULL) {
-	    *count += addTriangle(c0,c1,c2, chunk, sign, true); //triplanar in GPU
+	    *count += addTriangle(c0,c1,c2, chunk, sign, true, 1.0); //triplanar in GPU
     }
 }

@@ -6,35 +6,6 @@
 #include "HeightFunctions.hpp"
 #include "Scene.hpp"
 
-//#define MEM_HEADER 1
-
-#ifdef MEM_HEADER
-long usedMemory = 0;
-struct Header {
-    std::size_t size;
-};
-
-
-void* operator new(std::size_t size) {
-    std::size_t totalSize = size + sizeof(Header);
-    void* mem = std::malloc(totalSize);
-    if (!mem) throw std::bad_alloc();
-
-    static_cast<Header*>(mem)->size = size;
-    usedMemory += size;
-    
-    return static_cast<void*>(static_cast<char*>(mem) + sizeof(Header));
-}
-
-void operator delete(void* ptr) noexcept {
-    if (!ptr) return;
-
-    Header* header = reinterpret_cast<Header*>(static_cast<char*>(ptr) - sizeof(Header));
-    usedMemory-= header->size;
-
-    std::free(header);
-}
-#endif
 
 class GlslInclude {
 	public:
@@ -65,9 +36,10 @@ std::string replaceIncludes(std::vector<GlslInclude> includes, std::string code)
 
 
 class MainApplication : public LithosApplication {
-	std::vector<Brush*> brushes;
-	std::vector<Brush*> billboardBrushes;
+	std::vector<TextureProperties> brushes;
+	std::vector<TextureProperties> billboardBrushes;
 	std::vector<AtlasTexture*> atlasTextures;
+	std::vector<UniformBlockBrush> uniformBlockBrushes;
 
 	std::vector<AtlasParams> atlasParams;
 
@@ -94,9 +66,11 @@ class MainApplication : public LithosApplication {
 	GLuint programMixTexture;
 	GLuint programWaterTexture;
 
-	ProgramData * programData;
+	ProgramData * uniformBlockData;
+	ProgramData * uniformBrushData;
 
 	UniformBlock viewerBlock;
+	UniformBlock uniformBlock;
 
 
 	TextureImage noiseTexture;
@@ -114,6 +88,8 @@ class MainApplication : public LithosApplication {
 
 	// UI
 	UniformBlockViewer * uniformBlockViewer;
+
+
 	BrushEditor * brushEditor;
 	AtlasPainter * atlasPainter;
 	AtlasViewer * atlasViewer;
@@ -144,7 +120,12 @@ public:
 
 	}
 
+
+
     virtual void setup() {
+		uniformBlockData = new ProgramData();
+		uniformBrushData = new ProgramData();
+
 		std::vector<GlslInclude> includes;
 		includes.push_back(GlslInclude("#include<functions.glsl>" , readFile("shaders/util/functions.glsl")));
 		includes.push_back(GlslInclude("#include<perlin.glsl>" , readFile("shaders/util/perlin.glsl")));
@@ -199,7 +180,6 @@ public:
 			compileShader(replaceIncludes(includes,readFile("shaders/3d_tessEvaluation.glsl")),GL_TESS_EVALUATION_SHADER),
 			compileShader(replaceIncludes(includes,readFile("shaders/3d_fragment.glsl")),GL_FRAGMENT_SHADER) 
 		});
-		programData = new ProgramData();
 
 		programBillboard = createShaderProgram({
 			compileShader(replaceIncludes(includes,readFile("shaders/3d_vertex.glsl")),GL_VERTEX_SHADER), 
@@ -260,83 +240,84 @@ public:
 		vegetationMesh = new DrawableInstanceGeometry(new Vegetation3d(), &vegetationInstances);
 
 		{
+			
 			animations.push_back(AnimateParams(textureLayers.count));
-			brushes.push_back(new Brush(textureLayers.count, glm::vec2(0.2), 0.02, 8, 32, 16,4, 10.0, 0.5 , 1.33));
+			brushes.push_back(TextureProperties(textureLayers.count, UniformBlockBrush( glm::vec2(0.2), 0.02, 8, 32, 16,4, 10.0, 0.5 , 1.33)));
 			textureLayers.count++;
 		}
 		{
 			loadTexture(&textureLayers, {"textures/lava_color.jpg", "textures/lava_normal.jpg", "textures/lava_bump.jpg"}, textureLayers.count, true);
-			brushes.push_back(new Brush(textureLayers.count, glm::vec2(1.0), 0.1, 8, 32, 16,4 ,256, 0.4, 0.0));
+			brushes.push_back(TextureProperties(textureLayers.count, UniformBlockBrush( glm::vec2(0.1), 0.1, 8, 32, 16,4 ,256, 0.4, 0.0)));
 			textureLayers.count++;
 		}
 		{
 			loadTexture(&textureLayers, {"textures/grass_color.jpg", "textures/grass_normal.jpg", "textures/grass_bump.jpg"}, textureLayers.count, true);
-			brushes.push_back(new Brush(textureLayers.count, glm::vec2(1.0), 0.01, 2, 8, 8,4 ,32, 0.03, 0.0));
+			brushes.push_back(TextureProperties(textureLayers.count, UniformBlockBrush( glm::vec2(0.1), 0.01, 2, 8, 8,4 ,32, 0.03, 0.0)));
 			textureLayers.count++;
         }
 		{
 			loadTexture(&textureLayers, {"textures/sand_color.jpg", "textures/sand_normal.jpg", "textures/sand_bump.jpg"}, textureLayers.count, true);
-			brushes.push_back(new Brush(textureLayers.count, glm::vec2(1.0), 0.05, 8, 32, 16,4 ,32,0.02, 0.0));
+			brushes.push_back(TextureProperties(textureLayers.count, UniformBlockBrush( glm::vec2(0.1), 0.05, 8, 32, 16,4 ,32,0.02, 0.0)));
 			textureLayers.count++;
         }
 		{
 			loadTexture(&textureLayers, {"textures/rock_color.jpg", "textures/rock_normal.jpg", "textures/rock_bump.jpg"}, textureLayers.count, true);
-			brushes.push_back(new Brush(textureLayers.count, glm::vec2(1.0), 0.1, 8, 32, 16,4,128, 0.4, 0.0));
+			brushes.push_back(TextureProperties(textureLayers.count, UniformBlockBrush( glm::vec2(0.1), 0.1, 8, 32, 16,4,128, 0.4, 0.0)));
 			textureLayers.count++;
         }
 		{
 			loadTexture(&textureLayers, {"textures/snow_color.jpg", "textures/snow_normal.jpg", "textures/snow_bump.jpg"}, textureLayers.count, true);
-			brushes.push_back(new Brush(textureLayers.count, glm::vec2(1.0), 0.1, 8, 32, 16,4, 32 , 0.4, 0.0));
+			brushes.push_back(TextureProperties(textureLayers.count, UniformBlockBrush( glm::vec2(0.1), 0.1, 8, 32, 16,4, 32 , 0.4, 0.0)));
 			textureLayers.count++;
         }
 		{
 			loadTexture(&textureLayers, {"textures/metal_color.jpg", "textures/metal_normal.jpg", "textures/metal_bump.jpg"}, textureLayers.count, true);
-			brushes.push_back(new Brush(textureLayers.count, glm::vec2(1.0), 0.1, 8, 64, 64,4, 32, 0.6 , 0.0));
+			brushes.push_back(TextureProperties(textureLayers.count, UniformBlockBrush( glm::vec2(0.1), 0.1, 8, 64, 64,4, 32, 0.6 , 0.0)));
 			textureLayers.count++;
         }
 		{
 			loadTexture(&textureLayers, {"textures/dirt_color.jpg", "textures/dirt_normal.jpg", "textures/dirt_bump.jpg"}, textureLayers.count, true);
-			brushes.push_back(new Brush(textureLayers.count, glm::vec2(1.0), 0.1, 8, 32, 16,4 , 256, 0.02, 0.0));
+			brushes.push_back(TextureProperties(textureLayers.count, UniformBlockBrush( glm::vec2(0.1), 0.1, 8, 32, 16,4 , 256, 0.02, 0.0)));
 			textureLayers.count++;
         }
 		{
 			loadTexture(&textureLayers, {"textures/bricks_color.jpg", "textures/bricks_normal.jpg", "textures/bricks_bump.jpg"}, textureLayers.count, true);
-			brushes.push_back(new Brush(textureLayers.count, glm::vec2(1.0), 0.01, 8, 32, 16,4, 256, 0.2 , 0.0));
+			brushes.push_back(TextureProperties(textureLayers.count, UniformBlockBrush( glm::vec2(0.1), 0.01, 8, 32, 16,4, 256, 0.2 , 0.0)));
 			textureLayers.count++;
 		}
 		{
 			mixers.push_back(MixerParams(textureLayers.count, 2, 3));
-			brushes.push_back(new Brush(textureLayers.count, glm::vec2(1.0), 0.01, 8, 32, 16,4, 256, 0.2 , 0.0));
+			brushes.push_back(TextureProperties(textureLayers.count, UniformBlockBrush( glm::vec2(0.1), 0.01, 8, 32, 16,4, 256, 0.2 , 0.0)));
 			textureLayers.count++;
 		}
 		{
 			mixers.push_back(MixerParams(textureLayers.count, 2, 5));
-			brushes.push_back(new Brush(textureLayers.count, glm::vec2(1.0), 0.01, 8, 32, 16,4, 256, 0.2 , 0.0));
+			brushes.push_back(TextureProperties(textureLayers.count, UniformBlockBrush( glm::vec2(0.1), 0.01, 8, 32, 16,4, 256, 0.2 , 0.0)));
 			textureLayers.count++;
 		}
 		{
 			mixers.push_back(MixerParams(textureLayers.count, 4, 2));
-			brushes.push_back(new Brush(textureLayers.count, glm::vec2(1.0), 0.01, 8, 32, 16,4, 256, 0.2 , 0.0));
+			brushes.push_back(TextureProperties(textureLayers.count, UniformBlockBrush( glm::vec2(0.1), 0.01, 8, 32, 16,4, 256, 0.2 , 0.0)));
 			textureLayers.count++;
 		}
 		{
 			mixers.push_back(MixerParams(textureLayers.count, 4, 5));
-			brushes.push_back(new Brush(textureLayers.count, glm::vec2(1.0), 0.01, 8, 32, 16,4, 256, 0.2 , 0.0));
+			brushes.push_back(TextureProperties(textureLayers.count, UniformBlockBrush( glm::vec2(0.1), 0.01, 8, 32, 16,4, 256, 0.2 , 0.0)));
 			textureLayers.count++;
 		}
 		{
 			mixers.push_back(MixerParams(textureLayers.count, 4, 3));
-			brushes.push_back(new Brush(textureLayers.count, glm::vec2(1.0), 0.01, 8, 32, 16,4, 256, 0.2 , 0.0));
+			brushes.push_back(TextureProperties(textureLayers.count, UniformBlockBrush( glm::vec2(0.1), 0.01, 8, 32, 16,4, 256, 0.2 , 0.0)));
 			textureLayers.count++;
 		}
 		{
 			loadTexture(&textureLayers, {"textures/soft_sand_color.jpg", "textures/soft_sand_normal.jpg", "textures/soft_sand_bump.jpg"}, textureLayers.count, true);
-			brushes.push_back(new Brush(textureLayers.count, glm::vec2(1.0), 0.01, 4, 16, 8,4, 256, 0.2 , 0.0));
+			brushes.push_back(TextureProperties(textureLayers.count, UniformBlockBrush( glm::vec2(0.1), 0.01, 4, 16, 8,4, 256, 0.2 , 0.0)));
 			textureLayers.count++;
 		}
 		{
 			loadTexture(&textureLayers, {"textures/forest_color.jpg", "textures/forest_normal.jpg", "textures/forest_bump.jpg"}, textureLayers.count, true);
-			brushes.push_back(new Brush(textureLayers.count, glm::vec2(1.0), 0.01, 4, 16, 8,4, 256, 0.2 , 0.0));
+			brushes.push_back(TextureProperties(textureLayers.count, UniformBlockBrush( glm::vec2(0.1), 0.01, 4, 16, 8,4, 256, 0.2 , 0.0)));
 			textureLayers.count++;
 		}
 		{
@@ -361,7 +342,7 @@ public:
 			atlasParams.push_back(ap);
 
 			atlasTextures.push_back(at);
-			billboardBrushes.push_back(new Brush(billboardLayers.count));
+			billboardBrushes.push_back(TextureProperties(billboardLayers.count, glm::vec2(1.0)));
 			++billboardLayers.count;
 			++atlasLayers.count;
 		}
@@ -375,7 +356,7 @@ public:
 			atlasParams.push_back(ap);
 
 			atlasTextures.push_back(at);
-			billboardBrushes.push_back(new Brush(billboardLayers.count));
+			billboardBrushes.push_back(TextureProperties(billboardLayers.count, glm::vec2(1.0)));
 			++billboardLayers.count;
 			++atlasLayers.count;
 		}
@@ -410,10 +391,17 @@ public:
 			activeTexture = Texture::bindTexture(program3d, activeTexture, objectName, textureLayers.textures[i]);
 		}
 
-		Brush::bindBrushes(program3d,"brushes", "brushTextures", &brushes);
-		Brush::bindBrushes(programBillboard, "brushes", "brushTextures", &billboardBrushes);
-		Brush::bindBrushes(programImpostor, "brushes", "brushTextures", &billboardBrushes);
-		Brush::bindBrushes(programDeferred, "brushes", "brushTextures", &billboardBrushes);
+
+		glUseProgram(program3d);
+		
+		UniformBlockBrush::uniform(program3d,&brushes, "brushes", "brushTextures");
+		glUseProgram(programBillboard);
+
+		UniformBlockBrush::uniform(programBillboard,&billboardBrushes, "brushes", "brushTextures");
+		glUseProgram(programImpostor);
+		UniformBlockBrush::uniform(programImpostor,&billboardBrushes, "brushes", "brushTextures");
+		glUseProgram(programDeferred);
+		UniformBlockBrush::uniform(programDeferred,&billboardBrushes, "brushes", "brushTextures");
 
 
 		for(MixerParams &params : mixers) {
@@ -553,11 +541,11 @@ public:
 		glCullFace(GL_BACK); // Or GL_FRONT
 		glFrontFace(GL_CCW); // Ensure this matches your vertex data
 		glEnable(GL_DEPTH_TEST);
+		glDepthMask(GL_TRUE);  // Allow writing to depth buffer
 		glLineWidth(2.0);
 		glPointSize(4.0);	
 
 
-		UniformBlock uniformBlock;
         uniformBlock.uintData = glm::uvec4(0u, 0u, settings->debugMode, settings->overrideTexture);
 		uniformBlock.floatData = glm::vec4( time, settings->blendSharpness, settings->parallaxDistance ,settings->parallaxPower);
 		uniformBlock.world = worldModel;
@@ -596,9 +584,9 @@ public:
 				uniformBlock.viewProjection = lightProjection;
 
 				glUseProgram(program3d);
-				uniformBlock.set(TRIPLANAR_FLAG, true); 
 				uniformBlock.set(OPACITY_FLAG, false);
-				programData->uniform(&uniformBlock);
+
+				UniformBlock::uniform(&uniformBlock, sizeof(UniformBlock), 0, uniformBlockData);
 
 				mainScene->draw3dSolid(camera->position, &mainScene->visibleSolidNodes);
 				
@@ -606,8 +594,7 @@ public:
 					glUseProgram(programBillboard);
 					uniformBlock.set(OPACITY_FLAG, settings->opacityEnabled);
 					uniformBlock.set(BILLBOARD_FLAG, settings->billboardEnabled); 
-					uniformBlock.set(TRIPLANAR_FLAG, false); 
-					programData->uniform(&uniformBlock);
+					UniformBlock::uniform(&uniformBlock, sizeof(UniformBlock), 0, uniformBlockData);
 					// visibleSolidNodes because theres a lot of vegetation to render from the point of view of the light
 					// drawing from visibleSolidNodes is enough
 					mainScene->drawBillboards(camera->position, &mainScene->visibleSolidNodes);
@@ -623,29 +610,27 @@ public:
 		// =================
 		glBindFramebuffer(GL_FRAMEBUFFER, depthFrameBuffer.frameBuffer);
 		glViewport(0, 0, depthFrameBuffer.width, depthFrameBuffer.height);
-		glClear(GL_DEPTH_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
 		glUseProgram(program3d);
 		uniformBlock.set(BILLBOARD_FLAG, false); 
 		uniformBlock.set(OPACITY_FLAG, false);
-		uniformBlock.set(TRIPLANAR_FLAG, true); 
 
-		programData->uniform(&uniformBlock);
+		UniformBlock::uniform(&uniformBlock, sizeof(UniformBlock), 0, uniformBlockData);
 		mainScene->draw3dSolid(camera->position, &mainScene->visibleSolidNodes);
 
 
 		if(settings->billboardEnabled) {
-			uniformBlock.set(TRIPLANAR_FLAG, false); 
+			glUseProgram(programBillboard);
 			uniformBlock.set(TESSELATION_FLAG, false);
 			uniformBlock.set(BILLBOARD_FLAG, settings->billboardEnabled); 
 			uniformBlock.set(OPACITY_FLAG, settings->opacityEnabled);
-
-			glUseProgram(programBillboard);
-			programData->uniform(&uniformBlock);
+			UniformBlock::uniform(&uniformBlock, sizeof(UniformBlock), 0, uniformBlockData);
 			// TODO : depthmap nao tem vegetation
 			mainScene->drawBillboards(camera->position, &mainScene->visibleSolidNodes);
 		}
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 		// ==================
 		// Second Pass: Solid
@@ -664,23 +649,20 @@ public:
 
 
 		if(settings->billboardEnabled) {
+			glUseProgram(programBillboard);
 			uniformBlock.set(BILLBOARD_FLAG, settings->billboardEnabled); 
 			uniformBlock.set(OPACITY_FLAG, settings->opacityEnabled);
-			uniformBlock.set(TRIPLANAR_FLAG, false); 
-
-			glUseProgram(programBillboard);
-			programData->uniform(&uniformBlock);
+			UniformBlock::uniform(&uniformBlock, sizeof(UniformBlock), 0, uniformBlockData);
 			mainScene->drawBillboards(camera->position, &mainScene->visibleSolidNodes);
 		}
 
 
 
 		glUseProgram(program3d);
-		uniformBlock.set(TRIPLANAR_FLAG, true); 
 		uniformBlock.set(BILLBOARD_FLAG, false); 
 		uniformBlock.set(TESSELATION_FLAG, settings->tesselationEnabled);
 		uniformBlock.set(OPACITY_FLAG, false);
-		programData->uniform(&uniformBlock);
+		UniformBlock::uniform(&uniformBlock, sizeof(UniformBlock), 0, uniformBlockData);
 		mainScene->draw3dSolid(camera->position, &mainScene->visibleSolidNodes);
 		if(settings->wireFrameEnabled) {
 			glPolygonMode(GL_FRONT, GL_FILL);
@@ -699,7 +681,7 @@ public:
 		glViewport(0, 0, renderBuffer.width, renderBuffer.height);
 
 		glUseProgram(program3d);
-		programData->uniform(&uniformBlock);
+		UniformBlock::uniform(&uniformBlock, sizeof(UniformBlock), 0, uniformBlockData);
 		mainScene->draw3dLiquid(camera->position, &mainScene->visibleLiquidNodes);
 
 		//glUseProgram(program3d);
@@ -736,7 +718,7 @@ public:
 			// File Menu
 			if (ImGui::BeginMenu("File")) {
 				if (ImGui::MenuItem("New")) {
-					mainScene->create(brushes);
+					mainScene->create(&brushes);
 				}
 				if (ImGui::MenuItem("Open", "Ctrl+O")) {
 					mainScene->load();

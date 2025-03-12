@@ -34,22 +34,24 @@ out vec4 color;    // Final fragment color
 
 
 void main() {
-
-
+    float near = 0.1;
+    float far = 512.0;
     vec2 uv = teTextureCoord;
   
     if(billboardEnabled && (uv.y < 0.0 || uv.y > 1.0 || uv.x < 0.0 || uv.x > 1.0)) {
         discard;
+        return;
     } 
+    float blendBump = textureBlend(textures[2], teTextureIndices, uv, teTextureWeights, teBlendFactors).r;
     if(opacityEnabled) {
-        float b = textureBlend(textures[2], teTextureIndices, uv, teTextureWeights, teBlendFactors).r;
-        if(b < 0.98) {
+        if(blendBump < 0.98) {
             discard;
         }
     }
 
     if(depthEnabled) {
-        return;
+        gl_FragDepth = gl_FragCoord.z;
+        return; // Stops further calculations but writes depth
     }
 
     vec2 pixelUV = gl_FragCoord.xy / textureSize(depthTexture, 0);
@@ -98,47 +100,42 @@ void main() {
             color = textureBlend(textures[1], teTextureIndices, uv, teTextureWeights, teBlendFactors);
         }
         else if(debugMode == 2){
-            vec4 b = textureBlend(textures[2], teTextureIndices, uv, teTextureWeights, teBlendFactors); 
-            color = vec4(vec3(b.r), 1.0);
+            color = vec4(vec3(blendBump), 1.0);
         }
         else if(debugMode == 3) {
-            color = vec4(visual(TBN[0]),1.0);
-        }
-        else if(debugMode == 4) {
-            color = vec4(visual(TBN[1]),1.0);
-        }
-        else if(debugMode == 5) {
-            color = vec4(visual(TBN[2]),1.0);
-        } 
-        else if(debugMode == 6) {
-            color = vec4(visual(teSharpNormal),1.0);
-        }
-        else if(debugMode == 7) {
-            color = vec4(visual(worldNormal),1.0);
-        }
-        else if(debugMode == 8) {
             color = vec4(mod(uv,vec2(1.0)),1.0,1.0);
         }
+        else if(debugMode == 4) {
+            color = vec4(visual(TBN[0]),1.0);
+        }
+        else if(debugMode == 5) {
+            color = vec4(visual(TBN[1]),1.0);
+        }
+        else if(debugMode == 6) {
+            color = vec4(visual(TBN[2]),1.0);
+        } 
+        else if(debugMode == 7) {
+            color = vec4(visual(teSharpNormal),1.0);
+        }
+        else if(debugMode == 8) {
+            color = vec4(visual(worldNormal),1.0);
+        }
         else if(debugMode == 9) {
-            float near = 0.1;
-            float far = 512.0;
-            color = vec4(vec3(linearizeDepth(currentDepth, near, far)/far),1.0);
+            color = vec4(visual(normalMap),1.0);
         }
         else if(debugMode == 10) {
-            color = vec4(teBlendFactors,1.0);
+            color = vec4(vec3(linearizeDepth(currentDepth, near, far)/far),1.0);
         }
         else if(debugMode == 11) {
-            color = vec4(teTextureWeights,1.0);
+            color = vec4(teBlendFactors,1.0);
         }
         else if(debugMode == 12) {
-            color = vec4(teTextureWeights*teBlendFactors,1.0);
+            color = vec4(teTextureWeights,1.0);
         }
         else if(debugMode == 13) {
-            color = vec4(normalize(teTextureWeights*teBlendFactors),1.0);
-        }
-        else if(debugMode == 14) {
             color = vec4(vec3(distanceFactor),1.0);
         }
+
         return;
     } else if(lightEnabled) {
         vec3 specularColor = vec3(1.0,1.0,1.0);

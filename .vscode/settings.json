@@ -91,7 +91,8 @@
         "syncstream": "cpp",
         "typeindex": "cpp",
         "valarray": "cpp",
-        "filesystem": "cpp"
+        "filesystem": "cpp",
+        "*.glsl": "cpp"
     },
     "cmake.sourceDirectory": "/home/hdlrocha/lithos/dependencies/rapidjson"
 }

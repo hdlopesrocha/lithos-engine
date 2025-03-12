@@ -34,12 +34,27 @@ out vec3 teTextureWeights;
 out vec3 teBlendFactors;
 
 void main() {
+    teProps.textureScale = tcProps[0].textureScale * gl_TessCoord[0] + 
+    tcProps[1].textureScale * gl_TessCoord[1] + 
+    tcProps[2].textureScale * gl_TessCoord[2];    
+
 
     tePosition = gl_TessCoord[0] * tcPosition[0] + gl_TessCoord[1] * tcPosition[1] + gl_TessCoord[2] * tcPosition[2];
     teModel = tcModel[0];
+    teTextureWeights = gl_TessCoord;
+    teSharpNormal = normalize(cross(tcPosition[1] - tcPosition[0], tcPosition[2] - tcPosition[0]));
+
+    if(triplanarEnabled) {
+        int plane = triplanarPlane(tcPosition[0], teSharpNormal);
+        teTextureCoord = triplanarMapping(tePosition, plane, teProps.textureScale);
+    } else {
+        teTextureCoord = tcTextureCoord[0] * gl_TessCoord[0] + tcTextureCoord[1] * gl_TessCoord[1] + tcTextureCoord[2] * gl_TessCoord[2];
+        teTextureCoord *= teProps.textureScale;
+    }
+    
+
 
     if(!depthEnabled) {
-        teSharpNormal = normalize(cross(tcPosition[1] - tcPosition[0], tcPosition[2] - tcPosition[0]));
 
         if(overrideEnabled) {
             teProps = overrideProps;
@@ -66,9 +81,7 @@ void main() {
             teProps.specularStrength = tcProps[0].specularStrength * gl_TessCoord[0] + 
                                         tcProps[1].specularStrength * gl_TessCoord[1] + 
                                         tcProps[2].specularStrength * gl_TessCoord[2];
-            teProps.textureScale = tcProps[0].textureScale * gl_TessCoord[0] + 
-                                tcProps[1].textureScale * gl_TessCoord[1] + 
-                                tcProps[2].textureScale * gl_TessCoord[2];    
+
 
             teProps.refractiveIndex = tcProps[0].refractiveIndex * gl_TessCoord[0] + 
                                 tcProps[1].refractiveIndex * gl_TessCoord[1] + 
@@ -78,13 +91,7 @@ void main() {
 
         teTextureIndices = tcTextureIndices[0];
 
-        if(triplanarEnabled) {
-            int plane = triplanarPlane(tcPosition[0], teSharpNormal);
-            teTextureCoord = triplanarMapping(tePosition, plane, teProps.textureScale) * 0.1;
-        } else {
-            teTextureCoord = tcTextureCoord[0] * gl_TessCoord[0] + tcTextureCoord[1] * gl_TessCoord[1] + tcTextureCoord[2] * gl_TessCoord[2];
-        }
-        
+
         // Output TBN vectors
         teT = tcT[0]* gl_TessCoord[0]+tcT[1]* gl_TessCoord[1]+tcT[2]* gl_TessCoord[2];
         teB = tcB[0]* gl_TessCoord[0]+tcB[1]* gl_TessCoord[1]+tcB[2]* gl_TessCoord[2];
@@ -100,7 +107,6 @@ void main() {
 
     }
 
-    teTextureWeights = gl_TessCoord;
 
     vec3 normal = abs(teN);
     vec3 blend = pow(abs(normal), vec3(blendSharpness));

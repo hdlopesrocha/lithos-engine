@@ -7,38 +7,38 @@
 
 
 class LandBrush : public TextureBrush {
-	Brush * underground;
-	Brush * grass;
-	Brush * sand;
-	Brush * softSand;
-	Brush * rock;
-	Brush * snow;
-	Brush * grassMixSand;
-	Brush * grassMixSnow;
-	Brush * rockMixGrass;
-	Brush * rockMixSnow;
-	Brush * rockMixSand;
+	int underground;
+	int grass;
+	int sand;
+	int softSand;
+	int rock;
+	int snow;
+	int grassMixSand;
+	int grassMixSnow;
+	int rockMixGrass;
+	int rockMixSnow;
+	int rockMixSand;
 
 	public: 
-	LandBrush(std::vector<Brush*> brushes);
+	LandBrush();
 	void paint(Vertex &vertex) const override;
 };
 
 class SimpleBrush : public TextureBrush {
-	Brush * brush;
+	int brush;
 
 	public: 
-	SimpleBrush(Brush * brush);
+	SimpleBrush(int brush);
 	void paint(Vertex &vertex) const override;
 };
 
 
 
 class WaterBrush : public TextureBrush {
-	Brush *water;
+	int water;
 
 	public: 
-	WaterBrush(Brush *water);
+	WaterBrush(int water);
 	void paint(Vertex &vertex) const override;
 };
 

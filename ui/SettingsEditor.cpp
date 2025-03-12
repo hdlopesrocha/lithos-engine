@@ -29,22 +29,21 @@ void SettingsEditor::draw2d(){
     debugModes.push_back("TextureColor");
     debugModes.push_back("TextureNormal");
     debugModes.push_back("TextureBump");
+    debugModes.push_back("TextureCoords");
     debugModes.push_back("Tangent");
     debugModes.push_back("Bitangent");
     debugModes.push_back("Normal");
     debugModes.push_back("SharpNormal");
     debugModes.push_back("WorldNormal");
-    debugModes.push_back("Triplanar");
+    debugModes.push_back("NormalMap");
     debugModes.push_back("Depth");
     debugModes.push_back("BlendingWeights");
     debugModes.push_back("TextureWeights");
-    debugModes.push_back("TextureWeights*BlendingWeights");
-    debugModes.push_back("normalize(TextureWeights*BlendingWeights)");
-    debugModes.push_back("distanceFactor");
+    debugModes.push_back("DistanceFactor");
+ 
+    
 
     if(settings->debugEnabled) {
-
-        
         if (ImGui::BeginCombo("DebugMode", debugModes[settings->debugMode].c_str())) {
             for (int i = 0; i < debugModes.size(); i++) {
                 bool isSelected = (i == settings->debugMode);

@@ -10,8 +10,6 @@ layout(location = 4) in vec4 tangent;
 layout(location = 5) in float shift; 
 layout(location = 6) in mat4 model; 
 
-uniform TextureProperties brushes[25];
-uniform uint brushTextures[25];
 uniform mat4 world;
 uniform mat4 viewProjection;
 
@@ -23,6 +21,8 @@ out vec3 vPosition;
 out vec3 vNormal;
 out TextureProperties vProps;
 out mat4 vModel;
+uniform uint brushTextures[32];
+uniform TextureProperties brushes[32];
 
 void main() {
     vTextureIndex = brushTextures[brushIndex];

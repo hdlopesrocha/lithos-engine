@@ -13,6 +13,8 @@ layout(location = 5) in mat4 model;
 
 #include<functions.glsl>
 
+uniform uint brushTextures[32];
+uniform TextureProperties brushes[32];
 
 out uint vTextureIndex;
 out vec2 vTextureCoord;
@@ -23,8 +25,6 @@ out vec3 vT;
 out vec3 vB;
 out vec3 vN;
 
-uniform TextureProperties brushes[25];
-uniform uint brushTextures[25];
 
 #include<triplanar.glsl>
 

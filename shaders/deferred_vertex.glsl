@@ -8,8 +8,6 @@ layout(location = 2) in vec2 textureCoord;
 layout(location = 3) in uint brushIndex;     
 layout(location = 4) in mat4 model; 
 
-uniform TextureProperties brushes[25];
-uniform uint brushTextures[25];
 uniform mat4 world;
 uniform mat4 viewProjection;
 
@@ -20,6 +18,8 @@ out vec2 vTextureCoord;
 out vec3 vPosition;
 out vec3 vNormal;
 out TextureProperties vProps;
+uniform uint brushTextures[32];
+uniform TextureProperties brushes[32];
 
 
 void main() {
