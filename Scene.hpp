@@ -65,27 +65,25 @@ class Scene {
 					}
 					
 					DrawableInstanceGeometry * drawable = (DrawableInstanceGeometry*) info.data;
-					//std::cout << "Current LOD " << std::to_string(currentLod) << " | " << std::to_string(selectedLod) << std::endl;
-
-					//std::cout << "Draw " << std::to_string(drawable->instancesCount) << " | " << std::to_string(drawableType) << std::endl;
+				
+					float amount = 1.0;
 					if(drawableType == TYPE_INSTANCE_VEGETATION_DRAWABLE) {
-						float amount = glm::clamp( 1.0 - glm::length(cameraPosition -  drawable->center)/(float(settings->billboardRange)), 0.0, 1.0);
-
+						amount = glm::clamp( 1.0 - glm::length(cameraPosition -  drawable->center)/(float(settings->billboardRange)), 0.0, 1.0);
 						if(amount > 0.8){
 							amount = 1.0;
 						}
-					
-						drawable->draw(mode, amount);
-						vegetationInstancesVisible += long(ceil(drawable->instancesCount*amount));
-					} else {
-						drawable->draw(mode);
-						if(drawableType == TYPE_INSTANCE_SOLID_DRAWABLE) {
-							solidInstancesVisible += drawable->instancesCount;
-						}else if(drawableType == TYPE_INSTANCE_LIQUID_DRAWABLE) {
-							liquidInstancesVisible += drawable->instancesCount;
-						}
 					}
-				
+					drawable->draw(mode, amount);
+					
+					if(drawableType == TYPE_INSTANCE_SOLID_DRAWABLE) {
+						solidInstancesVisible += drawable->instancesCount;
+					}
+					else if(drawableType == TYPE_INSTANCE_LIQUID_DRAWABLE) {
+						liquidInstancesVisible += drawable->instancesCount;
+					}
+					else if(drawableType == TYPE_INSTANCE_VEGETATION_DRAWABLE) {
+						vegetationInstancesVisible += long(ceil(drawable->instancesCount*amount));
+					} 
 				}
 			}
 		}

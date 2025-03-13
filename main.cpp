@@ -672,7 +672,6 @@ public:
 			uniformBlock.set(OPACITY_FLAG, settings->opacityEnabled);
 			UniformBlock::uniform(&uniformBlock, sizeof(UniformBlock), 0, uniformBlockData);
 			// TODO : depthmap nao tem vegetation
-			std::cout << "mainScene->drawBillboards()" << std::endl;
 			mainScene->drawBillboards(camera->position, &mainScene->visibleSolidNodes);
 		}
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);

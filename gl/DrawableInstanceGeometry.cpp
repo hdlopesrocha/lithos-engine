@@ -94,7 +94,7 @@ void DrawableInstanceGeometry::draw(uint mode, float amount) {
 		}
 
 		glBindVertexArray(this->vertexArrayObject);
-		glDrawElementsInstanced(mode, this->indicesCount, GL_UNSIGNED_INT, 0, instancesCount*amount);
+		glDrawElementsInstanced(mode, this->indicesCount, GL_UNSIGNED_INT, 0, int(ceil(float(instancesCount)*amount)));
 	    glBindVertexArray(0);
 	}
 }
