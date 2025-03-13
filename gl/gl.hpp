@@ -446,7 +446,7 @@ struct TileDraw {
 
 class Vegetation3d : public Geometry {
     public:
-    Vegetation3d();
+    Vegetation3d(int brushIndex);
 };
 
 class AtlasTexture {

@@ -34,35 +34,38 @@ out vec4 color;    // Final fragment color
 
 
 void main() {
-    float near = 0.1;
-    float far = 512.0;
+
     vec2 uv = teTextureCoord;
-  
- 
+
+      // Sample the blend factor from texture[2]
     float blendBump = textureBlend(textures[2], teTextureIndices, uv, teTextureWeights, teBlendFactors).r;
-    bool shouldKeep = false;
-    if(opacityEnabled) {
-        if(uv.y >= 0.0 && uv.y <= 1.0 && uv.x >= 0.0 && uv.x <= 1.0) {
-           shouldKeep = true;  
+
+    if(billboardEnabled) {
+        // Check if both uv.x and uv.y are within [0, 1]
+        if(uv.y < 0.0 || uv.y > 1.0 || uv.x < 0.0 || uv.x > 1.0) {
+           discard;  
         } 
-        if(blendBump > 0.98) {
-            shouldKeep = true;  
+    }
+
+    // Determine whether to keep the fragment based on opacity and blend factor
+    if(opacityEnabled) {
+        // Also keep if the blend factor is high enough
+        if(blendBump < 0.98) {
+            discard;  
         }
-    }else {
-        shouldKeep = true; 
     }
 
-
-    if (!shouldKeep) {
-        discard;  // This prevents unwanted depth writes
-    }
-
+ 
+    // Get the current fragment depth from built-in variable
     float currentDepth = gl_FragCoord.z;
+
+    // If depth writing is enabled, write the current depth and stop further processing.
     if(depthEnabled) {
         gl_FragDepth = currentDepth;
         return; // Stops further calculations but writes depth
     }
 
+    // Otherwise, compare with existing depth from a depth texture.
     vec2 pixelUV = gl_FragCoord.xy / textureSize(depthTexture, 0);
     float existingDepth = texture(depthTexture, pixelUV).r;
     if(existingDepth < currentDepth) {
@@ -133,6 +136,8 @@ void main() {
             color = vec4(visual(normalMap),1.0);
         }
         else if(debugMode == 10) {
+            float near = 0.1;
+            float far = 512.0;
             color = vec4(vec3(linearizeDepth(currentDepth, near, far)/far),1.0);
         }
         else if(debugMode == 11) {

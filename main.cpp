@@ -237,7 +237,7 @@ public:
 
 		std::vector<InstanceData> vegetationInstances;
 		vegetationInstances.push_back(InstanceData(glm::mat4(1.0), 0));
-		vegetationMesh = new DrawableInstanceGeometry(new Vegetation3d(), &vegetationInstances);
+		vegetationMesh = new DrawableInstanceGeometry(new Vegetation3d(1), &vegetationInstances);
 
 		std::map<UniformBlockBrush*, GLuint > textureMapper;
 		{

@@ -99,7 +99,7 @@ void * OctreeProcessor::before(int level, int height, OctreeNode * node, const B
 					if(info == NULL) {
 						PreLoadedGeometry * pre = new PreLoadedGeometry();
 						pre->center = cube.getCenter();
-						pre->geometry = new Vegetation3d();
+						pre->geometry = new Vegetation3d(1);
 
 						InstanceBuilder instanceBuilder(tree, currentLod, &pre->instances);
 						instanceBuilder.iterateFlatIn(level, height, node, cube, NULL);

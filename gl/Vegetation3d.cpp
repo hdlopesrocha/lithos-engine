@@ -13,17 +13,17 @@ glm::vec3 rotate2(glm::vec3 point, glm::vec3 axis1, float angle1, glm::vec3 axis
     return result;
 }
 
-Vegetation3d::Vegetation3d() : Geometry(){
+Vegetation3d::Vegetation3d(int brushIndex) : Geometry(){
     int planes = 4;
         float PI = glm::pi<float>();
 
     glm::vec3 axis1 = glm::vec3(0,1,0);
     for (int i = 0; i < planes; ++i) {
         float angle = (i / (float) planes)* PI;
-        Vertex a = Vertex(rotate(glm::vec3(-0.5,0,0), axis1, angle), glm::vec3(0), glm::vec2(1,1),1);
-        Vertex b = Vertex(rotate(glm::vec3(-0.5,1,0), axis1, angle), glm::vec3(0), glm::vec2(1,0),1);
-        Vertex c = Vertex(rotate(glm::vec3(0.5,0,0), axis1, angle), glm::vec3(0), glm::vec2(0,1),1);
-        Vertex d = Vertex(rotate(glm::vec3(0.5,1,0), axis1, angle), glm::vec3(0), glm::vec2(0,0),1);
+        Vertex a = Vertex(rotate(glm::vec3(-0.5,0,0), axis1, angle), glm::vec3(0), glm::vec2(1,1),brushIndex);
+        Vertex b = Vertex(rotate(glm::vec3(-0.5,1,0), axis1, angle), glm::vec3(0), glm::vec2(1,0),brushIndex);
+        Vertex c = Vertex(rotate(glm::vec3(0.5,0,0), axis1, angle), glm::vec3(0), glm::vec2(0,1),brushIndex);
+        Vertex d = Vertex(rotate(glm::vec3(0.5,1,0), axis1, angle), glm::vec3(0), glm::vec2(0,0),brushIndex);
 
         glm::vec3 n = Geometry::getNormal(&a, &b, &c);
         a.normal = n;
