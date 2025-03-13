@@ -14,10 +14,9 @@
 #define NDEBUG 1
 
 
-#define TYPE_INSTANCE_VEGETATION_DRAWABLE 1
-#define TYPE_INSTANCE_SOLID_DRAWABLE 2
-#define TYPE_INSTANCE_LIQUID_DRAWABLE 3
-#define TYPE_INSTANCE_SHADOW_DRAWABLE 4
+#define TYPE_INSTANCE_VEGETATION_DRAWABLE 0x1
+#define TYPE_INSTANCE_SOLID_DRAWABLE 0x2
+#define TYPE_INSTANCE_LIQUID_DRAWABLE 0x4
 
 #include <imgui/imgui.h>
 #include <imgui/backends/imgui_impl_glfw.h>
@@ -137,16 +136,11 @@ class Camera {
 
 struct DirectionalLight {
     glm::vec3 direction;
-    glm::vec3 position;
 
-    void updatePosition(const Camera &camera) {
-        // Calculate a distance for the light based on the far plane, used to capture the scene.
-        float dist = camera.far / 4.0f;
-        this->position = camera.position -direction*dist;
-    }
 
-    glm::mat4 getVP(Camera * camera, float orthoSize, float near, float far) {
 
+
+    glm::mat4 getVP(glm::vec3 &lightLootAt, float orthoSize, float near, float far, glm::vec3 &lightPosition) {
         
         // Create an orthographic projection matrix for shadow mapping.
         glm::mat4 projection = glm::ortho(-orthoSize, orthoSize, -orthoSize, orthoSize, near, far);
@@ -155,10 +149,10 @@ struct DirectionalLight {
 
         // Set up the view matrix so that the light looks at the camera's position,
         // but it is positioned along the light's direction, offset by dist to capture the scene's visible range.
+        float dist = far / 4.0f;
+        lightPosition = lightLootAt -direction*dist;
 
-        glm::vec3 lightLootAt = camera->position;
-
-        glm::mat4 view = glm::lookAt(position, lightLootAt, glm::vec3(0.0f, 1.0f, 0.0f));
+        glm::mat4 view = glm::lookAt(lightPosition, lightLootAt, glm::vec3(0.0f, 1.0f, 0.0f));
         
         // Return the combined projection * view matrix for shadow mapping.
         return projection * view;
@@ -230,7 +224,7 @@ class OctreeProcessor : public IteratorHandler{
 	Octree * tree;
 	Geometry chunk;
 
-    int drawableType;
+    uint drawableType;
 	float simplificationAngle;
     float simplificationDistance;
     bool simplificationTexturing;
@@ -241,7 +235,7 @@ class OctreeProcessor : public IteratorHandler{
 		int geometryLevel;
         glm::vec3 cameraPosition;
         long * instancesCount;
-		OctreeProcessor(Octree * tree, long * instancesCount, int drawableType, int geometryLevel, float simplificationAngle, float simplificationDistance, bool simplificationTexturing, bool createInstances, int simplification);
+		OctreeProcessor(Octree * tree, long * instancesCount, uint drawableType, int geometryLevel, float simplificationAngle, float simplificationDistance, bool simplificationTexturing, bool createInstances, int simplification);
 
 		void * before(int level, int height, OctreeNode * node, const BoundingCube &cube, void * context) override;
 		void after(int level, int height, OctreeNode * node, const BoundingCube &cube, void * context) override;

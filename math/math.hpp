@@ -264,10 +264,10 @@ struct NodeInfo {
 	public:
 	void * data;
 	void * temp;
-	int type;
+	uint type;
 	bool dirty = true;
 
-	NodeInfo(int type, void * data, void * temp, bool dirty) {
+	NodeInfo(uint type, void * data, void * temp, bool dirty) {
 		this->type = type;
 		this->data = data;
 		this->temp = temp;

@@ -8,7 +8,7 @@
 std::random_device rd;
 std::mt19937 g(rd());  // Mersenne Twister engine
 
-OctreeProcessor::OctreeProcessor(Octree * tree, long * instancesCount,  int drawableType, int geometryLevel, float simplificationAngle, float simplificationDistance, bool simplificationTexturing, bool createInstances, int simplification) {
+OctreeProcessor::OctreeProcessor(Octree * tree, long * instancesCount,  uint drawableType, int geometryLevel, float simplificationAngle, float simplificationDistance, bool simplificationTexturing, bool createInstances, int simplification) {
 	this->tree = tree;
 	this->simplification= simplification;
 	this->simplificationAngle = simplificationAngle;
@@ -21,14 +21,14 @@ OctreeProcessor::OctreeProcessor(Octree * tree, long * instancesCount,  int draw
 }
 
 
-void markNeighborsAsDirty(Octree * tree, const BoundingCube &cube, int level, int drawableType) {
+void markNeighborsAsDirty(Octree * tree, const BoundingCube &cube, int level, uint drawableType) {
 	for(int i=1; i < 7 ; ++i) {
 		glm::vec3 p = cube.getCenter() - cube.getLength()* Octree::getShift(i);
 		OctreeNode * n = tree->getNodeAt(p, level, 0);
 		if(n!=NULL) {
 			for(int j=0; j < n->info.size(); ++j){
 				NodeInfo * info = &n->info[j];
-				if(info->type == drawableType) {
+				if(info->type & drawableType) {
 					info->dirty = true;
 				}
 			}
@@ -52,7 +52,7 @@ void * OctreeProcessor::before(int level, int height, OctreeNode * node, const B
 				canGenerate = true;
 				break;
 			}
-			if(info.type == drawableType) {
+			if(info.type & drawableType) {
 				canGenerate = false;
 				info.dirty = false;
 				break;
@@ -65,9 +65,10 @@ void * OctreeProcessor::before(int level, int height, OctreeNode * node, const B
 	
 		if(currentLod==0){
 			if(canGenerate && createInstances) {
-				if(drawableType == TYPE_INSTANCE_SOLID_DRAWABLE || drawableType == TYPE_INSTANCE_LIQUID_DRAWABLE) {
-					int tempDrawableType = drawableType;
-					NodeInfo * info = node->getNodeInfo(tempDrawableType);
+
+				NodeInfo * info = node->getNodeInfo(drawableType);
+
+				if(drawableType & (TYPE_INSTANCE_SOLID_DRAWABLE | TYPE_INSTANCE_LIQUID_DRAWABLE)) {
 					if(info == NULL) {
 						// Simplify
 						Simplifier simplifier(tree, cube, simplificationAngle, simplificationDistance, simplificationTexturing, simplification); 
@@ -84,7 +85,7 @@ void * OctreeProcessor::before(int level, int height, OctreeNode * node, const B
 						pre->instances.push_back(InstanceData(glm::mat4(1.0), 0.0f));
 						pre->geometry = geometry;
 
-						node->info.push_back(NodeInfo(tempDrawableType, NULL, pre, false));
+						node->info.push_back(NodeInfo(drawableType, NULL, pre, false));
 						*instancesCount += 1;
 						--loadCount;
 					}
@@ -92,10 +93,8 @@ void * OctreeProcessor::before(int level, int height, OctreeNode * node, const B
 
 
 				// Instances with LOD
-				if(drawableType == TYPE_INSTANCE_VEGETATION_DRAWABLE) {
-					int tempDrawableType = drawableType;
+				if(drawableType & TYPE_INSTANCE_VEGETATION_DRAWABLE) {
 
-					NodeInfo * info = node->getNodeInfo(tempDrawableType);
 					if(info == NULL) {
 						PreLoadedGeometry * pre = new PreLoadedGeometry();
 						pre->center = cube.getCenter();
@@ -107,9 +106,10 @@ void * OctreeProcessor::before(int level, int height, OctreeNode * node, const B
 						// Shuffle the vector
 						std::shuffle(pre->instances.begin(), pre->instances.end(), g);
 						
-						node->info.push_back(NodeInfo(tempDrawableType, NULL, pre, false));
+						node->info.push_back(NodeInfo(drawableType, NULL, pre, false));
 						*instancesCount += instanceBuilder.instanceCount;
 						--loadCount;
+						std::cout << "Create PreLoadedGeometry for vegetation" << std::endl;
 					}
 				}
 
@@ -125,7 +125,7 @@ void OctreeProcessor::after(int level, int height, OctreeNode * node, const Boun
 }
 
 bool OctreeProcessor::test(int level, int height, OctreeNode * node, const BoundingCube &cube, void * context) {	
-	return loadCount > 0;
+	return loadCount > 0 && height > geometryLevel;
 }
 
 void OctreeProcessor::getOrder(const BoundingCube &cube, int * order){
