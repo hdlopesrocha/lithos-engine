@@ -46,6 +46,7 @@ void main() {
 
 
     teTextureCoord = tcTextureCoord[0] * gl_TessCoord[0] + tcTextureCoord[1] * gl_TessCoord[1] + tcTextureCoord[2] * gl_TessCoord[2];
+    teTextureIndices = tcTextureIndices[0];
    
     if(!billboardEnabled) {
         teTextureCoord *= teProps.textureScale;
@@ -53,7 +54,6 @@ void main() {
 
     if(!depthEnabled) {
 
-        teTextureIndices = tcTextureIndices[0];
 
         //vec3 teNormal = tcNormal[0]* gl_TessCoord[0]+tcNormal[1]* gl_TessCoord[1]+tcNormal[2]* gl_TessCoord[2];
         vec3 teNormal = teSharpNormal;
