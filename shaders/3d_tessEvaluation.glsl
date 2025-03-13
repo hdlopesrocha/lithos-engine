@@ -11,11 +11,11 @@ in TextureBrush tcProps[];
 in uvec3 tcTextureIndices[];
 in mat4 tcModel[];
 in mat3 tcNormalMatrix[];
-in vec3 tcT[];
-in vec3 tcB[];
-in vec3 tcN[];
+in vec3 tcNormal[];
+
 
 #include<functions.glsl>
+#include<triplanar.glsl>
 
 out vec3 teSharpNormal;
 out vec2 teTextureCoord;
@@ -53,6 +53,29 @@ void main() {
 
     if(!depthEnabled) {
 
+        teTextureIndices = tcTextureIndices[0];
+
+        //vec3 teNormal = tcNormal[0]* gl_TessCoord[0]+tcNormal[1]* gl_TessCoord[1]+tcNormal[2]* gl_TessCoord[2];
+        vec3 teNormal = teSharpNormal;
+
+        vec4 t = computeTriplanarTangentVec4(teNormal);
+        vec3 iTangent = t.xyz;
+        vec3 iBitangent = cross(teNormal, iTangent) * t.w;
+
+        teT = iTangent;
+        teB = iBitangent;
+        teN = teNormal;
+        
+
+        mat3 TBN = mat3(teT,teB, teN);
+        teViewDirection = normalize(tePosition-cameraPosition.xyz);
+        teViewDirectionTangent = normalize(transpose(TBN) * teViewDirection);
+        for(int i = 0; i < SHADOW_MATRIX_COUNT ; ++i ) {
+            teLightViewPosition[i] = matrixShadow[i] * vec4(tePosition, 1.0);  
+        }
+
+
+
         if(overrideEnabled) {
             teProps = overrideProps;
         } else {
@@ -86,21 +109,7 @@ void main() {
         
         }
 
-        teTextureIndices = tcTextureIndices[0];
-
-
-        // Output TBN vectors
-        teT = tcT[0]* gl_TessCoord[0]+tcT[1]* gl_TessCoord[1]+tcT[2]* gl_TessCoord[2];
-        teB = tcB[0]* gl_TessCoord[0]+tcB[1]* gl_TessCoord[1]+tcB[2]* gl_TessCoord[2];
-        teN = tcN[0]* gl_TessCoord[0]+tcN[1]* gl_TessCoord[1]+tcN[2]* gl_TessCoord[2];
         
-        mat3 TBN = mat3(teT,teB, teN);
-        teViewDirection = normalize(tePosition-cameraPosition.xyz);
-        teViewDirectionTangent = normalize(transpose(TBN) * teViewDirection);
-        for(int i = 0; i < SHADOW_MATRIX_COUNT ; ++i ) {
-            teLightViewPosition[i] = matrixShadow[i] * vec4(tePosition, 1.0);  
-        }
-
 
     }
 

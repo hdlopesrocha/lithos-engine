@@ -10,9 +10,8 @@ in vec3 vPosition[];
 in TextureBrush vProps[];
 in mat4 vModel[];
 in mat3 vNormalMatrix[];
-in vec3 vT[];
-in vec3 vB[];
-in vec3 vN[];
+in vec3 vNormal[];
+
 
 #include<functions.glsl>
 
@@ -21,9 +20,8 @@ out vec2 tcTextureCoord[];
 out vec3 tcPosition[];
 out TextureBrush tcProps[];
 out mat4 tcModel[];
-out vec3 tcT[];
-out vec3 tcB[];
-out vec3 tcN[];
+out vec3 tcNormal[];
+
 
 void main() {
      vec3 patchCentroid = (vPosition[0] + vPosition[1] + vPosition[2]) / 3.0;
@@ -41,12 +39,7 @@ void main() {
         tcTextureIndices[gl_InvocationID][i] = vTextureIndex[i];
     }    
     tcProps[gl_InvocationID] = vProps[gl_InvocationID];
-
-    if(!depthEnabled) {
-        tcT[gl_InvocationID] = vT[gl_InvocationID];
-        tcB[gl_InvocationID] = vB[gl_InvocationID];
-        tcN[gl_InvocationID] = vN[gl_InvocationID];
-    }
-
+    tcNormal[gl_InvocationID] = vNormal[gl_InvocationID];
+  
 
 }

@@ -21,12 +21,9 @@ out vec2 vTextureCoord;
 out vec3 vPosition;
 out TextureBrush vProps;
 out mat4 vModel;
-out vec3 vT;
-out vec3 vB;
-out vec3 vN;
+out vec3 vNormal;
 
 
-#include<triplanar.glsl>
 
 void main() {
     vTextureIndex = brushTextures[brushIndex];
@@ -34,37 +31,30 @@ void main() {
     vTextureCoord.y -= shift;
 
     vModel = world*model;
+    vPosition = (vModel*vec4(position, 1.0)).xyz;
 
-    float freq = 1.0/ PI;
 
-    vec3 wPosition = (vModel*vec4(position, 1.0)).xyz;
+
  
     mat3 normalMatrix = transpose(inverse(mat3(vModel)));
-    vN = normalize(normalMatrix * normal);
+    vNormal = normalize(normalMatrix * normal);
     vProps = brushes[brushIndex];
 
 
-    if(!depthEnabled) {
-        vec4 t = computeTriplanarTangentVec4(vN);
-        vec3 iTangent = t.xyz;
-        vec3 iBitangent = cross(vN, iTangent) * t.w;
 
-        vT = iTangent;
-        vB = iBitangent;
-    }
     if(billboardEnabled) {
+        float freq = 1.0/ PI;
+        vec3 wPosition = vPosition;
         if(position.y > 0.0) {
-            wPosition.x += sin(wPosition.x*freq + time);
-            wPosition.z += cos(wPosition.z*freq + time);
+            vPosition.x += sin(wPosition.x*freq + time);
+            vPosition.z += cos(wPosition.z*freq + time);
         }
-        vN.x += sin(wPosition.x*freq + time);
-        vN.z += cos(wPosition.z*freq + time);
+        vNormal.x += sin(vPosition.x*freq + time);
+        vNormal.z += cos(vPosition.z*freq + time);
 
-        vN = normalize(vN);
+        vNormal = normalize(vNormal);
     } 
 
-
-    vPosition = wPosition;
     gl_Position = vec4(vPosition, 1.0);
 
 }

@@ -86,7 +86,7 @@ void main() {
             textures[2], 
             teTextureIndices, 
             uv, 
-            teViewDirectionTangent, 
+            normalize(teViewDirectionTangent), 
             teProps,
             teTextureWeights,
             teBlendFactors,

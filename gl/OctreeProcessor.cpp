@@ -38,35 +38,14 @@ void markNeighborsAsDirty(Octree * tree, const BoundingCube &cube, int level, ui
 
 void * OctreeProcessor::before(int level, int height, OctreeNode * node, const BoundingCube &cube, void * context) {		
 	if(loadCount > 0) {
-		bool canGenerate = true;
 
-		for(NodeInfo &info : node->info) {
-			/*if(info.type == INFO_TYPE_FILE && info.dirty) {
-				OctreeNodeFile *f = (OctreeNodeFile*) info.data;
-				f->load();
-				markNeighborsAsDirty(tree, cube, level, drawableType);
-				info.dirty = false;
-			}*/
-			if(info.dirty) {
-				info.dirty = false;
-				canGenerate = true;
-				break;
-			}
-			if(info.type & drawableType) {
-				canGenerate = false;
-				info.dirty = false;
-				break;
-			}
-		}
-	
+		NodeInfo * info = node->getNodeInfo(drawableType);
+		bool canGenerate  = info == NULL || info->dirty;
 
 		int currentLod = height - geometryLevel;
-
 	
 		if(currentLod==0){
 			if(canGenerate && createInstances) {
-
-				NodeInfo * info = node->getNodeInfo(drawableType);
 
 				if(drawableType & (TYPE_INSTANCE_SOLID_DRAWABLE | TYPE_INSTANCE_LIQUID_DRAWABLE)) {
 					if(info == NULL) {
@@ -94,7 +73,6 @@ void * OctreeProcessor::before(int level, int height, OctreeNode * node, const B
 
 				// Instances with LOD
 				if(drawableType & TYPE_INSTANCE_VEGETATION_DRAWABLE) {
-
 					if(info == NULL) {
 						PreLoadedGeometry * pre = new PreLoadedGeometry();
 						pre->center = cube.getCenter();
@@ -109,7 +87,6 @@ void * OctreeProcessor::before(int level, int height, OctreeNode * node, const B
 						node->info.push_back(NodeInfo(drawableType, NULL, pre, false));
 						*instancesCount += instanceBuilder.instanceCount;
 						--loadCount;
-						std::cout << "Create PreLoadedGeometry for vegetation" << std::endl;
 					}
 				}
 

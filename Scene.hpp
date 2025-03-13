@@ -41,10 +41,11 @@ class Scene {
 
 
 	void processSpace() {
+		// Set load counts per Processor
 		solidProcessor.loadCount = 1;
 		liquidProcessor.loadCount = 1;
 		vegetationProcessor.loadCount = 1;
-		
+
 		solidInstancesVisible = 0;
 		liquidInstancesVisible = 0;
 		vegetationInstancesVisible = 0;
