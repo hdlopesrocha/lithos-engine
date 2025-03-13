@@ -636,7 +636,7 @@ public:
 					glUseProgram(programBillboard);
 					uniformBlock.set(OPACITY_FLAG, settings->opacityEnabled);
 					uniformBlock.set(BILLBOARD_FLAG, settings->billboardEnabled); 
-					UniformBlock::uniform(&uniformBlock, sizeof(UniformBlock), 0, uniformBlockData);
+					UniformBlock::uniform(&uniformBlock, sizeof(UniformBlock), 0, uniformBrushData);
 					// visibleSolidNodes because theres a lot of vegetation to render from the point of view of the light
 					// drawing from visibleSolidNodes is enough
 					
@@ -672,7 +672,7 @@ public:
 			uniformBlock.set(TESSELATION_FLAG, false);
 			uniformBlock.set(BILLBOARD_FLAG, settings->billboardEnabled); 
 			uniformBlock.set(OPACITY_FLAG, settings->opacityEnabled);
-			UniformBlock::uniform(&uniformBlock, sizeof(UniformBlock), 0, uniformBlockData);
+			UniformBlock::uniform(&uniformBlock, sizeof(UniformBlock), 0, uniformBrushData);
 			// TODO : depthmap nao tem vegetation
 			mainScene->drawBillboards(camera->position, &mainScene->visibleSolidNodes);
 		}
@@ -700,7 +700,7 @@ public:
 			glUseProgram(programBillboard);
 			uniformBlock.set(BILLBOARD_FLAG, settings->billboardEnabled); 
 			uniformBlock.set(OPACITY_FLAG, settings->opacityEnabled);
-			UniformBlock::uniform(&uniformBlock, sizeof(UniformBlock), 0, uniformBlockData);
+			UniformBlock::uniform(&uniformBlock, sizeof(UniformBlock), 0, uniformBrushData);
 			mainScene->drawBillboards(camera->position, &mainScene->visibleSolidNodes);
 		}
 

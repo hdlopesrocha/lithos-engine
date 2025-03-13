@@ -39,23 +39,25 @@ void main() {
     vec2 uv = teTextureCoord;
   
  
-    float currentDepth = gl_FragCoord.z;
     float blendBump = textureBlend(textures[2], teTextureIndices, uv, teTextureWeights, teBlendFactors).r;
-    bool shouldDiscard = false;
+    bool shouldKeep = false;
     if(opacityEnabled) {
-        if(uv.y < 0.0 || uv.y > 1.0 || uv.x < 0.0 || uv.x > 1.0) {
-            //gl_FragDepth = currentDepth;
-            //return;
+        if(uv.y >= 0.0 && uv.y <= 1.0 && uv.x >= 0.0 && uv.x <= 1.0) {
+           shouldKeep = true;  
         } 
-        if(blendBump < 0.98) {
-            shouldDiscard = true;  
+        if(blendBump > 0.98) {
+            shouldKeep = true;  
         }
-    }
-    if(shouldDiscard) {
-        gl_FragDepth = 1.0;
-        return; // Stops further calculations but writes depth 
+    }else {
+        shouldKeep = true; 
     }
 
+
+    if (!shouldKeep) {
+        discard;  // This prevents unwanted depth writes
+    }
+
+    float currentDepth = gl_FragCoord.z;
     if(depthEnabled) {
         gl_FragDepth = currentDepth;
         return; // Stops further calculations but writes depth
