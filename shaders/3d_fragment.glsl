@@ -38,7 +38,7 @@ void main() {
     vec2 uv = teTextureCoord;
 
       // Sample the blend factor from texture[2]
-    float blendBump = textureBlend(textures[2], teTextureIndices, uv, teTextureWeights, teBlendFactors).r;
+    float opacityFactor = textureBlend(textures[2], teTextureIndices, uv, teTextureWeights, teBlendFactors).r;
 
     if(billboardEnabled) {
         // Check if both uv.x and uv.y are within [0, 1]
@@ -50,7 +50,7 @@ void main() {
     // Determine whether to keep the fragment based on opacity and blend factor
     if(opacityEnabled) {
         // Also keep if the blend factor is high enough
-        if(blendBump < 0.98) {
+        if(opacityFactor < 0.98) {
             discard;  
         }
     }
@@ -58,6 +58,7 @@ void main() {
  
     // Get the current fragment depth from built-in variable
     float currentDepth = gl_FragCoord.z;
+
 
     // If depth writing is enabled, write the current depth and stop further processing.
     if(depthEnabled) {
@@ -69,7 +70,6 @@ void main() {
     vec2 pixelUV = gl_FragCoord.xy / textureSize(depthTexture, 0);
     float existingDepth = texture(depthTexture, pixelUV).r;
     if(existingDepth < currentDepth) {
-        gl_FragDepth = currentDepth;
         return;
     }
 
@@ -112,7 +112,7 @@ void main() {
             color = textureBlend(textures[1], teTextureIndices, uv, teTextureWeights, teBlendFactors);
         }
         else if(debugMode == 2){
-            color = vec4(vec3(blendBump), 1.0);
+            color = vec4(vec3(opacityFactor), 1.0);
         }
         else if(debugMode == 3) {
             color = vec4(mod(uv,vec2(1.0)),1.0,1.0);

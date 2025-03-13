@@ -240,6 +240,9 @@ public:
 		vegetationMesh = new DrawableInstanceGeometry(new Vegetation3d(1), &vegetationInstances);
 
 		std::map<UniformBlockBrush*, GLuint > textureMapper;
+		std::map<UniformBlockBrush*, GLuint > textureBrushMapper;
+
+
 		{
 			UniformBlockBrush * tb = new UniformBlockBrush( glm::vec2(0.2), 0.02, 8, 32, 16,4, 10.0, 0.5 , 1.33);
 			textureMapper.insert({tb, textureLayers.count});
@@ -375,7 +378,7 @@ public:
 
 			atlasTextures.push_back(at);
 			UniformBlockBrush * tb = new UniformBlockBrush(glm::vec2(1.0));
-			textureMapper.insert({tb, billboardLayers.count});
+			textureBrushMapper.insert({tb, billboardLayers.count});
 
 			billboardBrushes.push_back(tb);
 			++billboardLayers.count;
@@ -393,7 +396,7 @@ public:
 			atlasTextures.push_back(at);
 			UniformBlockBrush * tb = new UniformBlockBrush(glm::vec2(1.0));
 			
-			textureMapper.insert({tb, billboardLayers.count});
+			textureBrushMapper.insert({tb, billboardLayers.count});
 
 			billboardBrushes.push_back(tb);
 			++billboardLayers.count;
@@ -436,13 +439,13 @@ public:
 		UniformBlockBrush::uniform(program3d,&brushes, "brushes", "brushTextures", &textureMapper);
 
 		glUseProgram(programBillboard);
-		UniformBlockBrush::uniform(programBillboard,&billboardBrushes, "brushes", "brushTextures", &textureMapper);
+		UniformBlockBrush::uniform(programBillboard,&billboardBrushes, "brushes", "brushTextures", &textureBrushMapper);
 
 		glUseProgram(programImpostor);
-		UniformBlockBrush::uniform(programImpostor,&billboardBrushes, "brushes", "brushTextures", &textureMapper);
+		UniformBlockBrush::uniform(programImpostor,&billboardBrushes, "brushes", "brushTextures", &textureBrushMapper);
 
 		glUseProgram(programDeferred);
-		UniformBlockBrush::uniform(programDeferred,&billboardBrushes, "brushes", "brushTextures", &textureMapper);
+		UniformBlockBrush::uniform(programDeferred,&billboardBrushes, "brushes", "brushTextures", &textureBrushMapper);
 
 
 		for(MixerParams &params : mixers) {
@@ -627,6 +630,7 @@ public:
 
 				glUseProgram(program3d);
 				uniformBlock.set(OPACITY_FLAG, false);
+				uniformBlock.set(BILLBOARD_FLAG, false); 
 
 				UniformBlock::uniform(&uniformBlock, sizeof(UniformBlock), 0, uniformBlockData);
 

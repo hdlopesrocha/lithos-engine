@@ -66,16 +66,16 @@ void UniformBlockBrush::uniform(GLuint program, std::vector<UniformBlockBrush*> 
 	
 	for(int i = 0; i < brushes->size() ; ++i) {
 		UniformBlockBrush * brush = brushes->at(i);
-       // Correct way to find the texture index
-	   auto it = textureMapper->find(brush);
-	   if (it == textureMapper->end()) {
-		   std::cerr << "Warning: TextureBrush not found in textureMapper!" << std::endl;
-		   continue;  // Skip if not found
-	   }
-
-	   GLuint index = it->second;
-	   
-	   UniformBlockBrush::uniform(program, brush, objectName, textureMap, i,  index);
+       	// Correct way to find the texture index
+	   	auto it = textureMapper->find(brush);
+	   	if (it == textureMapper->end()) {
+		   	std::cerr << "Warning: TextureBrush not found in textureMapper!" << std::endl;
+			continue;  // Skip if not found
+	   	}
+	   	else {
+	   		GLuint index = it->second;
+	   		UniformBlockBrush::uniform(program, brush, objectName, textureMap, i,  index);
+		}
 	}
 }
 

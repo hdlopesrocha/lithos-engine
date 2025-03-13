@@ -46,10 +46,10 @@ void main() {
 
 
     teTextureCoord = tcTextureCoord[0] * gl_TessCoord[0] + tcTextureCoord[1] * gl_TessCoord[1] + tcTextureCoord[2] * gl_TessCoord[2];
-    teTextureCoord *= teProps.textureScale;
-
-    
-
+   
+    if(!billboardEnabled) {
+        teTextureCoord *= teProps.textureScale;
+    }
 
     if(!depthEnabled) {
 
