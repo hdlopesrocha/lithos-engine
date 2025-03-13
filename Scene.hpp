@@ -160,10 +160,10 @@ class Scene {
 		solidSpace->add(SphereContainmentHandler(BoundingSphere(glm::vec3(-11,61,11),10), SimpleBrush(5)));
 		solidSpace->del(SphereContainmentHandler(BoundingSphere(glm::vec3(11,61,-11),10), SimpleBrush(4)));
 		solidSpace->del(SphereContainmentHandler(BoundingSphere(glm::vec3(4,54,-4),8), SimpleBrush(1)));
-		solidSpace->add(SphereContainmentHandler(BoundingSphere(glm::vec3(11,61,-11),4), SimpleBrush(0)));
 
 		BoundingBox waterBox(glm::vec3(-200,-60,-200), glm::vec3(200,3,200));
 		liquidSpace->add(OctreeContainmentHandler(solidSpace, waterBox, WaterBrush(0)));
+		liquidSpace->add(SphereContainmentHandler(BoundingSphere(glm::vec3(11,61,-11),4), SimpleBrush(0)));
 	}
 
 
