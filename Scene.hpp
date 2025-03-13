@@ -71,8 +71,9 @@ class Scene {
 	void setVisibility(glm::mat4 viewProjection, std::vector<std::pair<glm::mat4, glm::vec3>> lightProjection ,Camera &camera) {
 		setVisibleNodes(viewProjection, camera.position, solidRenderer);
 		setVisibleNodes(viewProjection, camera.position, liquidRenderer);
-		for(int i=0 ; i< SHADOW_MATRIX_COUNT; ++i){
-			setVisibleNodes(lightProjection[i].first, lightProjection[i].second, shadowRenderer[i]);
+		int i =0;
+		for(std::pair<glm::mat4, glm::vec3> pair :  lightProjection){
+			setVisibleNodes(pair.first, pair.second, shadowRenderer[i++]);
 		}
 	}
 

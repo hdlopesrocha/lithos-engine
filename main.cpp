@@ -565,8 +565,7 @@ public:
 		std::vector<std::pair<glm::mat4, glm::vec3>> shadowMatrices;
 
 		if(settings->shadowEnabled) {
-			for(int i=0 ; i < shadowFrameBuffers.size() ; ++i) {
-				std::pair<RenderBuffer, int> pair = shadowFrameBuffers[i];
+			for(std::pair<RenderBuffer, int> pair : shadowFrameBuffers) {
 				RenderBuffer buffer = pair.first;
 				int orthoSize = pair.second;
 				glm::vec3 lightPosition;
@@ -616,16 +615,17 @@ public:
 		// Shadow component
 		// ================
 		if(settings->shadowEnabled) {
-			for(int i =0; i < shadowMatrices.size() ; ++i){
+			int i =0;
+			for(std::pair<glm::mat4, glm::vec3> pair : shadowMatrices){
 
-				std::pair<RenderBuffer, int> pair = shadowFrameBuffers[i];
-				RenderBuffer buffer = pair.first;
+				std::pair<RenderBuffer, int> pair2 = shadowFrameBuffers[i];
+				RenderBuffer buffer = pair2.first;
 				// TODO : shadowmap nao tem vegetation
 				glBindFramebuffer(GL_FRAMEBUFFER, buffer.frameBuffer);
 				glViewport(0, 0, buffer.width, buffer.height);
 				glClear(GL_DEPTH_BUFFER_BIT);
 			
-				glm::mat4 lightProjection = shadowMatrices[i].first;
+				glm::mat4 lightProjection = pair.first;
 				uniformBlock.matrixShadow[i] = Math::getCanonicalMVP(lightProjection);
 				uniformBlock.viewProjection = lightProjection;
 				uniformBlock.cameraPosition = glm::vec4(camera.position, 0.0f);
@@ -649,6 +649,7 @@ public:
 					mainScene->drawBillboards(camera.position, mainScene->visibleShadowNodes[i]);
 					
 				}
+				++i;
 			}
 		}
 
