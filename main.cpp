@@ -643,11 +643,7 @@ public:
 					uniformBlock.set(OPACITY_FLAG, settings->opacityEnabled);
 					uniformBlock.set(BILLBOARD_FLAG, settings->billboardEnabled); 
 					UniformBlock::uniform(&uniformBlock, sizeof(UniformBlock), 0, uniformBrushData);
-					// visibleSolidNodes because theres a lot of vegetation to render from the point of view of the light
-					// drawing from visibleSolidNodes is enough
-					
 					mainScene->drawBillboards(camera.position, mainScene->visibleShadowNodes[i]);
-					
 				}
 				++i;
 			}
