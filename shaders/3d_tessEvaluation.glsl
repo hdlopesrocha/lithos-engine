@@ -55,8 +55,8 @@ void main() {
     if(!depthEnabled) {
 
 
-        //vec3 teNormal = tcNormal[0]* gl_TessCoord[0]+tcNormal[1]* gl_TessCoord[1]+tcNormal[2]* gl_TessCoord[2];
-        vec3 teNormal = teSharpNormal;
+        vec3 teNormal = tcNormal[0]* gl_TessCoord[0]+tcNormal[1]* gl_TessCoord[1]+tcNormal[2]* gl_TessCoord[2];
+        //vec3 teNormal = teSharpNormal;
 
         vec4 t = computeTriplanarTangentVec4(teNormal);
         vec3 iTangent = t.xyz;
