@@ -7,7 +7,6 @@ layout(location = 0) out vec4 FragColor0; // First render target (color)
 layout(location = 1) out vec4 FragColor1; // Second render target (normals)
 layout(location = 2) out vec4 FragColor2; // Third render target (bump)
 
-uniform bool triplanarEnabled;
 uniform bool opacityEnabled;
 uniform bool overrideEnabled;
 uniform uint overrideTexture;
@@ -28,10 +27,6 @@ out vec4 color;    // Final fragment color
 void main() {
     vec2 uv = gTextureCoord;
 
-    if(triplanarEnabled) {
-        int plane = triplanarPlane(gPosition, gSharpNormal);
-        uv = triplanarMapping(gPosition, plane, gProps.textureScale) * 0.1;
-    }
 
     vec4 opacity = textureBlend(textures[2], gTextureIndices, uv, gTextureWeights,gTextureWeights);
 

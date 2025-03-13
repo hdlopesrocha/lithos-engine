@@ -38,27 +38,34 @@ void main() {
     float far = 512.0;
     vec2 uv = teTextureCoord;
   
-    if(billboardEnabled && (uv.y < 0.0 || uv.y > 1.0 || uv.x < 0.0 || uv.x > 1.0)) {
-        discard;
-        return;
-    } 
+ 
+    float currentDepth = gl_FragCoord.z;
     float blendBump = textureBlend(textures[2], teTextureIndices, uv, teTextureWeights, teBlendFactors).r;
+    bool shouldDiscard = false;
     if(opacityEnabled) {
+        if(uv.y < 0.0 || uv.y > 1.0 || uv.x < 0.0 || uv.x > 1.0) {
+            //gl_FragDepth = currentDepth;
+            //return;
+        } 
         if(blendBump < 0.98) {
-            discard;
+            shouldDiscard = true;  
         }
+    }
+    if(shouldDiscard) {
+        gl_FragDepth = 1.0;
+        return; // Stops further calculations but writes depth 
     }
 
     if(depthEnabled) {
-        gl_FragDepth = gl_FragCoord.z;
+        gl_FragDepth = currentDepth;
         return; // Stops further calculations but writes depth
     }
 
     vec2 pixelUV = gl_FragCoord.xy / textureSize(depthTexture, 0);
-    float currentDepth = gl_FragCoord.z;
     float existingDepth = texture(depthTexture, pixelUV).r;
     if(existingDepth < currentDepth) {
-        discard;
+        gl_FragDepth = currentDepth;
+        return;
     }
 
     mat3 TBN = mat3(normalize(teT), normalize(teB), normalize(teN));

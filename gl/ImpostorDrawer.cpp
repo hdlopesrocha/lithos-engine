@@ -34,7 +34,6 @@ void ImpostorDrawer::draw(ImpostorParams &params) {
     glClearColor (1.0,0.0,0.0,1.0);
     //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    glUniform1i(glGetUniformLocation(program, "triplanarEnabled"), false); 
     glUniform1i(glGetUniformLocation(program, "opacityEnabled"), false); // TODO: true
     glUniform1i(glGetUniformLocation(program, "overrideEnabled"), false); 
     glUniform1ui(glGetUniformLocation(program, "overrideTexture"), 0u); 

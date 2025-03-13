@@ -44,13 +44,10 @@ void main() {
     teTextureWeights = gl_TessCoord;
     teSharpNormal = normalize(cross(tcPosition[1] - tcPosition[0], tcPosition[2] - tcPosition[0]));
 
-    if(triplanarEnabled) {
-        int plane = triplanarPlane(tcPosition[0], teSharpNormal);
-        teTextureCoord = triplanarMapping(tePosition, plane, teProps.textureScale);
-    } else {
-        teTextureCoord = tcTextureCoord[0] * gl_TessCoord[0] + tcTextureCoord[1] * gl_TessCoord[1] + tcTextureCoord[2] * gl_TessCoord[2];
-        teTextureCoord *= teProps.textureScale;
-    }
+
+    teTextureCoord = tcTextureCoord[0] * gl_TessCoord[0] + tcTextureCoord[1] * gl_TessCoord[1] + tcTextureCoord[2] * gl_TessCoord[2];
+    teTextureCoord *= teProps.textureScale;
+
     
 
 

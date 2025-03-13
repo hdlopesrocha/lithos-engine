@@ -406,31 +406,31 @@ public:
 		
 		noiseTexture = loadTextureImage("textures/noise.jpg", false);
 
-		Texture::bindTexture(program3d, activeTexture, glGetUniformLocation(program3d, "noise"), noiseTexture);
+		activeTexture = Texture::bindTexture(program3d, activeTexture, glGetUniformLocation(program3d, "noise"), noiseTexture);
 		activeTexture = Texture::bindTexture(programBillboard, activeTexture, glGetUniformLocation(programBillboard, "noise"), noiseTexture);
 
-		Texture::bindTexture(program3d, activeTexture,  glGetUniformLocation(program3d, "depthTexture"), depthFrameBuffer.depthTexture);
+		activeTexture = Texture::bindTexture(program3d, activeTexture,  glGetUniformLocation(program3d, "depthTexture"), depthFrameBuffer.depthTexture);
 		activeTexture = Texture::bindTexture(programBillboard, activeTexture,  glGetUniformLocation(programBillboard, "depthTexture"), depthFrameBuffer.depthTexture);
 
-		Texture::bindTexture(program3d, activeTexture, glGetUniformLocation(program3d, "underTexture"), solidBuffer.colorTexture);
+		activeTexture = Texture::bindTexture(program3d, activeTexture, glGetUniformLocation(program3d, "underTexture"), solidBuffer.colorTexture);
 		activeTexture = Texture::bindTexture(programBillboard, activeTexture, glGetUniformLocation(programBillboard, "underTexture"), solidBuffer.colorTexture);
 
 		for(int i=0; i < shadowFrameBuffers.size(); ++i) {
 			std::string shadowMapName = "shadowMap["+ std::to_string(i) +"]";
-			Texture::bindTexture(program3d, activeTexture, glGetUniformLocation(program3d, shadowMapName.c_str()), shadowFrameBuffers[i].first.depthTexture);
+			activeTexture = Texture::bindTexture(program3d, activeTexture, glGetUniformLocation(program3d, shadowMapName.c_str()), shadowFrameBuffers[i].first.depthTexture);
 			activeTexture = Texture::bindTexture(programBillboard, activeTexture, glGetUniformLocation(programBillboard, shadowMapName.c_str()), shadowFrameBuffers[i].first.depthTexture);
 		}
 		
 		for(int i =0; i < 3 ; ++i) {
 			std::string objectName = "textures[" + std::to_string(i) + "]";
 
-			Texture::bindTexture(programImpostor, activeTexture, objectName, billboardLayers.textures[i]);
-			Texture::bindTexture(programDeferred, activeTexture, objectName, billboardLayers.textures[i]);
+			activeTexture = Texture::bindTexture(programImpostor, activeTexture, objectName, billboardLayers.textures[i]);
+			activeTexture = Texture::bindTexture(programDeferred, activeTexture, objectName, billboardLayers.textures[i]);
 			activeTexture = Texture::bindTexture(programBillboard, activeTexture, objectName, billboardLayers.textures[i]);
 			activeTexture = Texture::bindTexture(program3d, activeTexture, objectName, textureLayers.textures[i]);
 		}
 
-
+		std::cout << "Finished binding textures, activeTexture = " << std::to_string(activeTexture) << std::endl;
 
 		glUseProgram(program3d);
 		UniformBlockBrush::uniform(program3d,&brushes, "brushes", "brushTextures", &textureMapper);
@@ -454,7 +454,7 @@ public:
 		}
 
 		for(ImpostorParams &params : impostors) {
-			impostorDrawer->draw(params);
+			//impostorDrawer->draw(params);
 		}
 
 		mainScene = new Scene();
@@ -582,6 +582,7 @@ public:
 		glCullFace(GL_BACK); // Or GL_FRONT
 		glFrontFace(GL_CCW); // Ensure this matches your vertex data
 		glEnable(GL_DEPTH_TEST);
+		glDepthFunc(GL_LESS);        // Default: Pass if fragment depth is less than stored depth
 		glDepthMask(GL_TRUE);  // Allow writing to depth buffer
 		glLineWidth(2.0);
 		glPointSize(4.0);	
@@ -601,7 +602,6 @@ public:
 		uniformBlock.set(DEPTH_FLAG, true);
 		uniformBlock.set(OVERRIDE_FLAG, settings->overrideEnabled);
 		uniformBlock.set(OPACITY_FLAG, false);
-		uniformBlock.set(TRIPLANAR_FLAG, false); 
 		uniformBlock.set(BILLBOARD_FLAG, false); 
 		viewerBlock = uniformBlock;
 
@@ -615,7 +615,7 @@ public:
 
 				std::pair<RenderBuffer, int> pair = shadowFrameBuffers[i];
 				RenderBuffer buffer = pair.first;
-	// TODO : shadowmap nao tem vegetation
+				// TODO : shadowmap nao tem vegetation
 				glBindFramebuffer(GL_FRAMEBUFFER, buffer.frameBuffer);
 				glViewport(0, 0, buffer.width, buffer.height);
 				glClear(GL_DEPTH_BUFFER_BIT);
@@ -654,6 +654,8 @@ public:
 		// =================
 		glBindFramebuffer(GL_FRAMEBUFFER, depthFrameBuffer.frameBuffer);
 		glViewport(0, 0, depthFrameBuffer.width, depthFrameBuffer.height);
+		glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE); // Disable color writing
+		glDepthMask(GL_TRUE);  // Enable depth writing
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
@@ -682,6 +684,8 @@ public:
 		glBindFramebuffer(GL_FRAMEBUFFER, renderBuffer.frameBuffer);
 		glViewport(0, 0, renderBuffer.width, renderBuffer.height);
 		glClearColor (0.1,0.1,0.1,1.0);
+		glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);  // Re-enable color writing
+		//glDepthMask(GL_FALSE); // Optional: Prevent depth overwriting
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		uniformBlock.set(DEPTH_FLAG, false);

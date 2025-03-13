@@ -49,13 +49,11 @@
 #define SHADOW_FLAG         0,0x02  
 #define DEBUG_FLAG          0,0x04  
 #define LIGHT_FLAG          0,0x08  
-#define TRIPLANAR_FLAG      0,0x10  
-#define DEPTH_FLAG          0,0x20  
-#define OVERRIDE_FLAG       0,0x40  
-#define TESSELATION_FLAG    0,0x80  
-
-#define OPACITY_FLAG      1,0x01  
-#define BILLBOARD_FLAG      1,0x02 
+#define DEPTH_FLAG          0,0x10  
+#define OVERRIDE_FLAG       0,0x20  
+#define TESSELATION_FLAG    0,0x40  
+#define OPACITY_FLAG        0,0x80  
+#define BILLBOARD_FLAG      1,0x01 
 
 #define OVERRIDE_TEXTURE_FLAG 0xff000000
 #define SHADOW_MATRIX_COUNT 3

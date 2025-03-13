@@ -5,7 +5,6 @@
 uniform sampler2DArray textures[3];
 
 
-uniform bool triplanarEnabled;
 uniform bool opacityEnabled;
 uniform bool billboardEnabled; // TODO: set it in ImpostorDrawer
 uniform bool overrideEnabled;
@@ -33,10 +32,7 @@ void main() {
     if(billboardEnabled && uv.y < 0.0) {
         discard;
     } 
-    if(triplanarEnabled) {
-        int plane = triplanarPlane(gPosition, gSharpNormal);
-        uv = triplanarMapping(gPosition, plane, gProps.textureScale) * 0.1;
-    }
+
 
     if(opacityEnabled) {
         vec4 opacity = textureBlend(textures[2], gTextureIndices, uv, gTextureWeights,gTextureWeights);

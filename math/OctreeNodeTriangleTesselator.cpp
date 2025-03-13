@@ -36,7 +36,7 @@ int addTriangle(OctreeNode* c0, OctreeNode* c1, OctreeNode* c2, Geometry * chunk
         if(c0!= c1 && c1 != c2 && c0!=c2 && c0->vertex.brushIndex>=0 && c1->vertex.brushIndex>=0 && c2->vertex.brushIndex>=0){
             glm::vec3 d1 = v1.position-v0.position;
             glm::vec3 d2 = v2.position-v0.position;
-            glm::vec3 n = glm::cross(d1,d2);
+            glm::vec3 n = glm::cross(d2,d1);
 
             if(triplanar) {
                 int plane = triplanarPlane(v0.position, n);//TODO calculate normal from positions
