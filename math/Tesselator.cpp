@@ -2,15 +2,6 @@
 #include "math.hpp"
 #include <bits/stdc++.h>
 
-//      6-----7
-//     /|    /|
-//    4z+---5 |
-//    | 2y--+-3
-//    |/    |/
-//    0-----1x
-
-
-
 Tesselator::Tesselator(Octree * tree, Geometry * chunk, int simplification) {
 	this->tree = tree;
 	this->simplification = simplification;
@@ -20,14 +11,11 @@ Tesselator::Tesselator(Octree * tree, Geometry * chunk, int simplification) {
 }
 
 void * Tesselator::before(int level, int height, int lod, OctreeNode * node, const BoundingCube &cube, void * context) {		
-	static OctreeNode * corners[7];
 
-	if(height==0){
-		tree->getNodeNeighbors(cube, level, simplification, 1, corners, 0, 8);
-		
+	if(height==0){		
 		// Tesselate
 		OctreeNodeTriangleTesselator handler(chunk, &triangles);
-		tree->handleQuadNodes(*node, corners , handler);	
+		tree->handleQuadNodes(cube, level,*node , &handler);	
 	}
 	return context;
 }

@@ -1,4 +1,4 @@
-#include "gl.hpp"
+#include "math.hpp"
 
 
 MeshGeometryBuilder::~MeshGeometryBuilder(){
@@ -23,10 +23,10 @@ const NodeInfo MeshGeometryBuilder::build(int level, int height, int lod, Octree
     Tesselator tesselator(tree, geometry, simplification);
     tesselator.iterateFlatIn(level, height, lod, node, cube, NULL);
 
-    PreLoadedGeometry * pre = new PreLoadedGeometry(geometry);
+    InstanceGeometry * pre = new InstanceGeometry(geometry);
     pre->instances.push_back(InstanceData(glm::mat4(1.0), 0.0f));
 
     *count += 1;
 
-    return NodeInfo(drawableType, NULL, pre, false);
+    return NodeInfo(infoType, NULL, pre, false);
 }

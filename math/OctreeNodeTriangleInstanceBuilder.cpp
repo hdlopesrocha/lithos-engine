@@ -1,4 +1,4 @@
-#include "gl.hpp"
+#include "math.hpp"
 
 #include <random>
 
@@ -46,8 +46,7 @@ glm::vec3 randomPointInTriangle(const glm::vec3& A, const glm::vec3& B, const gl
 }
 
 
-OctreeNodeTriangleInstanceBuilder::OctreeNodeTriangleInstanceBuilder(Geometry * chunk, int * count,OctreeNode ** corners,std::vector<InstanceData> * instances, int pointsPerTriangle) : OctreeNodeTriangleHandler(chunk, count){
-    this->corners = corners;
+OctreeNodeTriangleInstanceBuilder::OctreeNodeTriangleInstanceBuilder(Geometry * chunk, long * count,std::vector<InstanceData> * instances, int pointsPerTriangle) : OctreeNodeTriangleHandler(chunk, count){
     this->instances = instances;
     this->pointsPerTriangle = pointsPerTriangle;
 }

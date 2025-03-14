@@ -1,13 +1,16 @@
 #include "gl.hpp"
 
-DrawableInstanceGeometry::DrawableInstanceGeometry(uint drawableType,Geometry * t, std::vector<InstanceData> * instances, glm::vec3 meshCenter){
+DrawableInstanceGeometry::DrawableInstanceGeometry(uint drawableType,Geometry * t, std::vector<InstanceData> * instances){
 	this->drawableType = drawableType;
+
+	glm::vec3 geometryCenter = t->vertices.size() ? t->getCenter() : glm::vec3(0);
+
 	this->center = glm::vec3(0);
 	int count = instances->size();
 	if(instances->size()) {
 		float invCount = 1.0f/float(count);
 		for(InstanceData &data : *instances){
-			this->center += (glm::vec3(data.matrix[3])+meshCenter)*invCount;
+			this->center += (glm::vec3(data.matrix[3])+geometryCenter)*invCount;
 		}
 	}
 
@@ -75,7 +78,7 @@ DrawableInstanceGeometry::~DrawableInstanceGeometry() {
 	glDeleteVertexArrays(1, &vertexArrayObject);
  }
 
-void DrawableInstanceGeometry::draw(uint mode, float amount) {
+void DrawableInstanceGeometry::draw(uint mode, float amount, long * count) {
 
 	if(vertexArrayObject) {
 		if (instancesCount <= 0) {
@@ -84,10 +87,12 @@ void DrawableInstanceGeometry::draw(uint mode, float amount) {
 		}
 
 		glBindVertexArray(this->vertexArrayObject);
-		glDrawElementsInstanced(mode, this->indicesCount, GL_UNSIGNED_INT, 0, int(ceil(float(instancesCount)*amount)));
+		int c =int(ceil(float(instancesCount)*amount));
+		*count += c;
+		glDrawElementsInstanced(mode, this->indicesCount, GL_UNSIGNED_INT, 0, c);
 	    glBindVertexArray(0);
 	}
 }
-void DrawableInstanceGeometry::draw(uint mode) {
-	draw(mode, 1.0);
+void DrawableInstanceGeometry::draw(uint mode, long * count) {
+	draw(mode, 1.0, count);
 }

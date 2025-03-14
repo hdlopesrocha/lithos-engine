@@ -16,6 +16,7 @@ out vec3 gNormal;
 out TextureBrush gProps; 
 out vec3 gSharpNormal;
 flat out uvec3 gTextureIndices;
+uniform int targetLayer;
 
 layout(triangles) in;
 layout(triangle_strip, max_vertices = 3) out;
@@ -25,7 +26,7 @@ void main() {
         gTextureIndices[i] = vTextureIndex[i];
     }
     gSharpNormal = normalize(cross(vPosition[1] - vPosition[0], vPosition[2] - vPosition[0]));
-    gl_Layer = 0;
+    gl_Layer = targetLayer;
 
 
     for (int i = 0; i < 3; ++i) {

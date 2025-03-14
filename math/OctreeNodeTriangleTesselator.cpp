@@ -53,7 +53,7 @@ int addTriangle(OctreeNode* c0, OctreeNode* c1, OctreeNode* c2, Geometry * chunk
     return count;
 }
 
-OctreeNodeTriangleTesselator::OctreeNodeTriangleTesselator(Geometry * chunk, int * count) : OctreeNodeTriangleHandler(chunk, count){
+OctreeNodeTriangleTesselator::OctreeNodeTriangleTesselator(Geometry * chunk, long * count) : OctreeNodeTriangleHandler(chunk, count){
 
 }
 

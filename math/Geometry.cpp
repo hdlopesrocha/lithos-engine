@@ -1,12 +1,31 @@
 #include "math.hpp"
 
 Geometry::Geometry(/* args */) {
+    this->center = glm::vec3(0);
 }
 
 Geometry::~Geometry() {
 }
 
+glm::vec3 Geometry::getCenter(){
+    return center;
+}
 
+void Geometry::setCenter(){
+    if(vertices.size()){
+        glm::vec3 min = vertices[0].position;
+        glm::vec3 max = vertices[0].position;
+
+        for(Vertex vertex : vertices) {
+            min = glm::min(min, vertex.position);
+            max = glm::min(max, vertex.position);
+        }
+        center = (min+max)*0.5f;
+    }
+    else {
+        center = glm::vec3(0);
+    }
+}
 
 Vertex * Geometry::addVertex(Vertex vertex){
     auto it = compactMap.find(vertex);

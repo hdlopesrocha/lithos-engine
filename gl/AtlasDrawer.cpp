@@ -41,10 +41,10 @@ void AtlasDrawer::draw(AtlasParams &params){
     glDisable(GL_CULL_FACE);
         
 
-    for(int i = 0; i < 3 ; ++i) {
+    for(int i = 0; i < TEXTURE_TYPE_COUNT ; ++i) {
         glActiveTexture(GL_TEXTURE0+ i); 
         glBindTexture(GL_TEXTURE_2D_ARRAY, sourceLayers->textures[i].index);
-        glUniform1i(glGetUniformLocation(program, ("sampler[" + std::to_string(i) + "]").c_str()), i);
+        glUniform1i(glGetUniformLocation(program, ("textures[" + std::to_string(i) + "]").c_str()), i);
     }
 
     glUniform1ui(filterLoc, filterEnabled); 
@@ -52,10 +52,11 @@ void AtlasDrawer::draw(AtlasParams &params){
     glBindVertexArray(viewVao);
     
     for(TileDraw &tileDraw : params.draws) {
-        uint tileIndex = Math::mod(tileDraw.index, params.atlasTexture->tiles.size());
+        AtlasTexture * atlas = params.atlasTexture;
+        uint tileIndex = Math::mod(tileDraw.index, atlas->tiles.size());
 
 
-        Tile * tile = &params.atlasTexture->tiles[tileIndex];
+        Tile * tile = &atlas->tiles[tileIndex];
 
         glm::mat4 model = glm::mat4(1.0);
 
@@ -82,7 +83,7 @@ void AtlasDrawer::draw(AtlasParams &params){
 
     }
 
-    for(int i =0 ; i < 3; ++i) {
+    for(int i =0 ; i < TEXTURE_TYPE_COUNT; ++i) {
         blitter->blit(&renderBuffer, i, &targetLayers->textures[i], params.targetTexture);
     }
 

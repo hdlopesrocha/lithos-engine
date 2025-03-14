@@ -27,10 +27,10 @@ void TextureMixer::mix(MixerParams &params){
     glDisable(GL_CULL_FACE);
     
 
-    for(int i = 0; i < 3 ; ++i) {
+    for(int i = 0; i < TEXTURE_TYPE_COUNT ; ++i) {
         glActiveTexture(GL_TEXTURE0+ i); 
         glBindTexture(GL_TEXTURE_2D_ARRAY, layers->textures[i].index);
-        glUniform1i(glGetUniformLocation(program, ("sampler[" + std::to_string(i) + "]").c_str()), i);
+        glUniform1i(glGetUniformLocation(program, ("textures[" + std::to_string(i) + "]").c_str()), i);
     }
 
     glUniform1ui(glGetUniformLocation(program, "baseTexture"), params.baseTexture);
@@ -45,7 +45,7 @@ void TextureMixer::mix(MixerParams &params){
 
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
-    for(int i=0 ; i < 3 ; ++i ) {
+    for(int i=0 ; i < TEXTURE_TYPE_COUNT ; ++i ) {
         blitter->blit(&textureMixerBuffer, i, &layers->textures[i], params.targetTexture);
     }
     

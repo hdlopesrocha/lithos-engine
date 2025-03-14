@@ -1,8 +1,4 @@
-#include <bitset>
-#include "../math/math.hpp"
-#include "gl.hpp"
-
-
+#include "math.hpp"
 
 
 OctreeProcessor::OctreeProcessor(Octree * tree,bool createInstances, GeometryBuilder * builder) {
@@ -15,7 +11,7 @@ OctreeProcessor::OctreeProcessor(Octree * tree,bool createInstances, GeometryBui
 
 void * OctreeProcessor::before(int level, int height, int lod , OctreeNode * node, const BoundingCube &cube, void * context) {		
 
-	NodeInfo * info = node->getNodeInfo(builder->drawableType);
+	NodeInfo * info = node->getNodeInfo(builder->infoType);
 	bool canGenerate  = info == NULL || info->dirty;
 
 	if(lod==0){

@@ -1,4 +1,4 @@
-#include "gl.hpp"
+#include "math.hpp"
 
 
 Camera::Camera(float near, float far) {

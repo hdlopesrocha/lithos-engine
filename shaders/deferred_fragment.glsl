@@ -28,22 +28,17 @@ void main() {
     vec2 uv = gTextureCoord;
 
 
-    vec4 opacity = textureBlend(textures[2], gTextureIndices, uv, gTextureWeights,gTextureWeights);
+    vec4 opacity = textureBlend(textures[2], gTextureIndices, uv, gTextureWeights, gTextureWeights);
 
     if(opacityEnabled) {
         if(opacity.r < 0.98) {
-            //discard;
+            discard;
         }
     }
     
-    FragColor0 = textureBlend(textures[0], gTextureIndices, uv, gTextureWeights,gTextureWeights);
-    FragColor1 = textureBlend(textures[1], gTextureIndices, uv, gTextureWeights,gTextureWeights);
+    FragColor0 = textureBlend(textures[0], gTextureIndices, uv, gTextureWeights, gTextureWeights);
+    FragColor1 = textureBlend(textures[1], gTextureIndices, uv, gTextureWeights, gTextureWeights);
     FragColor2 = opacity;
-
-    FragColor0 = vec4(1.0);
-    FragColor1 = vec4(1.0);
-    FragColor2 = vec4(1.0);
-
 
  }
 

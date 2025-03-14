@@ -8,7 +8,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/norm.hpp> 
 #include <glm/matrix.hpp>
-
+#include <bitset>
 #include <format>
 #include <iostream>
 #include <sstream>
@@ -20,13 +20,14 @@
 #include <filesystem>
 #include <algorithm>
 #define DB_PERLIN_IMPL
-#include "../lib/db_perlin.hpp"
+#include "perlin.hpp"
 #define INFO_TYPE_FILE 99
 #define INFO_TYPE_REMOVE 0
 
 
 class BoundingSphere;
 class BoundingBox;
+class IteratorHandler;
 
 enum ContainmentType {
 	Contains,
@@ -291,6 +292,84 @@ class OctreeNode {
 		NodeInfo * getNodeInfo(uint infoType);
 };
 
+class GeometryBuilder {
+    public:
+    int infoType;
+    long * count;
+
+    GeometryBuilder(int infoType,long * count);
+    virtual const NodeInfo build(int level, int height, int lod, OctreeNode* node, BoundingCube cube) = 0;
+};
+
+
+class Geometry
+{
+public:
+	std::vector<Vertex> vertices;
+	std::vector<uint> indices;
+	std::map <Vertex, int> compactMap;
+	glm::vec3 center;
+	Geometry(/* args */);
+	~Geometry();
+
+	Vertex * addVertex(Vertex vertex);
+	static glm::vec3 getNormal(Vertex * a, Vertex * b, Vertex * c);
+	glm::vec3 getCenter();
+	void setCenter();
+
+};
+
+class OctreeNodeTriangleHandler {
+
+	public: 
+	Geometry * chunk;
+	long * count;
+	OctreeNodeTriangleHandler(Geometry * chunk, long * count);
+	virtual void handle(OctreeNode* c0,OctreeNode* c1,OctreeNode* c2, bool sign) = 0;
+};
+
+class Octree: public BoundingCube {
+	public: 
+		float minSize;
+		OctreeNode * root;
+
+		Octree(BoundingCube minCube);
+		void expand(const ContainmentHandler &handler);
+		void add(const ContainmentHandler &handler);
+		void del(const ContainmentHandler &handler);
+		void iterate(IteratorHandler &handler, int geometryLevel);
+		void iterateFlat(IteratorHandler &handler, int geometryLevel);
+
+		OctreeNode* getNodeAt(const glm::vec3 &pos, int level, int simplification);
+		void handleQuadNodes(const BoundingCube &cube, int level,OctreeNode &node, OctreeNodeTriangleHandler * handler);
+		void getNodeNeighbors(const BoundingCube &cube, int level, int simplification, int direction, OctreeNode ** out, int initialIndex, int finalIndex);
+		ContainmentType contains(const glm::vec3 &pos);
+		ContainmentType contains(const AbstractBoundingBox&cube);
+
+		static glm::vec3 getShift(int i);
+		static glm::vec3 getShift3(int i);
+		static BoundingCube getChildCube(const BoundingCube &cube, int i);
+		static BoundingCube getCube3(const BoundingCube &cube, int i);
+
+		int getHeight(const BoundingCube  &cube);
+
+};
+
+class MeshGeometryBuilder  : public GeometryBuilder {
+    public:
+    float simplificationAngle;
+    float simplificationDistance;
+    bool simplificationTexturing;
+    int simplification;
+    Octree * tree;
+    MeshGeometryBuilder(int drawableType, long * count,Octree * tree, float simplificationAngle, float simplificationDistance, bool simplificationTexturing, int simplification);
+    ~MeshGeometryBuilder();
+
+    const NodeInfo build(int level, int height, int lod, OctreeNode* node, BoundingCube cube) override;
+
+};
+
+
 struct IteratorData {
 	public:
 	int level;
@@ -343,64 +422,75 @@ class IteratorHandler {
 };
 
 
-class Geometry
-{
-public:
-	std::vector<Vertex> vertices;
-	std::vector<uint> indices;
-	std::map <Vertex, int> compactMap;
+struct InstanceData {
+    public:
+    float shift;
+    glm::mat4 matrix;
 
-	Geometry(/* args */);
-	~Geometry();
+    InstanceData(glm::mat4 matrix,  float shift) {
+        this->matrix = matrix;
+        this->shift = shift;
+    }
+};
 
-	Vertex * addVertex(Vertex vertex);
-	static glm::vec3 getNormal(Vertex * a, Vertex * b, Vertex * c);
+struct InstanceGeometry {
+    public:
+    Geometry * geometry;
+    std::vector<InstanceData> instances;
+
+    InstanceGeometry(Geometry * geometry);
+};
+
+class InstanceBuilderHandler {
+	public:
+	Octree * tree;
+	long * count;
+	
+	InstanceBuilderHandler(Octree * tree, long * count);
+
+	virtual void handle(OctreeNode *node, const BoundingCube &cube, int level, InstanceGeometry * pre) = 0;
+};
+
+
+
+class InstanceBuilder : public IteratorHandler{
+	Octree * tree;
+	Geometry chunk;
+    uint mode;
+	InstanceBuilderHandler * handler;
+    public: 
+        int instanceCount = 0;
+        std::vector<InstanceData> * instances;
+		InstanceBuilder(Octree * tree, std::vector<InstanceData> * instances, InstanceBuilderHandler * handler);
+
+		void * before(int level, int height, int lod, OctreeNode * node, const BoundingCube &cube, void * context) override;
+		void after(int level, int height, int lod, OctreeNode * node, const BoundingCube &cube, void * context) override;
+		bool test(int level, int height, int lod, OctreeNode * node, const BoundingCube &cube, void * context) override;
+		void getOrder(const BoundingCube &cube, int * order) override;
 
 };
 
-class OctreeNodeTriangleHandler {
+
+class OctreeNodeTriangleInstanceBuilder : public OctreeNodeTriangleHandler {
 
 	public: 
-	Geometry * chunk;
-	int * count;
-	OctreeNodeTriangleHandler(Geometry * chunk, int * count);
-	virtual void handle(OctreeNode* c0,OctreeNode* c1,OctreeNode* c2, bool sign) = 0;
+	std::vector<InstanceData> * instances;
+    int pointsPerTriangle;
+
+	using OctreeNodeTriangleHandler::OctreeNodeTriangleHandler;
+	OctreeNodeTriangleInstanceBuilder(Geometry * chunk, long * count,std::vector<InstanceData> * instances, int pointsPerTriangle);
+	void handle(OctreeNode* c0,OctreeNode* c1,OctreeNode* c2, bool sign) override;
+
 };
+
 
 class OctreeNodeTriangleTesselator : public OctreeNodeTriangleHandler {
 
 	public: 
 	using OctreeNodeTriangleHandler::OctreeNodeTriangleHandler;
 
-	OctreeNodeTriangleTesselator(Geometry * chunk, int * count);
-	void handle(OctreeNode* c0,OctreeNode* c1,OctreeNode* c2, bool sign);
-};
-
-class Octree: public BoundingCube {
-	public: 
-		float minSize;
-		OctreeNode * root;
-
-		Octree(BoundingCube minCube);
-		void expand(const ContainmentHandler &handler);
-		void add(const ContainmentHandler &handler);
-		void del(const ContainmentHandler &handler);
-		void iterate(IteratorHandler &handler, int geometryLevel);
-		void iterateFlat(IteratorHandler &handler, int geometryLevel);
-
-		OctreeNode* getNodeAt(const glm::vec3 &pos, int level, int simplification);
-		void handleQuadNodes(OctreeNode &node, OctreeNode** corners, OctreeNodeTriangleHandler &handler);
-		void getNodeNeighbors(const BoundingCube &cube, int level, int simplification, int direction, OctreeNode ** out, int initialIndex, int finalIndex);
-		ContainmentType contains(const glm::vec3 &pos);
-		ContainmentType contains(const AbstractBoundingBox&cube);
-
-		static glm::vec3 getShift(int i);
-		static glm::vec3 getShift3(int i);
-		static BoundingCube getChildCube(const BoundingCube &cube, int i);
-		static BoundingCube getCube3(const BoundingCube &cube, int i);
-
-		int getHeight(const BoundingCube  &cube);
-
+	OctreeNodeTriangleTesselator(Geometry * chunk, long * count);
+	void handle(OctreeNode* c0,OctreeNode* c1,OctreeNode* c2, bool sign) override;
 };
 
 class SphereGeometry : public Geometry{
@@ -414,7 +504,7 @@ public:
 class Tesselator : public IteratorHandler{
 	public:
 		Octree * tree;
-		int triangles;
+		long triangles;
 		Geometry * chunk;
 		int simplification;
 		Tesselator(Octree * tree, Geometry * chunk, int simplification);
@@ -583,6 +673,59 @@ class OctreeVisibilityChecker : public IteratorHandler{
 		void getOrder(const BoundingCube &cube, int * order) override;
 
 };
+
+class OctreeProcessor : public IteratorHandler{
+	Octree * tree;
+	Geometry chunk;
+
+
+    bool createInstances;
+    public: 
+		int loadCount = 0;
+        glm::vec3 cameraPosition;
+        GeometryBuilder * builder;
+		OctreeProcessor(Octree * tree,bool createInstances, GeometryBuilder * builder);
+
+		void * before(int level, int height, int lod, OctreeNode * node, const BoundingCube &cube, void * context) override;
+		void after(int level, int height, int lod, OctreeNode * node, const BoundingCube &cube, void * context) override;
+		bool test(int level, int , int lod, OctreeNode * node, const BoundingCube &cube, void * context) override;
+		void getOrder(const BoundingCube &cube, int * order) override;
+
+};
+
+class Camera {
+    public:
+    glm::mat4 projection;
+    glm::mat4 view;
+    glm::quat quaternion;
+    glm::vec3 position;
+    float near;
+    float far;
+
+    Camera(float near, float far);
+    glm::vec3 getCameraDirection();
+    glm::mat4 getVP();
+};
+
+struct Tile {
+    public:
+    glm::vec2 size;
+    glm::vec2 offset;
+    
+    Tile(glm::vec2 size, glm::vec2 offset);
+};
+
+struct TileDraw {
+    public:
+    glm::vec2 size;
+    glm::vec2 offset;
+    glm::vec2 pivot;
+    float angle;
+    uint index;
+    
+    TileDraw(uint index,glm::vec2 size, glm::vec2 offset, glm::vec2 pivot, float angle);
+};
+
 
 class Math
 {

@@ -1,29 +1,24 @@
 #include <bitset>
-#include "../math/math.hpp"
-#include "gl.hpp"
+#include "math.hpp"
 
-InstanceBuilder::InstanceBuilder(Octree * tree, std::vector<InstanceData> * instances) {
+
+InstanceBuilder::InstanceBuilder(Octree * tree, std::vector<InstanceData> * instances, InstanceBuilderHandler * handler) {
 	this->tree = tree;
 	this->instanceCount = 0;
 	this->instances = instances;
+	this->handler = handler;
 }
 
+
+
+
 void * InstanceBuilder::before(int level, int height, int lod, OctreeNode * node, const BoundingCube &cube, void * context) {		
-	OctreeNode * neighbors[8];
 
 	if(height==0){
-		
-		Vertex * v = &node->vertex;
-		if(v->brushIndex == 2) { 
-			//neighbors[0] = node;
-			tree->getNodeNeighbors(cube, level, 0, 1, neighbors, 0, 8);
-
-			OctreeNodeTriangleInstanceBuilder handler(&chunk, &instanceCount , (OctreeNode**)&neighbors, instances, 3);
-			tree->handleQuadNodes(*node, neighbors, handler);
-
-		}
+		InstanceGeometry * pre= (InstanceGeometry *) context;
+		handler->handle(node, cube, level, pre);
 	}
-	return NULL; 			 			
+	return context; 			 			
 }
 
 void InstanceBuilder::after(int level, int height, int lod, OctreeNode * node, const BoundingCube &cube, void * context) {			

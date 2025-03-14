@@ -18,6 +18,8 @@
 #define TYPE_INSTANCE_SOLID_DRAWABLE 0x2
 #define TYPE_INSTANCE_LIQUID_DRAWABLE 0x4
 
+#include "../math/math.hpp"
+
 #include <imgui/imgui.h>
 #include <imgui/backends/imgui_impl_glfw.h>
 #include <imgui/backends/imgui_impl_opengl3.h>
@@ -38,7 +40,6 @@
 #include <chrono>
 #include <sstream>
 #include <string>
-#include "../math/math.hpp"
 #include <filesystem>
 #include <iostream>
 #include <ranges>
@@ -55,7 +56,10 @@
 #define BILLBOARD_FLAG      1,0x01 
 
 #define OVERRIDE_TEXTURE_FLAG 0xff000000
+
 #define SHADOW_MATRIX_COUNT 3
+#define TEXTURE_TYPE_COUNT 3
+
 
 
 struct ProgramData {
@@ -120,19 +124,6 @@ struct TextureImage {
 
 
 
-class Camera {
-    public:
-    glm::mat4 projection;
-    glm::mat4 view;
-    glm::quat quaternion;
-    glm::vec3 position;
-    float near;
-    float far;
-
-    Camera(float near, float far);
-    glm::vec3 getCameraDirection();
-    glm::mat4 getVP();
-};
 
 struct DirectionalLight {
     glm::vec3 direction;
@@ -220,111 +211,8 @@ class DrawableGeometry {
 
 };
 
-struct InstanceData {
-    public:
-    float shift;
-    glm::mat4 matrix;
-
-    InstanceData(glm::mat4 matrix,  float shift) {
-        this->matrix = matrix;
-        this->shift = shift;
-    }
-};
-
-struct PreLoadedGeometry {
-    public:
-    glm::vec3 center;
-    Geometry * geometry;
-    std::vector<InstanceData> instances;
-
-    PreLoadedGeometry(Geometry * geometry) {
-        this->geometry = geometry;
-
-        this->center = glm::vec3(0);
-
-        int vertexCount =geometry->vertices.size();
-        if(vertexCount){
-            float invCount = 1.0f/float(vertexCount);
-            for(Vertex vertex : geometry->vertices ) {
-                this->center += vertex.position*invCount;
-            }
-        }
-    }
-};
-
-class GeometryBuilder {
-    public:
-    int drawableType;
-    long * count;
-
-    GeometryBuilder(int drawableType,long * count);
-    virtual const NodeInfo build(int level, int height, int lod, OctreeNode* node, BoundingCube cube) = 0;
-
-};
-
-class VegetationGeometryBuilder : public GeometryBuilder {
-    public:
-    Geometry * geometry;
-    Octree * tree;
-    VegetationGeometryBuilder(int drawableType, long * count, Octree * tree);
-    ~VegetationGeometryBuilder();
-
-    const NodeInfo build(int level, int height, int lod, OctreeNode* node, BoundingCube cube) override;
-
-};
-
-class MeshGeometryBuilder  : public GeometryBuilder {
-    public:
-    float simplificationAngle;
-    float simplificationDistance;
-    bool simplificationTexturing;
-    int simplification;
-    Octree * tree;
-    MeshGeometryBuilder(int drawableType, long * count,Octree * tree, float simplificationAngle, float simplificationDistance, bool simplificationTexturing, int simplification);
-    ~MeshGeometryBuilder();
-
-    const NodeInfo build(int level, int height, int lod, OctreeNode* node, BoundingCube cube) override;
-
-};
 
 
-
-class OctreeProcessor : public IteratorHandler{
-	Octree * tree;
-	Geometry chunk;
-
-
-    bool createInstances;
-    public: 
-		int loadCount = 0;
-        glm::vec3 cameraPosition;
-        GeometryBuilder * builder;
-		OctreeProcessor(Octree * tree,bool createInstances, GeometryBuilder * builder);
-
-		void * before(int level, int height, int lod, OctreeNode * node, const BoundingCube &cube, void * context) override;
-		void after(int level, int height, int lod, OctreeNode * node, const BoundingCube &cube, void * context) override;
-		bool test(int level, int , int lod, OctreeNode * node, const BoundingCube &cube, void * context) override;
-		void getOrder(const BoundingCube &cube, int * order) override;
-
-};
-
-
-
-
-
-
-class OctreeNodeTriangleInstanceBuilder : public OctreeNodeTriangleHandler {
-
-	public: 
-	OctreeNode ** corners;
-	std::vector<InstanceData> * instances;
-    int pointsPerTriangle;
-
-	using OctreeNodeTriangleHandler::OctreeNodeTriangleHandler;
-	OctreeNodeTriangleInstanceBuilder(Geometry * chunk, int * count,OctreeNode ** corners,std::vector<InstanceData> * instances, int pointsPerTriangle);
-	void handle(OctreeNode* c0,OctreeNode* c1,OctreeNode* c2, bool sign);
-
-};
 
 class DrawableInstanceGeometry {
 	public:
@@ -338,29 +226,14 @@ class DrawableInstanceGeometry {
 	int indicesCount;
     int instancesCount;
 
-	DrawableInstanceGeometry(uint drawableType, Geometry * t, std::vector<InstanceData> * instances, glm::vec3 center);
+	DrawableInstanceGeometry(uint drawableType, Geometry * t, std::vector<InstanceData> * instances);
     ~DrawableInstanceGeometry();
-    void draw(uint mode);
-    void draw(uint mode, float amount);
+    void draw(uint mode, long * count);
+    void draw(uint mode, float amount, long * count);
 };
 
 
-class InstanceBuilder : public IteratorHandler{
-	Octree * tree;
-	Geometry chunk;
-    uint mode;
 
-    public: 
-        int instanceCount = 0;
-        std::vector<InstanceData> * instances;
-		InstanceBuilder(Octree * tree, std::vector<InstanceData> * instances);
-
-		void * before(int level, int height, int lod, OctreeNode * node, const BoundingCube &cube, void * context) override;
-		void after(int level, int height, int lod, OctreeNode * node, const BoundingCube &cube, void * context) override;
-		bool test(int level, int height, int lod, OctreeNode * node, const BoundingCube &cube, void * context) override;
-		void getOrder(const BoundingCube &cube, int * order) override;
-
-};
 
 class Texture {
 	public:
@@ -469,24 +342,6 @@ class Settings {
 
 };
 
-struct Tile {
-    public:
-    glm::vec2 size;
-    glm::vec2 offset;
-    
-    Tile(glm::vec2 size, glm::vec2 offset);
-};
-
-struct TileDraw {
-    public:
-    glm::vec2 size;
-    glm::vec2 offset;
-    glm::vec2 pivot;
-    float angle;
-    uint index;
-    
-    TileDraw(uint index,glm::vec2 size, glm::vec2 offset, glm::vec2 pivot, float angle);
-};
 
 
 class Vegetation3d : public Geometry {

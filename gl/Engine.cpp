@@ -279,29 +279,18 @@ MultiLayerRenderBuffer createMultiLayerRenderFrameBuffer(int width, int height, 
 
     std::vector<GLenum> buffers;
 
-    // Verificar quantos anexos de cor estão sendo usados (deve ser menor ou igual ao número de camadas)
     int attachmentCount = std::min(attachments, layers); // 'attachments' ou 'layers', o que for menor
-    
-    // Se houver apenas 1 anexo, associamos todas as camadas a esse anexo
-    if (attachments == 1) {
-        GLenum attachment = GL_COLOR_ATTACHMENT0;
+
+
+    // Se houver múltiplos anexos, associamos as camadas de maneira mais flexível
+    for (int l = 0; l < attachmentCount; ++l) {
+        GLenum attachment = GL_COLOR_ATTACHMENT0 + l%attachmentCount;
         buffers.push_back(attachment);
-    
-        // Associar todas as camadas a esse único anexo
-        for (int l = 0; l < layers; ++l) {
-            glFramebufferTextureLayer(GL_FRAMEBUFFER, attachment, buffer.colorTexture.index, 0, l);
-        }
-    } else {
-        // Se houver múltiplos anexos, associamos as camadas de maneira mais flexível
-        for (int a = 0; a < attachmentCount; ++a) {
-            GLenum attachment = GL_COLOR_ATTACHMENT0 + a;
-            buffers.push_back(attachment);
-    
-            // Para cada anexo, associamos a camada correspondente
-            glFramebufferTextureLayer(GL_FRAMEBUFFER, attachment, buffer.colorTexture.index, 0, a);
-        }
+
+        // Para cada anexo, associamos a camada correspondente
+        glFramebufferTextureLayer(GL_FRAMEBUFFER, attachment, buffer.colorTexture.index, 0,l);
     }
-    
+
     // Verifique se o número de buffers configurados é válido
     if (!buffers.empty()) {
         glDrawBuffers(buffers.size(), buffers.data());

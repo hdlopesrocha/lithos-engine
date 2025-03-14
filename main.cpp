@@ -3,8 +3,6 @@
 #include "math/math.hpp"
 #include "ui/ui.hpp"
 #include "tools/tools.hpp"
-#include "HeightFunctions.hpp"
-#include "Scene.hpp"
 
 
 class GlslInclude {
@@ -200,24 +198,24 @@ public:
 			compileShader(replaceIncludes(includes,readFile("shaders/deferred_fragment.glsl")),GL_FRAGMENT_SHADER) 
 		});
 
-		textureLayers.textures[0] = createTextureArray(1024, 1024, 25, GL_RGB8);
-		textureLayers.textures[1] = createTextureArray(1024, 1024, 25, GL_RGB8);
-		textureLayers.textures[2] = createTextureArray(1024, 1024, 25, GL_R8);
+		textureLayers.textures[0] = createTextureArray(1024, 1024, 20, GL_RGB8);
+		textureLayers.textures[1] = createTextureArray(1024, 1024, 20, GL_RGB8);
+		textureLayers.textures[2] = createTextureArray(1024, 1024, 20, GL_R8);
 		textureLayers.count = 0;
 
-		billboardLayers.textures[0] = createTextureArray(1024, 1024, 5, GL_RGB8);
-		billboardLayers.textures[1] = createTextureArray(1024, 1024, 5, GL_RGB8);
-		billboardLayers.textures[2] = createTextureArray(1024, 1024, 5, GL_R8);
+		billboardLayers.textures[0] = createTextureArray(1024, 1024, 4, GL_RGB8);
+		billboardLayers.textures[1] = createTextureArray(1024, 1024, 4, GL_RGB8);
+		billboardLayers.textures[2] = createTextureArray(1024, 1024, 4, GL_R8);
 		billboardLayers.count = 0;
 
-		atlasLayers.textures[0] = createTextureArray(1024, 1024, 5, GL_RGB8);
-		atlasLayers.textures[1] = createTextureArray(1024, 1024, 5, GL_RGB8);
-		atlasLayers.textures[2] = createTextureArray(1024, 1024, 5, GL_R8);
+		atlasLayers.textures[0] = createTextureArray(1024, 1024, 4, GL_RGB8);
+		atlasLayers.textures[1] = createTextureArray(1024, 1024, 4, GL_RGB8);
+		atlasLayers.textures[2] = createTextureArray(1024, 1024, 4, GL_R8);
 		atlasLayers.count = 0;
 
-		impostorLayers.textures[0] = createTextureArray(256, 256, 20, GL_RGB8);
-		impostorLayers.textures[1] = createTextureArray(256, 256, 20, GL_RGB8);
-		impostorLayers.textures[2] = createTextureArray(256, 256, 20, GL_R8);
+		impostorLayers.textures[0] = createTextureArray(256, 256, 4, GL_RGB8);
+		impostorLayers.textures[1] = createTextureArray(256, 256, 4, GL_RGB8);
+		impostorLayers.textures[2] = createTextureArray(256, 256, 4, GL_R8);
 		impostorLayers.count = 0;
 
 		textureBlitter1024 = new TextureBlitter(programCopy, 1024, 1024, {GL_RGB8, GL_R8});
@@ -373,10 +371,9 @@ public:
 
 			atlasTextures.push_back(at);
 			UniformBlockBrush * tb = new UniformBlockBrush(glm::vec2(1.0));
-			textureMapper.insert({tb, billboardLayers.count});
+			textureMapper.insert({tb, billboardLayers.count++});
 
 			billboardBrushes.push_back(tb);
-			++billboardLayers.count;
 			++atlasLayers.count;
 		}
 		{
@@ -391,18 +388,16 @@ public:
 			atlasTextures.push_back(at);
 			UniformBlockBrush * tb = new UniformBlockBrush(glm::vec2(1.0));
 			
-			textureMapper.insert({tb, billboardLayers.count});
+			textureMapper.insert({tb, billboardLayers.count++});
 
 			billboardBrushes.push_back(tb);
-			++billboardLayers.count;
 			++atlasLayers.count;
 		}
 		{	
 			std::vector<InstanceData> vegetationInstances;
 			vegetationInstances.push_back(InstanceData(glm::mat4(1.0), 0));
-			DrawableInstanceGeometry * vegetationMesh = new DrawableInstanceGeometry(TYPE_INSTANCE_VEGETATION_DRAWABLE, new Vegetation3d(1), &vegetationInstances, glm::vec3(0.0));
-			impostors.push_back(ImpostorParams(impostorLayers.count, vegetationMesh));
-			++impostorLayers.count;
+			DrawableInstanceGeometry * vegetationMesh = new DrawableInstanceGeometry(TYPE_INSTANCE_VEGETATION_DRAWABLE, new Vegetation3d(1), &vegetationInstances);
+			impostors.push_back(ImpostorParams(impostorLayers.count++, vegetationMesh));
 		}
 		
 		noiseTexture = loadTextureImage("textures/noise.jpg", false);
@@ -425,7 +420,6 @@ public:
 		
 		for(int i =0; i < 3 ; ++i) {
 			std::string objectName = "textures[" + std::to_string(i) + "]";
-
 			Texture::bindTexture(programImpostor, activeTexture, objectName, billboardLayers.textures[i]);
 			Texture::bindTexture(programDeferred, activeTexture, objectName, billboardLayers.textures[i]);
 			activeTexture = Texture::bindTexture(programBillboard, activeTexture, objectName, billboardLayers.textures[i]);
@@ -456,7 +450,7 @@ public:
 		}
 
 		for(ImpostorParams &params : impostors) {
-			//impostorDrawer->draw(params);
+			impostorDrawer->draw(params);
 		}
 
 		mainScene = new Scene();

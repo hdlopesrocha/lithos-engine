@@ -25,7 +25,7 @@ void TexturePreviewer::draw2d(int index){
     for(int i = 0; i < layerNames.size() ; ++i) {
         glActiveTexture(GL_TEXTURE0+ i); 
         glBindTexture(GL_TEXTURE_2D_ARRAY, layers->textures[i].index);
-        glUniform1i(glGetUniformLocation(previewProgram, ("sampler[" + std::to_string(i) + "]").c_str()), i);
+        glUniform1i(glGetUniformLocation(previewProgram, ("textures[" + std::to_string(i) + "]").c_str()), i);
     }
 
     glUniform1ui(glGetUniformLocation(previewProgram, "layer"), selectedLayer); 
