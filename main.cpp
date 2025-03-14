@@ -40,6 +40,7 @@ class MainApplication : public LithosApplication {
 	std::vector<UniformBlockBrush*> billboardBrushes;
 	std::vector<AtlasTexture*> atlasTextures;
 	std::vector<UniformBlockBrush> uniformBlockBrushes;
+	std::map<UniformBlockBrush*, GLuint > textureMapper;
 
 	std::vector<AtlasParams> atlasParams;
 
@@ -235,8 +236,6 @@ public:
 		impostorDrawer = new ImpostorDrawer(programDeferred, 256, 256, &billboardLayers, &impostorLayers, textureBlitter256);
 
 	
-		std::map<UniformBlockBrush*, GLuint > textureMapper;
-		std::map<UniformBlockBrush*, GLuint > textureBrushMapper;
 
 
 		{
@@ -374,7 +373,7 @@ public:
 
 			atlasTextures.push_back(at);
 			UniformBlockBrush * tb = new UniformBlockBrush(glm::vec2(1.0));
-			textureBrushMapper.insert({tb, billboardLayers.count});
+			textureMapper.insert({tb, billboardLayers.count});
 
 			billboardBrushes.push_back(tb);
 			++billboardLayers.count;
@@ -392,7 +391,7 @@ public:
 			atlasTextures.push_back(at);
 			UniformBlockBrush * tb = new UniformBlockBrush(glm::vec2(1.0));
 			
-			textureBrushMapper.insert({tb, billboardLayers.count});
+			textureMapper.insert({tb, billboardLayers.count});
 
 			billboardBrushes.push_back(tb);
 			++billboardLayers.count;
@@ -439,13 +438,13 @@ public:
 		UniformBlockBrush::uniform(program3d,&brushes, "brushes", "brushTextures", &textureMapper);
 
 		glUseProgram(programBillboard);
-		UniformBlockBrush::uniform(programBillboard,&billboardBrushes, "brushes", "brushTextures", &textureBrushMapper);
+		UniformBlockBrush::uniform(programBillboard,&billboardBrushes, "brushes", "brushTextures", &textureMapper);
 
 		glUseProgram(programImpostor);
-		UniformBlockBrush::uniform(programImpostor,&billboardBrushes, "brushes", "brushTextures", &textureBrushMapper);
+		UniformBlockBrush::uniform(programImpostor,&billboardBrushes, "brushes", "brushTextures", &textureMapper);
 
 		glUseProgram(programDeferred);
-		UniformBlockBrush::uniform(programDeferred,&billboardBrushes, "brushes", "brushTextures", &textureBrushMapper);
+		UniformBlockBrush::uniform(programDeferred,&billboardBrushes, "brushes", "brushTextures", &textureMapper);
 
 
 		for(MixerParams &params : mixers) {
@@ -476,7 +475,7 @@ public:
 		uniformBlockViewer = new UniformBlockViewer(&viewerBlock);
 		atlasPainter = new AtlasPainter(&atlasParams, &atlasTextures, atlasDrawer, programAtlas, programTexture, 256,256, &billboardLayers);
 		atlasViewer = new AtlasViewer(&atlasTextures, atlasDrawer, programAtlas, programTexture, 256,256, &atlasLayers, programCopy);
-		brushEditor = new BrushEditor(&camera, &brushes, program3d, programTexture, &textureLayers);
+		brushEditor = new BrushEditor(&camera, &brushes, program3d, programTexture, &textureLayers, &textureMapper);
 		shadowMapViewer = new ShadowMapViewer(&shadowFrameBuffers, 512, 512);
 		textureMixerEditor = new TextureMixerEditor(textureMixer, &mixers, programTexture, &textureLayers);
 		animatedTextureEditor = new AnimatedTextureEditor(&animations, programTexture, 256,256, &textureLayers);
@@ -619,7 +618,6 @@ public:
 
 				std::pair<RenderBuffer, int> pair2 = shadowFrameBuffers[i];
 				RenderBuffer buffer = pair2.first;
-				// TODO : shadowmap nao tem vegetation
 				glBindFramebuffer(GL_FRAMEBUFFER, buffer.frameBuffer);
 				glViewport(0, 0, buffer.width, buffer.height);
 				glClear(GL_DEPTH_BUFFER_BIT);

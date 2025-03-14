@@ -19,7 +19,7 @@ VegetationGeometryBuilder::VegetationGeometryBuilder(int drawableType,long * cou
 
 
 const NodeInfo VegetationGeometryBuilder::build(int level, int height, int lod, OctreeNode* node, BoundingCube cube){
-    std::cout << "VegetationGeometryBuilder::build" <<std::endl;
+    //std::cout << "VegetationGeometryBuilder::build" <<std::endl;
 
     PreLoadedGeometry * pre = new PreLoadedGeometry(geometry);
     InstanceBuilder instanceBuilder(tree, &pre->instances);

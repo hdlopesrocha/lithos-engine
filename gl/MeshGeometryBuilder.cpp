@@ -13,7 +13,7 @@ MeshGeometryBuilder::MeshGeometryBuilder(int drawableType, long * count, Octree 
 }
 
 const NodeInfo MeshGeometryBuilder::build(int level, int height, int lod, OctreeNode* node, BoundingCube cube){
-    std::cout << "MeshGeometryBuilder::build" <<std::endl;
+    //std::cout << "MeshGeometryBuilder::build" <<std::endl;
     // Simplify
     Simplifier simplifier(tree, cube, simplificationAngle, simplificationDistance, simplificationTexturing, simplification); 
     simplifier.iterateFlatOut(level, height, lod, node, cube, NULL);

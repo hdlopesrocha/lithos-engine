@@ -1,8 +1,9 @@
 #include "ui.hpp"
 
 
-BrushEditor::BrushEditor(Camera * camera, std::vector<UniformBlockBrush*> * brushes, GLuint program, GLuint previewProgram, TextureLayers * layers) {
+BrushEditor::BrushEditor(Camera * camera, std::vector<UniformBlockBrush*> * brushes, GLuint program, GLuint previewProgram, TextureLayers * layers, std::map<UniformBlockBrush*, GLuint > *textureMapper) {
     this->program = program;
+    this->textureMapper = textureMapper;
     glUseProgram(program);
     this->data = new ProgramData();
     this->camera = camera;
@@ -118,13 +119,17 @@ void BrushEditor::draw2d(){
 }
 void BrushEditor::draw3d(UniformBlock * block){
      selectedBrush = Math::mod(selectedBrush, brushes->size());
-     UniformBlockBrush * brush = (*brushes)[selectedBrush];
+     UniformBlockBrush * brush = brushes->at(selectedBrush);
 
-    std::map<UniformBlockBrush*, GLuint > textureMapper;
-    textureMapper.insert({ brush , selectedBrush});
+     auto it = textureMapper->find(brush);
+     if (it == textureMapper->end()) {
+         std::cerr << "Warning: BrushEditor::brush not found in textureMapper!" << std::endl;
+     }
+     else {
+         GLuint index = it->second;
+         UniformBlockBrush::uniform(program, brush, "brushes", "brushTextures", selectedBrush, index);
+     }
 
-    //TODO Could bind only one
-    UniformBlockBrush::uniform(program, brushes,"brushes", "brushTextures", &textureMapper);
 
     glm::mat4 model = glm::scale(
         glm::translate(  
