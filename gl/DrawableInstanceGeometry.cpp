@@ -1,19 +1,9 @@
 #include "gl.hpp"
 
-DrawableInstanceGeometry::DrawableInstanceGeometry(Geometry * t, std::vector<InstanceData> * instances){
-	glm::vec3 meshCenter(0);
-	int count = t->vertices.size();
-	if(count > 0){
-		float invCount = 1.0f/float(count);
-		for(Vertex &data : t->vertices){
-			meshCenter += data.position *invCount;
-		}
-	}
-	
-
+DrawableInstanceGeometry::DrawableInstanceGeometry(uint drawableType,Geometry * t, std::vector<InstanceData> * instances, glm::vec3 meshCenter){
+	this->drawableType = drawableType;
 	this->center = glm::vec3(0);
-
-	count = instances->size();
+	int count = instances->size();
 	if(instances->size()) {
 		float invCount = 1.0f/float(count);
 		for(InstanceData &data : *instances){

@@ -1,10 +1,9 @@
 #include <bitset>
 #include "math.hpp"
 
-OctreeVisibilityChecker::OctreeVisibilityChecker(Octree * tree, int geometryLevel, std::vector<IteratorData> * visibleNodes) {
+OctreeVisibilityChecker::OctreeVisibilityChecker(Octree * tree, std::vector<IteratorData> * visibleNodes) {
 	this->tree = tree;
 	this->visibleNodes = visibleNodes;
-	this->geometryLevel = geometryLevel;
 }
 
 void OctreeVisibilityChecker::update(glm::mat4 m) {
@@ -13,26 +12,19 @@ void OctreeVisibilityChecker::update(glm::mat4 m) {
 
 
 
-void * OctreeVisibilityChecker::before(int level, int height, OctreeNode * node, const BoundingCube &cube, void * context) {		
-	int currentLod = height - geometryLevel;
-
-	if(currentLod == 0){
-		visibleNodes->push_back({level, height, node, cube, context});
-		return node;
+void * OctreeVisibilityChecker::before(int level, int height, int lod, OctreeNode * node, const BoundingCube &cube, void * context) {		
+	if(lod == 0){
+		visibleNodes->push_back({level, height, lod, node, cube, context});
 	}
 	return NULL;
 }
 
-void OctreeVisibilityChecker::after(int level, int height, OctreeNode * node, const BoundingCube &cube, void * context) {			
+void OctreeVisibilityChecker::after(int level, int height, int lod, OctreeNode * node, const BoundingCube &cube, void * context) {			
 	return;
 }
 
-bool OctreeVisibilityChecker::test(int level, int height, OctreeNode * node, const BoundingCube &cube, void * context) {	
-	if(context != NULL) {
-		return false;
-	}
-	BoundingBox box = BoundingBox(cube.getMin()-tree->minSize, cube.getMax());
-	return frustum.isBoxVisible(box);
+bool OctreeVisibilityChecker::test(int level, int height, int lod, OctreeNode * node, const BoundingCube &cube, void * context) {	
+	return lod >= 0 && frustum.isBoxVisible(cube);
 }
 
 

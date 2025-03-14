@@ -46,7 +46,6 @@ class MainApplication : public LithosApplication {
 	std::vector<MixerParams> mixers;
 	std::vector<AnimateParams> animations;
 	std::vector<ImpostorParams> impostors;
-	DrawableInstanceGeometry * vegetationMesh;
 	Scene * mainScene;
 	Settings * settings = new Settings();
 	glm::mat4 worldModel = glm::mat4(1.0f); // Identity matrix
@@ -235,10 +234,7 @@ public:
 		atlasDrawer = new AtlasDrawer(programAtlas, 1024, 1024, &atlasLayers, &billboardLayers, textureBlitter1024);
 		impostorDrawer = new ImpostorDrawer(programDeferred, 256, 256, &billboardLayers, &impostorLayers, textureBlitter256);
 
-		std::vector<InstanceData> vegetationInstances;
-		vegetationInstances.push_back(InstanceData(glm::mat4(1.0), 0));
-		vegetationMesh = new DrawableInstanceGeometry(new Vegetation3d(1), &vegetationInstances);
-
+	
 		std::map<UniformBlockBrush*, GLuint > textureMapper;
 		std::map<UniformBlockBrush*, GLuint > textureBrushMapper;
 
@@ -402,7 +398,10 @@ public:
 			++billboardLayers.count;
 			++atlasLayers.count;
 		}
-		{
+		{	
+			std::vector<InstanceData> vegetationInstances;
+			vegetationInstances.push_back(InstanceData(glm::mat4(1.0), 0));
+			DrawableInstanceGeometry * vegetationMesh = new DrawableInstanceGeometry(TYPE_INSTANCE_VEGETATION_DRAWABLE, new Vegetation3d(1), &vegetationInstances, glm::vec3(0.0));
 			impostors.push_back(ImpostorParams(impostorLayers.count, vegetationMesh));
 			++impostorLayers.count;
 		}
@@ -643,7 +642,7 @@ public:
 					uniformBlock.set(OPACITY_FLAG, settings->opacityEnabled);
 					uniformBlock.set(BILLBOARD_FLAG, settings->billboardEnabled); 
 					UniformBlock::uniform(&uniformBlock, sizeof(UniformBlock), 0, uniformBrushData);
-					mainScene->drawBillboards(camera.position, mainScene->visibleShadowNodes[i]);
+					mainScene->drawVegetation(camera.position, mainScene->visibleShadowNodes[i]);
 				}
 				++i;
 			}
@@ -676,8 +675,7 @@ public:
 			uniformBlock.set(BILLBOARD_FLAG, settings->billboardEnabled); 
 			uniformBlock.set(OPACITY_FLAG, settings->opacityEnabled);
 			UniformBlock::uniform(&uniformBlock, sizeof(UniformBlock), 0, uniformBrushData);
-			// TODO : depthmap nao tem vegetation
-			mainScene->drawBillboards(camera.position, mainScene->visibleSolidNodes);
+			mainScene->drawVegetation(camera.position, mainScene->visibleSolidNodes);
 		}
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -704,7 +702,7 @@ public:
 			uniformBlock.set(BILLBOARD_FLAG, settings->billboardEnabled); 
 			uniformBlock.set(OPACITY_FLAG, settings->opacityEnabled);
 			UniformBlock::uniform(&uniformBlock, sizeof(UniformBlock), 0, uniformBrushData);
-			mainScene->drawBillboards(camera.position, mainScene->visibleSolidNodes);
+			mainScene->drawVegetation(camera.position, mainScene->visibleSolidNodes);
 		}
 
 

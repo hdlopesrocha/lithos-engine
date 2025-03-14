@@ -14,24 +14,31 @@ class Scene {
 		long solidInstancesCount = 0;
 		long liquidInstancesCount = 0;
 		long vegetationInstancesCount = 0;
-		long shadowInstancesCount = 0;
+
 		long solidInstancesVisible = 0;
 		long liquidInstancesVisible = 0;
 		long vegetationInstancesVisible = 0;
+		
 		std::vector<IteratorData> visibleSolidNodes;
 		std::vector<IteratorData> visibleLiquidNodes;
 		std::vector<IteratorData> visibleShadowNodes[SHADOW_MATRIX_COUNT];
 		Settings * settings;
-		OctreeProcessor solidProcessor = OctreeProcessor(solidSpace, &solidInstancesCount, TYPE_INSTANCE_SOLID_DRAWABLE , 5, 0.9, 0.2, true, true, 5);
-		OctreeProcessor liquidProcessor = OctreeProcessor(liquidSpace, &liquidInstancesCount, TYPE_INSTANCE_LIQUID_DRAWABLE, 5, 0.9, 0.2, true, true, 5);
-		OctreeProcessor vegetationProcessor = OctreeProcessor(solidSpace, &vegetationInstancesCount,  TYPE_INSTANCE_VEGETATION_DRAWABLE, 5, 0.9, 0.2, true, true, 5);
+		int geometryLevel = 5;
 
-		OctreeVisibilityChecker solidRenderer = OctreeVisibilityChecker(solidSpace, 5, &visibleSolidNodes);
-		OctreeVisibilityChecker liquidRenderer = OctreeVisibilityChecker(liquidSpace, 5, &visibleLiquidNodes);;
+		GeometryBuilder * vegetationBuilder = new VegetationGeometryBuilder(TYPE_INSTANCE_VEGETATION_DRAWABLE, &vegetationInstancesCount, solidSpace);
+		GeometryBuilder * meshBuilder = new MeshGeometryBuilder(TYPE_INSTANCE_SOLID_DRAWABLE, &solidInstancesCount, solidSpace, 0.9, 0.2, true, geometryLevel);
+		GeometryBuilder * liquidMeshBuilder = new MeshGeometryBuilder(TYPE_INSTANCE_LIQUID_DRAWABLE, &liquidInstancesCount, liquidSpace, 0.9, 0.2, true, geometryLevel);
+
+		OctreeProcessor solidProcessor = OctreeProcessor(solidSpace , true, meshBuilder);
+		OctreeProcessor liquidProcessor = OctreeProcessor(liquidSpace, true, liquidMeshBuilder);
+		OctreeProcessor vegetationProcessor = OctreeProcessor(solidSpace, true, vegetationBuilder);
+
+		OctreeVisibilityChecker solidRenderer = OctreeVisibilityChecker(solidSpace, &visibleSolidNodes);
+		OctreeVisibilityChecker liquidRenderer = OctreeVisibilityChecker(liquidSpace, &visibleLiquidNodes);
 		OctreeVisibilityChecker shadowRenderer[SHADOW_MATRIX_COUNT] = {
-			OctreeVisibilityChecker(solidSpace, 5, &visibleShadowNodes[0]),
-			OctreeVisibilityChecker(solidSpace, 5, &visibleShadowNodes[1]),
-			OctreeVisibilityChecker(solidSpace, 5, &visibleShadowNodes[2])
+			OctreeVisibilityChecker(solidSpace, &visibleShadowNodes[0]),
+			OctreeVisibilityChecker(solidSpace, &visibleShadowNodes[1]),
+			OctreeVisibilityChecker(solidSpace, &visibleShadowNodes[2])
 		};
 
     void setup(Settings * settings) {
@@ -42,9 +49,6 @@ class Scene {
 
 	void processSpace() {
 		// Set load counts per Processor
-		solidProcessor.loadCount = 1;
-		liquidProcessor.loadCount = 1;
-		vegetationProcessor.loadCount = 1;
 
 		solidInstancesVisible = 0;
 		liquidInstancesVisible = 0;
@@ -53,24 +57,30 @@ class Scene {
 		for(int i =0 ; i < SHADOW_MATRIX_COUNT ; ++i){
 			std::vector<IteratorData> &vec = visibleShadowNodes[i];
 			for(IteratorData &data : vec) {
-				solidProcessor.before(data.level,data.height, data.node, data.cube, NULL);
-				vegetationProcessor.before(data.level,data.height, data.node, data.cube, NULL);
+				solidProcessor.loadCount = 1;
+				solidProcessor.before(data.level,data.height,data.lod, data.node, data.cube, NULL);
+				vegetationProcessor.loadCount = 1;
+				vegetationProcessor.before(data.level,data.height, data.lod, data.node, data.cube, NULL);
 			}
 		}
 
 		for(IteratorData &data : visibleSolidNodes){
-			solidProcessor.before(data.level,data.height, data.node, data.cube, NULL);
-			vegetationProcessor.before(data.level,data.height, data.node, data.cube, NULL);
+			solidProcessor.loadCount = 1;
+			solidProcessor.before(data.level,data.height, data.lod, data.node, data.cube, NULL);
+			vegetationProcessor.loadCount = 1;
+			vegetationProcessor.before(data.level,data.height, data.lod, data.node, data.cube, NULL);
 		}
 
 		for(IteratorData &data : visibleLiquidNodes){
-			liquidProcessor.before(data.level,data.height, data.node, data.cube, NULL);
+			liquidProcessor.loadCount = 1;
+			liquidProcessor.before(data.level,data.height,data.lod, data.node, data.cube, NULL);
 		}
 	}
 
 	void setVisibility(glm::mat4 viewProjection, std::vector<std::pair<glm::mat4, glm::vec3>> lightProjection ,Camera &camera) {
 		setVisibleNodes(viewProjection, camera.position, solidRenderer);
 		setVisibleNodes(viewProjection, camera.position, liquidRenderer);
+
 		int i =0;
 		for(std::pair<glm::mat4, glm::vec3> pair :  lightProjection){
 			setVisibleNodes(pair.first, pair.second, shadowRenderer[i++]);
@@ -82,54 +92,57 @@ class Scene {
 		checker.sortPosition = sortPosition;
 		
 		checker.update(viewProjection);
-		checker.tree->iterateFlat(checker);
+		checker.tree->iterateFlat(checker, geometryLevel);	//here we get the visible nodes for that LOD + geometryLEvel
 	}
 
 
 	void draw (uint drawableType, int mode, glm::vec3 cameraPosition, const std::vector<IteratorData> &list) {
+		//std::cout << "Scene.draw() " << std::to_string(drawableType) << "|" << std::to_string(list.size()) << std::endl;
 		for(const IteratorData &data : list) {
 			OctreeNode * node = data.node;
-			for(NodeInfo &info : node->info ) {
+			NodeInfo * info = node->getNodeInfo(drawableType);
 			
-				if(info.type & drawableType){
-					if(info.temp != NULL) {
-						PreLoadedGeometry * pre = (PreLoadedGeometry *) info.temp;
-						std::vector<Vertex> &vertices = pre->geometry->vertices;
-						
-						DrawableInstanceGeometry * geo = new DrawableInstanceGeometry(pre->geometry, &pre->instances);
-						info.data = geo;
-						info.temp = NULL;
+			if(info != NULL){
+				if(info->temp != NULL) {
+					PreLoadedGeometry * pre = (PreLoadedGeometry *) info->temp;
+					std::vector<Vertex> &vertices = pre->geometry->vertices;
+					
+					DrawableInstanceGeometry * geo = new DrawableInstanceGeometry(info->type, pre->geometry, &pre->instances, pre->center);
+					info->data = geo;
+					info->temp = NULL;
+					if(info->type != TYPE_INSTANCE_VEGETATION_DRAWABLE){
 						delete pre->geometry;
-						delete pre;
-					}
-					
-					DrawableInstanceGeometry * drawable = (DrawableInstanceGeometry*) info.data;
-				
-					float amount = 1.0;
-					if(drawableType & TYPE_INSTANCE_VEGETATION_DRAWABLE) {
-						amount = glm::clamp( 1.0 - glm::length(cameraPosition -  drawable->center)/(float(settings->billboardRange)), 0.0, 1.0);
-						if(amount > 0.8){
-							amount = 1.0;
-						}
-					}
-					drawable->draw(mode, amount);
-					
-					if(drawableType & TYPE_INSTANCE_SOLID_DRAWABLE) {
-						solidInstancesVisible += drawable->instancesCount;
-					}
-					else if(drawableType & TYPE_INSTANCE_LIQUID_DRAWABLE) {
-						liquidInstancesVisible += drawable->instancesCount;
-					}
-					else if(drawableType & TYPE_INSTANCE_VEGETATION_DRAWABLE) {
-						vegetationInstancesVisible += long(ceil(drawable->instancesCount*amount));
 					} 
+					delete pre;
 				}
+				
+				DrawableInstanceGeometry * drawable = (DrawableInstanceGeometry*) info->data;
+			
+				if(drawableType == TYPE_INSTANCE_VEGETATION_DRAWABLE) {
+					float amount = glm::clamp( 1.0 - glm::length(cameraPosition -  drawable->center)/(float(settings->billboardRange)), 0.0, 1.0);
+					if(amount > 0.8){
+						amount = 1.0;
+					}
+
+					//std::cout << "Scene.TYPE_INSTANCE_VEGETATION_DRAWABLE() " << std::to_string(vegetationInstancesVisible) << std::endl;
+					drawable->draw(mode, amount);
+					vegetationInstancesVisible += long(ceil(drawable->instancesCount*amount));
+				}else if(drawableType == TYPE_INSTANCE_SOLID_DRAWABLE) {
+					//std::cout << "Scene.TYPE_INSTANCE_SOLID_DRAWABLE() " << std::to_string(solidInstancesVisible) << std::endl;
+					drawable->draw(mode, 1.0);
+					solidInstancesVisible += drawable->instancesCount;
+				}
+				else if(drawableType == TYPE_INSTANCE_LIQUID_DRAWABLE) {
+					//std::cout << "Scene.TYPE_INSTANCE_LIQUID_DRAWABLE() " << std::to_string(liquidInstancesVisible) << std::endl;
+					drawable->draw(mode, 1.0);
+					liquidInstancesVisible += drawable->instancesCount;
+				}
+			
 			}
 		}
 	}
 
-
-	void drawBillboards(glm::vec3 cameraPosition, const std::vector<IteratorData> &list) {
+	void drawVegetation(glm::vec3 cameraPosition, const std::vector<IteratorData> &list) {
 		glDisable(GL_CULL_FACE);
 		draw(TYPE_INSTANCE_VEGETATION_DRAWABLE, GL_PATCHES, cameraPosition, list);
 		glEnable(GL_CULL_FACE);

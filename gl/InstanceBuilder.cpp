@@ -2,17 +2,16 @@
 #include "../math/math.hpp"
 #include "gl.hpp"
 
-InstanceBuilder::InstanceBuilder(Octree * tree, int lod, std::vector<InstanceData> * instances) {
+InstanceBuilder::InstanceBuilder(Octree * tree, std::vector<InstanceData> * instances) {
 	this->tree = tree;
 	this->instanceCount = 0;
-	this->lod = lod;
 	this->instances = instances;
 }
 
-void * InstanceBuilder::before(int level, int height, OctreeNode * node, const BoundingCube &cube, void * context) {		
+void * InstanceBuilder::before(int level, int height, int lod, OctreeNode * node, const BoundingCube &cube, void * context) {		
 	OctreeNode * neighbors[8];
 
-	if(height==lod){
+	if(height==0){
 		
 		Vertex * v = &node->vertex;
 		if(v->brushIndex == 2) { 
@@ -23,18 +22,16 @@ void * InstanceBuilder::before(int level, int height, OctreeNode * node, const B
 			tree->handleQuadNodes(*node, neighbors, handler);
 
 		}
-		
-		return node;
 	}
 	return NULL; 			 			
 }
 
-void InstanceBuilder::after(int level, int height, OctreeNode * node, const BoundingCube &cube, void * context) {			
+void InstanceBuilder::after(int level, int height, int lod, OctreeNode * node, const BoundingCube &cube, void * context) {			
 	return;
 }
 
-bool InstanceBuilder::test(int level, int height, OctreeNode * node, const BoundingCube &cube, void * context) {	
-	return context == NULL;
+bool InstanceBuilder::test(int level, int height, int lod, OctreeNode * node, const BoundingCube &cube, void * context) {	
+	return height >= 0;
 }
 
 

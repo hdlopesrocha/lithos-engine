@@ -291,14 +291,14 @@ void Octree::del(const ContainmentHandler &handler) {
 }
 
 
-void Octree::iterate(IteratorHandler &handler) {
+void Octree::iterate(IteratorHandler &handler, int geometryLevel) {
 	BoundingCube cube(glm::vec3(getMinX(),getMinY(),getMinZ()),getLengthX());
-	handler.iterate(0, getHeight(cube), root, cube, NULL);
+	handler.iterate(0, getHeight(cube), geometryLevel, root, cube, NULL);
 }
 
-void Octree::iterateFlat(IteratorHandler &handler) {
+void Octree::iterateFlat(IteratorHandler &handler, int geometryLevel) {
 	BoundingCube cube(glm::vec3(getMinX(),getMinY(),getMinZ()),getLengthX());
-	handler.iterateFlatIn(0, getHeight(cube), root, cube, NULL);
+	handler.iterateFlatIn(0, getHeight(cube), geometryLevel,root, cube, NULL);
 }
 
 
