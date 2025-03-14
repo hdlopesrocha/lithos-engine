@@ -7,7 +7,7 @@ LDFLAGS =
 # Directories
 SRC_DIRS = . gl math ui tools
 BIN_DIR = bin
-OBJ_DIR = $(BIN_DIR)/obj
+OBJ_DIR = obj
 TARGET = $(BIN_DIR)/app
 CONVERTER = $(BIN_DIR)/converter
 
