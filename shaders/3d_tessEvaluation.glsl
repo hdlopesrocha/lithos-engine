@@ -25,11 +25,9 @@ out vec4 teLightViewPosition[SHADOW_MATRIX_COUNT];
 flat out uvec3 teTextureIndices;
 out mat4 teModel;
 uniform TextureBrush overrideProps;
-out vec3 teT;
-out vec3 teB;
-out vec3 teN;
-out vec3 teViewDirection;
-out vec3 teViewDirectionTangent;
+out vec3 teTangent;
+out vec3 teBitangent;
+out vec3 teNormal;
 out vec3 teTextureWeights;
 out vec3 teBlendFactors;
 
@@ -55,26 +53,16 @@ void main() {
     if(!depthEnabled) {
 
 
-        vec3 teNormal = tcNormal[0]* gl_TessCoord[0]+tcNormal[1]* gl_TessCoord[1]+tcNormal[2]* gl_TessCoord[2];
+        teNormal = tcNormal[0]* gl_TessCoord[0]+tcNormal[1]* gl_TessCoord[1]+tcNormal[2]* gl_TessCoord[2];
         //vec3 teNormal = teSharpNormal;
 
         vec4 t = computeTriplanarTangentVec4(teNormal);
-        vec3 iTangent = t.xyz;
-        vec3 iBitangent = cross(teNormal, iTangent) * t.w;
+        teTangent = t.xyz;
+        teBitangent = cross(teNormal, teTangent) * t.w;
 
-        teT = iTangent;
-        teB = iBitangent;
-        teN = teNormal;
-        
-
-        mat3 TBN = mat3(teT,teB, teN);
-        teViewDirection = normalize(tePosition-cameraPosition.xyz);
-        teViewDirectionTangent = normalize(transpose(TBN) * teViewDirection);
         for(int i = 0; i < SHADOW_MATRIX_COUNT ; ++i ) {
             teLightViewPosition[i] = matrixShadow[i] * vec4(tePosition, 1.0);  
         }
-
-
 
         if(overrideEnabled) {
             teProps = overrideProps;
@@ -114,7 +102,7 @@ void main() {
     }
 
 
-    vec3 normal = abs(teN);
+    vec3 normal = abs(teNormal);
     vec3 blend = pow(abs(normal), vec3(blendSharpness));
     blend /= (blend.x + blend.y + blend.z);
     teBlendFactors = blend;

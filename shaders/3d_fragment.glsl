@@ -19,11 +19,9 @@ in vec2 teTextureCoord;
 in vec3 tePosition;
 in vec4 teLightViewPosition[SHADOW_MATRIX_COUNT];
 in mat4 teModel;
-in vec3 teT;
-in vec3 teB;
-in vec3 teN;
-in vec3 teViewDirection;
-in vec3 teViewDirectionTangent;
+in vec3 teTangent;
+in vec3 teBitangent;
+in vec3 teNormal;
 in vec3 teSharpNormal;
 in vec3 teTextureWeights;
 in vec3 teBlendFactors;
@@ -73,7 +71,9 @@ void main() {
         return;
     }
 
-    mat3 TBN = mat3(normalize(teT), normalize(teB), normalize(teN));
+    //mat3 TBN = mat3(normalize(teTangent), normalize(teBitangent), normalize(teNormal));
+    vec3 correctedNormal = gl_FrontFacing ? teNormal : -teNormal;
+    mat3 TBN = getTBN(tePosition, correctedNormal, uv, teModel, false);
 
     float effectAmount = sin(time*3.14/4.0)*0.5 + 0.5;
     float distance = length(cameraPosition.xyz - tePosition);
@@ -81,12 +81,16 @@ void main() {
     distanceFactor = pow(distanceFactor, parallaxPower);
     distanceFactor = clamp(distanceFactor, 0.0, 1.0);
 
+
+    vec3 viewDirection = normalize(tePosition-cameraPosition.xyz);
+    vec3 viewDirectionTangent = normalize(transpose(TBN) * viewDirection);
+
     if(parallaxEnabled && distanceFactor * teProps.parallaxScale > 0.0) {
        uv = parallaxMapping(
             textures[2], 
             teTextureIndices, 
             uv, 
-            normalize(teViewDirectionTangent), 
+            viewDirectionTangent, 
             teProps,
             teTextureWeights,
             teBlendFactors,
@@ -155,7 +159,7 @@ void main() {
         vec3 specularColor = vec3(1.0,1.0,1.0);
         vec3 reflection = reflect(-lightDirection.xyz, worldNormal);
 
-        float phongSpec = pow(max(dot(reflection, teViewDirection), 0.0), teProps.shininess);
+        float phongSpec = pow(max(dot(reflection, viewDirection), 0.0), teProps.shininess);
         float diffuse = clamp(max(dot(worldNormal, -lightDirection.xyz), 0.0), 0.2, 1.0);
 
         float shadowAmount = 1.0;
@@ -170,7 +174,7 @@ void main() {
             // Compute refraction
 
             float eta = 1.0 / teProps.refractiveIndex; // Air to water
-            vec3 refractedDir = refract(teViewDirectionTangent, normalMap, eta);
+            vec3 refractedDir = refract(viewDirectionTangent, normalMap, eta);
             vec2 refractedUV = pixelUV + refractedDir.xy * 0.1; // UV distortion
         
             float d2 = texture(depthTexture, refractedUV).r;
