@@ -46,7 +46,10 @@ $(OBJ_DIR)/%.o: %.cpp
 run:
 	cd $(BIN_DIR); ./app
 
-# Debug the program with Valgrind
+# Debugging
+debug: CFLAGS += -g
+debug: $(TARGET)
+
 debug_run:
 	cd $(BIN_DIR); valgrind ./app
 
@@ -66,3 +69,4 @@ report:
 # Clean the build (remove binaries and object files)
 clean:
 	rm -rf $(BIN_DIR)
+	rm -rf $(OBJ_DIR)
