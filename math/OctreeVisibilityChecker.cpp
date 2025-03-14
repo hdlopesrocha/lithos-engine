@@ -12,27 +12,27 @@ void OctreeVisibilityChecker::update(glm::mat4 m) {
 
 
 
-void * OctreeVisibilityChecker::before(int level, int height, int lod, OctreeNode * node, const BoundingCube &cube, void * context) {		
-	if(lod == 0){
-		visibleNodes->push_back({level, height, lod, node, cube, context});
+void * OctreeVisibilityChecker::before(IteratorData &params) {		
+	if(params.lod == 0){
+		visibleNodes->push_back({params.level, params.height, params.lod, params.node, params.cube, params.context});
 	}
 	return NULL;
 }
 
-void OctreeVisibilityChecker::after(int level, int height, int lod, OctreeNode * node, const BoundingCube &cube, void * context) {			
+void OctreeVisibilityChecker::after(IteratorData &params) {			
 	return;
 }
 
-bool OctreeVisibilityChecker::test(int level, int height, int lod, OctreeNode * node, const BoundingCube &cube, void * context) {	
-	return lod >= 0 && frustum.isBoxVisible(cube);
+bool OctreeVisibilityChecker::test(IteratorData &params) {	
+	return params.lod >= 0 && frustum.isBoxVisible(params.cube);
 }
 
 
-void OctreeVisibilityChecker::getOrder(const BoundingCube &cube, int * order){
+void OctreeVisibilityChecker::getOrder(IteratorData &params, int * order){
 	static std::pair<float, int> internalSortingVector[8]={};
 	
 	for(int i =0; i< 8; ++i){
-		BoundingCube c = Octree::getChildCube(cube, i);
+		BoundingCube c = Octree::getChildCube(params.cube, i);
 		internalSortingVector[i] = std::pair<float, int>(glm::distance2(c.getCenter(), sortPosition), i);
 	}
 

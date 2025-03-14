@@ -9,36 +9,36 @@ OctreeProcessor::OctreeProcessor(Octree * tree,bool createInstances, GeometryBui
 
 
 
-void * OctreeProcessor::before(int level, int height, int lod , OctreeNode * node, const BoundingCube &cube, void * context) {		
+void * OctreeProcessor::before(IteratorData &params) {		
 
-	NodeInfo * info = node->getNodeInfo(builder->infoType);
+	NodeInfo * info = params.node->getNodeInfo(builder->infoType);
 	bool canGenerate  = info == NULL || info->dirty;
 
-	if(lod==0){
+	if(params.lod==0){
 		if(canGenerate && createInstances) {
 			if(info == NULL) {
-				node->info.push_back(builder->build(level, height, lod, node, cube));
+				params.node->info.push_back(builder->build(params.level, params.height, params.lod, params.node, params.cube));
 				--loadCount;
 			}else {
 				//TODO replace info, delete vs new ?
 				info->dirty = false;
 			}
 		}
-		return node;
+		return params.node;
 	}
 	
 	return NULL; 			 			
 }
 
-void OctreeProcessor::after(int level, int height, int lod, OctreeNode * node, const BoundingCube &cube, void * context) {			
+void OctreeProcessor::after(IteratorData &params) {			
 	return;
 }
 
-bool OctreeProcessor::test(int level, int height, int lod, OctreeNode * node, const BoundingCube &cube, void * context) {	
-	return loadCount > 0 && lod>=0;
+bool OctreeProcessor::test(IteratorData &params) {	
+	return loadCount > 0 && params.lod>=0;
 }
 
-void OctreeProcessor::getOrder(const BoundingCube &cube, int * order){
+void OctreeProcessor::getOrder(IteratorData &params, int * order){
 	for(int i = 0 ; i < 8 ; ++i) {
 		order[i] = i;
 	}

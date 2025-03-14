@@ -10,25 +10,25 @@ Tesselator::Tesselator(Octree * tree, Geometry * chunk, int simplification) {
 
 }
 
-void * Tesselator::before(int level, int height, int lod, OctreeNode * node, const BoundingCube &cube, void * context) {		
+void * Tesselator::before(IteratorData &params) {		
 
-	if(height==0){		
+	if(params.height==0){		
 		// Tesselate
 		OctreeNodeTriangleTesselator handler(chunk, &triangles);
-		tree->handleQuadNodes(cube, level,*node , &handler);	
+		tree->handleQuadNodes(params.cube, params.level,*params.node , &handler);	
 	}
-	return context;
+	return params.context;
 }
 
-void Tesselator::after(int level, int height, int lod, OctreeNode * node, const BoundingCube &cube, void * context) {
+void Tesselator::after(IteratorData &params) {
 	return;
 }
 
-bool Tesselator::test(int level, int height, int lod, OctreeNode * node, const BoundingCube &cube, void * context) {			
-	return node->solid != ContainmentType::Contains && height >= 0;
+bool Tesselator::test(IteratorData &params) {			
+	return params.node->solid != ContainmentType::Contains && params.height >= 0;
 }
 
-void Tesselator::getOrder(const BoundingCube &cube, int * order){
+void Tesselator::getOrder(IteratorData &params, int * order){
 	for(int i = 7 ; i >= 0 ; --i) {
 		order[i] = i;
 	}

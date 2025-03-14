@@ -11,27 +11,35 @@ void Scene::processSpace() {
 	solidInstancesVisible = 0;
 	liquidInstancesVisible = 0;
 	vegetationInstancesVisible = 0;
-	
-	for(int i =0 ; i < SHADOW_MATRIX_COUNT ; ++i){
-		std::vector<IteratorData> &vec = visibleShadowNodes[i];
-		for(IteratorData &data : vec) {
-			solidProcessor.loadCount = 1;
-			solidProcessor.before(data.level,data.height,data.lod, data.node, data.cube, NULL);
-			vegetationProcessor.loadCount = 1;
-			vegetationProcessor.before(data.level,data.height, data.lod, data.node, data.cube, NULL);
+	solidProcessor.loadCount = 1;
+	liquidProcessor.loadCount = 1;
+	vegetationProcessor.loadCount = 1;
+
+	for(IteratorData &data : visibleSolidNodes){
+		if(solidProcessor.loadCount > 0) {
+			solidProcessor.before(data);
+		}
+		if(vegetationProcessor.loadCount > 0) {
+			vegetationProcessor.before(data);
 		}
 	}
 
-	for(IteratorData &data : visibleSolidNodes){
-		solidProcessor.loadCount = 1;
-		solidProcessor.before(data.level,data.height, data.lod, data.node, data.cube, NULL);
-		vegetationProcessor.loadCount = 1;
-		vegetationProcessor.before(data.level,data.height, data.lod, data.node, data.cube, NULL);
+	for(IteratorData &data : visibleLiquidNodes){
+		if(liquidProcessor.loadCount > 0) {
+			liquidProcessor.before(data);
+		}
 	}
 
-	for(IteratorData &data : visibleLiquidNodes){
-		liquidProcessor.loadCount = 1;
-		liquidProcessor.before(data.level,data.height,data.lod, data.node, data.cube, NULL);
+	for(int i =0 ; i < SHADOW_MATRIX_COUNT ; ++i){
+		std::vector<IteratorData> &vec = visibleShadowNodes[i];
+		for(IteratorData &data : vec) {
+			if(solidProcessor.loadCount > 0) {
+				solidProcessor.before(data);
+			}
+			if(vegetationProcessor.loadCount > 0) {
+				vegetationProcessor.before(data);
+			}
+		}
 	}
 }
 

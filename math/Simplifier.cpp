@@ -12,24 +12,24 @@ Simplifier::Simplifier(Octree * tree, BoundingCube chunkCube, float angle, float
 	this->chunkCube = chunkCube;
 }
 
-void * Simplifier::before(int level, int height, int lod, OctreeNode * node, const BoundingCube &cube, void * context) {		
-	return context; 			 			
+void * Simplifier::before(IteratorData &params) {		
+	return params.context; 			 			
 }
 
-void Simplifier::after(int level, int height, int lod, OctreeNode * node, const BoundingCube &cube, void * context) {
+void Simplifier::after(IteratorData &params) {
 	// The parentNode plane
 
-	Plane parentPlane(node->vertex.normal, node->vertex.position); 
-	const Vertex parentVertex = node->vertex;
+	Plane parentPlane(params.node->vertex.normal, params.node->vertex.position); 
+	const Vertex parentVertex = params.node->vertex;
 	
-	if(height == 0) {
-		node->simplification = simplification;
+	if(params.height == 0) {
+		params.node->simplification = simplification;
 		return;
 	}
 
 	for(int i=0; i < 8 ; ++i) {
-		BoundingCube cc(cube.getMin() - cube.getLengthX()*Octree::getShift(i), cube.getLengthX());
-		OctreeNode * c = tree->getNodeAt(cc.getCenter(), level, 0);
+		BoundingCube cc(params.cube.getMin() - params.cube.getLengthX()*Octree::getShift(i), params.cube.getLengthX());
+		OctreeNode * c = tree->getNodeAt(cc.getCenter(), params.level, 0);
 		if(c!=NULL && c->solid == ContainmentType::Intersects) {
 			if(!chunkCube.contains(cc)){
 				return;
@@ -57,7 +57,7 @@ void Simplifier::after(int level, int height, int lod, OctreeNode * node, const 
 
 	// for leaf nodes shouldn't loop
 	for(int i=0; i < 8 ; ++i) {
-		OctreeNode * c = node->children[i];
+		OctreeNode * c = params.node->children[i];
 		if(c!=NULL && c->solid == ContainmentType::Intersects) {
 			if(c->simplification != simplification) {
 				return;
@@ -72,19 +72,19 @@ void Simplifier::after(int level, int height, int lod, OctreeNode * node, const 
 	}
 
 	if(nodeCount > 0) {	
-		node->vertex.position = sumP / (float)nodeCount;
-		node->simplification = simplification;
+		params.node->vertex.position = sumP / (float)nodeCount;
+		params.node->simplification = simplification;
 	}
 
 
 	return;
 }
 
-bool Simplifier::test(int level, int height, int lod, OctreeNode * node, const BoundingCube &cube, void * context) {			
-	return node->solid != ContainmentType::Contains && height >= 0;
+bool Simplifier::test(IteratorData &params) {			
+	return params.node->solid != ContainmentType::Contains && params.height >= 0;
 }
 
-void Simplifier::getOrder(const BoundingCube &cube, int * order){
+void Simplifier::getOrder(IteratorData &params, int * order){
 	for(int i = 7 ; i >= 0 ; --i) {
 		order[i] = i;
 	}

@@ -23,7 +23,7 @@ const NodeInfo VegetationGeometryBuilder::build(int level, int height, int lod, 
     //std::cout << "VegetationGeometryBuilder::build" <<std::endl;
     InstanceGeometry * instanceGeometry = new InstanceGeometry(geometry);
     InstanceBuilder instanceBuilder(tree, &instanceGeometry->instances, handler);
-    instanceBuilder.iterateFlatIn(level, height, lod, node, cube, instanceGeometry);
+    instanceBuilder.iterateFlatIn(IteratorData(level, height, lod, node, cube, instanceGeometry));
 
     // Shuffle the vector
     if(instanceGeometry->instances.size()){

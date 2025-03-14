@@ -9,30 +9,24 @@ InstanceBuilder::InstanceBuilder(Octree * tree, std::vector<InstanceData> * inst
 	this->handler = handler;
 }
 
-
-
-
-void * InstanceBuilder::before(int level, int height, int lod, OctreeNode * node, const BoundingCube &cube, void * context) {		
-
-	if(height==0){
-		InstanceGeometry * pre= (InstanceGeometry *) context;
-		handler->handle(node, cube, level, pre);
+void * InstanceBuilder::before(IteratorData &params) {		
+	if(params.height==0){
+		InstanceGeometry * pre= (InstanceGeometry *) params.context;
+		handler->handle(params.node, params.cube, params.level, pre);
 	}
-	return context; 			 			
+	return params.context; 			 			
 }
 
-void InstanceBuilder::after(int level, int height, int lod, OctreeNode * node, const BoundingCube &cube, void * context) {			
+void InstanceBuilder::after(IteratorData &params) {			
 	return;
 }
 
-bool InstanceBuilder::test(int level, int height, int lod, OctreeNode * node, const BoundingCube &cube, void * context) {	
-	return height >= 0;
+bool InstanceBuilder::test(IteratorData &params) {	
+	return params.height >= 0;
 }
 
-
-void InstanceBuilder::getOrder(const BoundingCube &cube, int * order){
+void InstanceBuilder::getOrder(IteratorData &params, int * order){
 	for(int i = 0 ; i < 8 ; ++i) {
 		order[i] = i;
 	}
 }
-
