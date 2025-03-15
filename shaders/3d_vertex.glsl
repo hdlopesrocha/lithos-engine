@@ -39,12 +39,11 @@ void main() {
     vNormal = normalize(normalMatrix * normal);
     
     if(overrideEnabled){
-        vProps = brushes[overrideBrush];
         vTextureIndex = brushTextures[overrideBrush];
     }else {
-        vProps = brushes[brushIndex];
         vTextureIndex = brushTextures[brushIndex];
     }
+    vProps = brushes[brushIndex];
 
 
     if(billboardEnabled) {

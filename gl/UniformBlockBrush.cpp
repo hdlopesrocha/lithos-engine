@@ -38,28 +38,28 @@ UniformBlockBrush::UniformBlockBrush(glm::vec2 textureScale,float parallaxScale,
 }
 
 
+void UniformBlockBrush::uniform(GLuint program, UniformBlockBrush * brush, std::string objectName) {
+
+
+	glUniform1f(glGetUniformLocation(program, (objectName +".parallaxScale").c_str() ), brush->parallaxScale);
+	glUniform1f(glGetUniformLocation(program, (objectName +".parallaxMinLayers").c_str()), brush->parallaxMinLayers);
+	glUniform1f(glGetUniformLocation(program, (objectName +".parallaxMaxLayers").c_str()), brush->parallaxMaxLayers);
+	glUniform1f(glGetUniformLocation(program, (objectName +".parallaxFade").c_str()), brush->parallaxFade);
+	glUniform1f(glGetUniformLocation(program, (objectName +".parallaxRefine").c_str()), brush->parallaxRefine);
+	glUniform1f(glGetUniformLocation(program, (objectName +".shininess").c_str()), brush->shininess);
+	glUniform1f(glGetUniformLocation(program, (objectName +".specularStrength").c_str()), brush->specularStrength);
+	glUniform1f(glGetUniformLocation(program, (objectName +".refractiveIndex").c_str()), brush->refractiveIndex);
+	glUniform2fv(glGetUniformLocation(program, (objectName +".textureScale").c_str()), 1, glm::value_ptr(brush->textureScale));
+
+
+}
+
+
 void UniformBlockBrush::uniform(GLuint program, UniformBlockBrush * brush, std::string objectName, std::string textureMap, int index, uint textureIndex) {
-
-
-		std::string propName = objectName + "[" + std::to_string(index)  +"]";
-
-		std::string mapName = textureMap + "[" + std::to_string(index)  +"]";
-
-	
-	
-	    glUniform1ui(glGetUniformLocation(program, (mapName).c_str()), textureIndex);
-
-		glUniform1f(glGetUniformLocation(program, (propName +".parallaxScale").c_str() ), brush->parallaxScale);
-		glUniform1f(glGetUniformLocation(program, (propName +".parallaxMinLayers").c_str()), brush->parallaxMinLayers);
-		glUniform1f(glGetUniformLocation(program, (propName +".parallaxMaxLayers").c_str()), brush->parallaxMaxLayers);
-		glUniform1f(glGetUniformLocation(program, (propName +".parallaxFade").c_str()), brush->parallaxFade);
-		glUniform1f(glGetUniformLocation(program, (propName +".parallaxRefine").c_str()), brush->parallaxRefine);
-		glUniform1f(glGetUniformLocation(program, (propName +".shininess").c_str()), brush->shininess);
-		glUniform1f(glGetUniformLocation(program, (propName +".specularStrength").c_str()), brush->specularStrength);
-		glUniform1f(glGetUniformLocation(program, (propName +".refractiveIndex").c_str()), brush->refractiveIndex);
-		glUniform2fv(glGetUniformLocation(program, (propName +".textureScale").c_str()), 1, glm::value_ptr(brush->textureScale));
-
-
+	std::string propName = objectName + "[" + std::to_string(index)  +"]";
+	std::string mapName = textureMap + "[" + std::to_string(index)  +"]";
+	glUniform1ui(glGetUniformLocation(program, (mapName).c_str()), textureIndex);
+	uniform(program, brush, propName);
 }
 
 void UniformBlockBrush::uniform(GLuint program, std::vector<UniformBlockBrush*> *brushes, std::string objectName, std::string textureMap,std::map<UniformBlockBrush*, GLuint > *textureMapper) {

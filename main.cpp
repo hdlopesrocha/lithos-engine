@@ -625,7 +625,7 @@ public:
 				uniformBlock.set(OPACITY_FLAG, false);
 				uniformBlock.set(BILLBOARD_FLAG, false); 
 
-				UniformBlock::uniform(&uniformBlock, sizeof(UniformBlock), 0, uniformBlockData);
+				UniformBlock::uniform(0, &uniformBlock, sizeof(UniformBlock), uniformBlockData);
 
 				mainScene->draw3dSolid(camera.position, mainScene->visibleShadowNodes[i]);
 				
@@ -633,7 +633,7 @@ public:
 					glUseProgram(programBillboard);
 					uniformBlock.set(OPACITY_FLAG, settings->opacityEnabled);
 					uniformBlock.set(BILLBOARD_FLAG, settings->billboardEnabled); 
-					UniformBlock::uniform(&uniformBlock, sizeof(UniformBlock), 0, uniformBrushData);
+					UniformBlock::uniform(0, &uniformBlock, sizeof(UniformBlock), uniformBrushData);
 					mainScene->drawVegetation(camera.position, mainScene->visibleShadowNodes[i]);
 				}
 				++i;
@@ -657,7 +657,7 @@ public:
 		uniformBlock.set(BILLBOARD_FLAG, false); 
 		uniformBlock.set(OPACITY_FLAG, false);
 
-		UniformBlock::uniform(&uniformBlock, sizeof(UniformBlock), 0, uniformBlockData);
+		UniformBlock::uniform(0, &uniformBlock, sizeof(UniformBlock), uniformBlockData);
 		mainScene->draw3dSolid(camera.position, mainScene->visibleSolidNodes);
 
 
@@ -666,7 +666,7 @@ public:
 			uniformBlock.set(TESSELATION_FLAG, false);
 			uniformBlock.set(BILLBOARD_FLAG, settings->billboardEnabled); 
 			uniformBlock.set(OPACITY_FLAG, settings->opacityEnabled);
-			UniformBlock::uniform(&uniformBlock, sizeof(UniformBlock), 0, uniformBrushData);
+			UniformBlock::uniform(0, &uniformBlock, sizeof(UniformBlock), uniformBrushData);
 			mainScene->drawVegetation(camera.position, mainScene->visibleSolidNodes);
 		}
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -693,7 +693,7 @@ public:
 			glUseProgram(programBillboard);
 			uniformBlock.set(BILLBOARD_FLAG, settings->billboardEnabled); 
 			uniformBlock.set(OPACITY_FLAG, settings->opacityEnabled);
-			UniformBlock::uniform(&uniformBlock, sizeof(UniformBlock), 0, uniformBrushData);
+			UniformBlock::uniform(0, &uniformBlock, sizeof(UniformBlock), uniformBrushData);
 			mainScene->drawVegetation(camera.position, mainScene->visibleSolidNodes);
 		}
 
@@ -703,7 +703,7 @@ public:
 		uniformBlock.set(BILLBOARD_FLAG, false); 
 		uniformBlock.set(TESSELATION_FLAG, settings->tesselationEnabled);
 		uniformBlock.set(OPACITY_FLAG, false);
-		UniformBlock::uniform(&uniformBlock, sizeof(UniformBlock), 0, uniformBlockData);
+		UniformBlock::uniform(0, &uniformBlock, sizeof(UniformBlock), uniformBlockData);
 		mainScene->draw3dSolid(camera.position, mainScene->visibleSolidNodes);
 		if(settings->wireFrameEnabled) {
 			glPolygonMode(GL_FRONT, GL_FILL);
@@ -722,7 +722,7 @@ public:
 		glViewport(0, 0, renderBuffer.width, renderBuffer.height);
 
 		glUseProgram(program3d);
-		UniformBlock::uniform(&uniformBlock, sizeof(UniformBlock), 0, uniformBlockData);
+		UniformBlock::uniform(0, &uniformBlock, sizeof(UniformBlock), uniformBlockData);
 		mainScene->draw3dLiquid(camera.position, mainScene->visibleLiquidNodes);
 
 		//glUseProgram(program3d);

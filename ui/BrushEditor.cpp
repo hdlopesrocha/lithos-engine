@@ -145,7 +145,8 @@ void BrushEditor::draw3d(UniformBlock block){
     block.set(OVERRIDE_FLAG, true);
     block.uintData.w = uint(selectedBrush);
 
-    UniformBlock::uniform(&block, sizeof(UniformBlock) , 0, data);
+    UniformBlockBrush::uniform(program, brush, "overrideProps");
+    UniformBlock::uniform(0, &block, sizeof(UniformBlock) , data);
     long count = 0;
     sphere->draw(GL_PATCHES, &count);
 

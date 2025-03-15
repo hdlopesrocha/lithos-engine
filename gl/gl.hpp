@@ -82,7 +82,7 @@ struct UniformBlock {
     public:
     static std::string toString(UniformBlock * block);
     void set(uint index, uint flag, bool value);
-	static void uniform(void * block, size_t size, GLuint bindingIndex, ProgramData * data);
+	static void uniform(GLuint bindingIndex,void * block, size_t size, ProgramData * data);
 };
 #pragma pack()  // Reset to default packing
 
@@ -104,6 +104,7 @@ struct UniformBlockBrush {
     UniformBlockBrush(glm::vec2 textureScale,float parallaxScale, float parallaxMinLayers, float parallaxMaxLayers, float parallaxFade, float parallaxRefine, float shininess, float specularStrength, float refractiveIndex);
     static void uniform(GLuint program, std::vector<UniformBlockBrush*> *brushes, std::string objectName, std::string textureMap,std::map<UniformBlockBrush*, GLuint > *textureMapper);
     static void uniform(GLuint program, UniformBlockBrush * brush, std::string objectName, std::string textureMap, int index,uint textureIndex);
+    static void uniform(GLuint program, UniformBlockBrush * brush, std::string objectName);
 
     static std::string toString(UniformBlockBrush * block);
 };
