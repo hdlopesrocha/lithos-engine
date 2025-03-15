@@ -86,6 +86,19 @@ class VegetationGeometryBuilder : public GeometryBuilder {
 
 };
 
+class VegetationInstanceBuilder : public OctreeNodeTriangleHandler {
+
+	public: 
+	std::vector<InstanceData> * instances;
+    int pointsPerTriangle;
+
+	using OctreeNodeTriangleHandler::OctreeNodeTriangleHandler;
+	VegetationInstanceBuilder(Geometry * chunk, long * count,std::vector<InstanceData> * instances, int pointsPerTriangle);
+	void handle(OctreeNode* c0,OctreeNode* c1,OctreeNode* c2, bool sign) override;
+
+};
+
+
 
 class Scene {
 

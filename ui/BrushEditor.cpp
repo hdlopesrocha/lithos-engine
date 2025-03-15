@@ -11,7 +11,7 @@ BrushEditor::BrushEditor(ProgramData * data,Camera * camera, std::vector<Uniform
 
     SphereGeometry sphereGeometry(40,80);
     std::vector<InstanceData> instances;
-    instances.push_back(InstanceData(glm::mat4(1.0),0));
+    instances.push_back(InstanceData(0,glm::mat4(1.0),0));
 	this->sphere = new DrawableInstanceGeometry(TYPE_INSTANCE_SOLID_DRAWABLE, &sphereGeometry, &instances);
 
 

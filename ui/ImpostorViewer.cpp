@@ -1,8 +1,9 @@
 #include "ui.hpp"
 
 
-ImpostorViewer::ImpostorViewer(ImpostorDrawer* impostorDrawer, GLuint previewProgram, int width, int height, TextureLayers * layers) {
+ImpostorViewer::ImpostorViewer(ImpostorDrawer* impostorDrawer, std::vector<ImpostorParams> *impostors,GLuint previewProgram, int width, int height, TextureLayers * layers) {
     this->impostorDrawer = impostorDrawer;
+    this->impostors = impostors;
     this->previewer = new TexturePreviewer(previewProgram, width, height, {"Color", "Normal", "Opacity" }, layers);
     this->selectedDrawer = 0;
     this->layers = layers;
@@ -10,9 +11,14 @@ ImpostorViewer::ImpostorViewer(ImpostorDrawer* impostorDrawer, GLuint previewPro
 
 
 void ImpostorViewer::draw2d(){
+    selectedDrawer = Math::mod(selectedDrawer, layers->count);
+
+    ImpostorParams * params = &(*impostors)[selectedDrawer];
+    impostorDrawer->draw(*params);
+
+
     ImGui::Begin("Impostor Viewer", &open, ImGuiWindowFlags_AlwaysAutoResize);
     if(layers->count) {
-        selectedDrawer = Math::mod(selectedDrawer, layers->count);
         previewer->draw2d(selectedDrawer);
     }
     

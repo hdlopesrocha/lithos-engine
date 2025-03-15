@@ -30,13 +30,23 @@ release: compile
 profile: CFLAGS += -pg -g
 profile: compile
 
+# Clean the build (remove binaries and object files)
+clean:
+	rm -rf $(BIN_DIR)
+
+reset:
+	rm -rf $(BIN_DIR)
+	rm -rf $(OBJ_DIR)
+
 # Compilation and linking
-compile: $(TARGET)
+compile: clean $(TARGET)
+
+recompile: reset $(TARGET)
 
 $(TARGET): $(OBJ)
-	mkdir -p $(BIN_DIR)/shaders $(BIN_DIR)/models
+	mkdir -p $(BIN_DIR)/textures $(BIN_DIR)/models $(BIN_DIR)/shaders
 	cp -rf textures models shaders $(BIN_DIR)/
-	$(CC) $^ $(CFLAGS) $(LIBS) -o $@
+	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS) $(LIBS)
 
 $(OBJ_DIR)/%.o: %.cpp
 	mkdir -p $(dir $@)
@@ -60,13 +70,15 @@ tool: $(OBJ_DIR)/tools/wavefrontConverter.o
 # Install dependencies (assuming Ubuntu-based system)
 install:
 	@echo "To install dependencies, run:"
-	@echo "  sudo apt-get install libimgui-dev libglew-dev libstb-dev cloc"
+	@echo "  sudo apt-get install libimgui-dev libglew-dev libstb-dev cloc kcachegrind"
 
 # Count lines of code
 report:
 	cloc . --exclude-dir=$(BIN_DIR)
 
-# Clean the build (remove binaries and object files)
-clean:
-	rm -rf $(BIN_DIR)
-	rm -rf $(OBJ_DIR)
+cachegrind:
+	cd bin; kcachegrind callgrind.out
+
+callgrind:
+	cd bin; valgrind --tool=callgrind --callgrind-out-file=callgrind.out ./app;  kcachegrind callgrind.out
+

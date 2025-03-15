@@ -27,7 +27,7 @@ const NodeInfo MeshGeometryBuilder::build(int level, int height, int lod, Octree
     tesselator.iterateFlatIn(ihp);
 
     InstanceGeometry * pre = new InstanceGeometry(geometry);
-    pre->instances.push_back(InstanceData(glm::mat4(1.0), 0.0f));
+    pre->instances.push_back(InstanceData(0, glm::mat4(1.0), 0.0f));
 
     *count += 1;
 

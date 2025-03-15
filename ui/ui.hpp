@@ -100,9 +100,10 @@ class ImpostorViewer: public Closable {
     ImpostorDrawer* impostorDrawer;
     TexturePreviewer * previewer;
     TextureLayers * layers;
+    std::vector<ImpostorParams> * impostors;
     int selectedDrawer = 0;
     public:
-    ImpostorViewer(ImpostorDrawer* impostorDrawer, GLuint previewProgram, int width, int height, TextureLayers * layers);
+    ImpostorViewer(ImpostorDrawer* impostorDrawer, std::vector<ImpostorParams> * impostors ,GLuint previewProgram, int width, int height, TextureLayers * layers);
     void draw2d() override;
     void draw3d(UniformBlock block) override;
 };

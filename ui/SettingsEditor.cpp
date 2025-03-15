@@ -42,6 +42,7 @@ void SettingsEditor::draw2d(){
     debugModes.push_back("DistanceFactor");    
     debugModes.push_back("Parallax UV shift");
     debugModes.push_back("Cartoon");
+    debugModes.push_back("Dont correct normal");
 
     
 

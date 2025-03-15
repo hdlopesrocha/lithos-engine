@@ -74,7 +74,7 @@ void main() {
 
     //mat3 TBN = mat3(normalize(teTangent), normalize(teBitangent), normalize(teNormal));
     vec3 correctedNormal = gl_FrontFacing ? teNormal : -teNormal;
-    mat3 TBN = getTBN(tePosition, correctedNormal, uv, teModel, false);
+    mat3 TBN = getTBN(tePosition, debugMode == 16 ? teNormal: correctedNormal, uv, teModel, false);
 
     float effectAmount = sin(time*3.14/4.0)*0.5 + 0.5;
     float distance = length(cameraPosition.xyz - tePosition);

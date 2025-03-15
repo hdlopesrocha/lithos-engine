@@ -395,7 +395,7 @@ public:
 		}
 		{	
 			std::vector<InstanceData> vegetationInstances;
-			vegetationInstances.push_back(InstanceData(glm::mat4(1.0), 0));
+			vegetationInstances.push_back(InstanceData(0, glm::mat4(1.0), 0));
 			DrawableInstanceGeometry * vegetationMesh = new DrawableInstanceGeometry(TYPE_INSTANCE_VEGETATION_DRAWABLE, new Vegetation3d(1), &vegetationInstances);
 			impostors.push_back(ImpostorParams(impostorLayers.count++, vegetationMesh));
 		}
@@ -476,7 +476,7 @@ public:
 		depthBufferViewer = new DepthBufferViewer(programDepth,depthFrameBuffer.depthTexture,512,512);
 		settingsEditor = new SettingsEditor(settings);
 		textureViewer = new TextureViewer(programTexture, &textureLayers);
-		impostorViewer = new ImpostorViewer(impostorDrawer, programTexture, 256, 256, &impostorLayers);
+		impostorViewer = new ImpostorViewer(impostorDrawer, &impostors , programTexture, 256, 256, &impostorLayers);
 
 		// ImGui
 		IMGUI_CHECKVERSION();

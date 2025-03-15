@@ -23,7 +23,7 @@ TextureArray ImpostorDrawer::getTexture() {
 void ImpostorDrawer::draw(ImpostorParams &params) {
     std::cout << "ImpostorDrawer::draw" << std::endl;
     
-    glm::mat4 view = glm::lookAt(glm::vec3(2.0), params.mesh->center, glm::vec3(0.0, 1.0, 0.0));
+    glm::mat4 view = glm::lookAt(glm::vec3(3.0), params.mesh->center, glm::vec3(0.0, 1.0, 0.0));
     glm::mat4 projection = glm::perspective(glm::radians(45.0f), width / (float) height, 0.1f, 32.0f);
     glm::mat4 viewProjection = projection * view;
     glm::mat4 world(1.0);
@@ -34,7 +34,7 @@ void ImpostorDrawer::draw(ImpostorParams &params) {
     glClearColor (1.0,0.0,0.0,1.0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
-    glUniform1i(glGetUniformLocation(program, "opacityEnabled"), true); // TODO: true
+    glUniform1i(glGetUniformLocation(program, "opacityEnabled"), false); // TODO: true
     glUniform1i(glGetUniformLocation(program, "overrideEnabled"), false); 
     glUniform1ui(glGetUniformLocation(program, "overrideBrush"), 0u); 
     glUniform1i(glGetUniformLocation(program, "targetLayer"), 0); 

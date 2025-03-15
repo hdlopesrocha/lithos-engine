@@ -431,11 +431,13 @@ class IteratorHandler {
 struct InstanceData {
     public:
     float shift;
+	uint animation;
     glm::mat4 matrix;
 
-    InstanceData(glm::mat4 matrix,  float shift) {
+    InstanceData(uint animation, glm::mat4 matrix,  float shift) {
         this->matrix = matrix;
         this->shift = shift;
+		this->animation = animation;
     }
 };
 
@@ -476,18 +478,6 @@ class InstanceBuilder : public IteratorHandler{
 
 };
 
-
-class OctreeNodeTriangleInstanceBuilder : public OctreeNodeTriangleHandler {
-
-	public: 
-	std::vector<InstanceData> * instances;
-    int pointsPerTriangle;
-
-	using OctreeNodeTriangleHandler::OctreeNodeTriangleHandler;
-	OctreeNodeTriangleInstanceBuilder(Geometry * chunk, long * count,std::vector<InstanceData> * instances, int pointsPerTriangle);
-	void handle(OctreeNode* c0,OctreeNode* c1,OctreeNode* c2, bool sign) override;
-
-};
 
 
 class OctreeNodeTriangleTesselator : public OctreeNodeTriangleHandler {

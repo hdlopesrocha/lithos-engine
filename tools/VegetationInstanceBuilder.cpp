@@ -1,4 +1,4 @@
-#include "math.hpp"
+#include "tools.hpp"
 
 #include <random>
 
@@ -46,12 +46,12 @@ glm::vec3 randomPointInTriangle(const glm::vec3& A, const glm::vec3& B, const gl
 }
 
 
-OctreeNodeTriangleInstanceBuilder::OctreeNodeTriangleInstanceBuilder(Geometry * chunk, long * count,std::vector<InstanceData> * instances, int pointsPerTriangle) : OctreeNodeTriangleHandler(chunk, count){
+VegetationInstanceBuilder::VegetationInstanceBuilder(Geometry * chunk, long * count,std::vector<InstanceData> * instances, int pointsPerTriangle) : OctreeNodeTriangleHandler(chunk, count){
     this->instances = instances;
     this->pointsPerTriangle = pointsPerTriangle;
 }
 
-void OctreeNodeTriangleInstanceBuilder::handle(OctreeNode* c0,OctreeNode* c1,OctreeNode* c2, bool sign){
+void VegetationInstanceBuilder::handle(OctreeNode* c0,OctreeNode* c1,OctreeNode* c2, bool sign){
     GradientPerlinSurface fps(1.0, 1.0f/128.0f, 0);
 
     for (int i = 0; i < pointsPerTriangle; i++) {
@@ -81,7 +81,7 @@ void OctreeNodeTriangleInstanceBuilder::handle(OctreeNode* c0,OctreeNode* c1,Oct
             }     
             model *=  Math::getRotationMatrixFromNormal(c0->vertex.normal, glm::vec3(0.0,1.0,0.0));
 
-            instances->push_back(InstanceData(model, deepness));
+            instances->push_back(InstanceData(0, model, deepness));
             ++*count;
         }
     }
