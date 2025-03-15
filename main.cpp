@@ -584,7 +584,7 @@ public:
 		glPointSize(4.0);	
 
 
-        uniformBlock.uintData = glm::uvec4(0u, 0u, settings->debugMode, settings->overrideTexture);
+        uniformBlock.uintData = glm::uvec4(0u, 0u, settings->debugMode, settings->overrideBrush);
 		uniformBlock.floatData = glm::vec4( time, settings->blendSharpness, settings->parallaxDistance ,settings->parallaxPower);
 		uniformBlock.world = worldModel;
 		uniformBlock.lightDirection = glm::vec4(light.direction, 0.0f);

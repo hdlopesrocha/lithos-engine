@@ -68,7 +68,7 @@ void AtlasViewer::draw2d(){
     ImGui::End();
 }
 
-void AtlasViewer::draw3d(UniformBlock * block){
+void AtlasViewer::draw3d(UniformBlock block){
 
 }
 

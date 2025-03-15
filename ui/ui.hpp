@@ -35,7 +35,7 @@ class Closable {
     bool isOpen();
     
     virtual void draw2d() = 0;
-    virtual void draw3d(UniformBlock * block) = 0;
+    virtual void draw3d(UniformBlock block) = 0;
 
     void draw2dIfOpen(){
         if(open) {
@@ -45,7 +45,7 @@ class Closable {
 
     void draw3dIfOpen(UniformBlock * block){
         if(open) {
-            draw3d(block);
+            draw3d(*block);
         } 
     }
 };
@@ -56,8 +56,8 @@ class TextureViewer: public Closable {
     TextureLayers * layers;
     public:
     TextureViewer(GLuint previewProgram, TextureLayers * layers);
-    void draw2d();
-    void draw3d(UniformBlock * block);
+    void draw2d() override;
+    void draw3d(UniformBlock block) override;
 };
 
 class UniformBlockViewer: public Closable {
@@ -65,8 +65,8 @@ class UniformBlockViewer: public Closable {
     public:
     UniformBlock * block;
     UniformBlockViewer(UniformBlock * block);
-    void draw2d();
-    void draw3d(UniformBlock * block);
+    void draw2d() override;
+    void draw3d(UniformBlock block) override;
 };
 
 
@@ -78,8 +78,8 @@ class AtlasViewer: public Closable {
   	int selectedTile = 0;
     public:
     AtlasViewer(std::vector<AtlasTexture*> * atlasTextures, AtlasDrawer * drawer, GLuint programAtlas, GLuint previewProgram, int width, int height, TextureLayers * sourceLayers, GLuint copyProgram) ;
-    void draw2d();
-    void draw3d(UniformBlock * block);
+    void draw2d() override;
+    void draw3d(UniformBlock block) override;
 };
 
 class AtlasPainter: public Closable {
@@ -93,7 +93,7 @@ class AtlasPainter: public Closable {
     public:
     AtlasPainter(std::vector<AtlasParams> * atlasParams, std::vector<AtlasTexture*> * atlasTextures, AtlasDrawer * atlasDrawer, GLuint programAtlas, GLuint previewProgram, int width, int height, TextureLayers * layers);
     void draw2d();
-    void draw3d(UniformBlock * block);
+    void draw3d(UniformBlock block) override;
 };
 
 class ImpostorViewer: public Closable {
@@ -103,8 +103,8 @@ class ImpostorViewer: public Closable {
     int selectedDrawer = 0;
     public:
     ImpostorViewer(ImpostorDrawer* impostorDrawer, GLuint previewProgram, int width, int height, TextureLayers * layers);
-    void draw2d();
-    void draw3d(UniformBlock * block);
+    void draw2d() override;
+    void draw3d(UniformBlock block) override;
 };
 
 
@@ -124,8 +124,8 @@ class BrushEditor: public Closable {
 
     public:
     BrushEditor(ProgramData * data, Camera * camera,std::vector<UniformBlockBrush*> * brushes, GLuint program3d, GLuint previewProgram, TextureLayers * layers, std::map<UniformBlockBrush*, GLuint > *textureMapper);
-    void draw2d();
-    void draw3d(UniformBlock * block);
+    void draw2d() override;
+    void draw3d(UniformBlock block) override;
     int getSelectedBrush();
     void resetPosition();
 };
@@ -139,8 +139,8 @@ class ShadowMapViewer : public Closable{
     public:
     ShadowMapViewer(std::vector<std::pair<RenderBuffer, int>> * shadowBuffers, int width, int height);
 
-    void draw2d();
-    void draw3d(UniformBlock * block);
+    void draw2d() override;
+    void draw3d(UniformBlock block) override;
 };
 
 
@@ -154,8 +154,8 @@ class DepthBufferViewer : public Closable{
     public:
     DepthBufferViewer(GLuint previewProgram, TextureImage depthTexture, int width, int height);
 
-    void draw2d();
-    void draw3d(UniformBlock * block);
+    void draw2d() override;
+    void draw3d(UniformBlock block) override;
 };
 
 class TextureMixerEditor : public Closable{
@@ -166,8 +166,8 @@ class TextureMixerEditor : public Closable{
     TextureLayers * layers;
     public:
     TextureMixerEditor(TextureMixer * mixer, std::vector<MixerParams> * mixers, GLuint previewProgram, TextureLayers * layers);
-    void draw2d();
-    void draw3d(UniformBlock * block);
+    void draw2d() override;
+    void draw3d(UniformBlock block) override;
 };
 
 class AnimatedTextureEditor : public Closable{
@@ -177,8 +177,8 @@ class AnimatedTextureEditor : public Closable{
     public:
     AnimatedTextureEditor(std::vector<AnimateParams> * animations, GLuint previewProgram, int width, int height, TextureLayers * layers);
 
-    void draw2d();
-    void draw3d(UniformBlock * block);
+    void draw2d() override;
+    void draw3d(UniformBlock block) override;
 };
 
 class ImageViewer : public Closable{
@@ -189,8 +189,8 @@ class ImageViewer : public Closable{
     public:
     ImageViewer(GLuint texture, int width, int height);
 
-    void draw2d();
-    void draw3d(UniformBlock * block);
+    void draw2d() override;
+    void draw3d(UniformBlock block) override;
 };
 
 class SettingsEditor : public Closable {
@@ -199,8 +199,8 @@ class SettingsEditor : public Closable {
     public:
     SettingsEditor(Settings * settings);
 
-    void draw2d();
-    void draw3d(UniformBlock * block);
+    void draw2d() override;
+    void draw3d(UniformBlock block) override;
 };
 
 #endif

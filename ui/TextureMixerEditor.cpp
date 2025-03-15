@@ -78,6 +78,6 @@ float stepFast = 1.0f; // Faster step when holding Shift
 	ImGui::End();
 }
 
-void TextureMixerEditor::draw3d(UniformBlock * block){
+void TextureMixerEditor::draw3d(UniformBlock block){
 
 }

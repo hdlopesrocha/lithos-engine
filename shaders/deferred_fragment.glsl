@@ -9,7 +9,7 @@ layout(location = 2) out vec4 FragColor2; // Third render target (bump)
 
 uniform bool opacityEnabled;
 uniform bool overrideEnabled;
-uniform uint overrideTexture;
+uniform uint overrideBrush;
 
 #include<functions.glsl>
 #include<functions_fragment.glsl>

@@ -4,7 +4,6 @@
 BrushEditor::BrushEditor(ProgramData * data,Camera * camera, std::vector<UniformBlockBrush*> * brushes, GLuint program, GLuint previewProgram, TextureLayers * layers, std::map<UniformBlockBrush*, GLuint > *textureMapper) {
     this->program = program;
     this->textureMapper = textureMapper;
-    glUseProgram(program);
     this->data = data;
     this->camera = camera;
     this->brushes = brushes;
@@ -119,7 +118,8 @@ void BrushEditor::draw2d(){
 
     ImGui::End();
 }
-void BrushEditor::draw3d(UniformBlock * block){
+void BrushEditor::draw3d(UniformBlock block){
+     glUseProgram(program);    
      selectedBrush = Math::mod(selectedBrush, brushes->size());
      UniformBlockBrush * brush = brushes->at(selectedBrush);
 
@@ -141,12 +141,11 @@ void BrushEditor::draw3d(UniformBlock * block){
         glm::vec3(brushRadius)
     );
 
-    block->world = model;
-    block->set(OVERRIDE_FLAG, true);
-    block->uintData.w = (uint) selectedBrush;
+    block.world = model;
+    block.set(OVERRIDE_FLAG, true);
+    block.uintData.w = uint(selectedBrush);
 
-    
-    UniformBlock::uniform(block, sizeof(UniformBlock) , 0, data);
+    UniformBlock::uniform(&block, sizeof(UniformBlock) , 0, data);
     long count = 0;
     sphere->draw(GL_PATCHES, &count);
 

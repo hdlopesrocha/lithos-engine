@@ -12,6 +12,6 @@ void UniformBlockViewer::draw2d(){
     ImGui::End();
 }
 
-void UniformBlockViewer::draw3d(UniformBlock * block){
+void UniformBlockViewer::draw3d(UniformBlock block){
 
 }

@@ -103,7 +103,7 @@ void AtlasPainter::draw2d(){
     ImGui::End();
 }
 
-void AtlasPainter::draw3d(UniformBlock * block){
+void AtlasPainter::draw3d(UniformBlock block){
 
 }
 

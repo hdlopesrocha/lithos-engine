@@ -30,7 +30,7 @@ void ImpostorViewer::draw2d(){
     ImGui::End();
 }
 
-void ImpostorViewer::draw3d(UniformBlock * block){
+void ImpostorViewer::draw3d(UniformBlock block){
 
 }
 

@@ -26,7 +26,6 @@ out vec3 vNormal;
 
 
 void main() {
-    vTextureIndex = brushTextures[brushIndex];
     vTextureCoord = textureCoord;
     vTextureCoord.y -= shift;
 
@@ -38,8 +37,14 @@ void main() {
  
     mat3 normalMatrix = transpose(inverse(mat3(vModel)));
     vNormal = normalize(normalMatrix * normal);
-    vProps = brushes[brushIndex];
-
+    
+    if(overrideEnabled){
+        vProps = brushes[overrideBrush];
+        vTextureIndex = brushTextures[overrideBrush];
+    }else {
+        vProps = brushes[brushIndex];
+        vTextureIndex = brushTextures[brushIndex];
+    }
 
 
     if(billboardEnabled) {
@@ -54,7 +59,7 @@ void main() {
 
         vNormal = normalize(vNormal);
     } 
-
+    
     gl_Position = vec4(vPosition, 1.0);
 
 }

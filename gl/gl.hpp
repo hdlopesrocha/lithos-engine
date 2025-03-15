@@ -333,7 +333,7 @@ class Settings {
         bool billboardEnabled;
         bool overrideEnabled;
         uint billboardRange;
-        uint overrideTexture;
+        uint overrideBrush;
         uint debugMode;
         float blendSharpness;
         float parallaxDistance;

@@ -36,7 +36,7 @@ void ImpostorDrawer::draw(ImpostorParams &params) {
     
     glUniform1i(glGetUniformLocation(program, "opacityEnabled"), true); // TODO: true
     glUniform1i(glGetUniformLocation(program, "overrideEnabled"), false); 
-    glUniform1ui(glGetUniformLocation(program, "overrideTexture"), 0u); 
+    glUniform1ui(glGetUniformLocation(program, "overrideBrush"), 0u); 
     glUniform1i(glGetUniformLocation(program, "targetLayer"), 0); 
     glUniformMatrix4fv(glGetUniformLocation(program, "world"), 1, GL_FALSE, glm::value_ptr(world));
     glUniformMatrix4fv(glGetUniformLocation(program, "viewProjection"), 1, GL_FALSE, glm::value_ptr(viewProjection));

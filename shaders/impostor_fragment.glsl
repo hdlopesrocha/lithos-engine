@@ -8,7 +8,7 @@ uniform sampler2DArray textures[3];
 uniform bool opacityEnabled;
 uniform bool billboardEnabled; // TODO: set it in ImpostorDrawer
 uniform bool overrideEnabled;
-uniform uint overrideTexture;
+uniform uint overrideBrush;
 
 #include<functions.glsl>
 #include<functions_fragment.glsl>

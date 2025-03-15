@@ -67,9 +67,9 @@ void SettingsEditor::draw2d(){
     ImGui::Checkbox("Opacity", &settings->opacityEnabled);
     ImGui::Checkbox("Override", &settings->overrideEnabled);
 
-    int_value = static_cast<int>(settings->overrideTexture);
+    int_value = static_cast<int>(settings->overrideBrush);
     if(ImGui::DragScalar("Override Texture", ImGuiDataType_U32, &int_value, 1.0f, &min_value, &max_override,"%u")){
-        settings->overrideTexture = static_cast<unsigned int>(int_value);
+        settings->overrideBrush = static_cast<unsigned int>(int_value);
     }
 
     ImGui::Checkbox("Parallax", &settings->parallaxEnabled);
@@ -83,6 +83,6 @@ void SettingsEditor::draw2d(){
 	ImGui::End();
 }
 
-void SettingsEditor::draw3d(UniformBlock * block){
+void SettingsEditor::draw3d(UniformBlock block){
 
 }

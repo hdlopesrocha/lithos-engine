@@ -34,6 +34,6 @@ void DepthBufferViewer::draw2d(){
 
 }
 
-void DepthBufferViewer::draw3d(UniformBlock * block){
+void DepthBufferViewer::draw3d(UniformBlock block){
 
 }
