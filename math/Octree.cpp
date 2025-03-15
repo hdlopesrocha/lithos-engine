@@ -34,7 +34,7 @@ BoundingCube Octree::getCube3(const BoundingCube &cube, int i) {
 
 int getNodeIndex(const glm::vec3 &vec, const BoundingCube &cube) {
 	glm::vec3 c = cube.getCenter();
-    return (vec.x >= c.x ? 1 << 2 : 0) + (vec.y >= c.y ? 1 << 1 : 0) + (vec.z >= c.z ? 1 << 0 : 0);
+    return (vec.x > c.x ? 4 : 0) + (vec.y > c.y ? 2 : 0) + (vec.z > c.z ? 1 : 0);
 }
 
 ContainmentType Octree::contains(const AbstractBoundingBox &c) {
