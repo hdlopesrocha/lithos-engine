@@ -113,7 +113,7 @@ class BrushEditor: public Closable {
     std::map<UniformBlockBrush*, GLuint > *textureMapper;
     GLuint program;
     ProgramData * data;
-	DrawableGeometry * sphere;
+	DrawableInstanceGeometry * sphere;
     Camera * camera;
   
     TexturePreviewer * previewer;
@@ -123,7 +123,7 @@ class BrushEditor: public Closable {
     float brushRadius;
 
     public:
-    BrushEditor(Camera * camera,std::vector<UniformBlockBrush*> * brushes, GLuint program3d, GLuint previewProgram, TextureLayers * layers, std::map<UniformBlockBrush*, GLuint > *textureMapper);
+    BrushEditor(ProgramData * data, Camera * camera,std::vector<UniformBlockBrush*> * brushes, GLuint program3d, GLuint previewProgram, TextureLayers * layers, std::map<UniformBlockBrush*, GLuint > *textureMapper);
     void draw2d();
     void draw3d(UniformBlock * block);
     int getSelectedBrush();

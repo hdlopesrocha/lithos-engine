@@ -1,17 +1,19 @@
 #include "ui.hpp"
 
 
-BrushEditor::BrushEditor(Camera * camera, std::vector<UniformBlockBrush*> * brushes, GLuint program, GLuint previewProgram, TextureLayers * layers, std::map<UniformBlockBrush*, GLuint > *textureMapper) {
+BrushEditor::BrushEditor(ProgramData * data,Camera * camera, std::vector<UniformBlockBrush*> * brushes, GLuint program, GLuint previewProgram, TextureLayers * layers, std::map<UniformBlockBrush*, GLuint > *textureMapper) {
     this->program = program;
     this->textureMapper = textureMapper;
     glUseProgram(program);
-    this->data = new ProgramData();
+    this->data = data;
     this->camera = camera;
     this->brushes = brushes;
     this->previewer = new TexturePreviewer(previewProgram, 256, 256, {"Color", "Normal", "Bump" }, layers);
 
     SphereGeometry sphereGeometry(40,80);
-	this->sphere = new DrawableGeometry(&sphereGeometry);
+    std::vector<InstanceData> instances;
+    instances.push_back(InstanceData(glm::mat4(1.0),0));
+	this->sphere = new DrawableInstanceGeometry(TYPE_INSTANCE_SOLID_DRAWABLE, &sphereGeometry, &instances);
 
 
     this->brushPosition = glm::vec3(0);
@@ -139,15 +141,15 @@ void BrushEditor::draw3d(UniformBlock * block){
         glm::vec3(brushRadius)
     );
 
-    block->viewProjection = camera->getVP();
     block->world = model;
-    block->set(SHADOW_FLAG, false);
     block->set(OVERRIDE_FLAG, true);
     block->uintData.w = (uint) selectedBrush;
 
-    UniformBlock::uniform(block, sizeof(UniformBlockBrush) , 0, data);
-    //TODO fix not drawing, maybe uniformBlock needs more data
-    sphere->draw(GL_PATCHES);
+    
+    UniformBlock::uniform(block, sizeof(UniformBlock) , 0, data);
+    long count = 0;
+    sphere->draw(GL_PATCHES, &count);
+
 }
 
 

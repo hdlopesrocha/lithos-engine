@@ -469,7 +469,7 @@ public:
 		uniformBlockViewer = new UniformBlockViewer(&viewerBlock);
 		atlasPainter = new AtlasPainter(&atlasParams, &atlasTextures, atlasDrawer, programAtlas, programTexture, 256,256, &billboardLayers);
 		atlasViewer = new AtlasViewer(&atlasTextures, atlasDrawer, programAtlas, programTexture, 256,256, &atlasLayers, programCopy);
-		brushEditor = new BrushEditor(&camera, &brushes, program3d, programTexture, &textureLayers, &textureMapper);
+		brushEditor = new BrushEditor(uniformBlockData,&camera, &brushes, program3d, programTexture, &textureLayers, &textureMapper);
 		shadowMapViewer = new ShadowMapViewer(&shadowFrameBuffers, 512, 512);
 		textureMixerEditor = new TextureMixerEditor(textureMixer, &mixers, programTexture, &textureLayers);
 		animatedTextureEditor = new AnimatedTextureEditor(&animations, programTexture, 256,256, &textureLayers);
