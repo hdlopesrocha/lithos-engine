@@ -68,9 +68,8 @@ void main() {
     // Otherwise, compare with existing depth from a depth texture.
     vec2 pixelUV = gl_FragCoord.xy / textureSize(depthTexture, 0);
     float existingDepth = texture(depthTexture, pixelUV).r;
-    float depthBias = 0.0001;
-    if(existingDepth + depthBias < currentDepth) {
-        return;
+    if(existingDepth < currentDepth) {
+        discard;
     }
 
     //mat3 TBN = mat3(normalize(teTangent), normalize(teBitangent), normalize(teNormal));

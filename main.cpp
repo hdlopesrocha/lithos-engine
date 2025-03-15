@@ -578,7 +578,7 @@ public:
 		glCullFace(GL_BACK); // Or GL_FRONT
 		glFrontFace(GL_CCW); // Ensure this matches your vertex data
 		glEnable(GL_DEPTH_TEST);
-		glDepthFunc(GL_LESS);        // Default: Pass if fragment depth is less than stored depth
+		//glDepthFunc(GL_LESS);        // Default: Pass if fragment depth is less than stored depth
 		glDepthMask(GL_TRUE);  // Allow writing to depth buffer
 		glLineWidth(2.0);
 		glPointSize(4.0);	
