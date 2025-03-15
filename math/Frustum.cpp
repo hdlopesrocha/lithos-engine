@@ -39,37 +39,91 @@ Frustum::Frustum(glm::mat4 m)
 
 }
 
-// http://iquilezles.org/www/articles/frustumcorrect/frustumcorrect.htm
-bool Frustum::isBoxVisible(const AbstractBoundingBox &box) {
+ContainmentType Frustum::test(const AbstractBoundingBox &box) {
     glm::vec3 minp = box.getMin();
     glm::vec3 maxp = box.getMax();
-	// check box outside/inside of frustum
-	for (int i = 0; i < Count; i++)
-	{
-		if ((glm::dot(m_planes[i], glm::vec4(minp.x, minp.y, minp.z, 1.0f)) < 0.0) &&
-			(glm::dot(m_planes[i], glm::vec4(maxp.x, minp.y, minp.z, 1.0f)) < 0.0) &&
-			(glm::dot(m_planes[i], glm::vec4(minp.x, maxp.y, minp.z, 1.0f)) < 0.0) &&
-			(glm::dot(m_planes[i], glm::vec4(maxp.x, maxp.y, minp.z, 1.0f)) < 0.0) &&
-			(glm::dot(m_planes[i], glm::vec4(minp.x, minp.y, maxp.z, 1.0f)) < 0.0) &&
-			(glm::dot(m_planes[i], glm::vec4(maxp.x, minp.y, maxp.z, 1.0f)) < 0.0) &&
-			(glm::dot(m_planes[i], glm::vec4(minp.x, maxp.y, maxp.z, 1.0f)) < 0.0) &&
-			(glm::dot(m_planes[i], glm::vec4(maxp.x, maxp.y, maxp.z, 1.0f)) < 0.0))
-		{
-			return false;
-		}
-	}
+    
+    // Check if the box is contained in the frustum
+    bool contained = true;
+    for (int i = 0; i < Count; i++) {
+        if ((glm::dot(m_planes[i], glm::vec4(minp.x, minp.y, minp.z, 1.0f)) < 0.0f) &&
+            (glm::dot(m_planes[i], glm::vec4(maxp.x, minp.y, minp.z, 1.0f)) < 0.0f) &&
+            (glm::dot(m_planes[i], glm::vec4(minp.x, maxp.y, minp.z, 1.0f)) < 0.0f) &&
+            (glm::dot(m_planes[i], glm::vec4(maxp.x, maxp.y, minp.z, 1.0f)) < 0.0f) &&
+            (glm::dot(m_planes[i], glm::vec4(minp.x, minp.y, maxp.z, 1.0f)) < 0.0f) &&
+            (glm::dot(m_planes[i], glm::vec4(maxp.x, minp.y, maxp.z, 1.0f)) < 0.0f) &&
+            (glm::dot(m_planes[i], glm::vec4(minp.x, maxp.y, maxp.z, 1.0f)) < 0.0f) &&
+            (glm::dot(m_planes[i], glm::vec4(maxp.x, maxp.y, maxp.z, 1.0f)) < 0.0f)) {
+            contained = false;
+            break;
+        }
+    }
 
-	// check frustum outside/inside box
-	int out;
-	out = 0; for (int i = 0; i<8; i++) out += ((m_points[i].x > maxp.x) ? 1 : 0); if (out == 8) return false;
-	out = 0; for (int i = 0; i<8; i++) out += ((m_points[i].x < minp.x) ? 1 : 0); if (out == 8) return false;
-	out = 0; for (int i = 0; i<8; i++) out += ((m_points[i].y > maxp.y) ? 1 : 0); if (out == 8) return false;
-	out = 0; for (int i = 0; i<8; i++) out += ((m_points[i].y < minp.y) ? 1 : 0); if (out == 8) return false;
-	out = 0; for (int i = 0; i<8; i++) out += ((m_points[i].z > maxp.z) ? 1 : 0); if (out == 8) return false;
-	out = 0; for (int i = 0; i<8; i++) out += ((m_points[i].z < minp.z) ? 1 : 0); if (out == 8) return false;
+    if (contained) {
+        return ContainmentType::Contains;
+    }
 
-	return true;
+    // Check if the box intersects the frustum
+    bool intersects = false;
+    for (int i = 0; i < Count; i++) {
+        int out = 0;
+        for (int j = 0; j < 8; j++) {
+            out += ((m_points[j].x > maxp.x) ? 1 : 0);
+        }
+        if (out != 8) {
+            intersects = true;
+            break;
+        }
+        out = 0;
+        for (int j = 0; j < 8; j++) {
+            out += ((m_points[j].x < minp.x) ? 1 : 0);
+        }
+        if (out != 8) {
+            intersects = true;
+            break;
+        }
+        out = 0;
+        for (int j = 0; j < 8; j++) {
+            out += ((m_points[j].y > maxp.y) ? 1 : 0);
+        }
+        if (out != 8) {
+            intersects = true;
+            break;
+        }
+        out = 0;
+        for (int j = 0; j < 8; j++) {
+            out += ((m_points[j].y < minp.y) ? 1 : 0);
+        }
+        if (out != 8) {
+            intersects = true;
+            break;
+        }
+        out = 0;
+        for (int j = 0; j < 8; j++) {
+            out += ((m_points[j].z > maxp.z) ? 1 : 0);
+        }
+        if (out != 8) {
+            intersects = true;
+            break;
+        }
+        out = 0;
+        for (int j = 0; j < 8; j++) {
+            out += ((m_points[j].z < minp.z) ? 1 : 0);
+        }
+        if (out != 8) {
+            intersects = true;
+            break;
+        }
+    }
+
+    if (intersects) {
+        return ContainmentType::Intersects;
+    }
+
+    // If neither contained nor intersects, it must be disjoint
+    return ContainmentType::Disjoint;
 }
+
 
 template<Frustum::Planes a, Frustum::Planes b, Frustum::Planes c>
 glm::vec3 Frustum::intersection(glm::vec3* crosses)

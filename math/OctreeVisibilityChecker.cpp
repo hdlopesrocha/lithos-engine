@@ -24,7 +24,18 @@ void OctreeVisibilityChecker::after(IteratorData &params) {
 }
 
 bool OctreeVisibilityChecker::test(IteratorData &params) {	
-	return params.lod >= 0 && frustum.isBoxVisible(params.cube);
+	if(params.lod>=0) {
+		if(params.context == NULL) {
+			ContainmentType type =  frustum.test(params.cube);
+			if(type == ContainmentType::Contains) {
+				params.context = params.node;
+				return true;
+			} else if(type == ContainmentType::Intersects) {
+				return true;
+			}
+		}
+	}
+	return false;
 }
 
 

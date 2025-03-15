@@ -329,6 +329,8 @@ class OctreeNodeTriangleHandler {
 };
 
 class Octree: public BoundingCube {
+	std::vector<OctreeNode> nodes;
+
 	public: 
 		float minSize;
 		OctreeNode * root;
@@ -537,9 +539,7 @@ public:
 	// m = ProjectionMatrix * ViewMatrix 
 	Frustum(glm::mat4 m);
 
-	// http://iquilezles.org/www/articles/frustumcorrect/frustumcorrect.htm
-	bool isBoxVisible(const AbstractBoundingBox &box);
-
+	ContainmentType test(const AbstractBoundingBox &box);
 private:
 	enum Planes
 	{
