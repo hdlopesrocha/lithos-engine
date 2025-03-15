@@ -39,8 +39,10 @@ void SettingsEditor::draw2d(){
     debugModes.push_back("Depth");
     debugModes.push_back("BlendingWeights");
     debugModes.push_back("TextureWeights");
-    debugModes.push_back("DistanceFactor");
- 
+    debugModes.push_back("DistanceFactor");    
+    debugModes.push_back("Parallax UV shift");
+    debugModes.push_back("Cartoon");
+
     
 
     if(settings->debugEnabled) {

@@ -1,6 +1,6 @@
 
 
-vec2 parallaxMapping(
+vec3 parallaxMapping(
         sampler2DArray ts, 
         uvec3 textureIndices, 
         vec2 uv, 
@@ -36,6 +36,7 @@ vec2 parallaxMapping(
     float prevHeight = currentHeight;
     float bias = 0.1;
     
+
     for(int i=0; i < numLayers ; ++i) {
         prevUv = currentUv;
         prevHeight = currentHeight;
@@ -69,5 +70,5 @@ vec2 parallaxMapping(
     float delta1 = currentHeight - currentDepth; 
     float delta2 = ( currentDepth + deltaDepth ) - prevHeight; 
     float ratio = delta1/(delta1+delta2);
-    return mix(currentUv, prevUv, ratio);
+    return vec3(mix(currentUv, prevUv, ratio), currentHeight);
 }

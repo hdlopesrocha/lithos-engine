@@ -34,6 +34,7 @@ out vec4 color;    // Final fragment color
 void main() {
 
     vec2 uv = teTextureCoord;
+    float parallaxDepth = 0.0;
 
       // Sample the blend factor from texture[2]
     float opacityFactor = textureBlend(textures[2], teTextureIndices, uv, teTextureWeights, teBlendFactors).r;
@@ -87,7 +88,7 @@ void main() {
     vec3 viewDirectionTangent = normalize(transpose(TBN) * viewDirection);
 
     if(parallaxEnabled && distanceFactor * teProps.parallaxScale > 0.0) {
-       uv = parallaxMapping(
+       vec3 parallaxedUv = parallaxMapping(
             textures[2], 
             teTextureIndices, 
             uv, 
@@ -97,6 +98,8 @@ void main() {
             teBlendFactors,
             distanceFactor
         );
+        parallaxDepth = length(abs(parallaxedUv.xy - uv));
+        uv = parallaxedUv.xy;
     }
   
     vec4 mixedColor = textureBlend(textures[0], teTextureIndices, uv, teTextureWeights, teBlendFactors);
@@ -108,6 +111,42 @@ void main() {
     vec3 normalMap = textureBlend(textures[1], teTextureIndices, uv, teTextureWeights, teBlendFactors).rgb * 2.0 - 1.0;
     normalMap = normalize(normalMap); // Convert to range [-1, 1]
     vec3 worldNormal = normalize(TBN * normalMap);
+
+    
+    if(lightEnabled) {
+        vec3 specularColor = vec3(1.0,1.0,1.0);
+        vec3 reflection = reflect(-lightDirection.xyz, worldNormal);
+
+        float phongSpec = pow(max(dot(reflection, viewDirection), 0.0), teProps.shininess);
+        float diffuse = clamp(max(dot(worldNormal, -lightDirection.xyz), 0.0), 0.2, 1.0);
+
+        float shadowAmount = 1.0;
+        float shadowAlpha = 0.6;
+        if(shadowEnabled) {
+            shadowAmount = getShadow(shadowMap, noise, teLightViewPosition, tePosition, teSharpNormal);
+        }
+        shadowAmount = shadowAmount*(1.0-shadowAlpha)+shadowAlpha; 
+
+        vec4 refractedColor = vec4(0.0,0.0,0.0,0.0);
+        if(teProps.refractiveIndex > 0.0) {
+            // Compute refraction
+
+            float eta = 1.0 / teProps.refractiveIndex; // Air to water
+            vec3 refractedDir = refract(viewDirectionTangent, normalMap, eta);
+            vec2 refractedUV = pixelUV + refractedDir.xy * 0.1; // UV distortion
+        
+            float d2 = texture(depthTexture, refractedUV).r;
+
+            refractedColor = texture(underTexture, currentDepth < d2 ? refractedUV : pixelUV);
+        }
+
+        color = refractedColor + vec4((mixedColor.rgb*diffuse + specularColor * teProps.specularStrength * phongSpec)*shadowAmount , mixedColor.a+teProps.specularStrength * phongSpec); 
+
+    }else {
+        color = mixedColor;
+    }
+
+
 
     if(debugEnabled) {
         if(debugMode == 0){
@@ -153,40 +192,16 @@ void main() {
         }
         else if(debugMode == 13) {
             color = vec4(vec3(distanceFactor),1.0);
+        }      
+        else if(debugMode == 14) {
+            color = vec4(vec3(abs(parallaxDepth)),1.0);
         }
-
+        else if(debugMode == 15) {
+            if(dot(-viewDirection, teNormal) < 0.1) {
+                color = vec4(0.0,0.0,0.0,1.0);
+            }
+        }
         return;
-    } else if(lightEnabled) {
-        vec3 specularColor = vec3(1.0,1.0,1.0);
-        vec3 reflection = reflect(-lightDirection.xyz, worldNormal);
-
-        float phongSpec = pow(max(dot(reflection, viewDirection), 0.0), teProps.shininess);
-        float diffuse = clamp(max(dot(worldNormal, -lightDirection.xyz), 0.0), 0.2, 1.0);
-
-        float shadowAmount = 1.0;
-        float shadowAlpha = 0.6;
-        if(shadowEnabled) {
-            shadowAmount = getShadow(shadowMap, noise, teLightViewPosition, tePosition, teSharpNormal);
-        }
-        shadowAmount = shadowAmount*(1.0-shadowAlpha)+shadowAlpha; 
-
-        vec4 refractedColor = vec4(0.0,0.0,0.0,0.0);
-        if(teProps.refractiveIndex > 0.0) {
-            // Compute refraction
-
-            float eta = 1.0 / teProps.refractiveIndex; // Air to water
-            vec3 refractedDir = refract(viewDirectionTangent, normalMap, eta);
-            vec2 refractedUV = pixelUV + refractedDir.xy * 0.1; // UV distortion
-        
-            float d2 = texture(depthTexture, refractedUV).r;
-
-            refractedColor = texture(underTexture, currentDepth < d2 ? refractedUV : pixelUV);
-        }
-
-        color = refractedColor + vec4((mixedColor.rgb*diffuse + specularColor * teProps.specularStrength * phongSpec)*shadowAmount , mixedColor.a+teProps.specularStrength * phongSpec); 
-
-    }else {
-        color = mixedColor;
     }
  }
 
