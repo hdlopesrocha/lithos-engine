@@ -175,6 +175,7 @@ struct OctreeNodeFrame {
     OctreeNode** nodePtr;
     BoundingCube cube;
     int level;
+    int height;
 };
 
 uint buildMask(const ContainmentHandler &handler, BoundingCube &cube) {
@@ -223,39 +224,37 @@ void Octree::expand(const ContainmentHandler &handler) {
 
 OctreeNode* addAux(Octree &tree, const ContainmentHandler &handler, OctreeNode *node, BoundingCube &cube, int level) {
     std::stack<OctreeNodeFrame> stack;
-    stack.push({ &node, cube, level });
+    stack.push({ &node, cube, level , tree.getHeight(cube)});
 
     while (!stack.empty()) {
         OctreeNodeFrame frame = stack.top();
         stack.pop();
 
         OctreeNode** nodePtr = frame.nodePtr;
-        BoundingCube& currentCube = frame.cube;
-        int currentLevel = frame.level;
 
-        ContainmentType check = handler.check(currentCube);
+        ContainmentType check = handler.check(frame.cube);
         if (check == ContainmentType::Disjoint) {
             continue;  // Skip this node
         }
 
         if (*nodePtr == NULL) {
-            *nodePtr = new OctreeNode(Vertex(currentCube.getCenter()));
+            *nodePtr = new OctreeNode(Vertex(frame.cube.getCenter()));
         } else if ((*nodePtr)->solid == ContainmentType::Contains) {
             continue;  // No need to process further
         }
 
         if (check == ContainmentType::Intersects) {
-            (*nodePtr)->vertex = handler.getVertex(currentCube, check, (*nodePtr)->vertex.position);
+            (*nodePtr)->vertex = handler.getVertex(frame.cube, check, (*nodePtr)->vertex.position);
         }
-        (*nodePtr)->mask |= buildMask(handler, currentCube);
+        (*nodePtr)->mask |= buildMask(handler, frame.cube);
         (*nodePtr)->solid = check;
 
         if (check == ContainmentType::Contains) {
             (*nodePtr)->clear();
-        } else if (tree.getHeight(currentCube) != 0) {
+        } else if (frame.height != 0) {
             for (int i = 7; i >= 0; --i) {  // Push children in reverse order to maintain order
-                BoundingCube subCube = Octree::getChildCube(currentCube, i);
-                stack.push({ &((*nodePtr)->children[i]), subCube, currentLevel + 1 });
+                BoundingCube subCube = Octree::getChildCube(frame.cube, i);
+                stack.push({ &((*nodePtr)->children[i]), subCube, frame.level + 1 , frame.height -1});
             }
         }
     }
@@ -266,22 +265,19 @@ OctreeNode* addAux(Octree &tree, const ContainmentHandler &handler, OctreeNode *
 
 OctreeNode* delAux(Octree &tree, const ContainmentHandler &handler, OctreeNode *node, BoundingCube &cube, int level) {
     std::stack<OctreeNodeFrame> stack;
-    stack.push({ &node, cube, level });
+    stack.push({ &node, cube, level , tree.getHeight(cube) });
 
     while (!stack.empty()) {
         OctreeNodeFrame frame = stack.top();
         stack.pop();
 
         OctreeNode** nodePtr = frame.nodePtr;
-        BoundingCube& currentCube = frame.cube;
-        int currentLevel = frame.level;
 
-        ContainmentType check = handler.check(currentCube);
+        ContainmentType check = handler.check(frame.cube);
         if (check == ContainmentType::Disjoint) {
             continue;  // Skip this node
         }
 
-        bool height = tree.getHeight(currentCube) != 0;
         bool isContained = check == ContainmentType::Contains;
         bool isIntersecting = check == ContainmentType::Intersects;
 
@@ -295,23 +291,23 @@ OctreeNode* delAux(Octree &tree, const ContainmentHandler &handler, OctreeNode *
         }
 
         if (*nodePtr != NULL) {
-            if ((*nodePtr)->solid == ContainmentType::Contains && isIntersecting && height) {
-                split(*nodePtr, currentCube);
+            if ((*nodePtr)->solid == ContainmentType::Contains && isIntersecting && frame.height != 0) {
+                split(*nodePtr, frame.cube);
             }
 
             if (isIntersecting) {
                 glm::vec3 previousNormal = (*nodePtr)->vertex.normal;
-                (*nodePtr)->vertex = handler.getVertex(currentCube, check, (*nodePtr)->vertex.position);
+                (*nodePtr)->vertex = handler.getVertex(frame.cube, check, (*nodePtr)->vertex.position);
                 (*nodePtr)->vertex.normal = glm::normalize(previousNormal - (*nodePtr)->vertex.normal);
             }
 
-            (*nodePtr)->mask &= buildMask(handler, currentCube) ^ 0xff;
+            (*nodePtr)->mask &= buildMask(handler, frame.cube) ^ 0xff;
             (*nodePtr)->solid = check;
 
-            if (height) {
+            if (frame.height != 0) {
                 for (int i = 7; i >= 0; --i) {  // Push children in reverse order
-                    BoundingCube subCube = Octree::getChildCube(currentCube, i);
-                    stack.push({ &((*nodePtr)->children[i]), subCube, currentLevel + 1 });
+                    BoundingCube subCube = Octree::getChildCube(frame.cube, i);
+                    stack.push({ &((*nodePtr)->children[i]), subCube, frame.level + 1 , frame.height -1});
                 }
             }
         }
