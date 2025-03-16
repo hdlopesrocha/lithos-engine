@@ -9,12 +9,11 @@ InstanceBuilder::InstanceBuilder(Octree * tree, std::vector<InstanceData> * inst
 	this->handler = handler;
 }
 
-void * InstanceBuilder::before(IteratorData &params) {		
+void InstanceBuilder::before(IteratorData &params) {		
 	if(params.height==0){
 		InstanceGeometry * pre= (InstanceGeometry *) params.context;
 		handler->handle(params.node, params.cube, params.level, pre);
 	}
-	return params.context; 			 			
 }
 
 void InstanceBuilder::after(IteratorData &params) {			

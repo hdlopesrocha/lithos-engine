@@ -9,7 +9,7 @@ OctreeProcessor::OctreeProcessor(Octree * tree,bool createInstances, GeometryBui
 
 
 
-void * OctreeProcessor::before(IteratorData &params) {		
+void OctreeProcessor::before(IteratorData &params) {		
 
 	NodeInfo * info = params.node->getNodeInfo(builder->infoType);
 	bool canGenerate  = info == NULL || info->dirty;
@@ -24,10 +24,8 @@ void * OctreeProcessor::before(IteratorData &params) {
 				info->dirty = false;
 			}
 		}
-		return params.node;
+		params.context = params.node;
 	}
-	
-	return NULL; 			 			
 }
 
 void OctreeProcessor::after(IteratorData &params) {			

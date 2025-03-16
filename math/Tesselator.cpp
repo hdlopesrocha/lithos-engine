@@ -10,14 +10,13 @@ Tesselator::Tesselator(Octree * tree, Geometry * chunk, int simplification) {
 
 }
 
-void * Tesselator::before(IteratorData &params) {		
+void Tesselator::before(IteratorData &params) {		
 
 	if(params.height==0){		
 		// Tesselate
 		OctreeNodeTriangleTesselator handler(chunk, &triangles);
 		tree->handleQuadNodes(params.cube, params.level,*params.node , &handler);	
 	}
-	return params.context;
 }
 
 void Tesselator::after(IteratorData &params) {

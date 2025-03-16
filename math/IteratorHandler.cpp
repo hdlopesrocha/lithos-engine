@@ -1,7 +1,7 @@
 #include "math.hpp"
 void IteratorHandler::iterate(IteratorData params) {
     if(params.node != NULL) {
-        params.context = before(params);
+        before(params);
         if(test(params)) {
             int internalOrder[8];
             getOrder(params, internalOrder);
@@ -26,7 +26,7 @@ void IteratorHandler::iterateFlatIn(IteratorData params) {
         IteratorData data = flatData.top();
         flatData.pop();
 
-        data.context = before(data);
+        before(data);
         if(test(data)) {
             getOrder(data, internalOrder);
             for(int i=7; i >= 0 ; --i) {
@@ -52,7 +52,7 @@ void IteratorHandler::iterateFlat(IteratorData params) {
 
         if (!frame.secondVisit) {
             // First visit: Apply `before()`
-            frame.context = before(frame);
+            before(frame);
 
             if (!test(frame)) {
                 stack.pop(); // Skip children, go back up
@@ -94,7 +94,7 @@ void IteratorHandler::iterateFlatOut(IteratorData params) {
         if (!frame.visited) {
             
             // First visit: execute before() and update context.
-            frame.context = before(frame);
+            before(frame);
             frame.visited = true;
 
             // Only process children if the test passes.

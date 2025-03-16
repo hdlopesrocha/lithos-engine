@@ -92,7 +92,8 @@
         "typeindex": "cpp",
         "valarray": "cpp",
         "filesystem": "cpp",
-        "*.glsl": "cpp"
+        "*.glsl": "cpp",
+        "*.ipp": "cpp"
     },
     "cmake.sourceDirectory": "/home/hdlrocha/lithos/dependencies/rapidjson"
 }

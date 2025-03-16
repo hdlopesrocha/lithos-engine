@@ -12,29 +12,32 @@ void OctreeVisibilityChecker::update(glm::mat4 m) {
 
 
 
-void * OctreeVisibilityChecker::before(IteratorData &params) {		
+void OctreeVisibilityChecker::before(IteratorData &params) {		
 	if(params.lod == 0){
 		visibleNodes->push_back({params.level, params.height, params.lod, params.node, params.cube, params.context});
 	}
-	return NULL;
 }
 
 void OctreeVisibilityChecker::after(IteratorData &params) {			
 	return;
 }
 
-bool OctreeVisibilityChecker::test(IteratorData &params) {	
-	if(params.lod>=0) {
+bool OctreeVisibilityChecker::test(IteratorData &params) {
+	if(params.lod >=0) {
 		if(params.context == NULL) {
-			ContainmentType type =  frustum.test(params.cube);
-			if(type == ContainmentType::Contains) {
+			ContainmentType containmentType = frustum.test(params.cube);
+			if(containmentType == ContainmentType::Contains) {
 				params.context = params.node;
 				return true;
-			} else if(type == ContainmentType::Intersects) {
+			}
+			else if(containmentType == ContainmentType::Intersects) {
 				return true;
 			}
+		}else {
+			return true;
 		}
 	}
+
 	return false;
 }
 

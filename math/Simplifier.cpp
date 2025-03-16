@@ -12,8 +12,8 @@ Simplifier::Simplifier(Octree * tree, BoundingCube chunkCube, float angle, float
 	this->chunkCube = chunkCube;
 }
 
-void * Simplifier::before(IteratorData &params) {		
-	return params.context; 			 			
+void Simplifier::before(IteratorData &params) {		
+
 }
 
 void Simplifier::after(IteratorData &params) {

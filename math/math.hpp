@@ -420,7 +420,7 @@ class IteratorHandler {
 
 	public: 
 		virtual bool test(IteratorData &params) = 0;
-		virtual void * before(IteratorData &params) = 0;
+		virtual void before(IteratorData &params) = 0;
 		virtual void after(IteratorData &params) = 0;
 		virtual void getOrder(IteratorData &params, int * order) = 0;
 		void iterate(IteratorData params);
@@ -473,7 +473,7 @@ class InstanceBuilder : public IteratorHandler{
         std::vector<InstanceData> * instances;
 		InstanceBuilder(Octree * tree, std::vector<InstanceData> * instances, InstanceBuilderHandler * handler);
 
-		void * before(IteratorData &params) override;
+		void before(IteratorData &params) override;
 		void after(IteratorData &params) override;
 		bool test(IteratorData &params) override;
 		void getOrder(IteratorData &params, int * order) override;
@@ -507,7 +507,7 @@ class Tesselator : public IteratorHandler{
 		Geometry * chunk;
 		int simplification;
 		Tesselator(Octree * tree, Geometry * chunk, int simplification);
-		void * before(IteratorData &params) override;
+		void before(IteratorData &params) override;
 		void after(IteratorData &params) override;
 		bool test(IteratorData &params) override;
 		void getOrder(IteratorData &params, int * order) override;
@@ -523,7 +523,7 @@ class Simplifier : public IteratorHandler{
 		BoundingCube chunkCube;
 		Simplifier(Octree * tree, BoundingCube chunkCube, float angle, float distance, bool texturing, int simplification);
 
-		void * before(IteratorData &params) override;
+		void before(IteratorData &params) override;
 		void after(IteratorData &params) override;
 		bool test(IteratorData &params) override;
 		void getOrder(IteratorData &params, int * order) override;
@@ -664,7 +664,7 @@ class OctreeVisibilityChecker : public IteratorHandler{
 		OctreeVisibilityChecker(Octree * tree, std::vector<IteratorData> * visibleNodes);
 
 		void update(glm::mat4 m);
-		void * before(IteratorData &params) override;
+		void before(IteratorData &params) override;
 		void after(IteratorData &params) override;
 		bool test(IteratorData &params) override;
 		void getOrder(IteratorData &params, int * order) override;
@@ -684,7 +684,7 @@ class OctreeProcessor : public IteratorHandler{
         GeometryBuilder * builder;
 		OctreeProcessor(Octree * tree,bool createInstances, GeometryBuilder * builder);
 
-		void * before(IteratorData &params) override;
+		void before(IteratorData &params) override;
 		void after(IteratorData &params) override;
 		bool test(IteratorData &params) override;
 		void getOrder(IteratorData &params, int * order) override;
