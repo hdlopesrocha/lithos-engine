@@ -19,11 +19,12 @@ VegetationGeometryBuilder::VegetationGeometryBuilder(int drawableType,long * cou
 
 
 
-const NodeInfo VegetationGeometryBuilder::build(int level, int height, int lod, OctreeNode* node, BoundingCube cube){
+const NodeInfo VegetationGeometryBuilder::build(OctreeNodeData &params){
     //std::cout << "VegetationGeometryBuilder::build" <<std::endl;
     InstanceGeometry * instanceGeometry = new InstanceGeometry(geometry);
-    InstanceBuilder instanceBuilder(tree, &instanceGeometry->instances, handler);
-    instanceBuilder.iterateFlatIn(IteratorData(level, height, lod, node, cube, instanceGeometry));
+    InstanceBuilder instanceBuilder(tree, &instanceGeometry->instances, handler, instanceGeometry);
+
+    instanceBuilder.iterateFlatIn(params);
 
     // Shuffle the vector
     if(instanceGeometry->instances.size()){

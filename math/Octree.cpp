@@ -18,7 +18,6 @@ Octree::Octree(BoundingCube minCube) : BoundingCube(minCube){
 		tessOrder.push_back(glm::ivec4(0,1,3,2));tessEdge.push_back(glm::ivec2(3,7));
 		tessOrder.push_back(glm::ivec4(0,2,6,4));tessEdge.push_back(glm::ivec2(6,7));
 		tessOrder.push_back(glm::ivec4(0,4,5,1));tessEdge.push_back(glm::ivec2(5,7));
-
 		initialized = true;
 	}
 }
@@ -114,7 +113,7 @@ ContainmentType Octree::contains(const glm::vec3 &pos) {
     return node->solid;
 }
 
-OctreeNode* Octree::getNodeAt(const glm::vec3 &pos, int level, int simplification) {
+OctreeNode* Octree::getNodeAt(const glm::vec3 &pos, int level, bool simplification) {
     OctreeNode* node = root;
     BoundingCube cube = *this;
 	if(!contains(pos)) {
@@ -122,14 +121,14 @@ OctreeNode* Octree::getNodeAt(const glm::vec3 &pos, int level, int simplificatio
 	}
 
     for (; node && level > 0; --level) {
-        if (simplification && node->simplification == simplification) {
-            return node;
+        if (simplification && node->simplified) {
+            break;
         }
         int i = getNodeIndex(pos, cube);
         cube = getChildCube(cube, i);
         node = node->children[i];
     }
-    return level == 0 ? node : NULL;
+    return node;
 }
 
 int Octree::getHeight(const BoundingCube &cube){
@@ -137,23 +136,22 @@ int Octree::getHeight(const BoundingCube &cube){
 	return r >= 0  ? (int) glm::floor(r) : -1;
 }
 
-void Octree::getNodeNeighbors(const BoundingCube &cube, int level, int simplification, int direction, OctreeNode ** out, int initialIndex, int finalIndex) {
-	// Get corners
+void Octree::getNodeNeighbors(OctreeNodeData &data, bool simplification, OctreeNode ** out, int direction, int initialIndex, int finalIndex) {
 	for(int i=initialIndex; i < finalIndex; ++i) {
-		glm::vec3 pos = cube.getCenter() + direction * cube.getLengthX() * Octree::getShift(i);
-		OctreeNode * n = getNodeAt(pos, level, simplification);
-		out[i] = n;
+		glm::vec3 pos = data.cube.getCenter() + direction* data.cube.getLengthX() * Octree::getShift(i);
+        out[i] = getNodeAt(pos, data.level, simplification);
 	}
 }
 
-void Octree::handleQuadNodes(const BoundingCube &cube, int level,OctreeNode &node, OctreeNodeTriangleHandler * handler) {
+void Octree::handleQuadNodes(OctreeNodeData &data, OctreeNodeTriangleHandler * handler) {
 	OctreeNode * neighbors[8];
-	getNodeNeighbors(cube, level, 0, 1, neighbors, 0, 8);
+    
+	getNodeNeighbors(data, true, neighbors, 1, 0, 8);
 
 	
 	for(int k =0 ; k < tessOrder.size(); ++k) {
 		glm::ivec2 edge = tessEdge[k];
-		uint mask = node.mask;
+		uint mask = data.node->mask;
 		bool sign0 = (mask & (1 << edge[0])) != 0;
 		bool sign1 = (mask & (1 << edge[1])) != 0;
 
@@ -328,19 +326,20 @@ void Octree::del(const ContainmentHandler &handler) {
 
 void Octree::iterate(IteratorHandler &handler, int geometryLevel) {
 	BoundingCube cube(glm::vec3(getMinX(),getMinY(),getMinZ()),getLengthX());
-	handler.iterate(IteratorData(0, getHeight(cube), geometryLevel, root, cube, NULL));
+	handler.iterate(OctreeNodeData(0, getHeight(cube), geometryLevel, root, cube, NULL));
 }
 
 void Octree::iterateFlat(IteratorHandler &handler, int geometryLevel) {
 	BoundingCube cube(glm::vec3(getMinX(),getMinY(),getMinZ()),getLengthX());
-	handler.iterateFlatIn(IteratorData(0, getHeight(cube), geometryLevel,root, cube, NULL));
+	handler.iterateFlatIn(OctreeNodeData(0, getHeight(cube), geometryLevel,root, cube, NULL));
 }
 
 
 glm::vec3 Octree::getShift(int i) {
-	return glm::vec3( ((i >> 2) % 2) , ((i >> 1) % 2) , ((i >> 0) % 2));
+    return glm::vec3(4 & i? 1:0, 2 & i? 1:0, 1 & i? 1:0);
 }
 
+
 glm::vec3 Octree::getShift3(int i) {
-	return glm::vec3( ((i / 9) % 3)-1 , ((i /3) % 3)-1 , ((i) % 3)-1);
+    return glm::vec3((i / 9) - 1, (i / 3) % 3 - 1, i % 3 - 1);
 }

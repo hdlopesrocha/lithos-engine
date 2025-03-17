@@ -5,10 +5,10 @@ VegetationInstanceBuilderHandler::VegetationInstanceBuilderHandler(Octree * tree
 
 }
 
-void VegetationInstanceBuilderHandler::handle(OctreeNode *node, const BoundingCube &cube, int level, InstanceGeometry * pre){
-	Vertex * vertex = &node->vertex;
+void VegetationInstanceBuilderHandler::handle(OctreeNodeData &data, InstanceGeometry * pre){
+	Vertex * vertex = &data.node->vertex;
 	if(vertex->brushIndex == 2) { 
 		VegetationInstanceBuilder handler(pre->geometry, count , &pre->instances, 3);
-		tree->handleQuadNodes(cube, level, *node, &handler);
+		tree->handleQuadNodes(data, &handler);
 	}
 }

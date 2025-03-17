@@ -4,27 +4,25 @@
 MeshGeometryBuilder::~MeshGeometryBuilder(){
     
 }
-MeshGeometryBuilder::MeshGeometryBuilder(int drawableType, long * count, Octree * tree,float simplificationAngle, float simplificationDistance, bool simplificationTexturing, int simplification) : GeometryBuilder(drawableType, count){
+
+MeshGeometryBuilder::MeshGeometryBuilder(int drawableType, long * count, Octree * tree,float simplificationAngle, float simplificationDistance, bool simplificationTexturing) : GeometryBuilder(drawableType, count){
     this->tree = tree;
 	this->simplificationAngle = simplificationAngle;
 	this->simplificationDistance = simplificationDistance;
 	this->simplificationTexturing = simplificationTexturing;
-    this->simplification = simplification;
 }
 
-const NodeInfo MeshGeometryBuilder::build(int level, int height, int lod, OctreeNode* node, BoundingCube cube){
+const NodeInfo MeshGeometryBuilder::build(OctreeNodeData &params){
     //std::cout << "MeshGeometryBuilder::build" <<std::endl;
     // Simplify
-
-    IteratorData ihp(level, height, lod, node, cube, NULL);
-
-    Simplifier simplifier(tree, cube, simplificationAngle, simplificationDistance, simplificationTexturing, simplification); 
-    simplifier.iterateFlatOut(ihp);
+    Simplifier simplifier(tree, params.cube, simplificationAngle, simplificationDistance, simplificationTexturing); 
+    simplifier.iterateFlatOut(params);
 
     // Tesselate
     Geometry * geometry = new Geometry();
-    Tesselator tesselator(tree, geometry, simplification);
-    tesselator.iterateFlatIn(ihp);
+
+    Tesselator tesselator(tree, geometry, count);
+    tesselator.iterateFlatIn(params);
 
     InstanceGeometry * pre = new InstanceGeometry(geometry);
     pre->instances.push_back(InstanceData(0, glm::mat4(1.0), 0.0f));

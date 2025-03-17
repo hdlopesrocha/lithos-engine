@@ -71,7 +71,7 @@ class VegetationInstanceBuilderHandler : public InstanceBuilderHandler {
 
 	VegetationInstanceBuilderHandler(Octree * tree, long * count);
 
-	void handle(OctreeNode *node, const BoundingCube &cube, int level, InstanceGeometry * pre) override;
+	void handle(OctreeNodeData &data, InstanceGeometry * pre) override;
 };
 
 class VegetationGeometryBuilder : public GeometryBuilder {
@@ -82,7 +82,7 @@ class VegetationGeometryBuilder : public GeometryBuilder {
     VegetationGeometryBuilder(int drawableType, long * count, Octree * tree, InstanceBuilderHandler * handler);
     ~VegetationGeometryBuilder();
 
-    const NodeInfo build(int level, int height, int lod, OctreeNode* node, BoundingCube cube) override;
+    const NodeInfo build(OctreeNodeData &params) override;
 
 };
 
@@ -114,9 +114,9 @@ class Scene {
 		long liquidInstancesVisible = 0;
 		long vegetationInstancesVisible = 0;
 
-		std::vector<IteratorData> visibleSolidNodes;
-		std::vector<IteratorData> visibleLiquidNodes;
-		std::vector<IteratorData> visibleShadowNodes[SHADOW_MATRIX_COUNT];
+		std::vector<OctreeNodeData> visibleSolidNodes;
+		std::vector<OctreeNodeData> visibleLiquidNodes;
+		std::vector<OctreeNodeData> visibleShadowNodes[SHADOW_MATRIX_COUNT];
 		Settings * settings;
 		int geometryLevel = 5;
 
@@ -124,8 +124,8 @@ class Scene {
 
 
 		GeometryBuilder * vegetationBuilder = new VegetationGeometryBuilder(TYPE_INSTANCE_VEGETATION_DRAWABLE, &vegetationInstancesCount, solidSpace, vegetationInstanceHandler);
-		GeometryBuilder * meshBuilder = new MeshGeometryBuilder(TYPE_INSTANCE_SOLID_DRAWABLE, &solidInstancesCount, solidSpace, 0.9, 0.2, true, geometryLevel);
-		GeometryBuilder * liquidMeshBuilder = new MeshGeometryBuilder(TYPE_INSTANCE_LIQUID_DRAWABLE, &liquidInstancesCount, liquidSpace, 0.9, 0.2, true, geometryLevel);
+		GeometryBuilder * meshBuilder = new MeshGeometryBuilder(TYPE_INSTANCE_SOLID_DRAWABLE, &solidInstancesCount, solidSpace, 0.9, 0.2, true);
+		GeometryBuilder * liquidMeshBuilder = new MeshGeometryBuilder(TYPE_INSTANCE_LIQUID_DRAWABLE, &liquidInstancesCount, liquidSpace, 0.9, 0.2, true);
 
 		OctreeProcessor solidProcessor = OctreeProcessor(solidSpace , true, meshBuilder);
 		OctreeProcessor liquidProcessor = OctreeProcessor(liquidSpace, true, liquidMeshBuilder);
@@ -149,10 +149,10 @@ class Scene {
 
 	void setVisibleNodes(glm::mat4 viewProjection, glm::vec3 sortPosition, OctreeVisibilityChecker &checker);
 
-	void draw (uint drawableType, int mode, glm::vec3 cameraPosition, const std::vector<IteratorData> &list);
-	void drawVegetation(glm::vec3 cameraPosition, const std::vector<IteratorData> &list);
-	void draw3dSolid(glm::vec3 cameraPosition, const std::vector<IteratorData> &list) ;
-	void draw3dLiquid(glm::vec3 cameraPosition, const std::vector<IteratorData> &list);
+	void draw (uint drawableType, int mode, glm::vec3 cameraPosition, const std::vector<OctreeNodeData> &list);
+	void drawVegetation(glm::vec3 cameraPosition, const std::vector<OctreeNodeData> &list);
+	void draw3dSolid(glm::vec3 cameraPosition, const std::vector<OctreeNodeData> &list) ;
+	void draw3dLiquid(glm::vec3 cameraPosition, const std::vector<OctreeNodeData> &list);
 	void create() ;
 
 	void save();

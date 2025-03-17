@@ -1,5 +1,5 @@
 #include "math.hpp"
-void IteratorHandler::iterate(IteratorData params) {
+void IteratorHandler::iterate(OctreeNodeData params) {
     if(params.node != NULL) {
         before(params);
         if(test(params)) {
@@ -9,7 +9,7 @@ void IteratorHandler::iterate(IteratorData params) {
                 int j = internalOrder[i];
                 OctreeNode * child = params.node->children[j];
                 if(child != NULL) {
-                    this->iterate(IteratorData( params.level+1, params.height-1, params.lod-1, child, Octree::getChildCube(params.cube,j) , params.context));
+                    this->iterate(OctreeNodeData( params.level+1, params.height-1, params.lod-1, child, Octree::getChildCube(params.cube,j) , params.context));
                 }
             }
             after(params);
@@ -17,13 +17,14 @@ void IteratorHandler::iterate(IteratorData params) {
     }
 }
 
-void IteratorHandler::iterateFlatIn(IteratorData params) {
+void IteratorHandler::iterateFlatIn(OctreeNodeData params) {
+    params.context = NULL;
     int internalOrder[8];
  
     flatData.push(params);
     while(flatData.size()) {
         bool newData = false;
-        IteratorData data = flatData.top();
+        OctreeNodeData data = flatData.top();
         flatData.pop();
 
         before(data);
@@ -33,7 +34,7 @@ void IteratorHandler::iterateFlatIn(IteratorData params) {
                 int j = internalOrder[i];
                 OctreeNode * child = data.node->children[j];
                 if(child != NULL) {
-                    flatData.push(IteratorData(data.level + 1, data.height -1, data.lod - 1,child, Octree::getChildCube(data.cube,j), data.context));
+                    flatData.push(OctreeNodeData(data.level + 1, data.height -1, data.lod - 1,child, Octree::getChildCube(data.cube,j), data.context));
                     newData = true;
                 }
             }
@@ -42,8 +43,9 @@ void IteratorHandler::iterateFlatIn(IteratorData params) {
     }
 }
 
-void IteratorHandler::iterateFlat(IteratorData params) {
+void IteratorHandler::iterateFlat(OctreeNodeData params) {
     if (!params.node) return;
+    params.context = NULL;
 
     stack.push(StackFrame(params, 0, false));
 
@@ -70,7 +72,8 @@ void IteratorHandler::iterateFlat(IteratorData params) {
             OctreeNode* child = frame.node->children[j];
 
             if (child) {
-                stack.push(StackFrame(frame, 0, false));
+                OctreeNodeData data(frame.level+1, frame.height -1, frame.lod -1 , child, Octree::getChildCube(frame.cube,j), frame.context);
+                stack.push(StackFrame(data, 0, false));
             }
         } else {
             // After all children are processed, apply `after()`
@@ -80,8 +83,9 @@ void IteratorHandler::iterateFlat(IteratorData params) {
     }
 }
 
-void IteratorHandler::iterateFlatOut(IteratorData params) {
+void IteratorHandler::iterateFlatOut(OctreeNodeData params) {
     if (!params.node) return;
+    params.context = NULL;
 
     stackOut.push(StackFrameOut(params, false));
 
@@ -112,7 +116,7 @@ void IteratorHandler::iterateFlatOut(IteratorData params) {
                 int j = internalOrder[i];
                 OctreeNode* child = frame.node->children[j];
                 if (child) {
-                    stackOut.push(StackFrameOut(IteratorData(frame.level + 1, frame.height -1, frame.lod -1, child, Octree::getChildCube(frame.cube, j), frame.context), false));
+                    stackOut.push(StackFrameOut(OctreeNodeData(frame.level + 1, frame.height -1, frame.lod -1, child, Octree::getChildCube(frame.cube, j), frame.context), false));
                 }
             }
         } else {

@@ -15,7 +15,7 @@ void Scene::processSpace() {
 	liquidProcessor.loadCount = 1;
 	vegetationProcessor.loadCount = 1;
 
-	for(IteratorData &data : visibleSolidNodes){
+	for(OctreeNodeData &data : visibleSolidNodes){
 		if(solidProcessor.loadCount > 0) {
 			solidProcessor.before(data);
 		}
@@ -24,15 +24,15 @@ void Scene::processSpace() {
 		}
 	}
 
-	for(IteratorData &data : visibleLiquidNodes){
+	for(OctreeNodeData &data : visibleLiquidNodes){
 		if(liquidProcessor.loadCount > 0) {
 			liquidProcessor.before(data);
 		}
 	}
 
 	for(int i =0 ; i < SHADOW_MATRIX_COUNT ; ++i){
-		std::vector<IteratorData> &vec = visibleShadowNodes[i];
-		for(IteratorData &data : vec) {
+		std::vector<OctreeNodeData> &vec = visibleShadowNodes[i];
+		for(OctreeNodeData &data : vec) {
 			if(solidProcessor.loadCount > 0) {
 				solidProcessor.before(data);
 			}
@@ -62,9 +62,9 @@ void Scene::setVisibleNodes(glm::mat4 viewProjection, glm::vec3 sortPosition, Oc
 }
 
 
-void Scene::draw (uint drawableType, int mode, glm::vec3 cameraPosition, const std::vector<IteratorData> &list) {
+void Scene::draw (uint drawableType, int mode, glm::vec3 cameraPosition, const std::vector<OctreeNodeData> &list) {
 	//std::cout << "Scene.draw() " << std::to_string(drawableType) << "|" << std::to_string(list.size()) << std::endl;
-	for(const IteratorData &data : list) {
+	for(const OctreeNodeData &data : list) {
 		OctreeNode * node = data.node;
 		NodeInfo * info = node->getNodeInfo(drawableType);
 		
@@ -103,17 +103,17 @@ void Scene::draw (uint drawableType, int mode, glm::vec3 cameraPosition, const s
 	}
 }
 
-void Scene::drawVegetation(glm::vec3 cameraPosition, const std::vector<IteratorData> &list) {
+void Scene::drawVegetation(glm::vec3 cameraPosition, const std::vector<OctreeNodeData> &list) {
 	glDisable(GL_CULL_FACE);
 	draw(TYPE_INSTANCE_VEGETATION_DRAWABLE, GL_PATCHES, cameraPosition, list);
 	glEnable(GL_CULL_FACE);
 }
 
-void Scene::draw3dSolid(glm::vec3 cameraPosition, const std::vector<IteratorData> &list) {
+void Scene::draw3dSolid(glm::vec3 cameraPosition, const std::vector<OctreeNodeData> &list) {
 	draw(TYPE_INSTANCE_SOLID_DRAWABLE, GL_PATCHES, cameraPosition, list);
 }
 
-void Scene::draw3dLiquid(glm::vec3 cameraPosition, const std::vector<IteratorData> &list) {
+void Scene::draw3dLiquid(glm::vec3 cameraPosition, const std::vector<OctreeNodeData> &list) {
 	draw(TYPE_INSTANCE_LIQUID_DRAWABLE, GL_PATCHES, cameraPosition, list);
 }
 

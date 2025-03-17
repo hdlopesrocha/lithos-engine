@@ -1,7 +1,7 @@
 #include <bitset>
 #include "math.hpp"
 
-OctreeVisibilityChecker::OctreeVisibilityChecker(Octree * tree, std::vector<IteratorData> * visibleNodes) {
+OctreeVisibilityChecker::OctreeVisibilityChecker(Octree * tree, std::vector<OctreeNodeData> * visibleNodes) {
 	this->tree = tree;
 	this->visibleNodes = visibleNodes;
 }
@@ -12,17 +12,17 @@ void OctreeVisibilityChecker::update(glm::mat4 m) {
 
 
 
-void OctreeVisibilityChecker::before(IteratorData &params) {		
+void OctreeVisibilityChecker::before(OctreeNodeData &params) {		
 	if(params.lod == 0){
 		visibleNodes->push_back({params.level, params.height, params.lod, params.node, params.cube, params.context});
 	}
 }
 
-void OctreeVisibilityChecker::after(IteratorData &params) {			
+void OctreeVisibilityChecker::after(OctreeNodeData &params) {			
 	return;
 }
 
-bool OctreeVisibilityChecker::test(IteratorData &params) {
+bool OctreeVisibilityChecker::test(OctreeNodeData &params) {
 	if(params.lod >=0) {
 		if(params.context == NULL) {
 			ContainmentType containmentType = frustum.test(params.cube);
@@ -42,7 +42,7 @@ bool OctreeVisibilityChecker::test(IteratorData &params) {
 }
 
 
-void OctreeVisibilityChecker::getOrder(IteratorData &params, int * order){
+void OctreeVisibilityChecker::getOrder(OctreeNodeData &params, int * order){
 	static std::pair<float, int> internalSortingVector[8]={};
 	
 	for(int i =0; i< 8; ++i){

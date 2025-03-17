@@ -2,29 +2,29 @@
 #include "math.hpp"
 
 
-InstanceBuilder::InstanceBuilder(Octree * tree, std::vector<InstanceData> * instances, InstanceBuilderHandler * handler) {
+InstanceBuilder::InstanceBuilder(Octree * tree, std::vector<InstanceData> * instances, InstanceBuilderHandler * handler, InstanceGeometry * geometry) {
 	this->tree = tree;
 	this->instanceCount = 0;
+	this->geometry = geometry;
 	this->instances = instances;
 	this->handler = handler;
 }
 
-void InstanceBuilder::before(IteratorData &params) {		
+void InstanceBuilder::before(OctreeNodeData &params) {		
 	if(params.height==0){
-		InstanceGeometry * pre= (InstanceGeometry *) params.context;
-		handler->handle(params.node, params.cube, params.level, pre);
+		handler->handle(params, geometry);
 	}
 }
 
-void InstanceBuilder::after(IteratorData &params) {			
+void InstanceBuilder::after(OctreeNodeData &params) {			
 	return;
 }
 
-bool InstanceBuilder::test(IteratorData &params) {	
+bool InstanceBuilder::test(OctreeNodeData &params) {	
 	return params.height >= 0;
 }
 
-void InstanceBuilder::getOrder(IteratorData &params, int * order){
+void InstanceBuilder::getOrder(OctreeNodeData &params, int * order){
 	for(int i = 0 ; i < 8 ; ++i) {
 		order[i] = i;
 	}

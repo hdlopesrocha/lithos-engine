@@ -9,7 +9,7 @@ OctreeProcessor::OctreeProcessor(Octree * tree,bool createInstances, GeometryBui
 
 
 
-void OctreeProcessor::before(IteratorData &params) {		
+void OctreeProcessor::before(OctreeNodeData &params) {		
 
 	NodeInfo * info = params.node->getNodeInfo(builder->infoType);
 	bool canGenerate  = info == NULL || info->dirty;
@@ -17,7 +17,7 @@ void OctreeProcessor::before(IteratorData &params) {
 	if(params.lod==0){
 		if(canGenerate && createInstances) {
 			if(info == NULL) {
-				params.node->info.push_back(builder->build(params.level, params.height, params.lod, params.node, params.cube));
+				params.node->info.push_back(builder->build(params));
 				--loadCount;
 			}else {
 				//TODO replace info, delete vs new ?
@@ -28,15 +28,15 @@ void OctreeProcessor::before(IteratorData &params) {
 	}
 }
 
-void OctreeProcessor::after(IteratorData &params) {			
+void OctreeProcessor::after(OctreeNodeData &params) {			
 	return;
 }
 
-bool OctreeProcessor::test(IteratorData &params) {	
+bool OctreeProcessor::test(OctreeNodeData &params) {	
 	return loadCount > 0 && params.lod>=0;
 }
 
-void OctreeProcessor::getOrder(IteratorData &params, int * order){
+void OctreeProcessor::getOrder(OctreeNodeData &params, int * order){
 	for(int i = 0 ; i < 8 ; ++i) {
 		order[i] = i;
 	}
