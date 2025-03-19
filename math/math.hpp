@@ -351,7 +351,7 @@ class Octree: public BoundingCube {
 		void iterateFlat(IteratorHandler &handler, int geometryLevel);
 
 		OctreeNode* getNodeAt(const glm::vec3 &pos, int level, bool simplification);
-		void handleQuadNodes(OctreeNodeData &data, OctreeNodeTriangleHandler * handler);
+		void handleQuadNodes(OctreeNodeData &data, OctreeNodeTriangleHandler * handler, bool simplification);
 		void getNodeNeighbors(OctreeNodeData &data, bool simplification, OctreeNode ** out, int direction,int initialIndex, int finalIndex);
 		ContainmentType contains(const glm::vec3 &pos);
 		ContainmentType contains(const AbstractBoundingBox&cube);

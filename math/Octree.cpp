@@ -143,10 +143,10 @@ void Octree::getNodeNeighbors(OctreeNodeData &data, bool simplification, OctreeN
 	}
 }
 
-void Octree::handleQuadNodes(OctreeNodeData &data, OctreeNodeTriangleHandler * handler) {
+void Octree::handleQuadNodes(OctreeNodeData &data, OctreeNodeTriangleHandler * handler, bool simplification) {
 	OctreeNode * neighbors[8];
     
-	getNodeNeighbors(data, true, neighbors, 1, 0, 8);
+	getNodeNeighbors(data, simplification, neighbors, 1, 0, 8);
 
 	
 	for(int k =0 ; k < tessOrder.size(); ++k) {
@@ -158,10 +158,10 @@ void Octree::handleQuadNodes(OctreeNodeData &data, OctreeNodeTriangleHandler * h
 		if(sign0 != sign1) {
 			glm::ivec4 quad = tessOrder[k];
 			OctreeNode * quads[4];
-			for(int i =0; i<4 ; ++i){
+			for(int i =0; i<4 ; ++i) {
 				OctreeNode * n = neighbors[quad[i]];
 				quads[i] = (n != NULL && n->solid == ContainmentType::Intersects) ? n : NULL;
-			}
+			} 
 
 			handler->handle(quads[0],quads[2],quads[1],sign1);
 			handler->handle(quads[0],quads[3],quads[2],sign1);

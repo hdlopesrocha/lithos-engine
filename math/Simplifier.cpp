@@ -32,8 +32,9 @@ void Simplifier::after(OctreeNodeData &params) {
 	}
 	if(hasSimplifiedChildren) {
 		// The parentNode plane
-		const Vertex parentVertex = params.node->vertex;
-		Plane parentPlane(params.node->vertex.normal, parentVertex.position); 
+		OctreeNode * parent = params.node;
+		Vertex * parentVertex = &parent->vertex;
+		Plane parentPlane(parent->vertex.normal, parentVertex->position); 
 
 		for(int i=0; i < 8 ; ++i) {
 			BoundingCube cc(params.cube.getMin() - params.cube.getLengthX()*Octree::getShift(i), params.cube.getLengthX());
@@ -44,7 +45,7 @@ void Simplifier::after(OctreeNodeData &params) {
 					return;
 				}
 
-				if(parentVertex.brushIndex != c->vertex.brushIndex && texturing) {
+				if(texturing && c->vertex.brushIndex != parentVertex->brushIndex) {
 					return;	
 				}
 				
@@ -53,10 +54,11 @@ void Simplifier::after(OctreeNodeData &params) {
 					return;
 				}
 
-				float a = glm::dot(parentVertex.normal, c->vertex.normal);
+				float a = glm::dot(parentVertex->normal, c->vertex.normal);
 				if(a < angle) {
 					return;
 				}
+
 			}
 		}
 
@@ -71,6 +73,7 @@ void Simplifier::after(OctreeNodeData &params) {
 				if(!c->simplified) {
 					return;	
 				}
+				
 				sumP += c->vertex.position;
 				sumN += c->vertex.normal;
 				++nodeCount;
@@ -79,8 +82,8 @@ void Simplifier::after(OctreeNodeData &params) {
 		
 
 		if(nodeCount > 0) {	
-			params.node->simplified = true;
-			params.node->vertex.position = sumP / (float)nodeCount;
+			parent->simplified = true;
+			parentVertex->position = sumP / (float)nodeCount;
 		}
 	}
 	return;

@@ -11,7 +11,7 @@ void Tesselator::before(OctreeNodeData &params) {
 	// TODO going to zero when could be simplified? 
     if(params.height==0){		
     
-		tree->handleQuadNodes(params , this);
+		tree->handleQuadNodes(params , this, true);
 	}
 }
 
