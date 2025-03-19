@@ -30,6 +30,10 @@ in TextureBrush teProps;
 
 out vec4 color;    // Final fragment color
 
+vec3 brushColor(uint i) {
+    return vec3(float((i >> 0) & 1), float((i >> 1) & 1) , float((i >> 2) & 1));
+}
+
 
 void main() {
 
@@ -199,6 +203,17 @@ void main() {
             if(dot(-viewDirection, teNormal) < 0.1) {
                 color = vec4(0.0,0.0,0.0,1.0);
             }
+        }
+        else if(debugMode == 17) {
+
+
+            vec3 c =    brushColor(teTextureIndices.x)*teTextureWeights.x +
+                        brushColor(teTextureIndices.y)*teTextureWeights.y +
+                        brushColor(teTextureIndices.z)*teTextureWeights.z;
+
+            // Generate colors using bitwise operations
+
+            color = vec4(c.r,c.g,c.b,1.0);    
         }
         return;
     }
