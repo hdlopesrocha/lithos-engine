@@ -67,7 +67,7 @@ int addTriangle(OctreeNode* c0, OctreeNode* c1, OctreeNode* c2, Geometry * chunk
             glm::vec3 n = glm::cross(d2,d1);
 
             if(triplanar) {
-                int plane = triplanarPlane(v0.position, n);//TODO calculate normal from positions
+                int plane = triplanarPlane(v0.position, n);
                 v0.texCoord = triplanarMapping(v0.position, plane)*triplanarScale;
                 v1.texCoord = triplanarMapping(v1.position, plane)*triplanarScale;
                 v2.texCoord = triplanarMapping(v2.position, plane)*triplanarScale;

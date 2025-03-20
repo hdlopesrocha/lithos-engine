@@ -189,9 +189,11 @@ uint buildMask(const ContainmentHandler &handler, BoundingCube &cube) {
 }
 
 void split(OctreeNode * node, BoundingCube &cube) {
+    Vertex vertex = node->vertex;
+
 	for(int i=0; i <8 ; ++i) {
 		BoundingCube subCube = Octree::getChildCube(cube,i);
-		node->children[i] = new OctreeNode(subCube.getCenter());
+		node->children[i] = new OctreeNode(Vertex(subCube.getCenter(), glm::vec3(0), glm::vec2(0.0), vertex.brushIndex));
 		node->children[i]->solid = node->solid;
 		node->children[i]->mask = node->mask;
 	}	
@@ -242,7 +244,10 @@ OctreeNode* addAux(Octree &tree, const ContainmentHandler &handler, OctreeNode *
         }
 
         if (check == ContainmentType::Intersects) {
-            (*nodePtr)->vertex = handler.getVertex(frame.cube, check, (*nodePtr)->vertex.position);
+            glm::vec3 previousNormal = (*nodePtr)->vertex.normal;
+            Vertex vertex = handler.getVertex(frame.cube, check, (*nodePtr)->vertex.position);
+            vertex.normal = glm::normalize(previousNormal + vertex.normal);
+            (*nodePtr)->vertex = vertex;
         }
         (*nodePtr)->mask |= buildMask(handler, frame.cube);
         (*nodePtr)->solid = check;
@@ -295,8 +300,9 @@ OctreeNode* delAux(Octree &tree, const ContainmentHandler &handler, OctreeNode *
 
             if (isIntersecting) {
                 glm::vec3 previousNormal = (*nodePtr)->vertex.normal;
-                (*nodePtr)->vertex = handler.getVertex(frame.cube, check, (*nodePtr)->vertex.position);
-                (*nodePtr)->vertex.normal = glm::normalize(previousNormal - (*nodePtr)->vertex.normal);
+                Vertex vertex = handler.getVertex(frame.cube, check, (*nodePtr)->vertex.position);
+                vertex.normal = glm::normalize(previousNormal - vertex.normal);
+                (*nodePtr)->vertex = vertex;
             }
 
             (*nodePtr)->mask &= buildMask(handler, frame.cube) ^ 0xff;

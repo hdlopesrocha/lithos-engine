@@ -27,7 +27,7 @@ void Geometry::setCenter(){
     }
 }
 
-Vertex * Geometry::addVertex(Vertex vertex){
+Vertex * Geometry::addVertex(const Vertex &vertex) {
     auto it = compactMap.find(vertex);
     int idx = 0;
 

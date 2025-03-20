@@ -49,23 +49,25 @@ struct Vertex {
     glm::vec2 texCoord;
     int brushIndex;
 
-    Vertex(){
-		this->position = glm::vec3(0);
-    	this->normal = glm::vec3(0);
-    	this->texCoord = glm::vec2(0);
-    	this->brushIndex = 0;
-    }
 
-    Vertex(glm::vec3 pos) : Vertex(){
-    	this->position = pos;
-    }
-
-    Vertex(glm::vec3 pos,glm::vec3 normal,glm::vec2 texCoord, uint texIndex): Vertex() {
+    Vertex(glm::vec3 pos,glm::vec3 normal,glm::vec2 texCoord, uint texIndex) {
     	this->position = pos;
     	this->normal = normal;
     	this->texCoord = texCoord;
     	this->brushIndex = texIndex;
     }
+
+    Vertex() : Vertex(glm::vec3(0), glm::vec3(0), glm::vec2(0), 0) {
+    	this->normal = glm::vec3(0);
+    	this->texCoord = glm::vec2(0);
+    	this->brushIndex = 0;
+    }
+
+    Vertex(glm::vec3 pos) : Vertex(pos, glm::vec3(0), glm::vec2(0), 0) {
+
+    }
+
+
 
 	bool operator<(const Vertex& other) const {
         return std::tie(position.x, position.y, position.z, normal.x, normal.y, normal.z, texCoord.x, texCoord.y, brushIndex) 
@@ -302,7 +304,7 @@ public:
 	Geometry(/* args */);
 	~Geometry();
 
-	Vertex * addVertex(Vertex vertex);
+	Vertex * addVertex(const Vertex &vertex);
 	static glm::vec3 getNormal(Vertex * a, Vertex * b, Vertex * c);
 	glm::vec3 getCenter();
 	void setCenter();
