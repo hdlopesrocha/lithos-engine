@@ -30,9 +30,6 @@ in TextureBrush teProps;
 
 out vec4 color;    // Final fragment color
 
-vec3 brushColor(uint i) {
-    return vec3(float((i >> 0) & 1), float((i >> 1) & 1) , float((i >> 2) & 1));
-}
 
 
 void main() {

@@ -38,3 +38,15 @@ mat3 getTBN(vec3 pos, vec3 normal, vec2 uv, mat4 model, bool rotateTBN) {
     // Transform normal map vector to world space
     return mat3(tangent, bitangent, normal);
 }
+
+// Function to convert HSV to RGB
+vec3 hsv2rgb(vec3 c) {
+    vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
+    vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
+    return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
+}
+
+vec3 brushColor(uint i) {
+    float hue = fract(float(i) * 0.61803398875); // Golden ratio ensures a good spread
+    return hsv2rgb(vec3(hue, 0.7, 0.9)); // Convert from HSV to RGB with fixed saturation & brightness
+}
