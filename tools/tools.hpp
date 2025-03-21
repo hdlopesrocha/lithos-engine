@@ -5,7 +5,7 @@
 #define DISCARD_BRUSH_INDEX -1
 
 class WaveSurface : public HeightFunction {
-	float getHeightAt(float x, float z) {
+	float getHeightAt(float x, float z) const override {
 		float amplitude = 10;
 		float offset = -36;
 		float frequency = 1.0/10.0;

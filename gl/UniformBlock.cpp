@@ -13,7 +13,7 @@ std::string UniformBlock::toString(UniformBlock * block) {
 	size_t size = sizeof(UniformBlock)/sizeof(uint);
     std::stringstream ss;
 
-	for(int i=0; i < size ; ++i) {
+	for(size_t i=0; i < size ; ++i) {
         if(i%4 == 0) {
             ss << std::endl;
         }

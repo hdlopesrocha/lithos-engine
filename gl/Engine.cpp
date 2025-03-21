@@ -362,7 +362,7 @@ void loadTexture(TextureLayers * layers, std::initializer_list<std::string> fns,
         textures.push_back(t);
     }
 
-    for(int i = 0; i < textures.size() ; ++i) {
+    for(size_t i = 0; i < textures.size() ; ++i) {
         std::string filename = textures[i];
 
         int width, height, channel;

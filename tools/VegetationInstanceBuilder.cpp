@@ -56,7 +56,7 @@ void VegetationInstanceBuilder::handle(OctreeNode* c0,OctreeNode* c1,OctreeNode*
 
     for (int i = 0; i < pointsPerTriangle; i++) {
         glm::vec3 point = randomPointInTriangle(c0->vertex.position,c1->vertex.position, c2->vertex.position);
-        float perlin = fps.getHeightAt(point.x, 0, point.z);
+        float perlin = fps.getHeightAt(point.x, point.z);
         float hMin = 0.06;
         float hMax = 0.10;
 

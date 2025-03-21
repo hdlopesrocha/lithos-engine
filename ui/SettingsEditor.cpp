@@ -9,7 +9,6 @@ SettingsEditor::SettingsEditor(Settings * settings) {
 void SettingsEditor::draw2d(){
     unsigned int min_value = 0;
     unsigned int max_range = 1024;
-    unsigned int max_debug = 10;
     unsigned int max_override = 32;
     int int_value = 0;
 
@@ -49,7 +48,7 @@ void SettingsEditor::draw2d(){
 
     if(settings->debugEnabled) {
         if (ImGui::BeginCombo("DebugMode", debugModes[settings->debugMode].c_str())) {
-            for (int i = 0; i < debugModes.size(); i++) {
+            for (uint i = 0; i < debugModes.size(); i++) {
                 bool isSelected = (i == settings->debugMode);
                 if (ImGui::Selectable(debugModes[i].c_str(), isSelected)) {
                     settings->debugMode = i;

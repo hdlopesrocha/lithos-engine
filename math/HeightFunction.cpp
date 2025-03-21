@@ -6,15 +6,15 @@ PerlinSurface::PerlinSurface(float amplitude, float frequency, float offset) {
     this->offset = offset;
 }
 
-float PerlinSurface::getHeightAt(float x, float y, float z) const  {
-    float noise = db::perlin(double(x) * frequency, double(y) * frequency ,double(z) *frequency);
+float PerlinSurface::getHeightAt(float x, float z) const  {
+    float noise = db::perlin(double(x) * frequency, double(0) * frequency ,double(z) *frequency);
     return offset + amplitude * noise;
 }
 
 FractalPerlinSurface::FractalPerlinSurface(float amplitude, float frequency, float offset) : PerlinSurface(amplitude, frequency, offset){
 }
 
-float FractalPerlinSurface::getHeightAt(float x, float y, float z)  const {
+float FractalPerlinSurface::getHeightAt(float x, float z)  const {
     float noise = 0;
     float weight = 1.0;
     float total = 0.0;
@@ -22,7 +22,7 @@ float FractalPerlinSurface::getHeightAt(float x, float y, float z)  const {
     int octaves = 8;
     for(int o = 0 ; o < octaves ; ++o) {
         PerlinSurface perlin(amplitude, f, offset);
-        noise += perlin.getHeightAt(x,y,z) * weight;
+        noise += perlin.getHeightAt(x,z) * weight;
         total += weight;
         weight *= 0.5;
         f *= 2;
@@ -37,7 +37,7 @@ GradientPerlinSurface::GradientPerlinSurface(float amplitude, float frequency, f
 
 }
 
-float GradientPerlinSurface::getHeightAt(float x, float y,float z) const  {
+float GradientPerlinSurface::getHeightAt(float x,float z) const  {
     float noise = 0;
     float weight = 1.0;
     float total = 0.0;
@@ -51,7 +51,7 @@ float GradientPerlinSurface::getHeightAt(float x, float y,float z) const  {
         float s = glm::pow(glm::e<float>(),- 1280.0f*m);
 
 
-        noise += s*perlin.getHeightAt(x,y,z) * weight;
+        noise += s*perlin.getHeightAt(x,z) * weight;
         total +=  weight;
         weight *= 0.5;
 
@@ -84,7 +84,7 @@ CachedHeightMapSurface::CachedHeightMapSurface( const HeightFunction &function, 
         for(int j=0; j<height; ++j) {
             float x = i * delta + box.getMinX();
             float z = j * delta + box.getMinZ();
-            this->data[i][j] = function.getHeightAt(x, 0, z);
+            this->data[i][j] = function.getHeightAt(x, z);
         }	
     }
 }
@@ -93,7 +93,7 @@ float CachedHeightMapSurface::getData(int x, int z) const {
     return this->data[Math::clamp(x, 0, this->width-1)][Math::clamp(z, 0, this->height-1)];
 }
 
-float CachedHeightMapSurface::getHeightAt(float x, float yy, float z) const {
+float CachedHeightMapSurface::getHeightAt(float x, float z) const {
     // bilinear interpolation
     glm::vec3 len = box.getLength();
 

@@ -22,7 +22,7 @@ void TexturePreviewer::draw2d(int index){
     glClear(GL_COLOR_BUFFER_BIT);
     glDisable(GL_CULL_FACE);
     
-    for(int i = 0; i < layerNames.size() ; ++i) {
+    for(size_t i = 0; i < layerNames.size() ; ++i) {
         glActiveTexture(GL_TEXTURE0+ i); 
         glBindTexture(GL_TEXTURE_2D_ARRAY, layers->textures[i].index);
         glUniform1i(glGetUniformLocation(previewProgram, ("textures[" + std::to_string(i) + "]").c_str()), i);
@@ -36,7 +36,7 @@ void TexturePreviewer::draw2d(int index){
     glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
 
     if (ImGui::BeginTabBar("layerPicker_tab")) {
-        for(int i=0 ; i < layerNames.size(); ++i) {
+        for(size_t i=0 ; i < layerNames.size(); ++i) {
             std::string name = layerNames[i];
             if (ImGui::BeginTabItem(name.c_str())) {
                 selectedLayer = i;

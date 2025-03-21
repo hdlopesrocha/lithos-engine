@@ -34,11 +34,6 @@ void AtlasPainter::draw2d(){
     selectedDraw = Math::mod(selectedDraw, params->draws.size());
     TileDraw * tileDraw = &params->draws[selectedDraw];
 
-    uint tileIndex = Math::mod(tileDraw->index, atlas->tiles.size());
-    
-
-    
-    Tile * tile = &atlas->tiles[tileIndex];
     
     atlasDrawer->draw(*params);
     previewer->draw2d(params->targetTexture);

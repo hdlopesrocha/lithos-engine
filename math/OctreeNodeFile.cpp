@@ -85,7 +85,7 @@ void OctreeNodeFile::save(){
 	//std::cout << std::to_string(sizeof(OctreeNodeSerialized)) << " bytes/node" << std::endl;
     std::ostringstream decompressed;
 	decompressed.write(reinterpret_cast<const char*>(&size), sizeof(size_t) );
-	for(int i=0; i < nodes.size(); ++i) {
+	for(size_t i=0; i < nodes.size(); ++i) {
 		OctreeNodeSerialized * n = nodes[i];
 		decompressed.write(reinterpret_cast<const char*>(n), sizeof(OctreeNodeSerialized) );
 	}

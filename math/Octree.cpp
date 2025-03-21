@@ -149,7 +149,7 @@ void Octree::handleQuadNodes(OctreeNodeData &data, OctreeNodeTriangleHandler * h
 	getNodeNeighbors(data, simplification, neighbors, 1, 0, 8);
 
 	
-	for(int k =0 ; k < tessOrder.size(); ++k) {
+	for(size_t k =0 ; k < tessOrder.size(); ++k) {
 		glm::ivec2 edge = tessEdge[k];
 		uint mask = data.node->mask;
 		bool sign0 = (mask & (1 << edge[0])) != 0;
@@ -202,7 +202,6 @@ void split(OctreeNode * node, BoundingCube &cube) {
 void Octree::expand(const ContainmentHandler &handler) {
 	while (true) {
 		Vertex vertex(getCenter());
-		ContainmentType cont = handler.check(*this);
 	    if (handler.isContained(*this)) {
 	        break;
 	    }

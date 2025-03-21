@@ -23,7 +23,6 @@ void IteratorHandler::iterateFlatIn(OctreeNodeData params) {
  
     flatData.push(params);
     while(flatData.size()) {
-        bool newData = false;
         OctreeNodeData data = flatData.top();
         flatData.pop();
 
@@ -35,7 +34,6 @@ void IteratorHandler::iterateFlatIn(OctreeNodeData params) {
                 OctreeNode * child = data.node->children[j];
                 if(child != NULL) {
                     flatData.push(OctreeNodeData(data.level + 1, data.height -1, data.lod - 1,child, Octree::getChildCube(data.cube,j), data.context));
-                    newData = true;
                 }
             }
             after(data);

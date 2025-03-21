@@ -188,7 +188,7 @@ class BoundingBox : public AbstractBoundingBox {
 class HeightFunction {
 	public:
 	    virtual ~HeightFunction() {}  
-		virtual float getHeightAt(float x, float y, float z) const = 0;
+		virtual float getHeightAt(float x, float z) const = 0;
 		glm::vec3 getNormal(float x, float z, float delta) const;
 
 };
@@ -205,7 +205,7 @@ class CachedHeightMapSurface : public HeightFunction {
 
 	CachedHeightMapSurface(const HeightFunction &function, BoundingBox box, float delta);
 	float getData(int x, int z) const;
-	float getHeightAt(float x, float yy, float z) const override;
+	float getHeightAt(float x, float z) const override;
 
 };
 
@@ -217,14 +217,14 @@ class PerlinSurface : public HeightFunction {
 
 
 	PerlinSurface(float amplitude, float frequency, float offset);
-	float getHeightAt(float x, float y, float z) const override;
+	float getHeightAt(float x, float z) const override;
 };
 
 class FractalPerlinSurface : public PerlinSurface {
 	public:
 	using PerlinSurface::PerlinSurface;
 	FractalPerlinSurface(float amplitude, float frequency, float offset);
-	float getHeightAt(float x, float y, float z) const override;
+	float getHeightAt(float x, float z) const override;
 };
 
 
@@ -232,7 +232,7 @@ class GradientPerlinSurface : public PerlinSurface {
 	public:
 
 	GradientPerlinSurface(float amplitude, float frequency, float offset);
-	float getHeightAt(float x, float y, float z) const override;
+	float getHeightAt(float x, float z) const override;
 };
 
 class HeightMap: public BoundingBox  {
