@@ -1,6 +1,6 @@
 # Compiler and flags
 CC = g++
-CFLAGS = -std=c++20 -pthread -I/usr/include/imgui
+CFLAGS = -std=c++20 -pthread -Wall -I/usr/include/imgui
 LIBS = -lGLEW -lglfw -lGL -lz -limgui -lstb
 LDFLAGS =
 

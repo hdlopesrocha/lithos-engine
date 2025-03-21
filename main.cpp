@@ -411,7 +411,7 @@ public:
 		Texture::bindTexture(program3d, activeTexture, glGetUniformLocation(program3d, "underTexture"), solidBuffer.colorTexture);
 		activeTexture = Texture::bindTexture(programBillboard, activeTexture, glGetUniformLocation(programBillboard, "underTexture"), solidBuffer.colorTexture);
 
-		for(int i=0; i < shadowFrameBuffers.size(); ++i) {
+		for(size_t i=0; i < shadowFrameBuffers.size(); ++i) {
 			std::string shadowMapName = "shadowMap["+ std::to_string(i) +"]";
 			RenderBuffer *buffer = &shadowFrameBuffers[i].first;
 			Texture::bindTexture(program3d, activeTexture, glGetUniformLocation(program3d, shadowMapName.c_str()), buffer->depthTexture);
@@ -520,7 +520,7 @@ public:
 		}
 
 		glm::vec3 xAxis = glm::vec3(1.0f, 0.0f, 0.0f)*camera.quaternion;
-		glm::vec3 yAxis = glm::vec3(0.0f, 1.0f, 0.0f)*camera.quaternion;
+		//glm::vec3 yAxis = glm::vec3(0.0f, 1.0f, 0.0f)*camera.quaternion;
 		glm::vec3 zAxis = glm::vec3(0.0f, 0.0f, 1.0f)*camera.quaternion;
 
 	   	float tsense = deltaTime*10;
@@ -558,7 +558,6 @@ public:
 
 		if(settings->shadowEnabled) {
 			for(std::pair<RenderBuffer, int> pair : shadowFrameBuffers) {
-				RenderBuffer buffer = pair.first;
 				int orthoSize = pair.second;
 				glm::vec3 lightPosition;
 				glm::mat4 lightMatrix = light.getVP(camera.position, orthoSize, near, far,lightPosition);

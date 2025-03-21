@@ -64,7 +64,7 @@ void UniformBlockBrush::uniform(GLuint program, UniformBlockBrush * brush, std::
 
 void UniformBlockBrush::uniform(GLuint program, std::vector<UniformBlockBrush*> *brushes, std::string objectName, std::string textureMap,std::map<UniformBlockBrush*, GLuint > *textureMapper) {
 	
-	for(int i = 0; i < brushes->size() ; ++i) {
+	for(size_t i = 0; i < brushes->size() ; ++i) {
 		UniformBlockBrush * brush = brushes->at(i);
        	// Correct way to find the texture index
 	   	auto it = textureMapper->find(brush);
@@ -81,7 +81,7 @@ void UniformBlockBrush::uniform(GLuint program, std::vector<UniformBlockBrush*> 
 
 std::string UniformBlockBrush::toString(UniformBlockBrush * block) {
 	uint * data = (uint *) block;
-	size_t size = sizeof(UniformBlockBrush)/sizeof(uint);
+	int size = sizeof(UniformBlockBrush)/sizeof(uint);
     std::stringstream ss;
 
 	for(int i=0; i < size ; ++i) {

@@ -362,7 +362,6 @@ void loadTexture(TextureLayers * layers, std::initializer_list<std::string> fns,
         textures.push_back(t);
     }
 
-    int channel0;
     for(int i = 0; i < textures.size() ; ++i) {
         std::string filename = textures[i];
 
@@ -417,7 +416,7 @@ TextureImage LithosApplication::loadTextureImage(const std::string& filename, bo
         std::cerr << "Failed to load texture: " << filename << std::endl;
     }else {
         // Determine image format
-        GLenum format;
+        GLenum format = GL_RGB;
         if (channels == 1)
             format = GL_RED;
         else if (channels == 3)
