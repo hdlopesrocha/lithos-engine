@@ -16,9 +16,6 @@ ImpostorDrawer::ImpostorDrawer(GLuint program, int width, int height, TextureLay
     this->renderBuffer = createMultiLayerRenderFrameBuffer(width, height, 3, 3, true, GL_RGB8);
 }
 
-TextureArray ImpostorDrawer::getTexture() {
-    return renderBuffer.colorTexture;
-}
 
 void ImpostorDrawer::draw(ImpostorParams &params) {
     std::cout << "ImpostorDrawer::draw" << std::endl;
@@ -35,8 +32,6 @@ void ImpostorDrawer::draw(ImpostorParams &params) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
     glUniform1i(glGetUniformLocation(program, "opacityEnabled"), false); // TODO: true
-    glUniform1i(glGetUniformLocation(program, "overrideEnabled"), false); 
-    glUniform1ui(glGetUniformLocation(program, "overrideBrush"), 0u); 
     glUniform1i(glGetUniformLocation(program, "targetLayer"), 0); 
     glUniformMatrix4fv(glGetUniformLocation(program, "world"), 1, GL_FALSE, glm::value_ptr(world));
     glUniformMatrix4fv(glGetUniformLocation(program, "viewProjection"), 1, GL_FALSE, glm::value_ptr(viewProjection));

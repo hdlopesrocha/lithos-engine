@@ -8,10 +8,6 @@ TextureMixer::TextureMixer(int width, int height, GLuint program, TextureLayers 
     this->layers = layers; 
 }
 
-TextureArray TextureMixer::getTexture(){
-    return textureMixerBuffer.colorTexture;
-}
-
 
 MixerParams::MixerParams(int targetTexture, int baseTexture, int overlayTexture) {
     this->targetTexture = targetTexture;

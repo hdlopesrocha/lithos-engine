@@ -19,10 +19,6 @@ AnimatedTexture::AnimatedTexture(int width, int height, GLuint program, TextureL
     this->layers = layers;
 }
 
-TextureArray AnimatedTexture::getTexture(){
-    return textureMixerBuffer.colorTexture;
-}
-
 void AnimatedTexture::animate(float time, AnimateParams &params){
 
     glUseProgram(program);

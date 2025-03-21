@@ -16,9 +16,6 @@ AtlasDrawer::AtlasDrawer(GLuint program, int width, int height , TextureLayers *
 
 }
 
-TextureArray AtlasDrawer::getTexture(){
-    return renderBuffer.colorTexture;
-}
 
 AtlasParams::AtlasParams(){
 
