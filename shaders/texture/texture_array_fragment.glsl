@@ -5,16 +5,16 @@ in vec2 TexCoord;
 
 uniform sampler2DArray textures[3];
 
-uniform uint layer;
+uniform uint targetLayer;
 uniform uint index;
 uniform bool mono;
 
 void main() {
     if(mono) {
-        float color = texture(textures[layer], vec3(TexCoord, index)).r;
+        float color = texture(textures[targetLayer], vec3(TexCoord, index)).r;
         FragColor = vec4(color, color, color, 1.0);
     }
     else {
-        FragColor = texture(textures[layer], vec3(TexCoord, index));
+        FragColor = texture(textures[targetLayer], vec3(TexCoord, index));
     }
 }

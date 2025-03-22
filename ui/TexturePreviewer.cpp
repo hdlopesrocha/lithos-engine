@@ -27,8 +27,7 @@ void TexturePreviewer::draw2d(int index){
         glBindTexture(GL_TEXTURE_2D_ARRAY, layers->textures[i].index);
         glUniform1i(glGetUniformLocation(previewProgram, ("textures[" + std::to_string(i) + "]").c_str()), i);
     }
-
-    glUniform1ui(glGetUniformLocation(previewProgram, "layer"), selectedLayer); 
+    glUniform1ui(glGetUniformLocation(previewProgram, "targetLayer"), selectedLayer); 
     glUniform1ui(glGetUniformLocation(previewProgram, "mono"), selectedLayer == 2); 
     glUniform1ui(glGetUniformLocation(previewProgram, "index"), index); 
     glBindVertexArray(previewVao);
