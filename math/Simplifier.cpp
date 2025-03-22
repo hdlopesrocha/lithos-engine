@@ -38,27 +38,8 @@ void Simplifier::after(OctreeNodeData &params) {
 
 		for(int i=0; i < 8 ; ++i) {
 			BoundingCube cube(params.cube.getMin() - params.cube.getLengthX()*Octree::getShift(i), params.cube.getLengthX());
-			OctreeNode * node = tree->getNodeAt(cube.getCenter(), params.level, true);
-
-			if(node!=NULL && node->solid == ContainmentType::Intersects) {
-				if(!chunkCube.contains(cube)){
-					return;
-				}
-
-				if(texturing && node->vertex.brushIndex != parentVertex->brushIndex) {
-					return;	
-				}
-				
-				float d = parentPlane.distance(node->vertex.position);
-				if( d > distance ) {
-					return;
-				}
-
-				float a = glm::dot(parentVertex->normal, node->vertex.normal);
-				if(a < angle) {
-					return;
-				}
-
+			if(!chunkCube.contains(cube)){
+				return;
 			}
 		}
 
@@ -73,7 +54,19 @@ void Simplifier::after(OctreeNodeData &params) {
 				if(!node->simplified) {
 					return;	
 				}
+				if(texturing && node->vertex.brushIndex != parentVertex->brushIndex) {
+					return;	
+				}
 				
+				float d = parentPlane.distance(node->vertex.position);
+				if( d > distance ) {
+					return;
+				}
+
+				float a = glm::dot(parentVertex->normal, node->vertex.normal);
+				if(a < angle) {
+					return;
+				}
 				sumP += node->vertex.position;
 				sumN += node->vertex.normal;
 				++nodeCount;
@@ -83,7 +76,7 @@ void Simplifier::after(OctreeNodeData &params) {
 
 		if(nodeCount > 0) {	
 			parent->simplified = true;
-			parentVertex->position = sumP / (float)nodeCount;
+			//parentVertex->position = sumP / (float)nodeCount;
 		}
 	}
 	return;

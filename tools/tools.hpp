@@ -103,7 +103,7 @@ class Scene {
 
     public: 
     	Octree * solidSpace = new Octree(BoundingCube(glm::vec3(0,0,0), 2.0));
-	    Octree * liquidSpace = new Octree(BoundingCube(glm::vec3(0,0,0), 2.0));
+	    Octree * liquidSpace = new Octree(BoundingCube(glm::vec3(0,5,0), 2.0));
 
 		long solidInstancesCount = 0;
 		long liquidInstancesCount = 0;
@@ -123,8 +123,8 @@ class Scene {
 
 
 		GeometryBuilder * vegetationBuilder = new VegetationGeometryBuilder(TYPE_INSTANCE_VEGETATION_DRAWABLE, &vegetationInstancesCount, solidSpace, vegetationInstanceHandler);
-		GeometryBuilder * meshBuilder = new MeshGeometryBuilder(TYPE_INSTANCE_SOLID_DRAWABLE, &solidInstancesCount, solidSpace, 0.9, 0.2, true);
-		GeometryBuilder * liquidMeshBuilder = new MeshGeometryBuilder(TYPE_INSTANCE_LIQUID_DRAWABLE, &liquidInstancesCount, liquidSpace, 0.9, 0.2, true);
+		GeometryBuilder * meshBuilder = new MeshGeometryBuilder(TYPE_INSTANCE_SOLID_DRAWABLE, &solidInstancesCount, solidSpace, 0.98, 0.1, true);
+		GeometryBuilder * liquidMeshBuilder = new MeshGeometryBuilder(TYPE_INSTANCE_LIQUID_DRAWABLE, &liquidInstancesCount, liquidSpace, 0.98, 0.1, true);
 
 		OctreeProcessor solidProcessor = OctreeProcessor(solidSpace , true, meshBuilder);
 		OctreeProcessor liquidProcessor = OctreeProcessor(liquidSpace, true, liquidMeshBuilder);

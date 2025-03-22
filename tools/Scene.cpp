@@ -7,7 +7,6 @@ void Scene::setup(Settings * settings) {
 
 void Scene::processSpace() {
 	// Set load counts per Processor
-
 	solidInstancesVisible = 0;
 	liquidInstancesVisible = 0;
 	vegetationInstancesVisible = 0;
@@ -62,7 +61,6 @@ void Scene::processSpace() {
 			}
 		}
 	}
-
 }
 
 void Scene::setVisibility(glm::mat4 viewProjection, std::vector<std::pair<glm::mat4, glm::vec3>> lightProjection ,Camera &camera) {
@@ -157,8 +155,10 @@ void Scene::create() {
 	));
 
 	BoundingBox waterBox(glm::vec3(-200,-60,-200), glm::vec3(200,3,200));
-	liquidSpace->add(OctreeContainmentHandler(solidSpace, waterBox, WaterBrush(0)));
+	liquidSpace->add(BoxContainmentHandler(BoundingBox(glm::vec3(30,-20,30),glm::vec3(70,20,70)),SimpleBrush(0)));
+
 	liquidSpace->add(SphereContainmentHandler(BoundingSphere(glm::vec3(11,61,-11),4), SimpleBrush(0)));
+	liquidSpace->add(OctreeContainmentHandler(solidSpace, waterBox, WaterBrush(0)));
 
 	solidSpace->add(BoxContainmentHandler(BoundingBox(glm::vec3(-20,-5,-20),glm::vec3(20,10,20)),SimpleBrush(8)));
 	solidSpace->del(BoxContainmentHandler(BoundingBox(glm::vec3(-17,-4,-17),glm::vec3(17,12,17)),SimpleBrush(6)));
