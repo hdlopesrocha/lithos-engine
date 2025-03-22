@@ -5,7 +5,7 @@ MeshGeometryBuilder::~MeshGeometryBuilder(){
     
 }
 
-MeshGeometryBuilder::MeshGeometryBuilder(int drawableType, long * count, Octree * tree,float simplificationAngle, float simplificationDistance, bool simplificationTexturing) : GeometryBuilder(drawableType, count){
+MeshGeometryBuilder::MeshGeometryBuilder(int infoType, long * count, Octree * tree,float simplificationAngle, float simplificationDistance, bool simplificationTexturing) : GeometryBuilder(infoType, count){
     this->tree = tree;
 	this->simplificationAngle = simplificationAngle;
 	this->simplificationDistance = simplificationDistance;

@@ -18,15 +18,24 @@ void Scene::processSpace() {
 	for(OctreeNodeData &data : visibleSolidNodes){
 		if(solidProcessor.loadCount > 0) {
 			solidProcessor.before(data);
+		} else {
+			break;
 		}
+	}
+
+	for(OctreeNodeData &data : visibleSolidNodes){
 		if(vegetationProcessor.loadCount > 0) {
 			vegetationProcessor.before(data);
+		} else {
+			break;
 		}
 	}
 
 	for(OctreeNodeData &data : visibleLiquidNodes){
 		if(liquidProcessor.loadCount > 0) {
 			liquidProcessor.before(data);
+		} else {
+			break;
 		}
 	}
 
@@ -36,11 +45,24 @@ void Scene::processSpace() {
 			if(solidProcessor.loadCount > 0) {
 				solidProcessor.before(data);
 			}
-			if(vegetationProcessor.loadCount > 0) {
-				vegetationProcessor.before(data);
+			else {
+				break;
 			}
 		}
 	}
+
+	for(int i =0 ; i < SHADOW_MATRIX_COUNT ; ++i){
+		std::vector<OctreeNodeData> &vec = visibleShadowNodes[i];
+		for(OctreeNodeData &data : vec) {
+			if(vegetationProcessor.loadCount > 0) {
+				vegetationProcessor.before(data);
+			}
+			else {
+				break;
+			}
+		}
+	}
+
 }
 
 void Scene::setVisibility(glm::mat4 viewProjection, std::vector<std::pair<glm::mat4, glm::vec3>> lightProjection ,Camera &camera) {
@@ -110,11 +132,15 @@ void Scene::drawVegetation(glm::vec3 cameraPosition, const std::vector<OctreeNod
 }
 
 void Scene::draw3dSolid(glm::vec3 cameraPosition, const std::vector<OctreeNodeData> &list) {
-	draw(TYPE_INSTANCE_SOLID_DRAWABLE, GL_PATCHES, cameraPosition, list);
+	if(settings->solidEnabled) {
+		draw(TYPE_INSTANCE_SOLID_DRAWABLE, GL_PATCHES, cameraPosition, list);
+	}
 }
 
 void Scene::draw3dLiquid(glm::vec3 cameraPosition, const std::vector<OctreeNodeData> &list) {
-	draw(TYPE_INSTANCE_LIQUID_DRAWABLE, GL_PATCHES, cameraPosition, list);
+	if(settings->liquidEnabled) {
+		draw(TYPE_INSTANCE_LIQUID_DRAWABLE, GL_PATCHES, cameraPosition, list);
+	}
 }
 
 void Scene::create() {

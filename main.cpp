@@ -233,9 +233,6 @@ public:
 		atlasDrawer = new AtlasDrawer(programAtlas, 1024, 1024, &atlasLayers, &billboardLayers, textureBlitter1024);
 		impostorDrawer = new ImpostorDrawer(programDeferred, 256, 256, &billboardLayers, &impostorLayers, textureBlitter256);
 
-	
-
-
 		{
 			UniformBlockBrush * tb = new UniformBlockBrush( glm::vec2(0.2), 0.02, 8, 32, 16,4, 10.0, 0.5 , 1.33);
 			textureMapper.insert({tb, textureLayers.count});
@@ -393,7 +390,7 @@ public:
 			billboardBrushes.push_back(tb);
 			++atlasLayers.count;
 		}
-		{	
+		{
 			std::vector<InstanceData> vegetationInstances;
 			vegetationInstances.push_back(InstanceData(0, glm::mat4(1.0), 0));
 			DrawableInstanceGeometry * vegetationMesh = new DrawableInstanceGeometry(TYPE_INSTANCE_VEGETATION_DRAWABLE, new Vegetation3d(1), &vegetationInstances);
@@ -721,6 +718,12 @@ public:
 		glViewport(0, 0, renderBuffer.width, renderBuffer.height);
 
 		glUseProgram(program3d);
+
+		if(settings->wireFrameEnabled) {
+			uniformBlock.set(LIGHT_FLAG, false); 
+			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		} 
+
 		UniformBlock::uniform(0, &uniformBlock, sizeof(UniformBlock), uniformBlockData);
 		mainScene->draw3dLiquid(camera.position, mainScene->visibleLiquidNodes);
 

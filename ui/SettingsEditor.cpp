@@ -15,6 +15,8 @@ void SettingsEditor::draw2d(){
 
     ImGui::Begin("Settings", &open, ImGuiWindowFlags_AlwaysAutoResize);
     ImGui::Checkbox("Billboards", &settings->billboardEnabled);
+    ImGui::Checkbox("Solid", &settings->solidEnabled);
+    ImGui::Checkbox("Liquid", &settings->liquidEnabled);
 
     int_value = static_cast<int>(settings->billboardRange);
     if(ImGui::DragScalar("Billboard range", ImGuiDataType_U32, &int_value, 1.0f, &min_value, &max_range,"%u")) {

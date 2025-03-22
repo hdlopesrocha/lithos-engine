@@ -2,6 +2,8 @@
 #include "gl.hpp"
 
 Settings::Settings() {
+    this->solidEnabled = true;
+    this->liquidEnabled = true;
     this->parallaxEnabled = true;
     this->shadowEnabled = true;
     this->lightEnabled = true;

@@ -2,7 +2,6 @@
 #define TOOLS_HPP
 #include "../gl/gl.hpp"
 
-#define DISCARD_BRUSH_INDEX -1
 
 class WaveSurface : public HeightFunction {
 	float getHeightAt(float x, float z) const override {
@@ -104,7 +103,7 @@ class Scene {
 
     public: 
     	Octree * solidSpace = new Octree(BoundingCube(glm::vec3(0,0,0), 2.0));
-	    Octree * liquidSpace = new Octree(BoundingCube(glm::vec3(0,20,0), 2.0));
+	    Octree * liquidSpace = new Octree(BoundingCube(glm::vec3(0,0,0), 2.0));
 
 		long solidInstancesCount = 0;
 		long liquidInstancesCount = 0;

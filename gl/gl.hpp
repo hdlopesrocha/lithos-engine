@@ -322,7 +322,9 @@ class AnimatedTexture {
 
 class Settings {
     public:
-        bool parallaxEnabled;
+        bool solidEnabled;
+        bool liquidEnabled;
+        bool parallaxEnabled;        
         bool shadowEnabled;
         bool debugEnabled;
         bool lightEnabled;
@@ -396,8 +398,6 @@ class ImpostorParams {
 class ImpostorDrawer {
     GLuint program;
     MultiLayerRenderBuffer renderBuffer;
-    int width; 
-    int height;
     TextureBlitter * blitter;
     TextureLayers* sourceLayers;
     TextureLayers * targetLayers;

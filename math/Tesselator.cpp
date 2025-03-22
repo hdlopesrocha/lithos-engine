@@ -8,9 +8,11 @@ Tesselator::Tesselator(Octree * tree, Geometry * chunk, long * count): OctreeNod
 }
 
 void Tesselator::before(OctreeNodeData &params) {		
-	// TODO going to zero when could be simplified? 
     if(params.height==0){		
-    
+        // Must go to zero and try to create triangles in the border with highest detail
+        // If the node is simplified then the triangles could have equal vertices
+        // If a triangle as 2 equal vertices, it's a line, this triangle will be ignored
+        // The same happens when iterating fully inside a simplified chunk, that triangle will be a single point
 		tree->handleQuadNodes(params , this, true);
 	}
 }
@@ -61,7 +63,10 @@ int addTriangle(OctreeNode* c0, OctreeNode* c1, OctreeNode* c2, Geometry * chunk
         Vertex v1 = c1->vertex;
         Vertex v2 = c2->vertex;
 
-        if(c0!= c1 && c1 != c2 && c0!=c2 && c0->vertex.brushIndex>=0 && c1->vertex.brushIndex>=0 && c2->vertex.brushIndex>=0){
+        if(c0!= c1 && c1 != c2 && c0!=c2 && 
+            c0->vertex.brushIndex>DISCARD_BRUSH_INDEX && 
+            c1->vertex.brushIndex>DISCARD_BRUSH_INDEX && 
+            c2->vertex.brushIndex>DISCARD_BRUSH_INDEX){
             glm::vec3 d1 = v1.position-v0.position;
             glm::vec3 d2 = v2.position-v0.position;
             glm::vec3 n = glm::cross(d2,d1);

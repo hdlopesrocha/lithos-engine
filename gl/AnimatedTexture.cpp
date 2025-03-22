@@ -20,9 +20,7 @@ AnimatedTexture::AnimatedTexture(int width, int height, GLuint program, TextureL
 }
 
 void AnimatedTexture::animate(float time, AnimateParams &params){
-
     glUseProgram(program);
-
     glBindFramebuffer(GL_FRAMEBUFFER, textureMixerBuffer.frameBuffer);
     glViewport(0, 0, textureMixerBuffer.width, textureMixerBuffer.height);
 	glClearColor (0.0,0.0,0.0,0.0);    

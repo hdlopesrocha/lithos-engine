@@ -23,7 +23,7 @@
 #include "perlin.hpp"
 #define INFO_TYPE_FILE 99
 #define INFO_TYPE_REMOVE 0
-
+#define DISCARD_BRUSH_INDEX -1
 
 class BoundingSphere;
 class BoundingBox;
@@ -66,8 +66,6 @@ struct Vertex {
     Vertex(glm::vec3 pos) : Vertex(pos, glm::vec3(0), glm::vec2(0), 0) {
 
     }
-
-
 
 	bool operator<(const Vertex& other) const {
         return std::tie(position.x, position.y, position.z, normal.x, normal.y, normal.z, texCoord.x, texCoord.y, brushIndex) 
@@ -405,7 +403,7 @@ class MeshGeometryBuilder  : public GeometryBuilder {
     float simplificationDistance;
     bool simplificationTexturing;
     Octree * tree;
-    MeshGeometryBuilder(int drawableType, long * count,Octree * tree, float simplificationAngle, float simplificationDistance, bool simplificationTexturing);
+    MeshGeometryBuilder(int infoType, long * count,Octree * tree, float simplificationAngle, float simplificationDistance, bool simplificationTexturing);
     ~MeshGeometryBuilder();
 
     const NodeInfo build(OctreeNodeData &params) override;
