@@ -19,7 +19,7 @@ bool OctreeContainmentHandler::isContained(const BoundingCube &p) const {
 }
 
 glm::vec3 OctreeContainmentHandler::getNormal(const glm::vec3 pos) const {
-    return Math::surfaceNormal(pos, box);
+    return pos.y < box.getMaxY() ? glm::vec3(0,-1,0) : glm::vec3(0,1,0);
 }
 
 ContainmentType OctreeContainmentHandler::check(const BoundingCube &cube) const {

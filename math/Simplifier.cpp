@@ -36,12 +36,11 @@ void Simplifier::after(OctreeNodeData &params) {
 		Vertex * parentVertex = &parent->vertex;
 		Plane parentPlane(parent->vertex.normal, parentVertex->position); 
 
-		for(int i=0; i < 8 ; ++i) {
-			BoundingCube cube(params.cube.getMin() - params.cube.getLengthX()*Octree::getShift(i), params.cube.getLengthX());
-			if(!chunkCube.contains(cube)){
-				return;
-			}
+		BoundingCube cube(params.cube.getMin() - params.cube.getLengthX(), params.cube.getLengthX());
+		if(!chunkCube.contains(cube)){
+			return;
 		}
+		
 
 		glm::vec3 sumP = glm::vec3(0);
 		glm::vec3 sumN = glm::vec3(0);
@@ -76,7 +75,8 @@ void Simplifier::after(OctreeNodeData &params) {
 
 		if(nodeCount > 0) {	
 			parent->simplified = true;
-			//parentVertex->position = sumP / (float)nodeCount;
+			parentVertex->position = sumP / (float)nodeCount;
+			parentVertex->normal = sumN / (float)nodeCount;
 		}
 	}
 	return;

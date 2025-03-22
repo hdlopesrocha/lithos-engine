@@ -103,7 +103,7 @@ class Scene {
 
     public: 
     	Octree * solidSpace = new Octree(BoundingCube(glm::vec3(0,0,0), 2.0));
-	    Octree * liquidSpace = new Octree(BoundingCube(glm::vec3(0,5,0), 2.0));
+	    Octree * liquidSpace = new Octree(BoundingCube(glm::vec3(0,13,0), 2.0));
 
 		long solidInstancesCount = 0;
 		long liquidInstancesCount = 0;
