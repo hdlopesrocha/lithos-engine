@@ -7,7 +7,14 @@ uniform sampler2DArray textures[3];
 
 uniform uint layer;
 uniform uint index;
+uniform bool mono;
 
 void main() {
-    FragColor = texture(textures[layer], vec3(TexCoord, index));
+    if(mono) {
+        float color = texture(textures[layer], vec3(TexCoord, index)).r;
+        FragColor = vec4(color, color, color, 1.0);
+    }
+    else {
+        FragColor = texture(textures[layer], vec3(TexCoord, index));
+    }
 }

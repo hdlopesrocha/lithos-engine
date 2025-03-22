@@ -29,6 +29,7 @@ void TexturePreviewer::draw2d(int index){
     }
 
     glUniform1ui(glGetUniformLocation(previewProgram, "layer"), selectedLayer); 
+    glUniform1ui(glGetUniformLocation(previewProgram, "mono"), selectedLayer == 2); 
     glUniform1ui(glGetUniformLocation(previewProgram, "index"), index); 
     glBindVertexArray(previewVao);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
