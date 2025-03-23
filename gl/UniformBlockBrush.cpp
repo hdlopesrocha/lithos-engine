@@ -38,6 +38,28 @@ UniformBlockBrush::UniformBlockBrush(glm::vec2 textureScale,float parallaxScale,
 }
 
 
+void UniformBlockBrush::save(std::vector<UniformBlockBrush> * brushes, std::string filename){
+	std::ofstream file = std::ofstream(filename, std::ios::binary);
+    if (!file) {
+        std::cerr << "Error opening file for writing: " << filename << std::endl;
+        return;
+    }
+
+	size_t size = brushes->size();
+	//std::cout << "Saving " << std::to_string(size) << " nodes" << std::endl;
+	//std::cout << std::to_string(sizeof(OctreeNodeSerialized)) << " bytes/node" << std::endl;
+    std::ostringstream decompressed;
+	decompressed.write(reinterpret_cast<const char*>(&size), sizeof(size_t) );
+	for(size_t i=0; i < brushes->size(); ++i) {
+		decompressed.write(reinterpret_cast<const char*>(brushes), sizeof(OctreeNodeSerialized) );
+	}
+	
+	std::istringstream inputStream(decompressed.str());
+ 	gzipCompressToOfstream(inputStream, file);
+	file.close();
+}
+
+
 void UniformBlockBrush::uniform(GLuint program, UniformBlockBrush * brush, std::string objectName) {
 
 

@@ -1,8 +1,9 @@
 # Compiler and flags
 CC = g++
 CFLAGS = -std=c++20 -pthread -Wall -I/usr/include/imgui
-LIBS = -lGLEW -lglfw -lGL -lz -limgui -lstb
-LDFLAGS =
+LIBS = -lGLEW -lglfw -lGL -lz -limgui -lstb -lgdal
+LDFLAGS = 
+
 
 # Directories
 SRC_DIRS = . gl math ui tools
@@ -70,7 +71,7 @@ tool: $(OBJ_DIR)/tools/wavefrontConverter.o
 # Install dependencies (assuming Ubuntu-based system)
 install:
 	@echo "To install dependencies, run:"
-	@echo "  sudo apt-get install libimgui-dev libglew-dev libstb-dev cloc kcachegrind"
+	@echo "  sudo apt-get install libimgui-dev libglew-dev libstb-dev cloc kcachegrind libgdal-dev gdal-bin"
 
 # Count lines of code
 report:

@@ -44,6 +44,7 @@
 #include <iostream>
 #include <ranges>
 #include <initializer_list>
+#include <gdal/gdal_priv.h>
 
 #define PARALLAX_FLAG       0,0x01  
 #define SHADOW_FLAG         0,0x02  
@@ -105,7 +106,7 @@ struct UniformBlockBrush {
     static void uniform(GLuint program, std::vector<UniformBlockBrush*> *brushes, std::string objectName, std::string textureMap,std::map<UniformBlockBrush*, GLuint > *textureMapper);
     static void uniform(GLuint program, UniformBlockBrush * brush, std::string objectName, std::string textureMap, int index,uint textureIndex);
     static void uniform(GLuint program, UniformBlockBrush * brush, std::string objectName);
-
+    static void save(std::vector<UniformBlockBrush> * brushes, std::string path);
     static std::string toString(UniformBlockBrush * block);
 };
 #pragma pack()  // Reset to default packing

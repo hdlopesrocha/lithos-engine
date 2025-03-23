@@ -768,6 +768,11 @@ public:
 				}
 				if (ImGui::MenuItem("Save", "Ctrl+S")) {
 					mainScene->save();
+					std::vector<UniformBlockBrush> vec;
+					for(UniformBlockBrush * ubb : brushes){
+						vec.push_back(*ubb);
+					}
+					UniformBlockBrush::save(&vec, "data/brushes.bin");
 				}
 				if (ImGui::MenuItem("Exit")) {
 					this->close();
