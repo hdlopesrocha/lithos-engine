@@ -3,7 +3,8 @@
 #include "math/math.hpp"
 #include "ui/ui.hpp"
 #include "tools/tools.hpp"
-
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 class GlslInclude {
 	public:
@@ -447,7 +448,7 @@ public:
 		}
 
 		for(ImpostorParams &params : impostors) {
-			impostorDrawer->draw(params);
+			impostorDrawer->draw(params, 0);
 		}
 
 		mainScene = new Scene();
@@ -539,6 +540,42 @@ public:
 		}
     }
 
+
+	// Camera settings
+glm::vec3 noiseScale = glm::vec3(256.0f, 64.0, 256.0);  // Controls movement magnitude
+glm::vec3 basePosition = glm::vec3(0.0f,32.0f, 0.0f); // Starting position
+
+// Camera settings
+float speed = 0.2f;
+float lerpSpeed = 0.1f;  // Controls how smoothly we transition between directions
+glm::vec3 lastDirection = glm::vec3(0.0f, 0.0f, 1.0f); // Initial direction, pointing forward
+
+// Function to compute Perlin noise-based camera position at a given time
+glm::vec3 getCameraPosition(float time) {
+    float x = stb_perlin_noise3(time * speed, 0.0f, 0.0f, 0, 0, 0) * noiseScale[0];
+    float y = stb_perlin_noise3(0.0f, time * speed, 100.0f, 0, 0, 0) * noiseScale[1];
+    float z = stb_perlin_noise3(0.0f, 0.0f, time * speed, 0, 0, 0) * noiseScale[2];
+
+    return basePosition + glm::vec3(x, y, z);
+}
+
+// Function to get the direction, smoothing it with Lerp
+glm::vec3 getDirection(float time) {
+    glm::vec3 currentPos = getCameraPosition(time);
+    glm::vec3 nextPos = getCameraPosition(time + 0.05f); // A small step forward in time
+
+    // Compute the direction vector
+    glm::vec3 direction = glm::normalize(nextPos - currentPos);
+
+    // Linearly interpolate between the last direction and the current direction using glm::mix
+    glm::vec3 smoothDirection = glm::mix(lastDirection, direction, lerpSpeed);
+
+    // Update lastDirection for the next frame
+    lastDirection = smoothDirection;
+
+    return smoothDirection;
+}
+
     virtual void draw3d() {
 		float far = 512.0f;
 		float near = 0.1f;
@@ -549,20 +586,26 @@ public:
 		camera.projection = glm::perspective(glm::radians(45.0f), getWidth() / (float) getHeight(), near, far);
 		camera.view = rotate * translate;
 		camera.quaternion = glm::normalize(camera.quaternion);
+		
+		camera.position = getCameraPosition(time);
+		glm::vec3 future = camera.position + getDirection(time);
+
+		camera.view = glm::lookAt(camera.position, future, glm::vec3(0.0,1.0,0.0));
 		//glm::vec3 cameraDirection = glm::vec3(0.0f, 0.0f, -1.0f)*camera.quaternion;
 
+		
 		std::vector<std::pair<glm::mat4, glm::vec3>> shadowMatrices;
 
 		if(settings->shadowEnabled) {
 			for(std::pair<RenderBuffer, int> pair : shadowFrameBuffers) {
 				int orthoSize = pair.second;
 				glm::vec3 lightPosition;
-				glm::mat4 lightMatrix = light.getVP(camera.position, orthoSize, near, far,lightPosition);
+				glm::mat4 lightMatrix = light.getViewProjection(camera.position, orthoSize, near, far,lightPosition);
 				shadowMatrices.push_back({lightMatrix, lightPosition});	
 			}
 		}
 
-		glm::mat4 viewProjection = camera.getVP();
+		glm::mat4 viewProjection = camera.getViewProjection();
 
 		mainScene->setVisibility(viewProjection, shadowMatrices, camera);
 		mainScene->processSpace();
@@ -750,7 +793,7 @@ public:
 	bool demo = false;
     bool bSettingsWindow = true;
 
-	virtual void draw2d() {
+	virtual void draw2d(float time) {
 		// ...
 		// Start the Dear ImGui frame
 		ImGui_ImplOpenGL3_NewFrame();
@@ -855,17 +898,17 @@ public:
 
 		}
 
-		uniformBlockViewer->draw2dIfOpen();
-		animatedTextureEditor->draw2dIfOpen();
-		brushEditor->draw2dIfOpen();
-		shadowMapViewer->draw2dIfOpen();
-		textureMixerEditor->draw2dIfOpen();
-		depthBufferViewer->draw2dIfOpen();
-		settingsEditor->draw2dIfOpen();
-		atlasViewer->draw2dIfOpen();
-		atlasPainter->draw2dIfOpen();
-		textureViewer->draw2dIfOpen();
-		impostorViewer->draw2dIfOpen();
+		uniformBlockViewer->draw2dIfOpen(time);
+		animatedTextureEditor->draw2dIfOpen(time);
+		brushEditor->draw2dIfOpen(time);
+		shadowMapViewer->draw2dIfOpen(time);
+		textureMixerEditor->draw2dIfOpen(time);
+		depthBufferViewer->draw2dIfOpen(time);
+		settingsEditor->draw2dIfOpen(time);
+		atlasViewer->draw2dIfOpen(time);
+		atlasPainter->draw2dIfOpen(time);
+		textureViewer->draw2dIfOpen(time);
+		impostorViewer->draw2dIfOpen(time);
 
 		if(demo) {
 			ImGui::ShowDemoWindow(&demo);

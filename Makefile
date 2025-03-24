@@ -19,9 +19,7 @@ OBJ = $(patsubst %.cpp, $(OBJ_DIR)/%.o, $(SRC))
 # Default build type
 BUILD = debug
 
-# Debug Build Configuration
-debug: CFLAGS += -g
-debug: compile
+
 
 # Release Build Configuration (optimized)
 release: CFLAGS += -O2
@@ -57,8 +55,9 @@ $(OBJ_DIR)/%.o: %.cpp
 run:
 	cd $(BIN_DIR); ./app
 
-# Debugging
+# Debug Build Configuration
 debug: CFLAGS += -g
+debug: compile
 debug: $(TARGET)
 
 debug_run:

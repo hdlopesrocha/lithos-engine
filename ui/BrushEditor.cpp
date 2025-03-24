@@ -44,7 +44,7 @@ const char* toString(BrushMode v)
     }
 }
 
-void BrushEditor::draw2d(){
+void BrushEditor::draw2d(float time){
     ImGui::Begin("Brush Editor", &open, ImGuiWindowFlags_AlwaysAutoResize);
 
     selectedBrush = Math::mod(selectedBrush, brushes->size());

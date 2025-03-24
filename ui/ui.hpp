@@ -34,12 +34,12 @@ class Closable {
     void hide();
     bool isOpen();
     
-    virtual void draw2d() = 0;
+    virtual void draw2d(float time) = 0;
     virtual void draw3d(UniformBlock block) = 0;
 
-    void draw2dIfOpen(){
+    void draw2dIfOpen(float time){
         if(open) {
-            draw2d();
+            draw2d(time);
         }
     }
 
@@ -56,7 +56,7 @@ class TextureViewer: public Closable {
     TextureLayers * layers;
     public:
     TextureViewer(GLuint previewProgram, TextureLayers * layers);
-    void draw2d() override;
+    void draw2d(float time) override;
     void draw3d(UniformBlock block) override;
 };
 
@@ -65,7 +65,7 @@ class UniformBlockViewer: public Closable {
     public:
     UniformBlock * block;
     UniformBlockViewer(UniformBlock * block);
-    void draw2d() override;
+    void draw2d(float time) override;
     void draw3d(UniformBlock block) override;
 };
 
@@ -78,7 +78,7 @@ class AtlasViewer: public Closable {
   	int selectedTile = 0;
     public:
     AtlasViewer(std::vector<AtlasTexture*> * atlasTextures, AtlasDrawer * drawer, GLuint programAtlas, GLuint previewProgram, int width, int height, TextureLayers * sourceLayers, GLuint copyProgram) ;
-    void draw2d() override;
+    void draw2d(float time) override;
     void draw3d(UniformBlock block) override;
 };
 
@@ -92,7 +92,7 @@ class AtlasPainter: public Closable {
 
     public:
     AtlasPainter(std::vector<AtlasParams> * atlasParams, std::vector<AtlasTexture*> * atlasTextures, AtlasDrawer * atlasDrawer, GLuint programAtlas, GLuint previewProgram, int width, int height, TextureLayers * layers);
-    void draw2d();
+    void draw2d(float time);
     void draw3d(UniformBlock block) override;
 };
 
@@ -104,7 +104,7 @@ class ImpostorViewer: public Closable {
     int selectedDrawer = 0;
     public:
     ImpostorViewer(ImpostorDrawer* impostorDrawer, std::vector<ImpostorParams> * impostors ,GLuint previewProgram, int width, int height, TextureLayers * layers);
-    void draw2d() override;
+    void draw2d(float time) override;
     void draw3d(UniformBlock block) override;
 };
 
@@ -125,7 +125,7 @@ class BrushEditor: public Closable {
 
     public:
     BrushEditor(ProgramData * data, Camera * camera,std::vector<UniformBlockBrush*> * brushes, GLuint program3d, GLuint previewProgram, TextureLayers * layers, std::map<UniformBlockBrush*, GLuint > *textureMapper);
-    void draw2d() override;
+    void draw2d(float time) override;
     void draw3d(UniformBlock block) override;
     int getSelectedBrush();
     void resetPosition();
@@ -140,7 +140,7 @@ class ShadowMapViewer : public Closable{
     public:
     ShadowMapViewer(std::vector<std::pair<RenderBuffer, int>> * shadowBuffers, int width, int height);
 
-    void draw2d() override;
+    void draw2d(float time) override;
     void draw3d(UniformBlock block) override;
 };
 
@@ -155,7 +155,7 @@ class DepthBufferViewer : public Closable{
     public:
     DepthBufferViewer(GLuint previewProgram, TextureImage depthTexture, int width, int height);
 
-    void draw2d() override;
+    void draw2d(float time) override;
     void draw3d(UniformBlock block) override;
 };
 
@@ -167,7 +167,7 @@ class TextureMixerEditor : public Closable{
     TextureLayers * layers;
     public:
     TextureMixerEditor(TextureMixer * mixer, std::vector<MixerParams> * mixers, GLuint previewProgram, TextureLayers * layers);
-    void draw2d() override;
+    void draw2d(float time) override;
     void draw3d(UniformBlock block) override;
 };
 
@@ -178,7 +178,7 @@ class AnimatedTextureEditor : public Closable{
     public:
     AnimatedTextureEditor(std::vector<AnimateParams> * animations, GLuint previewProgram, int width, int height, TextureLayers * layers);
 
-    void draw2d() override;
+    void draw2d(float time) override;
     void draw3d(UniformBlock block) override;
 };
 
@@ -190,7 +190,7 @@ class ImageViewer : public Closable{
     public:
     ImageViewer(GLuint texture, int width, int height);
 
-    void draw2d() override;
+    void draw2d(float time) override;
     void draw3d(UniformBlock block) override;
 };
 
@@ -200,7 +200,7 @@ class SettingsEditor : public Closable {
     public:
     SettingsEditor(Settings * settings);
 
-    void draw2d() override;
+    void draw2d(float time) override;
     void draw3d(UniformBlock block) override;
 };
 

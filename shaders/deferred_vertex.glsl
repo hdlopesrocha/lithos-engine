@@ -27,6 +27,6 @@ void main() {
     vTextureCoord = textureCoord;
     vProps = brushes[brushIndex];
     vNormal = normal;
-    vPosition = (world*model*vec4(position, 1.0)).xyz;
+    vPosition = ((world*model)*vec4(position, 1.0)).xyz;
     gl_Position = viewProjection * vec4(vPosition, 1.0);    
 }

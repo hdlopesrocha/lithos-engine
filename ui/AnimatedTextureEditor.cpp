@@ -7,7 +7,7 @@ AnimatedTextureEditor::AnimatedTextureEditor(std::vector<AnimateParams> * animat
     this->previewer = new TexturePreviewer(previewProgram, width, height, {"Color", "Normal", "Bump" }, layers);
 }
 
-void AnimatedTextureEditor::draw2d(){
+void AnimatedTextureEditor::draw2d(float time){
     ImGui::Begin("Animated Textures", &open, ImGuiWindowFlags_AlwaysAutoResize);
 
     selectedAnimatedTexture = Math::mod(selectedAnimatedTexture, animations->size());

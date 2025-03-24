@@ -20,7 +20,7 @@ AtlasViewer::AtlasViewer(std::vector<AtlasTexture*> * atlasTextures, AtlasDrawer
 }
 
 
-void AtlasViewer::draw2d(){
+void AtlasViewer::draw2d(float time){
     ImGui::Begin("Atlas Viewer", &open, ImGuiWindowFlags_AlwaysAutoResize);
 
     selectedTexture = Math::mod(selectedTexture, atlasTextures->size());

@@ -10,7 +10,7 @@ TextureMixerEditor::TextureMixerEditor(TextureMixer * mixer, std::vector<MixerPa
 }
 
 
-void TextureMixerEditor::draw2d(){
+void TextureMixerEditor::draw2d(float time){
     ImGui::Begin("Texture Mixer", &open, ImGuiWindowFlags_AlwaysAutoResize);
 
     selectedMixer = Math::mod(selectedMixer, mixers->size());

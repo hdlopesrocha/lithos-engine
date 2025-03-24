@@ -115,13 +115,13 @@ struct UniformBlockBrush {
 
 struct TextureArray {
     GLuint index;
-    GLuint channel;
+    GLuint format;
 };
 
 struct TextureImage {
     bool mipmapEnabled;
     GLuint index;
-    GLuint channel;
+    GLuint format;
 };
 
 
@@ -133,7 +133,7 @@ struct DirectionalLight {
 
 
 
-    glm::mat4 getVP(glm::vec3 &lightLootAt, float orthoSize, float near, float far, glm::vec3 &lightPosition) {
+    glm::mat4 getViewProjection(glm::vec3 &lightLootAt, float orthoSize, float near, float far, glm::vec3 &lightPosition) {
         
         // Create an orthographic projection matrix for shadow mapping.
         glm::mat4 projection = glm::ortho(-orthoSize, orthoSize, -orthoSize, orthoSize, near, far);
@@ -185,7 +185,7 @@ public:
 
     virtual void setup() = 0;
     virtual void draw3d() = 0;
-    virtual void draw2d() = 0;
+    virtual void draw2d(float time) = 0;
     virtual void update(float deltaTime) = 0;
     virtual void clean() = 0;
     void run();
@@ -256,7 +256,6 @@ struct TextureLayers {
 
 class TextureBlitter {
     GLuint program;
-    GLuint programCopy;
     GLuint resizeVao;
     std::map<GLuint, MultiLayerRenderBuffer> buffers;
 
@@ -404,11 +403,8 @@ class ImpostorDrawer {
     TextureLayers * targetLayers;
     public:
     ImpostorDrawer(GLuint program, int width, int height, TextureLayers* sourceLayers, TextureLayers * targetLayers, TextureBlitter * blitter);
-    void draw(ImpostorParams &params);
+    void draw(ImpostorParams &params, float time);
 };
-void blitTextureArray(GLuint programCopy, MultiLayerRenderBuffer buffer, TextureLayers * layers, int index);
-void blitRenderBuffer(TextureArray textures[0], TextureLayers layers, RenderBuffer buffer, int sourceIndex, int destinationIndex);
-void blitRenderBuffer(TextureArray textures[0], TextureLayers layers, MultiLayerRenderBuffer buffer, int sourceIndex);
 
 void loadTexture(TextureLayers * layers, std::initializer_list<std::string> fns, int index, bool mipMapping);
 TextureArray createTextureArray(int width, int height, int layers, GLuint channel); 

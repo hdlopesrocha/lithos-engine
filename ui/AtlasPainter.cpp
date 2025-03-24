@@ -10,7 +10,7 @@ AtlasPainter::AtlasPainter(std::vector<AtlasParams> * atlasParams, std::vector<A
     this->selectedDraw = 0;
 }
 
-void AtlasPainter::draw2d(){
+void AtlasPainter::draw2d(float time){
     float PI = glm::pi<float>();
 
     ImGui::Begin("Atlas Painter", &open, ImGuiWindowFlags_AlwaysAutoResize);

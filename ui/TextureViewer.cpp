@@ -8,7 +8,7 @@ TextureViewer::TextureViewer(GLuint previewProgram, TextureLayers * layers) {
 }
 
 
-void TextureViewer::draw2d(){
+void TextureViewer::draw2d(float time){
     ImGui::Begin("Texture Viewer", &open, ImGuiWindowFlags_AlwaysAutoResize);
 
     previewer->draw2d(selectedTexture);

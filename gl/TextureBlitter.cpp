@@ -6,16 +6,18 @@ TextureBlitter::TextureBlitter(GLuint program, int width, int height, std::initi
     this->resizeVao = DrawableGeometry::create2DVAO(-1,-1, 1,1);
 
     for(GLuint format : formats) {
-        buffers.insert({format, createMultiLayerRenderFrameBuffer(width, height, 1,1, false, format)});
+        buffers.insert({format, createMultiLayerRenderFrameBuffer(width, height, 3,3, false, format)});
     }
 }
 
 void TextureBlitter::blit(MultiLayerRenderBuffer * sourceBuffer, int sourceIndex, TextureArray * targetBuffer, int targetIndex) {
-    MultiLayerRenderBuffer * buffer = &buffers[targetBuffer->channel];
+    MultiLayerRenderBuffer * buffer = &buffers[targetBuffer->format];
     if(buffer != NULL) {
-        glUseProgram(program);
         glBindFramebuffer(GL_FRAMEBUFFER, buffer->frameBuffer);
         glViewport(0, 0, buffer->width, buffer->height);
+        glClearColor(0.0f,1.0f,0.0f,1.0f);
+		glClear(GL_COLOR_BUFFER_BIT);
+        glUseProgram(program);
 
         // Set uniforms: source layer, sizes, etc.
         glUniform1i(glGetUniformLocation(program, "sourceLayer"), sourceIndex);
@@ -49,7 +51,7 @@ void TextureBlitter::blit(MultiLayerRenderBuffer * sourceBuffer, int sourceIndex
         glBindTexture(GL_TEXTURE_2D_ARRAY, targetBuffer->index);
         glGenerateMipmap(GL_TEXTURE_2D_ARRAY);
     } else {
-        std::cerr << "Blit error: " << targetBuffer->channel << " channel not mapped!" << std::endl;
+        std::cerr << "Blit error: " << targetBuffer->format << " channel not mapped!" << std::endl;
     }
 }
 

@@ -11,7 +11,7 @@ glm::vec3 Camera::getCameraDirection() {
     return glm::normalize(glm::rotate(quaternion, forward));
 }
 
-glm::mat4 Camera::getVP() {
+glm::mat4 Camera::getViewProjection() {
     return projection * view;
 }
 

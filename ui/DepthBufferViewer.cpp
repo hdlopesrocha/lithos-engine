@@ -10,7 +10,7 @@ DepthBufferViewer::DepthBufferViewer(GLuint previewProgram, TextureImage depthTe
     this->height = height;
 }
 
-void DepthBufferViewer::draw2d(){
+void DepthBufferViewer::draw2d(float time){
     glBindFramebuffer(GL_FRAMEBUFFER, previewBuffer.frameBuffer);
     glViewport(0, 0, previewBuffer.width, previewBuffer.height); 
 	glClearColor (0.0,0.0,0.0,0.0);    

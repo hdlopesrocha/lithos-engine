@@ -6,7 +6,7 @@ SettingsEditor::SettingsEditor(Settings * settings) {
 
 }
 
-void SettingsEditor::draw2d(){
+void SettingsEditor::draw2d(float time){
     unsigned int min_value = 0;
     unsigned int max_range = 1024;
     unsigned int max_override = 32;

@@ -11,7 +11,7 @@ void APIENTRY openglDebugCallback(GLenum source, GLenum type, GLuint id, GLenum 
     
     if(severity == GL_DEBUG_SEVERITY_HIGH) {
         std::cerr << "OpenGL Debug Message: " << message << std::endl;
-       // throw std::runtime_error("OpenGL error in openglDebugCallback");
+        throw std::runtime_error("OpenGL error in openglDebugCallback");
     }
 }
 
@@ -100,7 +100,7 @@ void LithosApplication::mainLoop() {
 
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             draw3d();
-            draw2d();
+            draw2d(currentTime);
             glfwSwapBuffers(window);
         }else {
             alive = false;
@@ -143,7 +143,7 @@ RenderBuffer createRenderFrameBuffer(int width, int height, bool depth) {
     RenderBuffer buffer;
     buffer.width = width;
     buffer.height = height;
-    buffer.colorTexture.channel = GL_RGBA8;
+    buffer.colorTexture.format = GL_RGBA8;
     glGenTextures(1, &buffer.colorTexture.index);
     glBindTexture(GL_TEXTURE_2D, buffer.colorTexture.index);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
@@ -207,7 +207,7 @@ static long allocatedTextureArrayMemory = 0;
 
 TextureArray createTextureArray(int width, int height, int layers, GLuint channel) {
     TextureArray texArray;
-    texArray.channel = channel;
+    texArray.format = channel;
     glGenTextures(1, &texArray.index);
     glBindTexture(GL_TEXTURE_2D_ARRAY, texArray.index);
 
@@ -423,7 +423,7 @@ TextureImage LithosApplication::loadTextureImage(const std::string& filename, bo
             format = GL_RGB;
         else if (channels == 4)
             format = GL_RGBA;
-        image.channel = format;
+        image.format = format;
         // Upload the texture to OpenGL
         glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
         if(mipmapEnabled) {
@@ -555,15 +555,4 @@ GLuint LithosApplication::createShaderProgram(std::initializer_list<GLuint> shad
     return program;
 }
 
-
-void blitRenderBuffer(TextureLayers layers, MultiLayerRenderBuffer buffer, int sourceIndex) {
-    for(int i =0 ; i < 3; ++i){
-  //      glCopyImageSubData(layers.textures[i].colorTexture.index, GL_TEXTURE_2D_ARRAY, 0, 0, 0, sourceIndex, buffer.colorTexture.index, GL_TEXTURE_2D_ARRAY, 0, 0, 0, i, buffer.width, buffer.height, 1);
-    }    
-}
-
-
-void blitRenderBuffer(TextureLayers layers, RenderBuffer buffer, int sourceIndex, int destinationIndex) {
-  //  glCopyImageSubData(layers.textures[destinationIndex].colorTexture.index, GL_TEXTURE_2D_ARRAY, 0, 0, 0, sourceIndex, buffer.colorTexture.idx, GL_TEXTURE_2D, 0, 0, 0, 0, buffer.width, buffer.height, 1);
-}
 

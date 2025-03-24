@@ -20,7 +20,7 @@
 #include <filesystem>
 #include <algorithm>
 #define DB_PERLIN_IMPL
-#include "perlin.hpp"
+#include "stb_perlin.h"
 #define INFO_TYPE_FILE 99
 #define INFO_TYPE_REMOVE 0
 #define DISCARD_BRUSH_INDEX -1
@@ -694,7 +694,7 @@ class Camera {
 
     Camera(float near, float far);
     glm::vec3 getCameraDirection();
-    glm::mat4 getVP();
+    glm::mat4 getViewProjection();
 };
 
 struct Tile {

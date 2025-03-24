@@ -10,11 +10,11 @@ ImpostorViewer::ImpostorViewer(ImpostorDrawer* impostorDrawer, std::vector<Impos
 }
 
 
-void ImpostorViewer::draw2d(){
+void ImpostorViewer::draw2d(float time){
     selectedDrawer = Math::mod(selectedDrawer, layers->count);
 
     ImpostorParams * params = &(*impostors)[selectedDrawer];
-    impostorDrawer->draw(*params);
+    impostorDrawer->draw(*params, time);
 
 
     ImGui::Begin("Impostor Viewer", &open, ImGuiWindowFlags_AlwaysAutoResize);

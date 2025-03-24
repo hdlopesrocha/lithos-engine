@@ -8,7 +8,7 @@ ShadowMapViewer::ShadowMapViewer(std::vector<std::pair<RenderBuffer, int>> * sha
     this->height = height;
 }
 
-void ShadowMapViewer::draw2d(){
+void ShadowMapViewer::draw2d(float time){
     ImGui::Begin("Shadow Map Viewer", &open, ImGuiWindowFlags_AlwaysAutoResize);
 
     ImGui::Text("Selected buffer: ");
