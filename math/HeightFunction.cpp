@@ -1,20 +1,23 @@
 #include "math.hpp"
 
+
+
 PerlinSurface::PerlinSurface(float amplitude, float frequency, float offset) {
     this->amplitude = amplitude;
     this->frequency = frequency;
     this->offset = offset;
 }
 
-float PerlinSurface::getHeightAt(float x, float z) const  {
-    float noise = db::perlin(double(x) * frequency, double(0) * frequency ,double(z) *frequency);
+float PerlinSurface::getHeightAt(float x, float z) const {
+
+    float noise = stb_perlin_fbm_noise3(x, 0, z, 1.0, 0.5, 6);
     return offset + amplitude * noise;
 }
 
 FractalPerlinSurface::FractalPerlinSurface(float amplitude, float frequency, float offset) : PerlinSurface(amplitude, frequency, offset){
 }
 
-float FractalPerlinSurface::getHeightAt(float x, float z)  const {
+float FractalPerlinSurface::getHeightAt(float x, float z) const {
     float noise = 0;
     float weight = 1.0;
     float total = 0.0;
@@ -37,7 +40,7 @@ GradientPerlinSurface::GradientPerlinSurface(float amplitude, float frequency, f
 
 }
 
-float GradientPerlinSurface::getHeightAt(float x,float z) const  {
+float GradientPerlinSurface::getHeightAt(float x,float z) const   {
     float noise = 0;
     float weight = 1.0;
     float total = 0.0;
@@ -72,7 +75,7 @@ float GradientPerlinSurface::getHeightAt(float x,float z) const  {
     return offset + amplitude * noise;
 }
 
-CachedHeightMapSurface::CachedHeightMapSurface( const HeightFunction &function, BoundingBox box, float delta) {
+CachedHeightMapSurface::CachedHeightMapSurface(const HeightFunction &function, BoundingBox box, float delta) {
     this->box = box;
     this->delta = delta;
     glm::vec3 len = box.getLength();
@@ -93,7 +96,7 @@ float CachedHeightMapSurface::getData(int x, int z) const {
     return this->data[Math::clamp(x, 0, this->width-1)][Math::clamp(z, 0, this->height-1)];
 }
 
-float CachedHeightMapSurface::getHeightAt(float x, float z) const {
+float CachedHeightMapSurface::getHeightAt(float x, float z) const  {
     // bilinear interpolation
     glm::vec3 len = box.getLength();
 

@@ -177,3 +177,25 @@ glm::mat4 Math::getRotationMatrixFromNormal(glm::vec3 normal, glm::vec3 target) 
 }
 
 
+const double a = 6378137.0;  // WGS84 semi-major axis in meters
+const double e2 = 0.00669437999014;  // WGS84 eccentricity squared
+
+// Convert degrees to radians
+double Math::degToRad(double degrees) {
+    return degrees * (M_PI / 180.0);
+}
+
+// WGS 84 to ECEF (XYZ) conversion
+void Math::wgs84ToEcef(double lat, double lon, double height, double &X, double &Y, double &Z) {
+    // Convert latitude and longitude from degrees to radians
+    double phi = degToRad(lat);  // Latitude in radians
+    double lambda = degToRad(lon);  // Longitude in radians
+
+    // Compute the radius of curvature in the prime vertical
+    double N = a / sqrt(1 - e2 * sin(phi) * sin(phi));
+
+    // Compute the ECEF coordinates
+    X = (N + height) * cos(phi) * cos(lambda);
+    Y = (N + height) * cos(phi) * sin(lambda);
+    Z = ((1 - e2) * N + height) * sin(phi);
+}

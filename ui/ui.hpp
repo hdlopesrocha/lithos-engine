@@ -196,12 +196,19 @@ class ImageViewer : public Closable{
 
 class SettingsEditor : public Closable {
     Settings * settings;
-
+    Camera * camera;
     public:
-    SettingsEditor(Settings * settings);
+    SettingsEditor(Settings * settings, Camera * camera);
 
     void draw2d(float time) override;
     void draw3d(UniformBlock block) override;
 };
+
+class MouseDragViewer {
+    public:
+    static void render(glm::vec2 &vec, glm::vec2 &delta);
+
+};
+
 
 #endif

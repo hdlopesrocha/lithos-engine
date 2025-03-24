@@ -1,5 +1,11 @@
 #ifndef MATH_HPP
 #define MATH_HPP
+
+#ifndef STB_PERLIN_H
+#define STB_PERLIN_H
+#include <stb/stb_perlin.h>
+#endif // STB_PERLIN_H
+
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -19,11 +25,16 @@
 #include <map>
 #include <filesystem>
 #include <algorithm>
-#define DB_PERLIN_IMPL
-#include "stb_perlin.h"
+#include <gdal/gdal_priv.h>
+#include <gdal/cpl_conv.h> // For CPLFree
+
+
 #define INFO_TYPE_FILE 99
 #define INFO_TYPE_REMOVE 0
 #define DISCARD_BRUSH_INDEX -1
+
+
+
 
 class BoundingSphere;
 class BoundingBox;
@@ -251,6 +262,21 @@ class HeightMap: public BoundingBox  {
 		ContainmentType test(const BoundingCube &cube) const ;
 
 };
+
+
+class HeightMapTif : public HeightFunction {
+	public:
+		std::vector<float> data; 
+		BoundingBox box;
+		float delta;
+		int width;
+		int height;
+
+		HeightMapTif(const std::string & filename, BoundingBox box);
+		float getHeightAt(float x, float z) const override;
+
+};
+
 
 class ContainmentHandler {
 	public: 
@@ -692,7 +718,7 @@ class Camera {
     float near;
     float far;
 
-    Camera(float near, float far);
+    Camera(glm::vec3 position, glm::quat quaternion, float near, float far);
     glm::vec3 getCameraDirection();
     glm::mat4 getViewProjection();
 };
@@ -731,6 +757,10 @@ public:
 	static glm::vec3 surfaceNormal(const glm::vec3 point, const BoundingBox &box);
 	static glm::mat4 getCanonicalMVP(glm::mat4 m);
 	static glm::mat4 getRotationMatrixFromNormal(glm::vec3 normal, glm::vec3 target);
+
+	static double degToRad(double degrees);
+	static void wgs84ToEcef(double lat, double lon, double height, double &X, double &Y, double &Z);
+
 };
 void ensureFolderExists(const std::string& folder);
 

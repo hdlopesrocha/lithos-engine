@@ -5,7 +5,8 @@
 #include "tools/tools.hpp"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-
+#include <glm/gtc/quaternion.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 class GlslInclude {
 	public:
 	std::string line;
@@ -32,6 +33,36 @@ std::string replaceIncludes(std::vector<GlslInclude> includes, std::string code)
 	return code;
 }
 
+// Function to create a quaternion from yaw, pitch, roll
+glm::quat CreateQuaternion(float yaw, float pitch, float roll) {
+    // Convert degrees to radians
+    float yawRad   = glm::radians(yaw);
+    float pitchRad = glm::radians(pitch);
+    float rollRad  = glm::radians(roll);
+
+    // Create individual axis quaternions
+    glm::quat qYaw   = glm::angleAxis(yawRad, glm::vec3(0, 1, 0));  // Rotate around Y
+    glm::quat qPitch = glm::angleAxis(pitchRad, glm::vec3(1, 0, 0)); // Rotate around X
+    glm::quat qRoll  = glm::angleAxis(rollRad, glm::vec3(0, 0, 1));  // Rotate around Z
+
+    // Apply in Yaw -> Pitch -> Roll order (multiplication applies right to left)
+    return qYaw * qPitch * qRoll;
+}
+
+
+glm::quat EulerToQuat(float yaw, float pitch, float roll) {
+    // Convert degrees to radians
+    float yawRad = glm::radians(yaw);
+    float pitchRad = glm::radians(pitch);
+    float rollRad = glm::radians(roll);
+
+    // Construct quaternion in correct order (Yaw -> Pitch -> Roll)
+    glm::quat qYaw   = glm::angleAxis(yawRad, glm::vec3(0, 1, 0));  // Rotate around Y
+    glm::quat qPitch = glm::angleAxis(pitchRad, glm::vec3(1, 0, 0)); // Rotate around X
+    glm::quat qRoll  = glm::angleAxis(rollRad, glm::vec3(0, 0, 1));  // Rotate around Z
+
+    return qYaw * qPitch * qRoll; // Yaw first, then Pitch, then Roll
+}
 
 
 class MainApplication : public LithosApplication {
@@ -50,7 +81,11 @@ class MainApplication : public LithosApplication {
 	Settings * settings = new Settings();
 	glm::mat4 worldModel = glm::mat4(1.0f); // Identity matrix
 
-	Camera camera = Camera(0.1, 512);
+	glm::quat quaternion = glm::normalize(glm::quat(-0.742f, -0.617f, -0.196f, -0.172f));
+	//glm::quat quaternion =  EulerToQuat(1.22955, 0.15838, 0.62293);
+	// pitch yaw roll
+	
+	Camera camera = Camera(glm::vec3(401, 334, 1689), quaternion , 0.1f, 512.0f);
 	DirectionalLight light;
 
 	GLuint programSwap;
@@ -122,6 +157,9 @@ public:
 
 
     virtual void setup() {
+		// Register all GDAL drivers
+		GDALAllRegister();
+
 		uniformBlockData = new ProgramData();
 		uniformBrushData = new ProgramData();
 
@@ -225,9 +263,9 @@ public:
 		renderBuffer = createRenderFrameBuffer(getWidth(), getHeight(), true);
 		solidBuffer = createRenderFrameBuffer(getWidth(), getHeight(), true);
 		depthFrameBuffer = createDepthFrameBuffer(getWidth(), getHeight());
-		shadowFrameBuffers.push_back(std::pair(createDepthFrameBuffer(1024, 1024), 64));
-		shadowFrameBuffers.push_back(std::pair(createDepthFrameBuffer(1024, 1024), 256));
-		shadowFrameBuffers.push_back(std::pair(createDepthFrameBuffer(1024, 1024), 512));
+		shadowFrameBuffers.push_back(std::pair(createDepthFrameBuffer(1024, 1024), 128));
+		shadowFrameBuffers.push_back(std::pair(createDepthFrameBuffer(1024, 1024), 1024));
+		shadowFrameBuffers.push_back(std::pair(createDepthFrameBuffer(1024, 1024), 2048));
 
 		textureMixer = new TextureMixer(1024,1024, programMixTexture, &textureLayers, textureBlitter1024);
 		textureAnimator = new AnimatedTexture(1024,1024, programWaterTexture ,&textureLayers, textureBlitter1024);
@@ -456,11 +494,7 @@ public:
 		mainScene->load();
 	
 
-		
-		camera.quaternion =   glm::angleAxis(glm::radians(180.0f), glm::vec3(0, 0, 1))
-		* glm::angleAxis(glm::radians(145.0f), glm::vec3(1, 0, 0))
-		* glm::angleAxis(glm::radians(135.0f), glm::vec3(0, 1, 0));  
-		camera.position = glm::vec3(48,48,48);
+
         light.direction = glm::normalize(glm::vec3(-1.0,-1.0,-1.0));
 		glUseProgram(0);
 		//tesselator->normalize();
@@ -472,7 +506,7 @@ public:
 		textureMixerEditor = new TextureMixerEditor(textureMixer, &mixers, programTexture, &textureLayers);
 		animatedTextureEditor = new AnimatedTextureEditor(&animations, programTexture, 256,256, &textureLayers);
 		depthBufferViewer = new DepthBufferViewer(programDepth,depthFrameBuffer.depthTexture,512,512);
-		settingsEditor = new SettingsEditor(settings);
+		settingsEditor = new SettingsEditor(settings, &camera);
 		textureViewer = new TextureViewer(programTexture, &textureLayers);
 		impostorViewer = new ImpostorViewer(impostorDrawer, &impostors , programTexture, 256, 256, &impostorLayers);
 
@@ -580,17 +614,23 @@ glm::vec3 getDirection(float time) {
 		float far = 512.0f;
 		float near = 0.1f;
 
-		glm::mat4 rotate = glm::mat4_cast(camera.quaternion);
-		glm::mat4 translate = glm::translate(glm::mat4(1.0f), -camera.position);
-	   
-		camera.projection = glm::perspective(glm::radians(45.0f), getWidth() / (float) getHeight(), near, far);
-		camera.view = rotate * translate;
-		camera.quaternion = glm::normalize(camera.quaternion);
-		
-		camera.position = getCameraPosition(time);
-		glm::vec3 future = camera.position + getDirection(time);
+		// Convert quaternion to rotation matrix
+		glm::mat4 rotate = glm::mat4_cast(glm::normalize(camera.quaternion)); 
 
-		camera.view = glm::lookAt(camera.position, future, glm::vec3(0.0,1.0,0.0));
+		// Apply translation (negative because we move the world, not the camera)
+		glm::mat4 translate = glm::translate(glm::mat4(1.0f), -camera.position);
+
+		// Correct multiplication order: Rotation first, then translation
+		camera.view = rotate * translate;
+
+		// Perspective projection
+		camera.projection = glm::perspective(glm::radians(45.0f), getWidth() / (float)getHeight(), near, far);
+
+		
+		//camera.position = getCameraPosition(time);
+		//glm::vec3 future = camera.position + getDirection(time);
+
+		//camera.view = glm::lookAt(camera.position, future, glm::vec3(0.0,1.0,0.0));
 		//glm::vec3 cameraDirection = glm::vec3(0.0f, 0.0f, -1.0f)*camera.quaternion;
 
 		
@@ -800,6 +840,23 @@ glm::vec3 getDirection(float time) {
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 		
+
+		glm::vec2 myVec(0.0f);
+		glm::vec2 myDelta(0.0f);
+	
+		MouseDragViewer::render(myVec, myDelta);
+	
+		glm::vec3 frontDirection = glm::vec3(0.0f, 0.0f, 1.0f)*camera.quaternion;
+		glm::vec3 leftDirection = glm::vec3(1.0f, 0.0f, 0.0f)*camera.quaternion;
+
+		frontDirection.y = 0;
+		frontDirection = glm::normalize(frontDirection);
+
+		leftDirection.y = 0;
+		leftDirection = glm::normalize(leftDirection);
+
+		camera.position += (frontDirection * myDelta.y + leftDirection*myDelta.x)*0.01f;
+	
 		if (ImGui::BeginMainMenuBar()) {
 			// File Menu
 			if (ImGui::BeginMenu("File")) {
@@ -897,6 +954,8 @@ glm::vec3 getDirection(float time) {
 			ImGui::End();
 
 		}
+
+
 
 		uniformBlockViewer->draw2dIfOpen(time);
 		animatedTextureEditor->draw2dIfOpen(time);

@@ -1,9 +1,11 @@
 #include "math.hpp"
 
 
-Camera::Camera(float near, float far) {
+Camera::Camera(glm::vec3 position, glm::quat quaternion, float near, float far) {
     this->near = near;
     this->far = far;
+    this->position = position;
+    this->quaternion = quaternion;
 }
 
 glm::vec3 Camera::getCameraDirection() {

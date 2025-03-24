@@ -1,10 +1,17 @@
 #include "ui.hpp"
 
 
-SettingsEditor::SettingsEditor(Settings * settings) {
+SettingsEditor::SettingsEditor(Settings * settings, Camera * camera) {
     this->settings = settings;
+    this->camera = camera;
+}   
 
+
+glm::vec3 getYawPitchRoll(const glm::quat &q) {
+   return glm::eulerAngles(q); // Returns (pitch, yaw, roll) in radians
 }
+
+
 
 void SettingsEditor::draw2d(float time){
     unsigned int min_value = 0;
@@ -13,8 +20,16 @@ void SettingsEditor::draw2d(float time){
     int int_value = 0;
 
 
+glm::vec3 ypr = getYawPitchRoll( camera->quaternion) ;
+
     ImGui::Begin("Settings", &open, ImGuiWindowFlags_AlwaysAutoResize);
+    ImGui::Text("Camera Position: (%.3f, %.3f, %.3f)", camera->position.x, camera->position.y, camera->position.z);
+    ImGui::Text("Camera Quaternion: (%.5f, %.5f, %.5f, %.5f)", camera->quaternion.x, camera->quaternion.y, camera->quaternion.z, camera->quaternion.w);
+    //ImGui::Text("Camera yaw: %.5f pitch: %.5f roll: %.5f",camera->quaternion.x,camera->quaternion.y,camera->quaternion.z ,camera->quaternion.w);
+
+
     ImGui::Checkbox("Billboards", &settings->billboardEnabled);
+
     ImGui::Checkbox("Solid", &settings->solidEnabled);
     ImGui::Checkbox("Liquid", &settings->liquidEnabled);
 
