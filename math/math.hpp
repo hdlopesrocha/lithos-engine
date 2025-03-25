@@ -266,8 +266,12 @@ class HeightMap: public BoundingBox  {
 
 class HeightMapTif : public HeightFunction {
 	public:
-		std::vector<float> data; 
-		BoundingBox box;
+	std::vector<float> data0; 
+	std::vector<uint16_t> data1; 
+	std::vector<uint16_t> data2; 
+	std::vector<uint16_t> data3; 
+	std::vector<uint16_t> data4; 
+	BoundingBox box;
 		float delta;
 		int width;
 		int height;

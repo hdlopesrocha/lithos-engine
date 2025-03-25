@@ -102,8 +102,8 @@ class VegetationInstanceBuilder : public OctreeNodeTriangleHandler {
 class Scene {
 
     public: 
-    	Octree * solidSpace = new Octree(BoundingCube(glm::vec3(0,0,0), 4.0));
-	    Octree * liquidSpace = new Octree(BoundingCube(glm::vec3(0,13,0), 4.0));
+    	Octree * solidSpace = new Octree(BoundingCube(glm::vec3(0,0,0), 1.0));
+	    Octree * liquidSpace = new Octree(BoundingCube(glm::vec3(0,13,0), 1.0));
 
 		long solidInstancesCount = 0;
 		long liquidInstancesCount = 0;
