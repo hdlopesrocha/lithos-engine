@@ -1,6 +1,6 @@
-#include "gl/gl.hpp"
-#include <math.h>
+#define STB_PERLIN_IMPLEMENTATION
 #include "math/math.hpp"
+#include "gl/gl.hpp"
 #include "ui/ui.hpp"
 #include "tools/tools.hpp"
 #include <glm/glm.hpp>
@@ -81,11 +81,11 @@ class MainApplication : public LithosApplication {
 	Settings * settings = new Settings();
 	glm::mat4 worldModel = glm::mat4(1.0f); // Identity matrix
 
-	glm::quat quaternion = glm::normalize(glm::quat(-0.742f, -0.617f, -0.196f, -0.172f));
-	//glm::quat quaternion =  EulerToQuat(1.22955, 0.15838, 0.62293);
+	//glm::quat quaternion = glm::normalize(glm::quat(1.0f, 1.0f, 1.0f, 1.0f));
+	glm::quat quaternion =  EulerToQuat(0, 0, 0);
 	// pitch yaw roll
 	
-	Camera camera = Camera(glm::vec3(401, 334, 1689), quaternion , 0.1f, 512.0f);
+	Camera camera = Camera(glm::vec3(128, 100, 128), quaternion , 0.1f, 1024.0f);
 	DirectionalLight light;
 
 	GLuint programSwap;
@@ -611,7 +611,7 @@ glm::vec3 getDirection(float time) {
 }
 
     virtual void draw3d() {
-		float far = 512.0f;
+		float far = 1024.0f;
 		float near = 0.1f;
 
 		// Convert quaternion to rotation matrix

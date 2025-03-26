@@ -1,10 +1,7 @@
 #ifndef MATH_HPP
 #define MATH_HPP
 
-#ifndef STB_PERLIN_H
-#define STB_PERLIN_H
 #include <stb/stb_perlin.h>
-#endif // STB_PERLIN_H
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -207,12 +204,11 @@ class CachedHeightMapSurface : public HeightFunction {
 	public:
 		std::vector<std::vector<float>> data; 
 		BoundingBox box;
-		float delta;
 		int width;
 		int height;
 
 
-	CachedHeightMapSurface(const HeightFunction &function, BoundingBox box, float delta);
+	CachedHeightMapSurface(const HeightFunction &function, BoundingBox box,  float delta);
 	float getData(int x, int z) const;
 	float getHeightAt(float x, float z) const override;
 
@@ -227,6 +223,8 @@ class PerlinSurface : public HeightFunction {
 
 	PerlinSurface(float amplitude, float frequency, float offset);
 	float getHeightAt(float x, float z) const override;
+	float getHeightAt(float x, float y, float z) const;
+
 };
 
 class FractalPerlinSurface : public PerlinSurface {
@@ -266,17 +264,13 @@ class HeightMap: public BoundingBox  {
 
 class HeightMapTif : public HeightFunction {
 	public:
-	std::vector<float> data0; 
-	std::vector<uint16_t> data1; 
-	std::vector<uint16_t> data2; 
-	std::vector<uint16_t> data3; 
-	std::vector<uint16_t> data4; 
+	std::vector<std::vector<float>> data; 
+	std::vector<int16_t> data1; 
 	BoundingBox box;
-		float delta;
-		int width;
-		int height;
+	int width;
+	int height;
 
-		HeightMapTif(const std::string & filename, BoundingBox box);
+		HeightMapTif(const std::string & filename, BoundingBox box, float verticalScale, float verticalShift);
 		float getHeightAt(float x, float z) const override;
 
 };

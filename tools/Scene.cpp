@@ -142,19 +142,34 @@ void Scene::draw3dLiquid(glm::vec3 cameraPosition, const std::vector<OctreeNodeD
 }
 
 void Scene::create() {
-
-	BoundingBox mapBox(glm::vec3(-200,-60,-200), glm::vec3(200,50,200));
-/*	
+	int sizePerTile = 1;
+	BoundingBox mapBox = BoundingBox(glm::vec3(0,-256,0), glm::vec3(sizePerTile*1024,256,sizePerTile*1024));
+	//BoundingBox mapBox = BoundingBox(glm::vec3(0,-256,0), glm::vec3(sizePerTile*3601,256,sizePerTile*3601));
+	
 	solidSpace->add(HeightMapContainmentHandler(
 		HeightMap(
 			CachedHeightMapSurface(
-				GradientPerlinSurface(100, 1.0f/128.0f, 0), 
-				mapBox, solidSpace->minSize
-			), mapBox, solidSpace->minSize
+				GradientPerlinSurface(100, 1.0f/256.0f, 0), 
+				mapBox, sizePerTile
+			), mapBox, sizePerTile
 		), LandBrush()
 	));
+
+/*
+	solidSpace->add(HeightMapContainmentHandler(
+		HeightMap(
+			CachedHeightMapSurface(
+				HeightMapTif("models/N39W008.hgt", mapBox, 0.1f, -32.0f), 
+				mapBox,sizePerTile
+			), 
+			mapBox,sizePerTile
+		), 
+		LandBrush()
+	));
 */
-	BoundingBox waterBox(glm::vec3(0,-60,0), glm::vec3(2048,5,2048));
+
+
+	BoundingBox waterBox(glm::vec3(mapBox.getMinX(),-100,mapBox.getMinZ()), glm::vec3(mapBox.getMaxX(),0,mapBox.getMaxZ()));
 	//liquidSpace->add(BoxContainmentHandler(BoundingBox(glm::vec3(30,-20,30),glm::vec3(70,20,70)),SimpleBrush(0)));
 
 	//liquidSpace->add(SphereContainmentHandler(BoundingSphere(glm::vec3(11,61,-11),4), SimpleBrush(0)));
@@ -169,15 +184,7 @@ void Scene::create() {
 	solidSpace->del(SphereContainmentHandler(BoundingSphere(glm::vec3(11,61,-11),10), SimpleBrush(4)));
 	solidSpace->del(SphereContainmentHandler(BoundingSphere(glm::vec3(4,54,-4),8), SimpleBrush(1)));
 */
-	BoundingBox box = BoundingBox(glm::vec3(0,0,0), glm::vec3(2048,64,2048));
-	solidSpace->add(HeightMapContainmentHandler(
-		HeightMap(
-			HeightMapTif("models/map_small.tif", box),
-			box,
-			1
-		), 
-		LandBrush()
-	));
+
 }
 
 

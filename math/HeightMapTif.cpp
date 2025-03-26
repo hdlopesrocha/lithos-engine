@@ -2,7 +2,7 @@
 
 
 
-void processBand(GDALRasterBand* band, int bandIdx, std::vector<uint16_t> &result, int scale) {
+void processBand(GDALRasterBand* band, int bandIdx, std::vector<int16_t> &result) {
     if (band) {
         std::cout << "Processing Band " << (bandIdx) << std::endl;
 
@@ -14,8 +14,8 @@ void processBand(GDALRasterBand* band, int bandIdx, std::vector<uint16_t> &resul
     GDALDataType dtype = band->GetRasterDataType();
 
     // Retrieve the NoData value dynamically
-    int noDataValue;
-     band->GetNoDataValue(&noDataValue);
+
+     double noDataValue = band->GetNoDataValue(nullptr);  // Read NoData as double
 
 
     int width = band->GetXSize();
@@ -24,27 +24,52 @@ void processBand(GDALRasterBand* band, int bandIdx, std::vector<uint16_t> &resul
     
     result.resize(width * height);
 
+    size_t wh= width * height;
 
     if (dtype == GDT_Float32) {
-        std::vector<float> buffer(width * height);
-        band->RasterIO(GF_Read, 0, 0, width, height, buffer.data(), width, height, GDT_Float32, 0, 0);
-        for (size_t i = 0; i < buffer.size(); i++) {
-            result[i] = scale*(buffer[i] != static_cast<float>(noDataValue)) ? static_cast<float>(buffer[i]) : 0.0f;
+        std::vector<float> buffer(wh);
+        CPLErr err = band->RasterIO(GF_Read, 0, 0, width, height, buffer.data(), width, height, GDT_Float32, 0, 0);
+        if (err != CE_None) {
+            std::cerr << "Error reading raster data (Float32) for band!" << std::endl;
+            return;
+        }
+        for (size_t i = 0; i < wh; i++) {
+            result[i] = (buffer[i] != static_cast<float>(noDataValue)) ? buffer[i] : 0.0f;
         }
     } else if (dtype == GDT_UInt16) {
-        std::vector<uint16_t> buffer(width * height);
-        band->RasterIO(GF_Read, 0, 0, width, height, buffer.data(), width, height, GDT_UInt16, 0, 0);
-        for (size_t i = 0; i < buffer.size(); i++) {
-            result[i] = scale*(buffer[i] != static_cast<uint16_t>(noDataValue)) ? buffer[i] : 0.0f;
+        std::vector<uint16_t> buffer(wh);
+        CPLErr err = band->RasterIO(GF_Read, 0, 0, width, height, buffer.data(), width, height, GDT_UInt16, 0, 0);
+        if (err != CE_None) {
+            std::cerr << "Error reading raster data (UInt16) for band!" << std::endl;
+            return;
         }
-    } else {
+        for (size_t i = 0; i < wh; i++) {
+            result[i] = (buffer[i] != static_cast<uint16_t>(noDataValue)) ? buffer[i] : 0.0f;
+        }
+        
+    }  else if (dtype == GDT_Int16) {
+        std::vector<int16_t> buffer(wh);
+        CPLErr err = band->RasterIO(GF_Read, 0, 0, width, height, buffer.data(), width, height, GDT_Int16, 0, 0);
+        if (err != CE_None) {
+            std::cerr << "Error reading raster data (Int16) for band!" << std::endl;
+            return;
+        }
+        for (size_t i = 0; i < wh; i++) {
+            if (static_cast<double>(buffer[i]) != noDataValue) {  
+                result[i] = buffer[i];  
+            } else {
+                std::cerr << "NoData" << std::endl;
+                result[i] = 0.0f;  // NoData case
+            }
+        }
+    }else {
         std::cerr << "Unsupported data type: " << GDALGetDataTypeName(dtype) << std::endl;
     }
 
 }
 
 
-HeightMapTif::HeightMapTif(const std::string &filename, BoundingBox box){
+HeightMapTif::HeightMapTif(const std::string &filename, BoundingBox box, float verticalScale, float verticalShift){
     this->box = box;
     // **Open the dataset**
     GDALDataset* dataset = static_cast<GDALDataset*>(GDALOpen(filename.c_str(), GA_ReadOnly));
@@ -64,42 +89,44 @@ HeightMapTif::HeightMapTif(const std::string &filename, BoundingBox box){
     // Get raster dimensions (width and height)
     width = dataset->GetRasterXSize();
     height = dataset->GetRasterYSize();
+    std::cout << "Raster "+ std::to_string(width) << "x" << std::to_string(height) << std::endl;
 
-int scale = 100000000;
-    // Process each band (assuming the dataset has 4 bands)
-    processBand(dataset->GetRasterBand(1), 1, data1, scale); // Bands are 1-indexed in GDAL
-    processBand(dataset->GetRasterBand(2), 2, data2, scale); // Bands are 1-indexed in GDAL
-    processBand(dataset->GetRasterBand(3), 3, data3, scale); // Bands are 1-indexed in GDAL
-    processBand(dataset->GetRasterBand(4), 4, data4, scale); // Bands are 1-indexed in GDAL
+    // Process band 1
+    processBand(dataset->GetRasterBand(1), 1, data1); // Bands are 1-indexed in GDAL
 
-    data0.reserve(data1.size());
+   // Allocate the correct dimensions (height first)
+    this->data = std::vector<std::vector<float>>(height, std::vector<float>(width)); 
 
-    for(int i=0 ; i < data1.size() ; ++i) {
-        uint32_t heightValue = (data1[i]) | (data2[i] << 8) | (data3[i] << 16) |  (data4[i] << 24);
-        // Convert to float
-        float finalHeight;
-        std::memcpy(&finalHeight, &heightValue, sizeof(float));
-        data0.push_back(finalHeight);
+    size_t wh = width * height;
+    long sz=0;
+    for(size_t i=0 ; i < wh ; ++i) {
+        int y = i / width;  // Row index
+        int x = i % width;  // Column index
+    
+        float floatValue = static_cast<float>(data1[i]) * verticalScale+verticalShift;
+        this->data[y][x] = floatValue;
+        ++sz;
+        if (i < 8) {  // Debugging first few values
+            std::cout << "\th[" << y << "," << x << "] = " << floatValue << std::endl;
+        }
+        
     }        
 
+    std::cout << "Calculated "+ std::to_string(sz) << " data[float]" << std::endl;
 
 
     // **Close the dataset**
     GDALClose(dataset);
 
-}
+}   
 
+long callsToGetHeightAt = 0;
 float HeightMapTif::getHeightAt(float x, float z) const {
-    if(box.getMinX() <= x && x<= box.getMaxX() &&
-    box.getMinZ() <= z && z<= box.getMaxZ()){
-        glm::ivec2 absoluteCoordinates = glm::ivec2(
-            int( width*(x-box.getMinX())/box.getLengthX()), 
-            int( height*(z-box.getMinZ())/box.getLengthZ())
-        );
-        absoluteCoordinates = glm::clamp(absoluteCoordinates, glm::ivec2(0), glm::ivec2(width-1, height -1));
-        int index = absoluteCoordinates.y * height + absoluteCoordinates.x;
-        return data1[index]/1000.0;
-        
+    int ix = Math::clamp(int( width*(x-box.getMinX())/box.getLengthX()), 0, width-1);
+    int iz = Math::clamp(int( height*(z-box.getMinZ())/box.getLengthZ()), 0, height-1);
+    float result= data[ix][iz];
+    if(++callsToGetHeightAt%1000000l == 0 ){
+        std::cout << "xyz=[" << std::to_string(x) << ", "<< std::to_string(result) << ", "<< std::to_string(z) << "]"  << std::endl;
     }
-    return 0;
+    return result;
 }

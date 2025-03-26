@@ -4,13 +4,14 @@
 
 
 class WaveSurface : public HeightFunction {
-	float getHeightAt(float x, float z) const override {
-		float amplitude = 10;
-		float offset = -36;
-		float frequency = 1.0/10.0;
+    float amplitude;// = 10;
+    float offset;// = -36;
+    float frequency;// = 1.0/10.0;
 
-		return offset + amplitude * sin(frequency*x)*cos(frequency*z);
-	}
+
+	WaveSurface(float amplitude, float offset , float frequency);
+
+	float getHeightAt(float x, float z) const override;
 };
 
 class LandBrush : public TexturePainter {
@@ -102,8 +103,8 @@ class VegetationInstanceBuilder : public OctreeNodeTriangleHandler {
 class Scene {
 
     public: 
-    	Octree * solidSpace = new Octree(BoundingCube(glm::vec3(0,0,0), 1.0));
-	    Octree * liquidSpace = new Octree(BoundingCube(glm::vec3(0,13,0), 1.0));
+    	Octree * solidSpace = new Octree(BoundingCube(glm::vec3(0,0,0), 2.0));
+	    Octree * liquidSpace = new Octree(BoundingCube(glm::vec3(0,13,0), 2.0));
 
 		long solidInstancesCount = 0;
 		long liquidInstancesCount = 0;
@@ -123,8 +124,8 @@ class Scene {
 
 
 		GeometryBuilder * vegetationBuilder = new VegetationGeometryBuilder(TYPE_INSTANCE_VEGETATION_DRAWABLE, &vegetationInstancesCount, solidSpace, vegetationInstanceHandler);
-		GeometryBuilder * meshBuilder = new MeshGeometryBuilder(TYPE_INSTANCE_SOLID_DRAWABLE, &solidInstancesCount, solidSpace, 0.98, 0.1, true);
-		GeometryBuilder * liquidMeshBuilder = new MeshGeometryBuilder(TYPE_INSTANCE_LIQUID_DRAWABLE, &liquidInstancesCount, liquidSpace, 0.98, 0.1, true);
+		GeometryBuilder * meshBuilder = new MeshGeometryBuilder(TYPE_INSTANCE_SOLID_DRAWABLE, &solidInstancesCount, solidSpace, 0.999, 0.1, true);
+		GeometryBuilder * liquidMeshBuilder = new MeshGeometryBuilder(TYPE_INSTANCE_LIQUID_DRAWABLE, &liquidInstancesCount, liquidSpace, 0.999, 0.1, true);
 
 		OctreeProcessor solidProcessor = OctreeProcessor(solidSpace , true, meshBuilder);
 		OctreeProcessor liquidProcessor = OctreeProcessor(liquidSpace, true, liquidMeshBuilder);

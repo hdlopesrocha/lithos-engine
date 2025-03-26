@@ -54,35 +54,43 @@ VegetationInstanceBuilder::VegetationInstanceBuilder(Geometry * chunk, long * co
 void VegetationInstanceBuilder::handle(OctreeNode* c0,OctreeNode* c1,OctreeNode* c2, bool sign){
     GradientPerlinSurface fps(1.0, 1.0f/128.0f, 0);
 
-    for (int i = 0; i < pointsPerTriangle; i++) {
-        glm::vec3 point = randomPointInTriangle(c0->vertex.position,c1->vertex.position, c2->vertex.position);
-        float perlin = fps.getHeightAt(point.x, point.z);
-        float hMin = 0.06;
-        float hMax = 0.10;
+    if(c0 != NULL && c1 != NULL && c2!=NULL) {
+        Vertex v0 = c0->vertex;
+        Vertex v1 = c1->vertex;
+        Vertex v2 = c2->vertex;
 
-        float force = 2.0;
-        if(hMin  < perlin && perlin < hMax) {
-            float height = (perlin - hMin)/ (hMax-hMin);
+        if(c0!= c1 && c1 != c2 && c0!=c2) {
+            for (int i = 0; i < pointsPerTriangle; i++) {
+                glm::vec3 point = randomPointInTriangle(v0.position, v1.position, v2.position);
+                float perlin = fps.getHeightAt(point.x, point.z);
+                float hMin = 0.06;
+                float hMax = 0.10;
 
-            glm::vec3 normal = fps.getNormal(point.x, 0, point.z);
+                float force = 2.0;
+                if(hMin  < perlin && perlin < hMax) {
+                    float height = (perlin - hMin)/ (hMax-hMin);
 
-            float p = glm::dot(glm::vec3(0,1,0), normal);
+                    glm::vec3 normal = fps.getNormal(point.x, 0, point.z);
 
-            p = 1.0- glm::pow(1-p, 3);
-            float h = 1.0 - glm::abs(2.0*height - 1.0);
+                    float p = glm::dot(glm::vec3(0,1,0), normal);
+
+                    p = 1.0- glm::pow(1-p, 3);
+                    float h = 1.0 - glm::abs(2.0*height - 1.0);
 
 
-            float deepness = Math::clamp(1.0-h, 0.0f , 1.0f);
+                    float deepness = Math::clamp(1.0-h, 0.0f , 1.0f);
 
-            glm::mat4 model(1.0);
-            model = glm::translate(model, point);
-            if(h*force > 1.0) {
-                model = glm::scale(model, glm::vec3(1.0, h*force, 1.0));
-            }     
-            model *=  Math::getRotationMatrixFromNormal(c0->vertex.normal, glm::vec3(0.0,1.0,0.0));
+                    glm::mat4 model(1.0);
+                    model = glm::translate(model, point);
+                    if(h*force > 1.0) {
+                        model = glm::scale(model, glm::vec3(1.0, h*force, 1.0));
+                    }     
+                    model *=  Math::getRotationMatrixFromNormal(v0.normal, glm::vec3(0.0,1.0,0.0));
 
-            instances->push_back(InstanceData(0, model, deepness));
-            ++*count;
+                    instances->push_back(InstanceData(0, model, deepness));
+                    ++*count;
+                }
+            }
         }
     }
 }
