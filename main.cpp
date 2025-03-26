@@ -82,10 +82,10 @@ class MainApplication : public LithosApplication {
 	glm::mat4 worldModel = glm::mat4(1.0f); // Identity matrix
 
 	//glm::quat quaternion = glm::normalize(glm::quat(1.0f, 1.0f, 1.0f, 1.0f));
-	glm::quat quaternion =  EulerToQuat(0, 0, 0);
+	glm::quat quaternion =  EulerToQuat(0, 45, 0);
 	// pitch yaw roll
 	
-	Camera camera = Camera(glm::vec3(128, 100, 128), quaternion , 0.1f, 1024.0f);
+	Camera camera = Camera(glm::vec3(1024, 512, 1024), quaternion , 0.1f, 4096.0f);
 	DirectionalLight light;
 
 	GLuint programSwap;
@@ -489,8 +489,7 @@ public:
 			impostorDrawer->draw(params, 0);
 		}
 
-		mainScene = new Scene();
-		mainScene->setup(settings);
+		mainScene = new Scene(settings);
 		mainScene->load();
 	
 
@@ -530,7 +529,7 @@ public:
 	//    camera.projection[1][1] *= -1;
 	 //   modelMatrix = glm::rotate(modelMatrix, deltaTime * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 
-	   	float rsense = 0.01;
+	   	float rsense = 0.05;
 
 	   	if (getKeyboardStatus(GLFW_KEY_W) != GLFW_RELEASE) {
 	   	   	camera.quaternion = glm::angleAxis(+rsense, glm::vec3(1,0,0))*camera.quaternion;
@@ -555,7 +554,7 @@ public:
 		//glm::vec3 yAxis = glm::vec3(0.0f, 1.0f, 0.0f)*camera.quaternion;
 		glm::vec3 zAxis = glm::vec3(0.0f, 0.0f, 1.0f)*camera.quaternion;
 
-	   	float tsense = deltaTime*10;
+	   	float tsense = deltaTime*1000;
 	   	if (getKeyboardStatus(GLFW_KEY_UP) != GLFW_RELEASE) {
 	   		camera.position -= zAxis*tsense;
 		}
@@ -611,7 +610,7 @@ glm::vec3 getDirection(float time) {
 }
 
     virtual void draw3d() {
-		float far = 1024.0f;
+		float far = 4096.0f;
 		float near = 0.1f;
 
 		// Convert quaternion to rotation matrix

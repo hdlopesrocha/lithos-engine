@@ -89,6 +89,6 @@ int addTriangle(OctreeNode* c0, OctreeNode* c1, OctreeNode* c2, Geometry * chunk
 
 void Tesselator::handle(OctreeNode* c0,OctreeNode* c1,OctreeNode* c2, bool sign) {
     if(c0 != NULL && c1 != NULL && c2!=NULL) {
-	    *count += addTriangle(c0,c1,c2, chunk, sign, true, 1.0); //triplanar in GPU
+	    *count += addTriangle(c0,c1,c2, chunk, sign, true, 1.0f/16.0); //triplanar in GPU
     }
 }

@@ -1,38 +1,69 @@
 
 #include "tools.hpp"
 
-void Scene::setup(Settings * settings) {
+Scene::Scene(Settings * settings) {
 	this->settings = settings;
+	solidSpace = new Octree(BoundingCube(glm::vec3(0,0,0), 64.0));
+	liquidSpace = new Octree(BoundingCube(glm::vec3(0,13,0), 64.0));
+
+	solidInstancesCount = 0;
+	liquidInstancesCount = 0;
+	vegetationInstancesCount = 0;
+
+	solidInstancesVisible = 0;
+	liquidInstancesVisible = 0;
+	vegetationInstancesVisible = 0;
+
+	geometryLevel = 5;
+
+	vegetationInstanceHandler= new VegetationInstanceBuilderHandler(solidSpace, &vegetationInstancesCount);
+
+
+	vegetationBuilder = new VegetationGeometryBuilder(TYPE_INSTANCE_VEGETATION_DRAWABLE, &vegetationInstancesCount, solidSpace, vegetationInstanceHandler);
+	meshBuilder = new MeshGeometryBuilder(TYPE_INSTANCE_SOLID_DRAWABLE, &solidInstancesCount, solidSpace, 0.999, 0.1, true);
+	liquidMeshBuilder = new MeshGeometryBuilder(TYPE_INSTANCE_LIQUID_DRAWABLE, &liquidInstancesCount, liquidSpace, 0.999, 0.1, true);
+
+	solidProcessor = new OctreeProcessor(solidSpace , true, meshBuilder);
+	liquidProcessor = new OctreeProcessor(liquidSpace, true, liquidMeshBuilder);
+	vegetationProcessor = new OctreeProcessor(solidSpace, true, vegetationBuilder);
+
+	solidRenderer = new OctreeVisibilityChecker(solidSpace, &visibleSolidNodes);
+	liquidRenderer = new OctreeVisibilityChecker(liquidSpace, &visibleLiquidNodes);
+	for(int i = 0 ; i < SHADOW_MATRIX_COUNT ; ++i) {
+		shadowRenderer[i]= new OctreeVisibilityChecker(solidSpace, &visibleShadowNodes[i]);
+	}
+
 }
+
 
 void Scene::processSpace() {
 	// Set load counts per Processor
 	solidInstancesVisible = 0;
 	liquidInstancesVisible = 0;
 	vegetationInstancesVisible = 0;
-	solidProcessor.loadCount = 1;
-	liquidProcessor.loadCount = 1;
-	vegetationProcessor.loadCount = 1;
+	solidProcessor->loadCount = 1;
+	liquidProcessor->loadCount = 1;
+	vegetationProcessor->loadCount = 1;
 
 	for(OctreeNodeData &data : visibleSolidNodes){
-		if(solidProcessor.loadCount > 0) {
-			solidProcessor.before(data);
+		if(solidProcessor->loadCount > 0) {
+			solidProcessor->before(data);
 		} else {
 			break;
 		}
 	}
 
 	for(OctreeNodeData &data : visibleSolidNodes){
-		if(vegetationProcessor.loadCount > 0) {
-			vegetationProcessor.before(data);
+		if(vegetationProcessor->loadCount > 0) {
+			vegetationProcessor->before(data);
 		} else {
 			break;
 		}
 	}
 
 	for(OctreeNodeData &data : visibleLiquidNodes){
-		if(liquidProcessor.loadCount > 0) {
-			liquidProcessor.before(data);
+		if(liquidProcessor->loadCount > 0) {
+			liquidProcessor->before(data);
 		} else {
 			break;
 		}
@@ -41,8 +72,8 @@ void Scene::processSpace() {
 	for(int i =0 ; i < SHADOW_MATRIX_COUNT ; ++i){
 		std::vector<OctreeNodeData> &vec = visibleShadowNodes[i];
 		for(OctreeNodeData &data : vec) {
-			if(solidProcessor.loadCount > 0) {
-				solidProcessor.before(data);
+			if(solidProcessor->loadCount > 0) {
+				solidProcessor->before(data);
 			}
 			else {
 				break;
@@ -53,8 +84,8 @@ void Scene::processSpace() {
 	for(int i =0 ; i < SHADOW_MATRIX_COUNT ; ++i){
 		std::vector<OctreeNodeData> &vec = visibleShadowNodes[i];
 		for(OctreeNodeData &data : vec) {
-			if(vegetationProcessor.loadCount > 0) {
-				vegetationProcessor.before(data);
+			if(vegetationProcessor->loadCount > 0) {
+				vegetationProcessor->before(data);
 			}
 			else {
 				break;
@@ -64,12 +95,12 @@ void Scene::processSpace() {
 }
 
 void Scene::setVisibility(glm::mat4 viewProjection, std::vector<std::pair<glm::mat4, glm::vec3>> lightProjection ,Camera &camera) {
-	setVisibleNodes(viewProjection, camera.position, solidRenderer);
-	setVisibleNodes(viewProjection, camera.position, liquidRenderer);
+	setVisibleNodes(viewProjection, camera.position, *solidRenderer);
+	setVisibleNodes(viewProjection, camera.position, *liquidRenderer);
 
 	int i =0;
 	for(std::pair<glm::mat4, glm::vec3> pair :  lightProjection){
-		setVisibleNodes(pair.first, pair.second, shadowRenderer[i++]);
+		setVisibleNodes(pair.first, pair.second, *shadowRenderer[i++]);
 	}
 }
 
@@ -142,10 +173,10 @@ void Scene::draw3dLiquid(glm::vec3 cameraPosition, const std::vector<OctreeNodeD
 }
 
 void Scene::create() {
-	int sizePerTile = 1;
-	BoundingBox mapBox = BoundingBox(glm::vec3(0,-256,0), glm::vec3(sizePerTile*1024,256,sizePerTile*1024));
-	//BoundingBox mapBox = BoundingBox(glm::vec3(0,-256,0), glm::vec3(sizePerTile*3601,256,sizePerTile*3601));
-	
+	int sizePerTile = 32;
+	//BoundingBox mapBox = BoundingBox(glm::vec3(0,-256,0), glm::vec3(sizePerTile*1024,256,sizePerTile*1024));
+	BoundingBox mapBox = BoundingBox(glm::vec3(0,-256,0), glm::vec3(sizePerTile*3601,1024,sizePerTile*3601));
+/*	
 	solidSpace->add(HeightMapContainmentHandler(
 		HeightMap(
 			CachedHeightMapSurface(
@@ -155,18 +186,18 @@ void Scene::create() {
 		), LandBrush()
 	));
 
-/*
+*/
 	solidSpace->add(HeightMapContainmentHandler(
 		HeightMap(
 			CachedHeightMapSurface(
-				HeightMapTif("models/N39W008.hgt", mapBox, 0.1f, -32.0f), 
+				HeightMapTif("models/N39W008.hgt", mapBox, sizePerTile,1.0f, -256.0f-32.0f), 
 				mapBox,sizePerTile
 			), 
 			mapBox,sizePerTile
 		), 
 		LandBrush()
 	));
-*/
+
 
 
 	BoundingBox waterBox(glm::vec3(mapBox.getMinX(),-100,mapBox.getMinZ()), glm::vec3(mapBox.getMaxX(),0,mapBox.getMaxZ()));

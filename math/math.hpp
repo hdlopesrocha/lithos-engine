@@ -223,7 +223,6 @@ class PerlinSurface : public HeightFunction {
 
 	PerlinSurface(float amplitude, float frequency, float offset);
 	float getHeightAt(float x, float z) const override;
-	float getHeightAt(float x, float y, float z) const;
 
 };
 
@@ -269,8 +268,8 @@ class HeightMapTif : public HeightFunction {
 	BoundingBox box;
 	int width;
 	int height;
-
-		HeightMapTif(const std::string & filename, BoundingBox box, float verticalScale, float verticalShift);
+	int sizePerTile;
+		HeightMapTif(const std::string & filename, BoundingBox box, int sizePerTile, float verticalScale, float verticalShift);
 		float getHeightAt(float x, float z) const override;
 
 };

@@ -16,16 +16,16 @@ LandBrush::LandBrush(){
 
 void LandBrush::paint(Vertex &vertex) const {
     float steepness =glm::dot(glm::vec3(0.0f,1.0f,0.0f), vertex.normal );
-    int grassLevel = 25;
-    int sandLevel = 2;
-
+    int grassLevel = 256;
+    int sandLevel = 128;
+    int softSandLevel = 1;
     uint brushIndex;
     if (glm::dot(glm::vec3(0.0f,1.0f,0.0f), vertex.normal ) <=0 ){
         brushIndex = DISCARD_BRUSH_INDEX;
-    } else if(steepness < 0.8 ){
+    } else if(steepness < 0.980 ){
         brushIndex = rock;
-    } else if(steepness < 0.9 ){
-        if(vertex.position.y < sandLevel -1){
+    } else if(steepness < 0.985 ){
+        if(vertex.position.y < softSandLevel){
             brushIndex = rock;
         } else if(vertex.position.y < sandLevel){
             brushIndex = rockMixSand;
@@ -34,15 +34,15 @@ void LandBrush::paint(Vertex &vertex) const {
         } else {
             brushIndex = rockMixSnow;
         }
-    } else if(vertex.position.y < sandLevel-1){
+    } else if(vertex.position.y < softSandLevel){
         brushIndex = softSand;
     } else if(vertex.position.y < sandLevel){
         brushIndex = sand;
-    } else if(vertex.position.y < sandLevel+1){
+    } else if(vertex.position.y < sandLevel+64){
         brushIndex = grassMixSand;
     } else if(vertex.position.y < grassLevel){
         brushIndex = grass;
-    } else if(vertex.position.y < grassLevel+1){
+    } else if(vertex.position.y < grassLevel+64){
         brushIndex = grassMixSnow;
     } else {
         brushIndex = snow;

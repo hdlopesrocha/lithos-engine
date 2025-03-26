@@ -69,8 +69,9 @@ void processBand(GDALRasterBand* band, int bandIdx, std::vector<int16_t> &result
 }
 
 
-HeightMapTif::HeightMapTif(const std::string &filename, BoundingBox box, float verticalScale, float verticalShift){
+HeightMapTif::HeightMapTif(const std::string &filename, BoundingBox box, int sizePerTile, float verticalScale, float verticalShift){
     this->box = box;
+    this->sizePerTile = sizePerTile;
     // **Open the dataset**
     GDALDataset* dataset = static_cast<GDALDataset*>(GDALOpen(filename.c_str(), GA_ReadOnly));
     if (!dataset) {
@@ -124,9 +125,9 @@ long callsToGetHeightAt = 0;
 float HeightMapTif::getHeightAt(float x, float z) const {
     int ix = Math::clamp(int( width*(x-box.getMinX())/box.getLengthX()), 0, width-1);
     int iz = Math::clamp(int( height*(z-box.getMinZ())/box.getLengthZ()), 0, height-1);
-    float result= data[ix][iz];
+    float result= data[iz][ix];
     if(++callsToGetHeightAt%1000000l == 0 ){
-        std::cout << "xyz=[" << std::to_string(x) << ", "<< std::to_string(result) << ", "<< std::to_string(z) << "]"  << std::endl;
+        std::cout << "xyz=[" << x << ", "<< result << ", "<< z << "]"  << std::endl;
     }
     return result;
 }

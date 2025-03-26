@@ -103,43 +103,40 @@ class VegetationInstanceBuilder : public OctreeNodeTriangleHandler {
 class Scene {
 
     public: 
-    	Octree * solidSpace = new Octree(BoundingCube(glm::vec3(0,0,0), 2.0));
-	    Octree * liquidSpace = new Octree(BoundingCube(glm::vec3(0,13,0), 2.0));
 
-		long solidInstancesCount = 0;
-		long liquidInstancesCount = 0;
-		long vegetationInstancesCount = 0;
+    	Octree * solidSpace;
+	    Octree * liquidSpace;
 
-		long solidInstancesVisible = 0;
-		long liquidInstancesVisible = 0;
-		long vegetationInstancesVisible = 0;
+		long solidInstancesCount;
+		long liquidInstancesCount;
+		long vegetationInstancesCount;
+
+		long solidInstancesVisible;
+		long liquidInstancesVisible;
+		long vegetationInstancesVisible;
 
 		std::vector<OctreeNodeData> visibleSolidNodes;
 		std::vector<OctreeNodeData> visibleLiquidNodes;
 		std::vector<OctreeNodeData> visibleShadowNodes[SHADOW_MATRIX_COUNT];
 		Settings * settings;
-		int geometryLevel = 5;
+		int geometryLevel;
 
-		InstanceBuilderHandler * vegetationInstanceHandler= new VegetationInstanceBuilderHandler(solidSpace, &vegetationInstancesCount);
+		InstanceBuilderHandler * vegetationInstanceHandler;
 
+		GeometryBuilder * vegetationBuilder;
+		GeometryBuilder * meshBuilder;
+		GeometryBuilder * liquidMeshBuilder;
 
-		GeometryBuilder * vegetationBuilder = new VegetationGeometryBuilder(TYPE_INSTANCE_VEGETATION_DRAWABLE, &vegetationInstancesCount, solidSpace, vegetationInstanceHandler);
-		GeometryBuilder * meshBuilder = new MeshGeometryBuilder(TYPE_INSTANCE_SOLID_DRAWABLE, &solidInstancesCount, solidSpace, 0.999, 0.1, true);
-		GeometryBuilder * liquidMeshBuilder = new MeshGeometryBuilder(TYPE_INSTANCE_LIQUID_DRAWABLE, &liquidInstancesCount, liquidSpace, 0.999, 0.1, true);
+		OctreeProcessor * solidProcessor; 
+		OctreeProcessor * liquidProcessor;
+		OctreeProcessor * vegetationProcessor;
 
-		OctreeProcessor solidProcessor = OctreeProcessor(solidSpace , true, meshBuilder);
-		OctreeProcessor liquidProcessor = OctreeProcessor(liquidSpace, true, liquidMeshBuilder);
-		OctreeProcessor vegetationProcessor = OctreeProcessor(solidSpace, true, vegetationBuilder);
+		OctreeVisibilityChecker * solidRenderer;
+		OctreeVisibilityChecker * liquidRenderer;
+		OctreeVisibilityChecker * shadowRenderer[SHADOW_MATRIX_COUNT];
 
-		OctreeVisibilityChecker solidRenderer = OctreeVisibilityChecker(solidSpace, &visibleSolidNodes);
-		OctreeVisibilityChecker liquidRenderer = OctreeVisibilityChecker(liquidSpace, &visibleLiquidNodes);
-		OctreeVisibilityChecker shadowRenderer[SHADOW_MATRIX_COUNT] = {
-			OctreeVisibilityChecker(solidSpace, &visibleShadowNodes[0]),
-			OctreeVisibilityChecker(solidSpace, &visibleShadowNodes[1]),
-			OctreeVisibilityChecker(solidSpace, &visibleShadowNodes[2])
-		};
+	Scene(Settings * settings);
 
-    void setup(Settings * settings);
 
 
 
