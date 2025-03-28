@@ -199,3 +199,34 @@ void Math::wgs84ToEcef(double lat, double lon, double height, double &X, double 
     Y = (N + height) * cos(phi) * sin(lambda);
     Z = ((1 - e2) * N + height) * sin(phi);
 }
+
+// Function to create a quaternion from yaw, pitch, roll
+glm::quat Math::createQuaternion(float yaw, float pitch, float roll) {
+    // Convert degrees to radians
+    float yawRad   = glm::radians(yaw);
+    float pitchRad = glm::radians(pitch);
+    float rollRad  = glm::radians(roll);
+
+    // Create individual axis quaternions
+    glm::quat qYaw   = glm::angleAxis(yawRad, glm::vec3(0, 1, 0));  // Rotate around Y
+    glm::quat qPitch = glm::angleAxis(pitchRad, glm::vec3(1, 0, 0)); // Rotate around X
+    glm::quat qRoll  = glm::angleAxis(rollRad, glm::vec3(0, 0, 1));  // Rotate around Z
+
+    // Apply in Yaw -> Pitch -> Roll order (multiplication applies right to left)
+    return qYaw * qPitch * qRoll;
+}
+
+
+glm::quat Math::eulerToQuat(float yaw, float pitch, float roll) {
+    // Convert degrees to radians
+    float yawRad = glm::radians(yaw);
+    float pitchRad = glm::radians(pitch);
+    float rollRad = glm::radians(roll);
+
+    // Construct quaternion in correct order (Yaw -> Pitch -> Roll)
+    glm::quat qYaw   = glm::angleAxis(yawRad, glm::vec3(0, 1, 0));  // Rotate around Y
+    glm::quat qPitch = glm::angleAxis(pitchRad, glm::vec3(1, 0, 0)); // Rotate around X
+    glm::quat qRoll  = glm::angleAxis(rollRad, glm::vec3(0, 0, 1));  // Rotate around Z
+
+    return qYaw * qPitch * qRoll; // Yaw first, then Pitch, then Roll
+}

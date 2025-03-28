@@ -406,6 +406,17 @@ class ImpostorDrawer {
     void draw(ImpostorParams &params, float time);
 };
 
+class GlslInclude {
+	public:
+	std::string line;
+	std::string code;
+	GlslInclude(std::string line, std::string code);
+
+	static std::string replace(std::string input,  std::string replace_word, std::string replace_by );
+	static std::string replaceIncludes(std::vector<GlslInclude> includes, std::string code);
+};
+
+
 void loadTexture(TextureLayers * layers, std::initializer_list<std::string> fns, int index, bool mipMapping);
 TextureArray createTextureArray(int width, int height, int layers, GLuint channel); 
 MultiLayerRenderBuffer createMultiLayerRenderFrameBuffer(int width, int height, int layers, int attachments, bool depth, GLuint color);

@@ -88,8 +88,7 @@ struct Vertex {
 
 // Custom hash function for glm::vec3
 namespace std {
-    template <>
-    struct hash<glm::vec3> {
+    template <> struct hash<glm::vec3> {
         std::size_t operator()(const glm::vec3& v) const {
             std::size_t hx = std::hash<float>{}(v.x);
             std::size_t hy = std::hash<float>{}(v.y);
@@ -101,8 +100,7 @@ namespace std {
     };
 
     // Custom hash function for glm::vec2 (texture coordinates)
-    template <>
-    struct hash<glm::vec2> {
+    template <> struct hash<glm::vec2> {
         std::size_t operator()(const glm::vec2& v) const {
             std::size_t hx = std::hash<float>{}(v.x);
             std::size_t hy = std::hash<float>{}(v.y);
@@ -807,7 +805,8 @@ public:
 
 	static double degToRad(double degrees);
 	static void wgs84ToEcef(double lat, double lon, double height, double &X, double &Y, double &Z);
-
+	static glm::quat createQuaternion(float yaw, float pitch, float roll);
+	static glm::quat eulerToQuat(float yaw, float pitch, float roll);
 };
 void ensureFolderExists(const std::string& folder);
 

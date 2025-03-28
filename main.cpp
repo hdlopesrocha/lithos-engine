@@ -7,63 +7,6 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-class GlslInclude {
-	public:
-	std::string line;
-	std::string code;
-	GlslInclude(std::string line, std::string code){
-		this->line = line;
-		this->code = code;
-	}
-};
-
-std::string replace(std::string input,  std::string replace_word, std::string replace_by ) {
-	size_t pos = input.find(replace_word);
-	while (pos != std::string::npos) {
-		input.replace(pos, replace_word.size(), replace_by);
-		pos = input.find(replace_word, pos + replace_by.size());
-	}
-	return input;
-}
-
-std::string replaceIncludes(std::vector<GlslInclude> includes, std::string code){
-	for(GlslInclude include : includes) {
-		code = replace(code, include.line, include.code);
-	}
-	return code;
-}
-
-// Function to create a quaternion from yaw, pitch, roll
-glm::quat CreateQuaternion(float yaw, float pitch, float roll) {
-    // Convert degrees to radians
-    float yawRad   = glm::radians(yaw);
-    float pitchRad = glm::radians(pitch);
-    float rollRad  = glm::radians(roll);
-
-    // Create individual axis quaternions
-    glm::quat qYaw   = glm::angleAxis(yawRad, glm::vec3(0, 1, 0));  // Rotate around Y
-    glm::quat qPitch = glm::angleAxis(pitchRad, glm::vec3(1, 0, 0)); // Rotate around X
-    glm::quat qRoll  = glm::angleAxis(rollRad, glm::vec3(0, 0, 1));  // Rotate around Z
-
-    // Apply in Yaw -> Pitch -> Roll order (multiplication applies right to left)
-    return qYaw * qPitch * qRoll;
-}
-
-
-glm::quat EulerToQuat(float yaw, float pitch, float roll) {
-    // Convert degrees to radians
-    float yawRad = glm::radians(yaw);
-    float pitchRad = glm::radians(pitch);
-    float rollRad = glm::radians(roll);
-
-    // Construct quaternion in correct order (Yaw -> Pitch -> Roll)
-    glm::quat qYaw   = glm::angleAxis(yawRad, glm::vec3(0, 1, 0));  // Rotate around Y
-    glm::quat qPitch = glm::angleAxis(pitchRad, glm::vec3(1, 0, 0)); // Rotate around X
-    glm::quat qRoll  = glm::angleAxis(rollRad, glm::vec3(0, 0, 1));  // Rotate around Z
-
-    return qYaw * qPitch * qRoll; // Yaw first, then Pitch, then Roll
-}
-
 
 class MainApplication : public LithosApplication {
 	std::vector<UniformBlockBrush*> brushes;
@@ -82,7 +25,7 @@ class MainApplication : public LithosApplication {
 	glm::mat4 worldModel = glm::mat4(1.0f); // Identity matrix
 
 	//glm::quat quaternion = glm::normalize(glm::quat(1.0f, 1.0f, 1.0f, 1.0f));
-	glm::quat quaternion =  EulerToQuat(0, 45, 0);
+	glm::quat quaternion =  Math::eulerToQuat(0, 45, 0);
 	// pitch yaw roll
 	
 	//Camera camera = Camera(glm::vec3(21649, 600, 5271), quaternion , 0.1f, 8192.0f);
@@ -177,65 +120,65 @@ public:
 		includes.push_back(GlslInclude("#include<triplanar.glsl>" , readFile("shaders/util/triplanar.glsl")));
 
 		programAtlas = createShaderProgram({
-			compileShader(replaceIncludes(includes,readFile("shaders/texture/atlas_vertex.glsl")),GL_VERTEX_SHADER), 
-			compileShader(replaceIncludes(includes,readFile("shaders/texture/atlas_fragment.glsl")),GL_FRAGMENT_SHADER) 
+			compileShader(GlslInclude::replaceIncludes(includes,readFile("shaders/texture/atlas_vertex.glsl")),GL_VERTEX_SHADER), 
+			compileShader(GlslInclude::replaceIncludes(includes,readFile("shaders/texture/atlas_fragment.glsl")),GL_FRAGMENT_SHADER) 
 		});
 
 		programSwap = createShaderProgram({
-			compileShader(replaceIncludes(includes,readFile("shaders/texture/swap_vertex.glsl")),GL_VERTEX_SHADER), 
-			compileShader(replaceIncludes(includes,readFile("shaders/texture/swap_fragment.glsl")),GL_FRAGMENT_SHADER) 
+			compileShader(GlslInclude::replaceIncludes(includes,readFile("shaders/texture/swap_vertex.glsl")),GL_VERTEX_SHADER), 
+			compileShader(GlslInclude::replaceIncludes(includes,readFile("shaders/texture/swap_fragment.glsl")),GL_FRAGMENT_SHADER) 
 		});
 
 		programTexture = createShaderProgram({
-			compileShader(replaceIncludes(includes,readFile("shaders/texture/texture_array_vertex.glsl")),GL_VERTEX_SHADER), 
-			compileShader(replaceIncludes(includes,readFile("shaders/texture/texture_array_fragment.glsl")),GL_FRAGMENT_SHADER)
+			compileShader(GlslInclude::replaceIncludes(includes,readFile("shaders/texture/texture_array_vertex.glsl")),GL_VERTEX_SHADER), 
+			compileShader(GlslInclude::replaceIncludes(includes,readFile("shaders/texture/texture_array_fragment.glsl")),GL_FRAGMENT_SHADER)
 		});
 
 		programCopy = createShaderProgram({
-			compileShader(replaceIncludes(includes,readFile("shaders/texture/copy_vertex.glsl")),GL_VERTEX_SHADER), 
-			compileShader(replaceIncludes(includes,readFile("shaders/texture/copy_geometry.glsl")),GL_GEOMETRY_SHADER), 
-			compileShader(replaceIncludes(includes,readFile("shaders/texture/copy_fragment.glsl")),GL_FRAGMENT_SHADER)
+			compileShader(GlslInclude::replaceIncludes(includes,readFile("shaders/texture/copy_vertex.glsl")),GL_VERTEX_SHADER), 
+			compileShader(GlslInclude::replaceIncludes(includes,readFile("shaders/texture/copy_geometry.glsl")),GL_GEOMETRY_SHADER), 
+			compileShader(GlslInclude::replaceIncludes(includes,readFile("shaders/texture/copy_fragment.glsl")),GL_FRAGMENT_SHADER)
 		});
 
 		programDepth = createShaderProgram({
-			compileShader(replaceIncludes(includes,readFile("shaders/texture/depth_vertex.glsl")),GL_VERTEX_SHADER), 
-			compileShader(replaceIncludes(includes,readFile("shaders/texture/depth_fragment.glsl")),GL_FRAGMENT_SHADER)
+			compileShader(GlslInclude::replaceIncludes(includes,readFile("shaders/texture/depth_vertex.glsl")),GL_VERTEX_SHADER), 
+			compileShader(GlslInclude::replaceIncludes(includes,readFile("shaders/texture/depth_fragment.glsl")),GL_FRAGMENT_SHADER)
 		});
 
 		programMixTexture = createShaderProgram({
-			compileShader(replaceIncludes(includes,readFile("shaders/texture/mix_vertex.glsl")),GL_VERTEX_SHADER), 
-			compileShader(replaceIncludes(includes,readFile("shaders/texture/mix_fragment.glsl")),GL_FRAGMENT_SHADER) 
+			compileShader(GlslInclude::replaceIncludes(includes,readFile("shaders/texture/mix_vertex.glsl")),GL_VERTEX_SHADER), 
+			compileShader(GlslInclude::replaceIncludes(includes,readFile("shaders/texture/mix_fragment.glsl")),GL_FRAGMENT_SHADER) 
 		});
 
 		programWaterTexture = createShaderProgram({
-			compileShader(replaceIncludes(includes,readFile("shaders/texture/water_vertex.glsl")),GL_VERTEX_SHADER), 
-			compileShader(replaceIncludes(includes,readFile("shaders/texture/water_fragment.glsl")),GL_FRAGMENT_SHADER)
+			compileShader(GlslInclude::replaceIncludes(includes,readFile("shaders/texture/water_vertex.glsl")),GL_VERTEX_SHADER), 
+			compileShader(GlslInclude::replaceIncludes(includes,readFile("shaders/texture/water_fragment.glsl")),GL_FRAGMENT_SHADER)
 		});
 
 		program3d = createShaderProgram({
-			compileShader(replaceIncludes(includes,readFile("shaders/3d_vertex.glsl")),GL_VERTEX_SHADER), 
-			compileShader(replaceIncludes(includes,readFile("shaders/3d_tessControl.glsl")),GL_TESS_CONTROL_SHADER), 
-			compileShader(replaceIncludes(includes,readFile("shaders/3d_tessEvaluation.glsl")),GL_TESS_EVALUATION_SHADER),
-			compileShader(replaceIncludes(includes,readFile("shaders/3d_fragment.glsl")),GL_FRAGMENT_SHADER) 
+			compileShader(GlslInclude::replaceIncludes(includes,readFile("shaders/3d_vertex.glsl")),GL_VERTEX_SHADER), 
+			compileShader(GlslInclude::replaceIncludes(includes,readFile("shaders/3d_tessControl.glsl")),GL_TESS_CONTROL_SHADER), 
+			compileShader(GlslInclude::replaceIncludes(includes,readFile("shaders/3d_tessEvaluation.glsl")),GL_TESS_EVALUATION_SHADER),
+			compileShader(GlslInclude::replaceIncludes(includes,readFile("shaders/3d_fragment.glsl")),GL_FRAGMENT_SHADER) 
 		});
 
 		programBillboard = createShaderProgram({
-			compileShader(replaceIncludes(includes,readFile("shaders/3d_vertex.glsl")),GL_VERTEX_SHADER), 
-			compileShader(replaceIncludes(includes,readFile("shaders/3d_tessControl.glsl")),GL_TESS_CONTROL_SHADER), 
-			compileShader(replaceIncludes(includes,readFile("shaders/3d_tessEvaluation.glsl")),GL_TESS_EVALUATION_SHADER),
-			compileShader(replaceIncludes(includes,readFile("shaders/3d_fragment.glsl")),GL_FRAGMENT_SHADER) 
+			compileShader(GlslInclude::replaceIncludes(includes,readFile("shaders/3d_vertex.glsl")),GL_VERTEX_SHADER), 
+			compileShader(GlslInclude::replaceIncludes(includes,readFile("shaders/3d_tessControl.glsl")),GL_TESS_CONTROL_SHADER), 
+			compileShader(GlslInclude::replaceIncludes(includes,readFile("shaders/3d_tessEvaluation.glsl")),GL_TESS_EVALUATION_SHADER),
+			compileShader(GlslInclude::replaceIncludes(includes,readFile("shaders/3d_fragment.glsl")),GL_FRAGMENT_SHADER) 
 		});
 
 		programImpostor = createShaderProgram({
-			compileShader(replaceIncludes(includes,readFile("shaders/impostor_vertex.glsl")),GL_VERTEX_SHADER), 
-			compileShader(replaceIncludes(includes,readFile("shaders/impostor_geometry.glsl")),GL_GEOMETRY_SHADER), 
-			compileShader(replaceIncludes(includes,readFile("shaders/impostor_fragment.glsl")),GL_FRAGMENT_SHADER) 
+			compileShader(GlslInclude::replaceIncludes(includes,readFile("shaders/impostor_vertex.glsl")),GL_VERTEX_SHADER), 
+			compileShader(GlslInclude::replaceIncludes(includes,readFile("shaders/impostor_geometry.glsl")),GL_GEOMETRY_SHADER), 
+			compileShader(GlslInclude::replaceIncludes(includes,readFile("shaders/impostor_fragment.glsl")),GL_FRAGMENT_SHADER) 
 		});
 
 		programDeferred = createShaderProgram({
-			compileShader(replaceIncludes(includes,readFile("shaders/deferred_vertex.glsl")),GL_VERTEX_SHADER), 
-			compileShader(replaceIncludes(includes,readFile("shaders/deferred_geometry.glsl")),GL_GEOMETRY_SHADER), 
-			compileShader(replaceIncludes(includes,readFile("shaders/deferred_fragment.glsl")),GL_FRAGMENT_SHADER) 
+			compileShader(GlslInclude::replaceIncludes(includes,readFile("shaders/deferred_vertex.glsl")),GL_VERTEX_SHADER), 
+			compileShader(GlslInclude::replaceIncludes(includes,readFile("shaders/deferred_geometry.glsl")),GL_GEOMETRY_SHADER), 
+			compileShader(GlslInclude::replaceIncludes(includes,readFile("shaders/deferred_fragment.glsl")),GL_FRAGMENT_SHADER) 
 		});
 
 		textureLayers.textures[0] = createTextureArray(1024, 1024, 20, GL_RGB8);
