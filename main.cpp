@@ -522,52 +522,91 @@ public:
 
     virtual void update(float deltaTime){
 		time += deltaTime;
-	   	if (getKeyboardStatus(GLFW_KEY_ESCAPE) != GLFW_RELEASE) {
+		GLFWgamepadstate state;
+		float rsense = 0.05;
+		float leftAxisX = 0;
+		float leftAxisY = 0;
+		float rightAxisX = 0;
+		float rightAxisY = 0;
+		float tsense = deltaTime*1000;
+		float leftTrigger = 0;
+		float rightTrigger = 0;
+		
+
+		if (glfwGetGamepadState(GLFW_JOYSTICK_1, &state)) {
+			//ImGui::Text("Button A: %s", (state.buttons[GLFW_GAMEPAD_BUTTON_A] ? "Pressed" : "Released"));
+			leftAxisX = state.axes[GLFW_GAMEPAD_AXIS_LEFT_X];
+			leftAxisY = state.axes[GLFW_GAMEPAD_AXIS_LEFT_Y];
+			rightAxisX = state.axes[GLFW_GAMEPAD_AXIS_RIGHT_X];
+			rightAxisY = state.axes[GLFW_GAMEPAD_AXIS_RIGHT_Y];
+			leftTrigger = state.axes[GLFW_GAMEPAD_AXIS_LEFT_TRIGGER];
+			rightTrigger = state.axes[GLFW_GAMEPAD_AXIS_RIGHT_TRIGGER];
+		}
+
+		
+		if (getKeyboardStatus(GLFW_KEY_ESCAPE) != GLFW_RELEASE) {
 		   	close();
 		}
 
 	//    camera.projection[1][1] *= -1;
 	 //   modelMatrix = glm::rotate(modelMatrix, deltaTime * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 
-	   	float rsense = 0.05;
-
 	   	if (getKeyboardStatus(GLFW_KEY_W) != GLFW_RELEASE) {
-	   	   	camera.quaternion = glm::angleAxis(+rsense, glm::vec3(1,0,0))*camera.quaternion;
+			leftAxisY = 1;
 		}
 	   	if (getKeyboardStatus(GLFW_KEY_S) != GLFW_RELEASE) {
-	   	   	camera.quaternion = glm::angleAxis(-rsense, glm::vec3(1,0,0))*camera.quaternion;
+			leftAxisY = -1;
 		}
    		if (getKeyboardStatus(GLFW_KEY_A) != GLFW_RELEASE) {
-	   	   	camera.quaternion = glm::angleAxis(-rsense, glm::vec3(0,1,0))*camera.quaternion;
+			leftAxisX = 1;
 		}
 	   	if (getKeyboardStatus(GLFW_KEY_D) != GLFW_RELEASE) {
-	   	   	camera.quaternion = glm::angleAxis(+rsense, glm::vec3(0,1,0))*camera.quaternion;
+			leftAxisX = -1;
 		}
+		if (getKeyboardStatus(GLFW_KEY_UP) != GLFW_RELEASE) {
+			rightAxisY = -1;
+	 	}
+		if (getKeyboardStatus(GLFW_KEY_DOWN) != GLFW_RELEASE) {
+			rightAxisY = 1;
+		 }
+		if (getKeyboardStatus(GLFW_KEY_RIGHT) != GLFW_RELEASE) {
+			rightAxisX = 1;
+	 	}
+		if (getKeyboardStatus(GLFW_KEY_LEFT) != GLFW_RELEASE) {
+			rightAxisX = -1;
+		}
+
 		if (getKeyboardStatus(GLFW_KEY_Q) != GLFW_RELEASE) {
-	   	   	camera.quaternion = glm::angleAxis(+rsense, glm::vec3(0,0,1))*camera.quaternion;
+			camera.quaternion = glm::angleAxis(+rsense, glm::vec3(0,0,1))*camera.quaternion;
 		}
-	   	if (getKeyboardStatus(GLFW_KEY_E) != GLFW_RELEASE) {
-	   	   	camera.quaternion = glm::angleAxis(-rsense, glm::vec3(0,0,1))*camera.quaternion;
-		}
-
-		glm::vec3 xAxis = glm::vec3(1.0f, 0.0f, 0.0f)*camera.quaternion;
-		//glm::vec3 yAxis = glm::vec3(0.0f, 1.0f, 0.0f)*camera.quaternion;
-		glm::vec3 zAxis = glm::vec3(0.0f, 0.0f, 1.0f)*camera.quaternion;
-
-	   	float tsense = deltaTime*1000;
-	   	if (getKeyboardStatus(GLFW_KEY_UP) != GLFW_RELEASE) {
-	   		camera.position -= zAxis*tsense;
-		}
-	   	if (getKeyboardStatus(GLFW_KEY_DOWN) != GLFW_RELEASE) {
-	   		camera.position += zAxis*tsense;
-		}
-	   	if (getKeyboardStatus(GLFW_KEY_RIGHT) != GLFW_RELEASE) {
-	   		camera.position += xAxis*tsense;
-		}
-   		if (getKeyboardStatus(GLFW_KEY_LEFT) != GLFW_RELEASE) {
-	   		camera.position -= xAxis*tsense;
+		if (getKeyboardStatus(GLFW_KEY_E) != GLFW_RELEASE) {
+			camera.quaternion = glm::angleAxis(-rsense, glm::vec3(0,0,1))*camera.quaternion;
 		}
 
+		if(glm::abs(leftAxisY) > 0.2) {
+			camera.quaternion = glm::angleAxis(rsense*leftAxisY, glm::vec3(1,0,0))*camera.quaternion;
+		}
+		if(glm::abs(leftAxisX) > 0.2) {
+			camera.quaternion = glm::angleAxis(rsense*leftAxisX, glm::vec3(0,1,0))*camera.quaternion;
+		}
+
+		 glm::vec3 xAxis = glm::vec3(1.0f, 0.0f, 0.0f)*camera.quaternion;
+		 glm::vec3 yAxis = glm::vec3(0.0f, 1.0f, 0.0f)*camera.quaternion;
+		 glm::vec3 zAxis = glm::vec3(0.0f, 0.0f, 1.0f)*camera.quaternion;
+
+
+		if(glm::abs(rightAxisY) > 0.2) {
+			camera.position -= yAxis*rightAxisY*tsense;
+		}
+		if(glm::abs(rightAxisX) > 0.2) {
+			camera.position += xAxis*rightAxisX*tsense;
+		}
+		if(rightTrigger > 0.2) {
+			camera.position -= zAxis*rightTrigger*tsense;
+		}
+		if(leftTrigger > 0.2) {
+			camera.position += zAxis*leftTrigger*tsense;
+		}
 		for(AnimateParams &params : animations) {
 			textureAnimator->animate(time, params);
 		}
@@ -946,6 +985,11 @@ glm::vec3 getDirection(float time) {
 			ImGui::Text("%ld/%ld solid instances", mainScene->solidInstancesVisible, mainScene->solidInstancesCount);
 			ImGui::Text("%ld/%ld liquid instances", mainScene->liquidInstancesVisible, mainScene->liquidInstancesCount);
 			ImGui::Text("%ld/%ld vegetation instances", mainScene->vegetationInstancesVisible, mainScene->vegetationInstancesCount);
+
+			if (glfwJoystickIsGamepad(GLFW_JOYSTICK_1)) {
+				ImGui::Text("Gamepad detected");
+			} 
+
 			#ifdef MEM_HEADER
 			ImGui::Text("%ld KB", usedMemory/1024);
 			#endif
