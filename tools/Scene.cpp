@@ -175,7 +175,7 @@ void Scene::draw3dLiquid(glm::vec3 cameraPosition, const std::vector<OctreeNodeD
 void Scene::create() {
 	int sizePerTile = 32;
 	//BoundingBox mapBox = BoundingBox(glm::vec3(0,-256,0), glm::vec3(sizePerTile*1024,256,sizePerTile*1024));
-	BoundingBox mapBox = BoundingBox(glm::vec3(0,-512,0), glm::vec3(sizePerTile*3601,4096,sizePerTile*3601));
+	BoundingBox mapBox = BoundingBox(glm::vec3(0,-512,0), glm::vec3(sizePerTile*1201,4096,sizePerTile*1201));
 /*	
 	solidSpace->add(HeightMapContainmentHandler(
 		HeightMap(
@@ -190,7 +190,7 @@ void Scene::create() {
 	solidSpace->add(HeightMapContainmentHandler(
 		HeightMap(
 			CachedHeightMapSurface(
-				HeightMapTif("models/N39W008.hgt", mapBox, sizePerTile,1.0f, -256.0f-64.0f-32.0f-8.0f), 
+				HeightMapTif("models/output.tif", mapBox, sizePerTile,1.0f, -256.0f-64.0f-32.0f-8.0f), 
 				mapBox,sizePerTile
 			), 
 			mapBox,sizePerTile
