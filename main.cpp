@@ -531,7 +531,9 @@ public:
 		float tsense = deltaTime*1000;
 		float leftTrigger = 0;
 		float rightTrigger = 0;
-		
+		bool lbPressed = 0;
+        bool rbPressed = 0;
+
 
 		if (glfwGetGamepadState(GLFW_JOYSTICK_1, &state)) {
 			//ImGui::Text("Button A: %s", (state.buttons[GLFW_GAMEPAD_BUTTON_A] ? "Pressed" : "Released"));
@@ -541,6 +543,8 @@ public:
 			rightAxisY = state.axes[GLFW_GAMEPAD_AXIS_RIGHT_Y];
 			leftTrigger = state.axes[GLFW_GAMEPAD_AXIS_LEFT_TRIGGER];
 			rightTrigger = state.axes[GLFW_GAMEPAD_AXIS_RIGHT_TRIGGER];
+			lbPressed = state.buttons[GLFW_GAMEPAD_BUTTON_LEFT_BUMPER] == GLFW_PRESS;
+			rbPressed = state.buttons[GLFW_GAMEPAD_BUTTON_RIGHT_BUMPER] == GLFW_PRESS;	
 		}
 
 		
@@ -577,10 +581,10 @@ public:
 		}
 
 		if (getKeyboardStatus(GLFW_KEY_Q) != GLFW_RELEASE) {
-			camera.quaternion = glm::angleAxis(+rsense, glm::vec3(0,0,1))*camera.quaternion;
+			lbPressed = true;
 		}
 		if (getKeyboardStatus(GLFW_KEY_E) != GLFW_RELEASE) {
-			camera.quaternion = glm::angleAxis(-rsense, glm::vec3(0,0,1))*camera.quaternion;
+			rbPressed = true;
 		}
 
 		if(glm::abs(leftAxisY) > 0.2) {
@@ -590,9 +594,16 @@ public:
 			camera.quaternion = glm::angleAxis(rsense*leftAxisX, glm::vec3(0,1,0))*camera.quaternion;
 		}
 
-		 glm::vec3 xAxis = glm::vec3(1.0f, 0.0f, 0.0f)*camera.quaternion;
-		 glm::vec3 yAxis = glm::vec3(0.0f, 1.0f, 0.0f)*camera.quaternion;
-		 glm::vec3 zAxis = glm::vec3(0.0f, 0.0f, 1.0f)*camera.quaternion;
+		glm::vec3 xAxis = glm::vec3(1.0f, 0.0f, 0.0f)*camera.quaternion;
+		glm::vec3 yAxis = glm::vec3(0.0f, 1.0f, 0.0f)*camera.quaternion;
+		glm::vec3 zAxis = glm::vec3(0.0f, 0.0f, 1.0f)*camera.quaternion;
+
+		if(lbPressed) {
+		 	camera.quaternion = glm::angleAxis(-rsense, glm::vec3(0,0,1))*camera.quaternion;
+		}
+		if(rbPressed) {
+			camera.quaternion = glm::angleAxis(+rsense, glm::vec3(0,0,1))*camera.quaternion;
+		}
 
 
 		if(glm::abs(rightAxisY) > 0.2) {
