@@ -16,8 +16,8 @@ LandBrush::LandBrush(){
 
 void LandBrush::paint(Vertex &vertex) const {
     float steepness =glm::dot(glm::vec3(0.0f,1.0f,0.0f), vertex.normal );
-    int grassLevel = 256;
-    int sandLevel = 128;
+    int grassLevel = 128;
+    int sandLevel = 8;
     int softSandLevel = 1;
     uint brushIndex;
     if (glm::dot(glm::vec3(0.0f,1.0f,0.0f), vertex.normal ) <=0 ){
@@ -38,11 +38,11 @@ void LandBrush::paint(Vertex &vertex) const {
         brushIndex = softSand;
     } else if(vertex.position.y < sandLevel){
         brushIndex = sand;
-    } else if(vertex.position.y < sandLevel+64){
+    } else if(vertex.position.y < sandLevel+4){
         brushIndex = grassMixSand;
     } else if(vertex.position.y < grassLevel){
         brushIndex = grass;
-    } else if(vertex.position.y < grassLevel+64){
+    } else if(vertex.position.y < grassLevel+32){
         brushIndex = grassMixSnow;
     } else {
         brushIndex = snow;

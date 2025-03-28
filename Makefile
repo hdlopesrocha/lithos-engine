@@ -8,6 +8,7 @@ LDFLAGS =
 # Directories
 SRC_DIRS = . gl math ui tools
 BIN_DIR = bin
+DATA_DIR = data
 OBJ_DIR = obj
 TARGET = $(BIN_DIR)/app
 CONVERTER = $(BIN_DIR)/converter
@@ -43,8 +44,8 @@ compile: clean $(TARGET)
 recompile: reset $(TARGET)
 
 $(TARGET): $(OBJ)
-	mkdir -p $(BIN_DIR)/textures $(BIN_DIR)/models $(BIN_DIR)/shaders
-	cp -rf textures models shaders $(BIN_DIR)/
+	mkdir -p $(BIN_DIR)/textures $(BIN_DIR)/models $(BIN_DIR)/shaders $(DATA_DIR) $(BIN_DIR)/$(DATA_DIR)
+	cp -rf textures models shaders $(DATA_DIR) $(BIN_DIR)/
 	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS) $(LIBS)
 
 $(OBJ_DIR)/%.o: %.cpp

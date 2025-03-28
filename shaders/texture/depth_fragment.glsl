@@ -11,7 +11,7 @@ void main() {
     float d = texture(textureSampler, TexCoord).r;
 
     float near = 0.1;
-    float far = 4096.0;
+    float far = 8192.0;
     float d2 = linearizeDepth(d, near, far)/far;
 
     FragColor = vec4(d2, d2 ,d2 ,1.0);

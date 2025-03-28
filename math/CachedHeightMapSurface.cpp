@@ -18,6 +18,8 @@ CachedHeightMapSurface::CachedHeightMapSurface(const HeightFunction &function, B
     }
 }
 
+
+
 float CachedHeightMapSurface::getData(int x, int z) const {
     return this->data[Math::clamp(x, 0, this->width-1)][Math::clamp(z, 0, this->height-1)];
 }

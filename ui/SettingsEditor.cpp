@@ -60,6 +60,8 @@ glm::vec3 ypr = getYawPitchRoll( camera->quaternion) ;
     debugModes.push_back("Cartoon");
     debugModes.push_back("Dont correct normal");
     debugModes.push_back("Brush Index");
+    debugModes.push_back("Countour Lines");
+    debugModes.push_back("Grid Lines");
 
     
 

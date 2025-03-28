@@ -249,7 +249,7 @@ class HeightMap: public BoundingBox  {
 		HeightMap(const HeightFunction &func, BoundingBox box, float step);
 		
    		glm::vec3 getNormalAt(float x, float z) const ;
-		glm::vec3 getPoint(const BoundingCube& cube) const ;
+		void getPoint(const BoundingCube& cube, glm::vec3 &p) const ;
 
 		glm::ivec2 getIndexes(float x, float z) const ;
 		glm::vec2 getHeightRangeBetween(const BoundingCube &cube) const ;

@@ -181,7 +181,7 @@ void main() {
         }
         else if(debugMode == 10) {
             float near = 0.1;
-            float far = 1024.0;
+            float far = 8192.0;
             color = vec4(vec3(linearizeDepth(currentDepth, near, far)/far),1.0);
         }
         else if(debugMode == 11) {
@@ -211,6 +211,24 @@ void main() {
             // Generate colors using bitwise operations
 
             color = vec4(c.r,c.g,c.b,1.0);    
+        }
+        else if(debugMode == 18) {
+            if(mod(tePosition.y,100.0) < 0.3) {
+                color = vec4(1.0,0.0,0.0,1.0); 
+            } else if(mod(tePosition.y,10.0) < 0.2) {
+                color = vec4(0.0,1.0,0.0,1.0); 
+            } else if(mod(tePosition.y,1.0) < 0.1) {
+                color = vec4(1.0,1.0,1.0,1.0); 
+            }
+        }
+        else if(debugMode == 19) {
+            if(mod(tePosition.x,100.0) < 0.3 || mod(tePosition.z,100.0) < 0.3) {
+                color += vec4(1.0,0.0,0.0,1.0)*0.6; 
+            } else if(mod(tePosition.x,10.0) < 0.2 || mod(tePosition.z,10.0) < 0.2) {
+                color += vec4(0.0,1.0,0.0,1.0)*0.4; 
+            } else if(mod(tePosition.x,1.0) < 0.1 || mod(tePosition.z,1.0) < 0.1) {
+                color += vec4(1.0,1.0,1.0,1.0)*0.2; 
+            }
         }
         return;
     }

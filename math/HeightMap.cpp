@@ -43,21 +43,23 @@ glm::vec3 getShift(int i) {
 	return glm::vec3( ((i >> 0) % 2) , ((i >> 2) % 2) , ((i >> 1) % 2));
 }
 
-glm::vec3 HeightMap::getPoint(const BoundingCube &cube) const {
+void HeightMap::getPoint(const BoundingCube &cube, glm::vec3 &p) const {
     glm::vec3 v = cube.getCenter();
     float h = func.getHeightAt(v.x,v.z);
     if( Math::isBetween(h, cube.getMinY(), cube.getMaxY())){
-        return glm::vec3(v.x, h, v.z);
+        p= glm::vec3(v.x, h, v.z);
+        return;
     }  
    
     for(int i =0; i < 4 ; ++i) {
         v = cube.getMin() + cube.getLengthX() * getShift(i);
         h = func.getHeightAt(v.x,v.z);
         if( Math::isBetween(h, cube.getMinY(), cube.getMaxY())){
-            return glm::vec3(v.x, h, v.z);
+            p= glm::vec3(v.x, h, v.z);
+            return;
         }
     }
-    return cube.getCenter();
+    p= cube.getCenter();
 }
 
 bool HeightMap::contains(const glm::vec3 &point) const {
@@ -148,7 +150,10 @@ Vertex HeightMapContainmentHandler::getVertex(const BoundingCube &cube, Containm
         c = glm::clamp(c,cube.getMin(), cube.getMax() );
         vertex.position = c;
     } else {
-        glm::vec3 c = glm::clamp(map.getPoint(cube), map.getMin(), map.getMax());
+        glm::vec3 p;
+        map.getPoint(cube, p);
+
+        glm::vec3 c = glm::clamp(p, map.getMin(), map.getMax());
         vertex.position = c;
         vertex.normal = getNormal(vertex.position);
     }

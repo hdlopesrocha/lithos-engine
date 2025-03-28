@@ -85,7 +85,7 @@ class MainApplication : public LithosApplication {
 	glm::quat quaternion =  EulerToQuat(0, 45, 0);
 	// pitch yaw roll
 	
-	Camera camera = Camera(glm::vec3(1024, 512, 1024), quaternion , 0.1f, 4096.0f);
+	Camera camera = Camera(glm::vec3(59227, 2811, 3832), quaternion , 0.1f, 8192.0f);
 	DirectionalLight light;
 
 	GLuint programSwap;
@@ -263,9 +263,9 @@ public:
 		renderBuffer = createRenderFrameBuffer(getWidth(), getHeight(), true);
 		solidBuffer = createRenderFrameBuffer(getWidth(), getHeight(), true);
 		depthFrameBuffer = createDepthFrameBuffer(getWidth(), getHeight());
-		shadowFrameBuffers.push_back(std::pair(createDepthFrameBuffer(1024, 1024), 128));
-		shadowFrameBuffers.push_back(std::pair(createDepthFrameBuffer(1024, 1024), 1024));
+		shadowFrameBuffers.push_back(std::pair(createDepthFrameBuffer(1024, 1024), 256));
 		shadowFrameBuffers.push_back(std::pair(createDepthFrameBuffer(1024, 1024), 2048));
+		shadowFrameBuffers.push_back(std::pair(createDepthFrameBuffer(1024, 1024), 8192));
 
 		textureMixer = new TextureMixer(1024,1024, programMixTexture, &textureLayers, textureBlitter1024);
 		textureAnimator = new AnimatedTexture(1024,1024, programWaterTexture ,&textureLayers, textureBlitter1024);
@@ -610,8 +610,7 @@ glm::vec3 getDirection(float time) {
 }
 
     virtual void draw3d() {
-		float far = 4096.0f;
-		float near = 0.1f;
+	
 
 		// Convert quaternion to rotation matrix
 		glm::mat4 rotate = glm::mat4_cast(glm::normalize(camera.quaternion)); 
@@ -623,7 +622,7 @@ glm::vec3 getDirection(float time) {
 		camera.view = rotate * translate;
 
 		// Perspective projection
-		camera.projection = glm::perspective(glm::radians(45.0f), getWidth() / (float)getHeight(), near, far);
+		camera.projection = glm::perspective(glm::radians(45.0f), getWidth() / (float)getHeight(), camera.near, camera.far);
 
 		
 		//camera.position = getCameraPosition(time);
@@ -639,7 +638,7 @@ glm::vec3 getDirection(float time) {
 			for(std::pair<RenderBuffer, int> pair : shadowFrameBuffers) {
 				int orthoSize = pair.second;
 				glm::vec3 lightPosition;
-				glm::mat4 lightMatrix = light.getViewProjection(camera.position, orthoSize, near, far,lightPosition);
+				glm::mat4 lightMatrix = light.getViewProjection(camera.position, orthoSize, camera.near, camera.far,lightPosition);
 				shadowMatrices.push_back({lightMatrix, lightPosition});	
 			}
 		}
