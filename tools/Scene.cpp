@@ -3,8 +3,8 @@
 
 Scene::Scene(Settings * settings) {
 	this->settings = settings;
-	solidSpace = new Octree(BoundingCube(glm::vec3(0,0,0), 32.0));
-	liquidSpace = new Octree(BoundingCube(glm::vec3(0,13,0), 32.0));
+	solidSpace = new Octree(BoundingCube(glm::vec3(0,0,0), 30.0));
+	liquidSpace = new Octree(BoundingCube(glm::vec3(0,7,0), 30.0));
 
 	solidInstancesCount = 0;
 	liquidInstancesCount = 0;
@@ -173,20 +173,25 @@ void Scene::draw3dLiquid(glm::vec3 cameraPosition, const std::vector<OctreeNodeD
 }
 
 void Scene::create() {
-	int sizePerTile = 32;
-	//BoundingBox mapBox = BoundingBox(glm::vec3(0,-256,0), glm::vec3(sizePerTile*1024,256,sizePerTile*1024));
-	BoundingBox mapBox = BoundingBox(glm::vec3(0,-512,0), glm::vec3(sizePerTile*1201,4096,sizePerTile*1201));
-/*	
+	int sizePerTile = 30;
+	int tiles= 1024;
+	int height = 2048;
+
+	BoundingBox mapBox = BoundingBox(glm::vec3(-sizePerTile*tiles*0.5,-height*0.5,-sizePerTile*tiles*0.5), glm::vec3(sizePerTile*tiles*0.5,height*0.5,sizePerTile*tiles*0.5));
+	//BoundingBox mapBox = BoundingBox(glm::vec3(0,-512,0), glm::vec3(sizePerTile*1201,4096,sizePerTile*1201));
+	
+	
 	solidSpace->add(HeightMapContainmentHandler(
 		HeightMap(
 			CachedHeightMapSurface(
-				GradientPerlinSurface(100, 1.0f/256.0f, 0), 
+				GradientPerlinSurface(height, 1.0/(256.0f*sizePerTile), -64), 
 				mapBox, sizePerTile
 			), mapBox, sizePerTile
 		), LandBrush()
 	));
 
-*/
+
+/*
 	solidSpace->add(HeightMapContainmentHandler(
 		HeightMap(
 			CachedHeightMapSurface(
@@ -197,10 +202,12 @@ void Scene::create() {
 		), 
 		LandBrush()
 	));
+*/
 
 
-
-	BoundingBox waterBox(glm::vec3(mapBox.getMinX(),mapBox.getMinY(),mapBox.getMinZ()), glm::vec3(mapBox.getMaxX(),0,mapBox.getMaxZ()));
+	BoundingBox waterBox = mapBox;
+	waterBox.setMaxY(0);
+	
 	//liquidSpace->add(BoxContainmentHandler(BoundingBox(glm::vec3(30,-20,30),glm::vec3(70,20,70)),SimpleBrush(0)));
 
 	//liquidSpace->add(SphereContainmentHandler(BoundingSphere(glm::vec3(11,61,-11),4), SimpleBrush(0)));

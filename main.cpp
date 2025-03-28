@@ -85,7 +85,8 @@ class MainApplication : public LithosApplication {
 	glm::quat quaternion =  EulerToQuat(0, 45, 0);
 	// pitch yaw roll
 	
-	Camera camera = Camera(glm::vec3(21649, 600, 5271), quaternion , 0.1f, 8192.0f);
+	//Camera camera = Camera(glm::vec3(21649, 600, 5271), quaternion , 0.1f, 8192.0f);
+	Camera camera = Camera(glm::vec3(0, 500, 0), quaternion , 0.1f, 8192.0f);
 	DirectionalLight light;
 
 	GLuint programSwap;

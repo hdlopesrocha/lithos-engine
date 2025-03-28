@@ -20,6 +20,7 @@
 #include <vector>
 #include <stack>
 #include <map>
+#include <unordered_map>
 #include <filesystem>
 #include <algorithm>
 #include <gdal/gdal_priv.h>
@@ -78,6 +79,52 @@ struct Vertex {
 	bool operator<(const Vertex& other) const {
         return std::tie(position.x, position.y, position.z, normal.x, normal.y, normal.z, texCoord.x, texCoord.y, brushIndex) 
              < std::tie(other.position.x, other.position.y, other.position.z, other.normal.x, other.normal.y, other.normal.z, other.texCoord.x, other.texCoord.y, other.brushIndex);
+    }
+	bool operator==(const Vertex &other) const {
+        return position.x == other.position.x && position.y == other.position.y && position.z == other.position.z;
+    }
+};
+
+
+// Custom hash function for glm::vec3
+namespace std {
+    template <>
+    struct hash<glm::vec3> {
+        std::size_t operator()(const glm::vec3& v) const {
+            std::size_t hx = std::hash<float>{}(v.x);
+            std::size_t hy = std::hash<float>{}(v.y);
+            std::size_t hz = std::hash<float>{}(v.z);
+            
+            // Combine the individual component hashes using XOR and shifting
+            return hx ^ (hy << 1) ^ (hz << 2);
+        }
+    };
+
+    // Custom hash function for glm::vec2 (texture coordinates)
+    template <>
+    struct hash<glm::vec2> {
+        std::size_t operator()(const glm::vec2& v) const {
+            std::size_t hx = std::hash<float>{}(v.x);
+            std::size_t hy = std::hash<float>{}(v.y);
+
+            // Combine the individual component hashes using XOR and shifting
+            return hx ^ (hy << 1);
+        }
+    };
+}
+
+
+struct VertexHasher {
+    std::size_t operator()(const Vertex &v) const {
+        std::size_t hash = 0;
+
+		// Combine position, normal, texCoord, and brushIndex
+		hash ^= std::hash<glm::vec3>{}(v.position) + 0x9e3779b9 + (hash << 6) + (hash >> 2); // Position
+		hash ^= std::hash<glm::vec3>{}(v.normal) + 0x01000193 + (hash << 6) + (hash >> 2);   // Normal
+		hash ^= std::hash<glm::vec2>{}(v.texCoord) + 0x27d4eb2f + (hash << 6) + (hash >> 2);  // TexCoord
+		//hash ^= std::hash<int>{}(v.brushIndex) + 0x9e3779b9 + (hash << 6) + (hash >> 2);      // Brush Index
+
+        return hash;
     }
 };
 
@@ -179,6 +226,9 @@ class BoundingBox : public AbstractBoundingBox {
 		BoundingBox(glm::vec3 min, glm::vec3 max);
 		BoundingBox();
 		void setMax(glm::vec3 v);
+		void setMaxX(float v);
+		void setMaxY(float v);
+		void setMaxZ(float v);
 
 		glm::vec3 getLength() const override;
 		float getLengthX() const override;
@@ -320,9 +370,9 @@ class Geometry
 public:
 	std::vector<Vertex> vertices;
 	std::vector<uint> indices;
-	std::map <Vertex, int> compactMap;
+	std::unordered_map <Vertex, size_t, VertexHasher> compactMap;
 	glm::vec3 center;
-	Geometry(/* args */);
+	Geometry();
 	~Geometry();
 
 	Vertex * addVertex(const Vertex &vertex);

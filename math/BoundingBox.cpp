@@ -45,6 +45,18 @@ void BoundingBox::setMax(glm::vec3 v) {
     this->max = v;
 }
 
+void BoundingBox::setMaxX(float v){
+    this->max.x = v;
+}
+
+void BoundingBox::setMaxY(float v){
+    this->max.y = v;
+}
+
+void BoundingBox::setMaxZ(float v){
+    this->max.z = v;
+}
+
 BoxContainmentHandler::BoxContainmentHandler(BoundingBox box, const TexturePainter &b) : ContainmentHandler(), box(box), brush(b){
 
 }

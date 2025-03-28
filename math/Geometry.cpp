@@ -1,6 +1,6 @@
 #include "math.hpp"
 
-Geometry::Geometry(/* args */) {
+Geometry::Geometry() {
     this->center = glm::vec3(0);
 }
 
@@ -28,18 +28,14 @@ void Geometry::setCenter(){
 }
 
 Vertex * Geometry::addVertex(const Vertex &vertex) {
-    auto it = compactMap.find(vertex);
-    int idx = 0;
-
-    if (it != compactMap.end()) {
-        idx = it->second;
-    } else {
-        idx = compactMap.size();
-        compactMap.insert({vertex, idx});
-        vertices.push_back(vertex); 
+    auto [it, inserted] = compactMap.try_emplace(vertex, compactMap.size());
+    size_t idx = it->second;
+    
+    if (inserted) {
+        vertices.push_back(vertex);
     }
     indices.push_back(idx);
-    return &(vertices[idx]);
+    return &vertices[idx];
 }
 
 glm::vec3 Geometry::getNormal(Vertex * a, Vertex * b, Vertex * c) {
