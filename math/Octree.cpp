@@ -332,13 +332,15 @@ void Octree::del(const ContainmentHandler &handler) {
 void Octree::iterate(IteratorHandler &handler, int geometryLevel) {
 	BoundingCube cube(glm::vec3(getMinX(),getMinY(),getMinZ()),getLengthX());
     int h = getHeight(cube);
-	handler.iterate(OctreeNodeData(0, h, h-geometryLevel, root, cube, NULL));
+    int lod = glm::max(0,h-geometryLevel);
+	handler.iterate(OctreeNodeData(0, h, lod, root, cube, NULL));
 }
 
 void Octree::iterateFlat(IteratorHandler &handler, int geometryLevel) {
 	BoundingCube cube(glm::vec3(getMinX(),getMinY(),getMinZ()),getLengthX());
     int h = getHeight(cube);
-	handler.iterateFlatIn(OctreeNodeData(0, h, h-geometryLevel,root, cube, NULL));
+    int lod = glm::max(0,h-geometryLevel);
+    handler.iterateFlatIn(OctreeNodeData(0, h, lod,root, cube, NULL));
 }
 
 

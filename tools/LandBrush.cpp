@@ -16,7 +16,7 @@ LandBrush::LandBrush(){
 
 void LandBrush::paint(Vertex &vertex) const {
     float steepness =glm::dot(glm::vec3(0.0f,1.0f,0.0f), vertex.normal );
-    int grassLevel = 128;
+    int grassLevel = 256;
     int sandLevel = 8;
     int softSandLevel = 1;
     uint brushIndex;

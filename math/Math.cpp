@@ -84,7 +84,7 @@ std::stringstream gzipDecompressFromIfstream(std::ifstream& inputFile) {
     std::vector<char> inBuffer(1024);
     std::vector<char> outBuffer(1024);
 
-    int ret;
+    int ret=0;
     do {
         inputFile.read(inBuffer.data(), inBuffer.size());
         strm.next_in = reinterpret_cast<Bytef*>(inBuffer.data());

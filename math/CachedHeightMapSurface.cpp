@@ -53,3 +53,4 @@ float CachedHeightMapSurface::getHeightAt(float x, float z) const  {
     }
     return Math::clamp( y, box.getMinY(), box.getMaxY());
 }
+

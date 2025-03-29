@@ -52,8 +52,11 @@ VegetationInstanceBuilder::VegetationInstanceBuilder(Geometry * chunk, long * co
 }
 
 void VegetationInstanceBuilder::handle(OctreeNode* c0,OctreeNode* c1,OctreeNode* c2, bool sign){
-    GradientPerlinSurface fps(1.0, 1.0f/128.0f, 0);
-
+    int sizePerTile = 30;
+	int tiles= 1024;
+	int height = 2048;
+    GradientPerlinSurface fps(height, 1.0/(256.0f*sizePerTile), -64);
+    
     if(c0 != NULL && c1 != NULL && c2!=NULL) {
         Vertex v0 = c0->vertex;
         Vertex v1 = c1->vertex;

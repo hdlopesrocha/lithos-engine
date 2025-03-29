@@ -14,14 +14,14 @@ Scene::Scene(Settings * settings) {
 	liquidInstancesVisible = 0;
 	vegetationInstancesVisible = 0;
 
-	geometryLevel = 6;
+	geometryLevel = 7;
 
 	vegetationInstanceHandler= new VegetationInstanceBuilderHandler(solidSpace, &vegetationInstancesCount);
 
 
 	vegetationBuilder = new VegetationGeometryBuilder(TYPE_INSTANCE_VEGETATION_DRAWABLE, &vegetationInstancesCount, solidSpace, vegetationInstanceHandler);
-	meshBuilder = new MeshGeometryBuilder(TYPE_INSTANCE_SOLID_DRAWABLE, &solidInstancesCount, solidSpace, 0.8, 0.5, true);
-	liquidMeshBuilder = new MeshGeometryBuilder(TYPE_INSTANCE_LIQUID_DRAWABLE, &liquidInstancesCount, liquidSpace, 0.8, 0.5, true);
+	meshBuilder = new MeshGeometryBuilder(TYPE_INSTANCE_SOLID_DRAWABLE, &solidInstancesCount, solidSpace, 0.8, 1.0, true);
+	liquidMeshBuilder = new MeshGeometryBuilder(TYPE_INSTANCE_LIQUID_DRAWABLE, &liquidInstancesCount, liquidSpace, 0.8, 1.0, true);
 
 	solidProcessor = new OctreeProcessor(solidSpace , true, meshBuilder);
 	liquidProcessor = new OctreeProcessor(liquidSpace, true, liquidMeshBuilder);

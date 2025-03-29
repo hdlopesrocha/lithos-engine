@@ -20,7 +20,7 @@ void SettingsEditor::draw2d(float time){
     int int_value = 0;
 
 
-glm::vec3 ypr = getYawPitchRoll( camera->quaternion) ;
+//glm::vec3 ypr = getYawPitchRoll( camera->quaternion) ;
 
     ImGui::Begin("Settings", &open, ImGuiWindowFlags_AlwaysAutoResize);
     ImGui::Text("Camera Position: (%.3f, %.3f, %.3f)", camera->position.x, camera->position.y, camera->position.z);
