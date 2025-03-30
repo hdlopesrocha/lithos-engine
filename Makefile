@@ -85,4 +85,6 @@ callgrind:
 	cd bin; valgrind --tool=callgrind --callgrind-out-file=callgrind.out ./app;  kcachegrind callgrind.out
 
 libs:
-	mkdir -p libs; cd libs; git clone https://github.com/aiekick/ImGuiFileDialog.git
+	mkdir -p libs; 
+	cd libs; 
+	git clone https://github.com/aiekick/ImGuiFileDialog.git

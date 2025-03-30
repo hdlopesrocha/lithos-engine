@@ -59,8 +59,8 @@ void OctreeFile::load(std::string baseFolder) {
 
 	size_t size;
 	decompressed.read(reinterpret_cast<char*>(&size), sizeof(size_t) );
-	std::cout << "Loading " << std::to_string(size) << " nodes" << std::endl;
-	std::cout << "Octree: l=" << std::to_string(octreeSerialized.length) << ", mS=" << std::to_string(octreeSerialized.minSize) << ", min={" <<  std::to_string(octreeSerialized.min.x) << "," << std::to_string(octreeSerialized.min.y) << "," << std::to_string(octreeSerialized.min.z) <<"}" << std::endl;
+	//std::cout << "Loading " << std::to_string(size) << " nodes" << std::endl;
+	//std::cout << "Octree: l=" << std::to_string(octreeSerialized.length) << ", mS=" << std::to_string(octreeSerialized.minSize) << ", min={" <<  std::to_string(octreeSerialized.min.x) << "," << std::to_string(octreeSerialized.min.y) << "," << std::to_string(octreeSerialized.min.z) <<"}" << std::endl;
 
 	std::vector<OctreeNodeSerialized> nodes;
 	nodes.resize(size);
@@ -75,8 +75,9 @@ void OctreeFile::load(std::string baseFolder) {
 
     file.close();
 	nodes.clear();
-}
 
+	std::cout << "OctreeFile::load('" << filePath <<"') Ok!" << std::endl;
+}
 
 
 uint saveRecursive(OctreeNode * node, std::vector<OctreeNodeSerialized*> * nodes, int height, std::string filename, BoundingCube cube, std::string baseFolder) {
@@ -127,8 +128,8 @@ void OctreeFile::save(std::string baseFolder){
 	decompressed.write(reinterpret_cast<const char*>(&octreeSerialized), sizeof(OctreeSerialized));
 
 	size_t size = nodes.size();
-	std::cout << "Saving " << std::to_string(size) << " nodes" << std::endl;
-	std::cout << std::to_string(sizeof(OctreeNodeSerialized)) << " bytes/node" << std::endl;
+	//std::cout << "Saving " << std::to_string(size) << " nodes" << std::endl;
+	//std::cout << std::to_string(sizeof(OctreeNodeSerialized)) << " bytes/node" << std::endl;
 
 	decompressed.write(reinterpret_cast<const char*>(&size), sizeof(size_t) );
 	for(OctreeNodeSerialized *n : nodes) {

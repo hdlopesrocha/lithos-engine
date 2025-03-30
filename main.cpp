@@ -856,13 +856,13 @@ glm::vec3 getDirection(float time) {
 					mainScene->generate();
 				}
 
-				char defaultData[64] = "default.env";
+				std::string defaultFilename = "default.env";
 
 				if (ImGui::MenuItem("Open", "Ctrl+O")) {
 					IGFD::FileDialogConfig config;
 					config.path = "."; // Start in the current directory
 					config.flags = ImGuiFileDialogFlags_Modal; // Optional: Make it modal
-					//config.userDatas = &defaultData;
+					config.fileName = defaultFilename;
 					ImGuiFileDialog::Instance()->OpenDialog("ChooseFolderDlgOpenKey", "Select a File", ".env", config);
 				}
 
@@ -871,7 +871,7 @@ glm::vec3 getDirection(float time) {
 					IGFD::FileDialogConfig config;
 					config.path = "."; // Start in the current directory
 					config.flags = ImGuiFileDialogFlags_Modal | ImGuiFileDialogFlags_ConfirmOverwrite; // Optional: Make it modal
-					//config.userDatas = &defaultData;
+					config.fileName = defaultFilename;
 					ImGuiFileDialog::Instance()->OpenDialog("ChooseFolderDlgSaveKey", "Select a File", ".env", config);
 
 				}
@@ -898,12 +898,12 @@ glm::vec3 getDirection(float time) {
 					std::cout << "Selected file: " << filePath << std::endl;
 					EnvironmentFile environment ("solid", "liquid", "brushes");
 					environment.save(filePath);
-					mainScene->save(folderPath);
 					std::vector<UniformBlockBrush> vec;
 					for(UniformBlockBrush * ubb : brushes){
 						vec.push_back(*ubb);
 					}
-					UniformBlockBrush::save(&vec, folderPath+"/brushes.bin");				
+					UniformBlockBrush::save(&vec, folderPath, environment.brushesFilename);				
+					mainScene->save(folderPath);
 				}
 				ImGuiFileDialog::Instance()->Close();
 			}
@@ -918,8 +918,17 @@ glm::vec3 getDirection(float time) {
 				
 				
 					EnvironmentFile environment (filePath);
+					
+					std::vector<UniformBlockBrush> vec;
+					UniformBlockBrush::load(&vec, folderPath, environment.brushesFilename);				
+
+					brushes.clear();
+					for(UniformBlockBrush &ubb : vec) {
+						brushes.push_back(new UniformBlockBrush(ubb));
+					}
 
 					mainScene->load(folderPath);
+					
 				}
 				ImGuiFileDialog::Instance()->Close();
 			}

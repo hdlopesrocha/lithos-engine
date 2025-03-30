@@ -38,7 +38,7 @@ UniformBlockBrush::UniformBlockBrush(glm::vec2 textureScale,float parallaxScale,
 }
 
 
-void UniformBlockBrush::save(std::vector<UniformBlockBrush> * brushes, std::string filename){
+void UniformBlockBrush::save(std::vector<UniformBlockBrush> * brushes, std::string baseFolder, std::string filename){
 	std::ofstream file = std::ofstream(filename, std::ios::binary);
     if (!file) {
         std::cerr << "Error opening file for writing: " << filename << std::endl;
@@ -59,6 +59,25 @@ void UniformBlockBrush::save(std::vector<UniformBlockBrush> * brushes, std::stri
 	file.close();
 }
 
+void UniformBlockBrush::load(std::vector<UniformBlockBrush> * brushes, std::string baseFolder, std::string filename){
+	std::string filePath = baseFolder + "/" + filename+".bin";
+	std::ifstream file = std::ifstream(filePath, std::ios::binary);
+    if (!file) {
+        std::cerr << "Error opening file for reading: " << filePath << std::endl;
+        return;
+    }
+
+    std::stringstream decompressed = gzipDecompressFromIfstream(file);
+
+	size_t size;
+	decompressed.read(reinterpret_cast<char*>(&size), sizeof(size_t) );
+	brushes->reserve(size);
+	decompressed.read(reinterpret_cast<char*>(brushes->data()), size);
+	
+
+	file.close();
+	std::cout << "UniformBlockBrush::load('" << filePath <<"') Ok!" << std::endl;
+}
 
 void UniformBlockBrush::uniform(GLuint program, UniformBlockBrush * brush, std::string objectName) {
 

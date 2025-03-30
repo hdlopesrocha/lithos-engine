@@ -32,6 +32,9 @@ void EnvironmentFile::save(std::string filename){
 	std::istringstream inputStream(decompressed.str());
  	gzipCompressToOfstream(inputStream, file);
 	file.close();
+
+    std::cout << "EnvironmentFile::save('" << filename <<"') Ok!" << std::endl;
+
 };
 
 
@@ -59,5 +62,7 @@ EnvironmentFile::EnvironmentFile(std::string filename) {
     brushesFilename = std::string(str);
 
     file.close();
+
+    std::cout << "EnvironmentFile::EnvironmentFile('" << filename <<"') Ok!" << std::endl;
 }
 
