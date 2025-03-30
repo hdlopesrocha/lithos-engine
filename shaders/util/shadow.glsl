@@ -6,12 +6,12 @@ float getShadow(sampler2D shadowMap[SHADOW_MATRIX_COUNT], sampler2D noise, vec4 
         selectedMap = i;
         shadowPosition = lightViewPosition[i].xyz / lightViewPosition[i].w; 
         ++shadowCount;
-        if(shadowPosition.x > 0.0 && shadowPosition.x < 1.0 && shadowPosition.y > 0.0 && shadowPosition.y < 1.0) {
+        if(shadowPosition.x >= 0.0 && shadowPosition.x <= 1.0 && shadowPosition.y >= 0.0 && shadowPosition.y <= 1.0) {
             break;
         }
     }
     if(shadowCount==SHADOW_MATRIX_COUNT) {
-        return 0.0;
+        return 1.0;
     }
 
     vec2 texelSize = 1.0/textureSize(shadowMap[selectedMap], 0);

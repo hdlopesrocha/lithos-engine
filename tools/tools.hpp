@@ -162,9 +162,9 @@ class EnvironmentFile {
 	std::string solidFilename;
 	std::string liquidFilename;
 	std::string brushesFilename;
-	
-	EnvironmentFile(std::string solidFilename, std::string liquidFilename, std::string brushesFilename);
-	EnvironmentFile(std::string filename);
+	Camera * camera;
+	EnvironmentFile(std::string solidFilename, std::string liquidFilename, std::string brushesFilename, Camera * camera);
+	EnvironmentFile(std::string filename, Camera * camera);
 
 	void save(std::string filename);
 };

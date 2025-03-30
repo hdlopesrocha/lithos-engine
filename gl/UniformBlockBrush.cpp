@@ -39,9 +39,10 @@ UniformBlockBrush::UniformBlockBrush(glm::vec2 textureScale,float parallaxScale,
 
 
 void UniformBlockBrush::save(std::vector<UniformBlockBrush> * brushes, std::string baseFolder, std::string filename){
-	std::ofstream file = std::ofstream(filename, std::ios::binary);
+	std::string filePath = baseFolder + "/" + filename+".bin";
+	std::ofstream file = std::ofstream(filePath, std::ios::binary);
     if (!file) {
-        std::cerr << "Error opening file for writing: " << filename << std::endl;
+        std::cerr << "Error opening file for writing: " << filePath << std::endl;
         return;
     }
 

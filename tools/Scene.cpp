@@ -174,7 +174,7 @@ void Scene::draw3dLiquid(glm::vec3 cameraPosition, const std::vector<OctreeNodeD
 
 void Scene::generate(Camera &camera) {
 	int sizePerTile = 30;
-	int tiles= 1024;
+	int tiles= 512;
 	int height = 2048;
 
 
@@ -250,7 +250,7 @@ void Scene::load(std::string folderPath, Camera &camera) {
 	OctreeFile loader2(liquidSpace, "liquid", 9);
 	loader1.load(folderPath);
 	loader2.load(folderPath);
-	camera.position.x = loader1.getBox().getCenter().x;
-	camera.position.y = loader1.getBox().getMaxY();
-	camera.position.z = loader1.getBox().getCenter().z;
+	//camera.position.x = loader1.getBox().getCenter().x;
+	//camera.position.y = loader1.getBox().getMaxY();
+	//camera.position.z = loader1.getBox().getCenter().z;
 }

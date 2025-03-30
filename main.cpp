@@ -896,7 +896,7 @@ glm::vec3 getDirection(float time) {
 					std::string filePath = instance->GetFilePathName();
 					std::string folderPath = instance->GetCurrentPath();
 					std::cout << "Selected file: " << filePath << std::endl;
-					EnvironmentFile environment ("solid", "liquid", "brushes");
+					EnvironmentFile environment ("solid", "liquid", "brushes", &camera);
 					environment.save(filePath);
 					std::vector<UniformBlockBrush> vec;
 					for(UniformBlockBrush * ubb : brushes){
@@ -917,7 +917,7 @@ glm::vec3 getDirection(float time) {
 					std::cout << "Selected file: " << filePath << std::endl;
 				
 				
-					EnvironmentFile environment (filePath);
+					EnvironmentFile environment (filePath, &camera);
 					
 					std::vector<UniformBlockBrush> vec;
 					UniformBlockBrush::load(&vec, folderPath, environment.brushesFilename);				

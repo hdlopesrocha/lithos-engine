@@ -144,6 +144,9 @@ void OctreeFile::save(std::string baseFolder){
 		delete n;
 	}
 	nodes.clear();
+
+	std::cout << "OctreeFile::save('" << filePath <<"') Ok!" << std::endl;
+
 }
 
 AbstractBoundingBox& OctreeFile::getBox(){
