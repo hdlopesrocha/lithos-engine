@@ -28,7 +28,7 @@ OctreeNode * loadRecursive2(OctreeNode * node, int i, std::vector<OctreeNodeSeri
 }
 
 
-void OctreeNodeFile::load() {
+void OctreeNodeFile::load(std::string baseFolder) {
 	std::ifstream file = std::ifstream(filename, std::ios::binary);
     if (!file) {
         std::cerr << "Error opening file for reading: " << filename << std::endl;
@@ -69,7 +69,7 @@ uint saveRecursive2(OctreeNode * node, std::vector<OctreeNodeSerialized*> * node
 	return 0;
 }
 
-void OctreeNodeFile::save(){
+void OctreeNodeFile::save(std::string baseFolder){
     std::vector<OctreeNodeSerialized*> nodes;
 
 	std::ofstream file = std::ofstream(filename, std::ios::binary);

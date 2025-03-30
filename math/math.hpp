@@ -702,8 +702,8 @@ class OctreeFile {
 
     public: 
 		OctreeFile(Octree * tree, std::string filename, int chunkHeight);
-        void save();
-        void load();
+        void save(std::string baseFolder);
+        void load(std::string baseFolder);
 
 };
 
@@ -713,8 +713,8 @@ class OctreeNodeFile {
 
     public: 
 		OctreeNodeFile(OctreeNode * node, std::string filename);
-        void save();
-        void load();
+        void save(std::string baseFolder);
+        void load(std::string baseFolder);
 };
 
 

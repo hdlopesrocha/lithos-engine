@@ -172,15 +172,12 @@ void Scene::draw3dLiquid(glm::vec3 cameraPosition, const std::vector<OctreeNodeD
 	}
 }
 
-void Scene::create() {
+void Scene::generate() {
 	int sizePerTile = 30;
 	int tiles= 1024;
 	int height = 2048;
 
-	BoundingBox mapBox = BoundingBox(glm::vec3(-sizePerTile*tiles*0.5,-height*0.5,-sizePerTile*tiles*0.5), glm::vec3(sizePerTile*tiles*0.5,height*0.5,sizePerTile*tiles*0.5));
-	//BoundingBox mapBox = BoundingBox(glm::vec3(0,-512,0), glm::vec3(sizePerTile*1201,4096,sizePerTile*1201));
-	
-	
+	BoundingBox mapBox = BoundingBox(glm::vec3(0,-512,0), glm::vec3(sizePerTile*1201,4096,sizePerTile*1201));
 	solidSpace->add(HeightMapContainmentHandler(
 		HeightMap(
 			CachedHeightMapSurface(
@@ -190,29 +187,14 @@ void Scene::create() {
 		), LandBrush()
 	));
 
-
-/*
-	solidSpace->add(HeightMapContainmentHandler(
-		HeightMap(
-			CachedHeightMapSurface(
-				HeightMapTif("models/output.tif", mapBox, sizePerTile,1.0f, -256.0f-64.0f-32.0f-8.0f), 
-				mapBox,sizePerTile
-			), 
-			mapBox,sizePerTile
-		), 
-		LandBrush()
-	));
-*/
-
-
 	BoundingBox waterBox = mapBox;
 	waterBox.setMaxY(0);
 	
-	//liquidSpace->add(BoxContainmentHandler(BoundingBox(glm::vec3(30,-20,30),glm::vec3(70,20,70)),SimpleBrush(0)));
+	liquidSpace->add(BoxContainmentHandler(BoundingBox(glm::vec3(30,-20,30),glm::vec3(70,20,70)),SimpleBrush(0)));
 
 	//liquidSpace->add(SphereContainmentHandler(BoundingSphere(glm::vec3(11,61,-11),4), SimpleBrush(0)));
 	liquidSpace->add(OctreeContainmentHandler(solidSpace, waterBox, WaterBrush(0)));
-/*
+
 	solidSpace->add(BoxContainmentHandler(BoundingBox(glm::vec3(-20,-5,-20),glm::vec3(20,10,20)),SimpleBrush(8)));
 	solidSpace->del(BoxContainmentHandler(BoundingBox(glm::vec3(-17,-4,-17),glm::vec3(17,12,17)),SimpleBrush(6)));
 	liquidSpace->del(BoxContainmentHandler(BoundingBox(glm::vec3(-18,-5,-18),glm::vec3(18,12,18)),SimpleBrush(0)));
@@ -221,21 +203,45 @@ void Scene::create() {
 	solidSpace->add(SphereContainmentHandler(BoundingSphere(glm::vec3(-11,61,11),10), SimpleBrush(5)));
 	solidSpace->del(SphereContainmentHandler(BoundingSphere(glm::vec3(11,61,-11),10), SimpleBrush(4)));
 	solidSpace->del(SphereContainmentHandler(BoundingSphere(glm::vec3(4,54,-4),8), SimpleBrush(1)));
-*/
+}
+
+
+void Scene::import(const std::string &filename) {
+	int sizePerTile = 30;
+	int tiles= 1024;
+	int height = 2048;
+
+	BoundingBox mapBox = BoundingBox(glm::vec3(-sizePerTile*tiles*0.5,-height*0.5,-sizePerTile*tiles*0.5), glm::vec3(sizePerTile*tiles*0.5,height*0.5,sizePerTile*tiles*0.5));
+	
+	solidSpace->add(HeightMapContainmentHandler(
+		HeightMap(
+			CachedHeightMapSurface(
+				HeightMapTif(filename, mapBox, sizePerTile,1.0f, -320.0f), 
+				mapBox,sizePerTile
+			), 
+			mapBox,sizePerTile
+		), 
+		LandBrush()
+	));
+
+	BoundingBox waterBox = mapBox;
+	waterBox.setMaxY(0);
+	
+	liquidSpace->add(OctreeContainmentHandler(solidSpace, waterBox, WaterBrush(0)));
 
 }
 
 
-void Scene::save() {
+void Scene::save(std::string folderPath) {
 	OctreeFile saver1(solidSpace, "solid", 9);
 	OctreeFile saver2(liquidSpace, "liquid", 9);
-	saver1.save();
-	saver2.save();
+	saver1.save(folderPath);
+	saver2.save(folderPath);
 }
 
-void Scene::load() {
+void Scene::load(std::string folderPath) {
 	OctreeFile loader1(solidSpace, "solid", 9);
 	OctreeFile loader2(liquidSpace, "liquid", 9);
-	loader1.load();
-	loader2.load();
+	loader1.load(folderPath);
+	loader2.load(folderPath);
 }

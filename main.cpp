@@ -434,7 +434,7 @@ public:
 		}
 
 		mainScene = new Scene(settings);
-		mainScene->load();
+		//mainScene->load("data");
 	
 
 
@@ -852,24 +852,85 @@ glm::vec3 getDirection(float time) {
 		if (ImGui::BeginMainMenuBar()) {
 			// File Menu
 			if (ImGui::BeginMenu("File")) {
-				if (ImGui::MenuItem("New")) {
-					mainScene->create();
+				if (ImGui::MenuItem("Generate")) {
+					mainScene->generate();
 				}
+
+				char defaultData[64] = "default.env";
+
 				if (ImGui::MenuItem("Open", "Ctrl+O")) {
-					mainScene->load();
+					IGFD::FileDialogConfig config;
+					config.path = "."; // Start in the current directory
+					config.flags = ImGuiFileDialogFlags_Modal; // Optional: Make it modal
+					//config.userDatas = &defaultData;
+					ImGuiFileDialog::Instance()->OpenDialog("ChooseFolderDlgOpenKey", "Select a File", ".env", config);
 				}
+
+
 				if (ImGui::MenuItem("Save", "Ctrl+S")) {
-					mainScene->save();
-					std::vector<UniformBlockBrush> vec;
-					for(UniformBlockBrush * ubb : brushes){
-						vec.push_back(*ubb);
-					}
-					UniformBlockBrush::save(&vec, "data/brushes.bin");
+					IGFD::FileDialogConfig config;
+					config.path = "."; // Start in the current directory
+					config.flags = ImGuiFileDialogFlags_Modal | ImGuiFileDialogFlags_ConfirmOverwrite; // Optional: Make it modal
+					//config.userDatas = &defaultData;
+					ImGuiFileDialog::Instance()->OpenDialog("ChooseFolderDlgSaveKey", "Select a File", ".env", config);
+
+				}
+				if (ImGui::MenuItem("Import File")) {
+					IGFD::FileDialogConfig config;
+					config.path = "."; // Start in the current directory
+					config.flags = ImGuiFileDialogFlags_Modal; // Optional: Make it modal
+					ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose an heightmap", ".tif,.jpg,.png,.hgt", config);
 				}
 				if (ImGui::MenuItem("Exit")) {
 					this->close();
 				}
 				ImGui::EndMenu();
+			}
+
+
+
+
+			if (ImGuiFileDialog::Instance()->Display("ChooseFolderDlgSaveKey", ImGuiWindowFlags_NoCollapse, ImVec2(500, 300), ImVec2(1600, 900))) {
+				if (ImGuiFileDialog::Instance()->IsOk()) {
+					auto instance = ImGuiFileDialog::Instance();
+					std::string filePath = instance->GetFilePathName();
+					std::string folderPath = instance->GetCurrentPath();
+					std::cout << "Selected file: " << filePath << std::endl;
+					EnvironmentFile environment ("solid", "liquid", "brushes");
+					environment.save(filePath);
+					mainScene->save(folderPath);
+					std::vector<UniformBlockBrush> vec;
+					for(UniformBlockBrush * ubb : brushes){
+						vec.push_back(*ubb);
+					}
+					UniformBlockBrush::save(&vec, folderPath+"/brushes.bin");				
+				}
+				ImGuiFileDialog::Instance()->Close();
+			}
+
+			if (ImGuiFileDialog::Instance()->Display("ChooseFolderDlgOpenKey", ImGuiWindowFlags_NoCollapse, ImVec2(500, 300), ImVec2(1600, 900))) {
+				if (ImGuiFileDialog::Instance()->IsOk()) {
+					auto instance = ImGuiFileDialog::Instance();
+					std::string filePath = instance->GetFilePathName();
+					std::string folderPath = instance->GetCurrentPath();
+					
+					std::cout << "Selected file: " << filePath << std::endl;
+				
+				
+					EnvironmentFile environment (filePath);
+
+					mainScene->load(folderPath);
+				}
+				ImGuiFileDialog::Instance()->Close();
+			}
+
+			if (ImGuiFileDialog::Instance()->Display("ChooseFileDlgKey", ImGuiWindowFlags_NoCollapse, ImVec2(400, 300), ImVec2(1600, 900))) {
+				if (ImGuiFileDialog::Instance()->IsOk()) {
+					std::string filePath = ImGuiFileDialog::Instance()->GetFilePathName();
+					mainScene->import(filePath);
+					std::cout << "Chosen file: " << filePath << std::endl;
+				}
+				ImGuiFileDialog::Instance()->Close();
 			}
 
 			// Edit Menu

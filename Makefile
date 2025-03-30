@@ -6,7 +6,7 @@ LDFLAGS =
 
 
 # Directories
-SRC_DIRS = . gl math ui tools
+SRC_DIRS = . gl math ui tools libs/ImGuiFileDialog
 BIN_DIR = bin
 DATA_DIR = data
 OBJ_DIR = obj
@@ -72,6 +72,7 @@ tool: $(OBJ_DIR)/tools/wavefrontConverter.o
 install:
 	@echo "To install dependencies, run:"
 	@echo "  sudo apt-get install libimgui-dev libglew-dev libstb-dev cloc kcachegrind libgdal-dev gdal-bin"
+	@echo "  make libs"
 
 # Count lines of code
 report:
@@ -83,3 +84,5 @@ cachegrind:
 callgrind:
 	cd bin; valgrind --tool=callgrind --callgrind-out-file=callgrind.out ./app;  kcachegrind callgrind.out
 
+libs:
+	mkdir -p libs; cd libs; git clone https://github.com/aiekick/ImGuiFileDialog.git
