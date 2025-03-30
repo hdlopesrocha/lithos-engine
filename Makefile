@@ -76,7 +76,7 @@ install:
 
 # Count lines of code
 report:
-	cloc . --exclude-dir=$(BIN_DIR)
+	cloc . --exclude-dir=$(BIN_DIR) --exclude-dir=libs
 
 cachegrind:
 	cd bin; kcachegrind callgrind.out

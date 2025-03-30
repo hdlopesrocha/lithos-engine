@@ -145,3 +145,7 @@ void OctreeFile::save(std::string baseFolder){
 	}
 	nodes.clear();
 }
+
+AbstractBoundingBox& OctreeFile::getBox(){
+	return *this->tree;
+}

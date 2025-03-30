@@ -172,12 +172,16 @@ void Scene::draw3dLiquid(glm::vec3 cameraPosition, const std::vector<OctreeNodeD
 	}
 }
 
-void Scene::generate() {
+void Scene::generate(Camera &camera) {
 	int sizePerTile = 30;
 	int tiles= 1024;
 	int height = 2048;
 
+
 	BoundingBox mapBox = BoundingBox(glm::vec3(0,-512,0), glm::vec3(sizePerTile*1201,4096,sizePerTile*1201));
+	camera.position.x = mapBox.getCenter().x;
+	camera.position.y = mapBox.getMaxY();
+	camera.position.z = mapBox.getCenter().z;
 	solidSpace->add(HeightMapContainmentHandler(
 		HeightMap(
 			CachedHeightMapSurface(
@@ -206,13 +210,15 @@ void Scene::generate() {
 }
 
 
-void Scene::import(const std::string &filename) {
+void Scene::import(const std::string &filename, Camera &camera) {
 	int sizePerTile = 30;
 	int tiles= 1024;
 	int height = 2048;
 
 	BoundingBox mapBox = BoundingBox(glm::vec3(-sizePerTile*tiles*0.5,-height*0.5,-sizePerTile*tiles*0.5), glm::vec3(sizePerTile*tiles*0.5,height*0.5,sizePerTile*tiles*0.5));
-	
+	camera.position.x = mapBox.getCenter().x;
+	camera.position.y = mapBox.getMaxY();
+	camera.position.z = mapBox.getCenter().z;
 	solidSpace->add(HeightMapContainmentHandler(
 		HeightMap(
 			CachedHeightMapSurface(
@@ -232,16 +238,19 @@ void Scene::import(const std::string &filename) {
 }
 
 
-void Scene::save(std::string folderPath) {
+void Scene::save(std::string folderPath, Camera &camera) {
 	OctreeFile saver1(solidSpace, "solid", 9);
 	OctreeFile saver2(liquidSpace, "liquid", 9);
 	saver1.save(folderPath);
 	saver2.save(folderPath);
 }
 
-void Scene::load(std::string folderPath) {
+void Scene::load(std::string folderPath, Camera &camera) {
 	OctreeFile loader1(solidSpace, "solid", 9);
 	OctreeFile loader2(liquidSpace, "liquid", 9);
 	loader1.load(folderPath);
 	loader2.load(folderPath);
+	camera.position.x = loader1.getBox().getCenter().x;
+	camera.position.y = loader1.getBox().getMaxY();
+	camera.position.z = loader1.getBox().getCenter().z;
 }

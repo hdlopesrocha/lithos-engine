@@ -853,7 +853,7 @@ glm::vec3 getDirection(float time) {
 			// File Menu
 			if (ImGui::BeginMenu("File")) {
 				if (ImGui::MenuItem("Generate")) {
-					mainScene->generate();
+					mainScene->generate(camera);
 				}
 
 				std::string defaultFilename = "default.env";
@@ -903,7 +903,7 @@ glm::vec3 getDirection(float time) {
 						vec.push_back(*ubb);
 					}
 					UniformBlockBrush::save(&vec, folderPath, environment.brushesFilename);				
-					mainScene->save(folderPath);
+					mainScene->save(folderPath, camera);
 				}
 				ImGuiFileDialog::Instance()->Close();
 			}
@@ -927,7 +927,7 @@ glm::vec3 getDirection(float time) {
 						brushes.push_back(new UniformBlockBrush(ubb));
 					}
 
-					mainScene->load(folderPath);
+					mainScene->load(folderPath, camera);
 					
 				}
 				ImGuiFileDialog::Instance()->Close();
@@ -936,7 +936,7 @@ glm::vec3 getDirection(float time) {
 			if (ImGuiFileDialog::Instance()->Display("ChooseFileDlgKey", ImGuiWindowFlags_NoCollapse, ImVec2(400, 300), ImVec2(1600, 900))) {
 				if (ImGuiFileDialog::Instance()->IsOk()) {
 					std::string filePath = ImGuiFileDialog::Instance()->GetFilePathName();
-					mainScene->import(filePath);
+					mainScene->import(filePath, camera);
 					std::cout << "Chosen file: " << filePath << std::endl;
 				}
 				ImGuiFileDialog::Instance()->Close();

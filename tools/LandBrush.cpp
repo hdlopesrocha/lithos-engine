@@ -34,7 +34,7 @@ void LandBrush::paint(Vertex &vertex) const {
         } else {
             brushIndex = rockMixSnow;
         }
-    } else if(vertex.position.y < softSandLevel && steepness > 0.9975){
+    } else if(vertex.position.y < softSandLevel && steepness > 0.99925){
         brushIndex = softSand;
     } else if(vertex.position.y < sandLevel && steepness>0.99){
         brushIndex = sand;

@@ -185,6 +185,7 @@ class AbstractBoundingBox {
 };
 
 class BoundingCube : public AbstractBoundingBox {
+	using AbstractBoundingBox::AbstractBoundingBox;
 	private: 
 		float length;
 	
@@ -217,6 +218,7 @@ class BoundingSphere {
 
 
 class BoundingBox : public AbstractBoundingBox {
+	using AbstractBoundingBox::AbstractBoundingBox;
 	private: 
 		glm::vec3 max;
 
@@ -411,7 +413,7 @@ struct OctreeNodeData {
 };
 
 class Octree: public BoundingCube {
-
+	using BoundingCube::BoundingCube;
 	public: 
 		float minSize;
 		OctreeNode * root;
@@ -699,11 +701,11 @@ class OctreeFile {
 	Octree * tree;
     std::string filename;
     int chunkHeight;
-
     public: 
 		OctreeFile(Octree * tree, std::string filename, int chunkHeight);
         void save(std::string baseFolder);
         void load(std::string baseFolder);
+		AbstractBoundingBox& getBox();
 
 };
 

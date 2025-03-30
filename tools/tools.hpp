@@ -150,11 +150,11 @@ class Scene {
 	void drawVegetation(glm::vec3 cameraPosition, const std::vector<OctreeNodeData> &list);
 	void draw3dSolid(glm::vec3 cameraPosition, const std::vector<OctreeNodeData> &list) ;
 	void draw3dLiquid(glm::vec3 cameraPosition, const std::vector<OctreeNodeData> &list);
-	void import(const std::string &filename) ;
-	void generate() ;
+	void import(const std::string &filename, Camera &camera) ;
+	void generate(Camera &camera) ;
 
-	void save(std::string folderPath);
-	void load(std::string folderPath);
+	void save(std::string folderPath, Camera &camera);
+	void load(std::string folderPath, Camera &camera);
 };
 
 class EnvironmentFile {
