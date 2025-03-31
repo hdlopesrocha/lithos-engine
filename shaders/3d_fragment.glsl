@@ -30,7 +30,16 @@ in TextureBrush teProps;
 
 out vec4 color;    // Final fragment color
 
-
+const vec4 colors[8] = vec4[8](
+    vec4(1.0, 0.0, 0.0, 1.0),  // Red
+    vec4(0.0, 1.0, 0.0, 1.0),  // Green
+    vec4(0.0, 0.0, 1.0, 1.0),  // Blue
+    vec4(1.0, 1.0, 0.0, 1.0),  // Yellow
+    vec4(1.0, 0.0, 1.0, 1.0),  // Magenta
+    vec4(0.0, 1.0, 1.0, 1.0),  // Cyan
+    vec4(1.0, 0.5, 0.0, 1.0),  // Orange
+    vec4(0.5, 0.5, 0.5, 1.0)   // Gray
+);
 
 void main() {
 
@@ -222,12 +231,25 @@ void main() {
             }
         }
         else if(debugMode == 19) {
-            if(mod(tePosition.x,100.0) < 0.3 || mod(tePosition.z,100.0) < 0.3) {
-                color += vec4(1.0,0.0,0.0,1.0)*0.6; 
-            } else if(mod(tePosition.x,10.0) < 0.2 || mod(tePosition.z,10.0) < 0.2) {
-                color += vec4(0.0,1.0,0.0,1.0)*0.4; 
-            } else if(mod(tePosition.x,1.0) < 0.1 || mod(tePosition.z,1.0) < 0.1) {
-                color += vec4(1.0,1.0,1.0,1.0)*0.2; 
+            float distance = length(cameraPosition.xyz - tePosition);
+
+        
+   
+        
+            for(int i = 7; i >= 0; i--) {
+                float lineWidth = i+1; // Fixed width in pixels
+                float screenSpaceWidth = fwidth(tePosition.x) * lineWidth; // Adjust for screen space
+   
+                float levelSize = pow(10.0, float(i));
+        
+                float gridX = mod(tePosition.x, levelSize);
+                float gridZ = mod(tePosition.z, levelSize);
+        
+                // Use fwidth() to ensure consistent width in pixels
+                if(gridX < screenSpaceWidth || gridZ < screenSpaceWidth) {
+                    color += colors[i] * (0.6 - float(i) * 0.05);
+                    break;
+                }
             }
         }
         return;

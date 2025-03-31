@@ -11,7 +11,7 @@ void APIENTRY openglDebugCallback(GLenum source, GLenum type, GLuint id, GLenum 
     
     if(severity == GL_DEBUG_SEVERITY_HIGH) {
         std::cerr << "OpenGL Debug Message: " << message << std::endl;
-        throw std::runtime_error("OpenGL error in openglDebugCallback");
+     //   throw std::runtime_error("OpenGL error in openglDebugCallback");
     }
 }
 

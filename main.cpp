@@ -472,7 +472,7 @@ public:
 		float leftAxisY = 0;
 		float rightAxisX = 0;
 		float rightAxisY = 0;
-		float tsense = deltaTime*1000;
+		float tsense = deltaTime*256;
 		float leftTrigger = 0;
 		float rightTrigger = 0;
 		bool lbPressed = 0;
@@ -641,8 +641,6 @@ glm::vec3 getDirection(float time) {
 
 		mainScene->setVisibility(viewProjection, shadowMatrices, camera);
 		mainScene->processSpace();
-
-	
 		glPolygonMode(GL_FRONT, GL_FILL);
 		glPatchParameteri(GL_PATCH_VERTICES, 3); // Define the number of control points per patch
 		glEnable(GL_CULL_FACE);
@@ -653,7 +651,6 @@ glm::vec3 getDirection(float time) {
 		glDepthMask(GL_TRUE);  // Allow writing to depth buffer
 		glLineWidth(2.0);
 		glPointSize(4.0);	
-
 
         uniformBlock.uintData = glm::uvec4(0u, 0u, settings->debugMode, settings->overrideBrush);
 		uniformBlock.floatData = glm::vec4( time, settings->blendSharpness, settings->parallaxDistance ,settings->parallaxPower);
@@ -671,8 +668,6 @@ glm::vec3 getDirection(float time) {
 		uniformBlock.set(OPACITY_FLAG, false);
 		uniformBlock.set(BILLBOARD_FLAG, false); 
 		viewerBlock = uniformBlock;
-
-
 
 		// ================
 		// Shadow component
