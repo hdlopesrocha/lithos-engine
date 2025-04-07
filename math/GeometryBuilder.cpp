@@ -1,6 +1,5 @@
 #include "math.hpp"
 
-GeometryBuilder::GeometryBuilder(int infoType, long * count) {
+GeometryBuilder::GeometryBuilder(int infoType) {
     this->infoType = infoType;
-    this->count = count;
 }

@@ -90,7 +90,8 @@ class VegetationGeometryBuilder : public GeometryBuilder {
     Geometry * geometry;
     Octree * tree;
     InstanceBuilderHandler * handler;
-    VegetationGeometryBuilder(int drawableType, long * count, Octree * tree, InstanceBuilderHandler * handler);
+	long * instancesCount;
+    VegetationGeometryBuilder(int drawableType, long * instancesCount, Octree * tree, InstanceBuilderHandler * handler);
     ~VegetationGeometryBuilder();
 
     const NodeInfo build(OctreeNodeData &params) override;
@@ -101,8 +102,9 @@ class OctreeGeometryBuilder : public GeometryBuilder {
     public:
     Geometry * geometry;
     Octree * tree;
+	long * instancesCount;
     InstanceBuilderHandler * handler;
-    OctreeGeometryBuilder(int drawableType, long * count, Octree * tree, InstanceBuilderHandler * handler);
+    OctreeGeometryBuilder(int drawableType, long * instancesCount, Octree * tree, InstanceBuilderHandler * handler);
     ~OctreeGeometryBuilder();
 
     const NodeInfo build(OctreeNodeData &params) override;
@@ -130,6 +132,8 @@ class Scene {
     	Octree * solidSpace;
 	    Octree * liquidSpace;
 
+		long solidTrianglesCount;
+		long liquidTrianglesCount;
 		long solidInstancesCount;
 		long liquidInstancesCount;
 		long vegetationInstancesCount;

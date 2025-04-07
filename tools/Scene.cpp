@@ -6,6 +6,9 @@ Scene::Scene(Settings * settings) {
 	solidSpace = new Octree(BoundingCube(glm::vec3(0,0,0), 30.0));
 	liquidSpace = new Octree(BoundingCube(glm::vec3(0,7,0), 30.0));
 
+	solidTrianglesCount = 0;
+	liquidTrianglesCount = 0;
+
 	solidInstancesCount = 0;
 	liquidInstancesCount = 0;
 	vegetationInstancesCount = 0;
@@ -20,10 +23,10 @@ Scene::Scene(Settings * settings) {
 
 
 	solidProcessor = new OctreeProcessor(solidSpace , true, 
-		new MeshGeometryBuilder(TYPE_INSTANCE_SOLID_DRAWABLE, &solidInstancesCount, solidSpace, 0.8, 1.0, true)
+		new MeshGeometryBuilder(TYPE_INSTANCE_SOLID_DRAWABLE, &solidInstancesCount, &solidTrianglesCount, solidSpace, 0.8, 1.0, true)
 	);
 	liquidProcessor = new OctreeProcessor(liquidSpace, true, 
-		new MeshGeometryBuilder(TYPE_INSTANCE_LIQUID_DRAWABLE, &liquidInstancesCount, liquidSpace, 0.8, 1.0, true)
+		new MeshGeometryBuilder(TYPE_INSTANCE_LIQUID_DRAWABLE, &liquidInstancesCount, &liquidTrianglesCount, liquidSpace, 0.8, 1.0, true)
 	);
 	vegetationProcessor = new OctreeProcessor(solidSpace, true, 
 		new VegetationGeometryBuilder(TYPE_INSTANCE_VEGETATION_DRAWABLE, &vegetationInstancesCount, solidSpace, 

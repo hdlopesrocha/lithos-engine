@@ -1021,7 +1021,8 @@ glm::vec3 getDirection(float time) {
 			ImGui::Text("%ld/%ld solid instances", mainScene->solidInstancesVisible, mainScene->solidInstancesCount);
 			ImGui::Text("%ld/%ld liquid instances", mainScene->liquidInstancesVisible, mainScene->liquidInstancesCount);
 			ImGui::Text("%ld/%ld vegetation instances", mainScene->vegetationInstancesVisible, mainScene->vegetationInstancesCount);
-
+			ImGui::Text("%ld solid triangles", mainScene->solidTrianglesCount);
+			ImGui::Text("%ld liquid triangles", mainScene->liquidTrianglesCount);
 			if (glfwJoystickIsGamepad(GLFW_JOYSTICK_1)) {
 				ImGui::Text("Gamepad detected");
 			} 

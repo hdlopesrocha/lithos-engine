@@ -468,9 +468,8 @@ struct StackFrameOut : public OctreeNodeData  {
 class GeometryBuilder {
     public:
     int infoType;
-    long * count;
 
-    GeometryBuilder(int infoType,long * count);
+    GeometryBuilder(int infoType);
     virtual const NodeInfo build(OctreeNodeData &params) = 0;
 };
 
@@ -479,8 +478,10 @@ class MeshGeometryBuilder  : public GeometryBuilder {
     float simplificationAngle;
     float simplificationDistance;
     bool simplificationTexturing;
+	long * instancesCount;
+	long * trianglesCount;
     Octree * tree;
-    MeshGeometryBuilder(int infoType, long * count,Octree * tree, float simplificationAngle, float simplificationDistance, bool simplificationTexturing);
+    MeshGeometryBuilder(int infoType,  long * instancesCount, long * trianglesCount,Octree * tree, float simplificationAngle, float simplificationDistance, bool simplificationTexturing);
     ~MeshGeometryBuilder();
 
     const NodeInfo build(OctreeNodeData &params) override;

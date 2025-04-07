@@ -1,19 +1,15 @@
 #include "tools.hpp"
 
-
-
 OctreeGeometryBuilder::~OctreeGeometryBuilder(){
 
 }
 
-OctreeGeometryBuilder::OctreeGeometryBuilder(int drawableType,long * count, Octree * tree, InstanceBuilderHandler * handler) : GeometryBuilder(drawableType, count) {
+OctreeGeometryBuilder::OctreeGeometryBuilder(int drawableType,long * instancesCount, Octree * tree, InstanceBuilderHandler * handler) : GeometryBuilder(drawableType) {
     this->geometry = new BoxGeometry(BoundingBox(glm::vec3(0), glm::vec3(1)));
     this->tree = tree;
-    this->handler = new OctreeInstanceBuilderHandler(tree, count );
+    this->handler = new OctreeInstanceBuilderHandler(tree, instancesCount );
+    this->instancesCount = instancesCount;
 }
-
-
-
 
 const NodeInfo OctreeGeometryBuilder::build(OctreeNodeData &params){
     InstanceGeometry * instanceGeometry = new InstanceGeometry(geometry);
@@ -27,7 +23,7 @@ const NodeInfo OctreeGeometryBuilder::build(OctreeNodeData &params){
     InstanceData instance(0u, mat , 0.0f);
 	instanceGeometry->instances.push_back(instance);
 
-    *count += 1;
+    *instancesCount += 1;
 
     return NodeInfo(infoType, NULL, instanceGeometry, false);
 }

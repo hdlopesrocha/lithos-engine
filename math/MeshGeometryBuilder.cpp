@@ -5,11 +5,13 @@ MeshGeometryBuilder::~MeshGeometryBuilder(){
     
 }
 
-MeshGeometryBuilder::MeshGeometryBuilder(int infoType, long * count, Octree * tree,float simplificationAngle, float simplificationDistance, bool simplificationTexturing) : GeometryBuilder(infoType, count){
+MeshGeometryBuilder::MeshGeometryBuilder(int infoType, long * instancesCount, long * trianglesCount, Octree * tree,float simplificationAngle, float simplificationDistance, bool simplificationTexturing) : GeometryBuilder(infoType){
     this->tree = tree;
 	this->simplificationAngle = simplificationAngle;
 	this->simplificationDistance = simplificationDistance;
 	this->simplificationTexturing = simplificationTexturing;
+    this->instancesCount = instancesCount;
+    this->trianglesCount = trianglesCount;
 }
 
 const NodeInfo MeshGeometryBuilder::build(OctreeNodeData &params){
@@ -21,13 +23,13 @@ const NodeInfo MeshGeometryBuilder::build(OctreeNodeData &params){
     // Tesselate
     Geometry * geometry = new Geometry(false);
 
-    Tesselator tesselator(tree, geometry, count);
+    Tesselator tesselator(tree, geometry, trianglesCount);
     tesselator.iterateFlatIn(params);
 
     InstanceGeometry * pre = new InstanceGeometry(geometry);
     pre->instances.push_back(InstanceData(0, glm::mat4(1.0), 0.0f));
 
-    *count += 1;
+    *instancesCount += 1;
 
     return NodeInfo(infoType, NULL, pre, false);
 }
