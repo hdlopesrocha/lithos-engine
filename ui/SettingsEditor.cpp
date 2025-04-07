@@ -99,7 +99,8 @@ void SettingsEditor::draw2d(float time){
 
     ImGui::Checkbox("Shadow", &settings->shadowEnabled);
     ImGui::Checkbox("Tesselation", &settings->tesselationEnabled);
-    ImGui::Checkbox("WireFrame", &settings->wireFrameEnabled);
+    ImGui::Checkbox("Mesh WireFrame", &settings->wireFrameEnabled);
+    ImGui::Checkbox("Octree Wireframe", &settings->octreeWireframe);
 	ImGui::End();
 }
 

@@ -2,7 +2,8 @@
 #define MATH_HPP
 
 #include <stb/stb_perlin.h>
-
+#include <bitset>
+#include <bits/stdc++.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -11,7 +12,6 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/norm.hpp> 
 #include <glm/matrix.hpp>
-#include <bitset>
 #include <format>
 #include <iostream>
 #include <sstream>
@@ -559,11 +559,20 @@ class InstanceBuilder : public IteratorHandler{
 
 
 
-class SphereGeometry : public Geometry{
+class SphereGeometry : public Geometry {
     int lats;
     int longs;
 public:
 	SphereGeometry(int lats, int longs);
+	void addTriangle(glm::vec3 a,glm::vec3 b, glm::vec3 c);
+
+};
+
+
+class BoxGeometry : public Geometry {
+
+public:
+	BoxGeometry(const BoundingBox &box);
 	void addTriangle(glm::vec3 a,glm::vec3 b, glm::vec3 c);
 
 };
@@ -811,6 +820,7 @@ public:
 	static void wgs84ToEcef(double lat, double lon, double height, double &X, double &Y, double &Z);
 	static glm::quat createQuaternion(float yaw, float pitch, float roll);
 	static glm::quat eulerToQuat(float yaw, float pitch, float roll);
+	static float randomFloat();
 };
 void ensureFolderExists(const std::string& folder);
 

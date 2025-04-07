@@ -1,6 +1,5 @@
-#include <bitset>
 #include "math.hpp"
-#include <bits/stdc++.h>
+
 
 Tesselator::Tesselator(Octree * tree, Geometry * chunk, long * count): OctreeNodeTriangleHandler(chunk, count) {
 	this->tree = tree;

@@ -19,4 +19,5 @@ Settings::Settings() {
     this->blendSharpness = 10.0;
     this->parallaxDistance = 1024.0;
     this->parallaxPower = 100.0;
+    this->octreeWireframe = false;
 }

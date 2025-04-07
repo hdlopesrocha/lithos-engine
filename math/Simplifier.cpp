@@ -1,5 +1,5 @@
-#include <bitset>
 #include "math.hpp"
+
 
 Simplifier::Simplifier(Octree * tree, BoundingCube chunkCube, float angle, float distance, bool texturing) {
 	this->tree = tree;

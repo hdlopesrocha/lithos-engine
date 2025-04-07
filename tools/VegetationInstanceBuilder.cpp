@@ -23,17 +23,11 @@ glm::vec3 computeBarycentric(const glm::vec3& A, const glm::vec3& B, const glm::
     return glm::vec3(u, v, w);
 }
 
-// Generate random float in range [0,1]
-float randomFloat() {
-    static std::random_device rd;
-    static std::mt19937 gen(rd());
-    static std::uniform_real_distribution<float> dis(0.0f, 1.0f);
-    return dis(gen);
-}
+
 // Generate a random point inside a triangle using barycentric interpolation
 glm::vec3 randomPointInTriangle(const glm::vec3& A, const glm::vec3& B, const glm::vec3& C) {
-    float r1 = randomFloat();
-    float r2 = randomFloat();
+    float r1 = Math::randomFloat();
+    float r2 = Math::randomFloat();
 
     // Ensure uniform distribution within the triangle
     float sqrt_r1 = std::sqrt(r1);

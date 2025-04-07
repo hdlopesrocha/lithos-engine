@@ -40,6 +40,7 @@ class MainApplication : public LithosApplication {
 	GLuint programAtlas;
 	GLuint programTexture;
 	GLuint programCopy;
+	GLuint programDebug;
 	GLuint programDepth;
 	GLuint programMixTexture;
 	GLuint programWaterTexture;
@@ -167,6 +168,11 @@ public:
 			compileShader(GlslInclude::replaceIncludes(includes,readFile("shaders/3d_tessControl.glsl")),GL_TESS_CONTROL_SHADER), 
 			compileShader(GlslInclude::replaceIncludes(includes,readFile("shaders/3d_tessEvaluation.glsl")),GL_TESS_EVALUATION_SHADER),
 			compileShader(GlslInclude::replaceIncludes(includes,readFile("shaders/3d_fragment.glsl")),GL_FRAGMENT_SHADER) 
+		});
+
+		programDebug = createShaderProgram({
+			compileShader(GlslInclude::replaceIncludes(includes,readFile("shaders/debug_vertex.glsl")),GL_VERTEX_SHADER), 
+			compileShader(GlslInclude::replaceIncludes(includes,readFile("shaders/debug_fragment.glsl")),GL_FRAGMENT_SHADER) 
 		});
 
 		programImpostor = createShaderProgram({
@@ -692,8 +698,9 @@ glm::vec3 getDirection(float time) {
 				uniformBlock.set(BILLBOARD_FLAG, false); 
 
 				UniformBlock::uniform(0, &uniformBlock, sizeof(UniformBlock), uniformBlockData);
-
-				mainScene->draw3dSolid(camera.position, mainScene->visibleShadowNodes[i]);
+				if(settings->solidEnabled) {
+					mainScene->draw3dSolid(camera.position, mainScene->visibleShadowNodes[i]);
+				}
 				
 				if(settings->billboardEnabled) {
 					glUseProgram(programBillboard);
@@ -718,14 +725,13 @@ glm::vec3 getDirection(float time) {
 		glDepthMask(GL_TRUE);  // Enable depth writing
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-
 		glUseProgram(program3d);
 		uniformBlock.set(BILLBOARD_FLAG, false); 
 		uniformBlock.set(OPACITY_FLAG, false);
-
 		UniformBlock::uniform(0, &uniformBlock, sizeof(UniformBlock), uniformBlockData);
-		mainScene->draw3dSolid(camera.position, mainScene->visibleSolidNodes);
-
+		if(settings->solidEnabled) {
+			mainScene->draw3dSolid(camera.position, mainScene->visibleSolidNodes);
+		}
 
 		if(settings->billboardEnabled) {
 			glUseProgram(programBillboard);
@@ -764,13 +770,21 @@ glm::vec3 getDirection(float time) {
 		}
 
 
-
 		glUseProgram(program3d);
 		uniformBlock.set(BILLBOARD_FLAG, false); 
 		uniformBlock.set(TESSELATION_FLAG, settings->tesselationEnabled);
 		uniformBlock.set(OPACITY_FLAG, false);
 		UniformBlock::uniform(0, &uniformBlock, sizeof(UniformBlock), uniformBlockData);
-		mainScene->draw3dSolid(camera.position, mainScene->visibleSolidNodes);
+		if(settings->solidEnabled) {
+			mainScene->draw3dSolid(camera.position, mainScene->visibleSolidNodes);
+		}
+
+		glUseProgram(programDebug);
+		UniformBlock::uniform(0, &uniformBlock, sizeof(UniformBlock), uniformBlockData);
+		if(settings->octreeWireframe) {
+			mainScene->draw3dOctree(camera.position, mainScene->visibleSolidNodes);
+		}
+
 		if(settings->wireFrameEnabled) {
 			glPolygonMode(GL_FRONT, GL_FILL);
 		}
@@ -795,7 +809,9 @@ glm::vec3 getDirection(float time) {
 		} 
 
 		UniformBlock::uniform(0, &uniformBlock, sizeof(UniformBlock), uniformBlockData);
-		mainScene->draw3dLiquid(camera.position, mainScene->visibleLiquidNodes);
+		if(settings->liquidEnabled) {
+			mainScene->draw3dLiquid(camera.position, mainScene->visibleLiquidNodes);
+		}
 
 		//glUseProgram(program3d);
 		brushEditor->draw3dIfOpen(&uniformBlock);

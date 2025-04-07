@@ -1,4 +1,5 @@
 #include "math.hpp"
+
 void IteratorHandler::iterate(OctreeNodeData params) {
     if(params.node != NULL) {
         before(params);

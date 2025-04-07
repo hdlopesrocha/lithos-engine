@@ -74,6 +74,16 @@ class VegetationInstanceBuilderHandler : public InstanceBuilderHandler {
 	void handle(OctreeNodeData &data, InstanceGeometry * pre) override;
 };
 
+
+class OctreeInstanceBuilderHandler : public InstanceBuilderHandler {
+	public:
+
+	OctreeInstanceBuilderHandler(Octree * tree, long * count);
+
+	void handle(OctreeNodeData &data, InstanceGeometry * pre) override;
+};
+
+
 class VegetationGeometryBuilder : public GeometryBuilder {
     public:
     Geometry * geometry;
@@ -81,6 +91,18 @@ class VegetationGeometryBuilder : public GeometryBuilder {
     InstanceBuilderHandler * handler;
     VegetationGeometryBuilder(int drawableType, long * count, Octree * tree, InstanceBuilderHandler * handler);
     ~VegetationGeometryBuilder();
+
+    const NodeInfo build(OctreeNodeData &params) override;
+
+};
+
+class OctreeGeometryBuilder : public GeometryBuilder {
+    public:
+    Geometry * geometry;
+    Octree * tree;
+    InstanceBuilderHandler * handler;
+    OctreeGeometryBuilder(int drawableType, long * count, Octree * tree, InstanceBuilderHandler * handler);
+    ~OctreeGeometryBuilder();
 
     const NodeInfo build(OctreeNodeData &params) override;
 
@@ -110,6 +132,7 @@ class Scene {
 		long solidInstancesCount;
 		long liquidInstancesCount;
 		long vegetationInstancesCount;
+		long octreeInstancesCount;
 
 		long solidInstancesVisible;
 		long liquidInstancesVisible;
@@ -121,15 +144,12 @@ class Scene {
 		Settings * settings;
 		int geometryLevel;
 
-		InstanceBuilderHandler * vegetationInstanceHandler;
 
-		GeometryBuilder * vegetationBuilder;
-		GeometryBuilder * meshBuilder;
-		GeometryBuilder * liquidMeshBuilder;
 
 		OctreeProcessor * solidProcessor; 
 		OctreeProcessor * liquidProcessor;
 		OctreeProcessor * vegetationProcessor;
+		OctreeProcessor * debugProcessor;
 
 		OctreeVisibilityChecker * solidRenderer;
 		OctreeVisibilityChecker * liquidRenderer;
@@ -150,6 +170,7 @@ class Scene {
 	void drawVegetation(glm::vec3 cameraPosition, const std::vector<OctreeNodeData> &list);
 	void draw3dSolid(glm::vec3 cameraPosition, const std::vector<OctreeNodeData> &list) ;
 	void draw3dLiquid(glm::vec3 cameraPosition, const std::vector<OctreeNodeData> &list);
+	void draw3dOctree(glm::vec3 cameraPosition, const std::vector<OctreeNodeData> &list);
 	void import(const std::string &filename, Camera &camera) ;
 	void generate(Camera &camera) ;
 

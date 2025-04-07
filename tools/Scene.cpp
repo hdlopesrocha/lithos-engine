@@ -16,16 +16,24 @@ Scene::Scene(Settings * settings) {
 
 	geometryLevel = 7;
 
-	vegetationInstanceHandler= new VegetationInstanceBuilderHandler(solidSpace, &vegetationInstancesCount);
 
 
-	vegetationBuilder = new VegetationGeometryBuilder(TYPE_INSTANCE_VEGETATION_DRAWABLE, &vegetationInstancesCount, solidSpace, vegetationInstanceHandler);
-	meshBuilder = new MeshGeometryBuilder(TYPE_INSTANCE_SOLID_DRAWABLE, &solidInstancesCount, solidSpace, 0.8, 1.0, true);
-	liquidMeshBuilder = new MeshGeometryBuilder(TYPE_INSTANCE_LIQUID_DRAWABLE, &liquidInstancesCount, liquidSpace, 0.8, 1.0, true);
 
-	solidProcessor = new OctreeProcessor(solidSpace , true, meshBuilder);
-	liquidProcessor = new OctreeProcessor(liquidSpace, true, liquidMeshBuilder);
-	vegetationProcessor = new OctreeProcessor(solidSpace, true, vegetationBuilder);
+	solidProcessor = new OctreeProcessor(solidSpace , true, 
+		new MeshGeometryBuilder(TYPE_INSTANCE_SOLID_DRAWABLE, &solidInstancesCount, solidSpace, 0.8, 1.0, true)
+	);
+	liquidProcessor = new OctreeProcessor(liquidSpace, true, 
+		new MeshGeometryBuilder(TYPE_INSTANCE_LIQUID_DRAWABLE, &liquidInstancesCount, liquidSpace, 0.8, 1.0, true)
+	);
+	vegetationProcessor = new OctreeProcessor(solidSpace, true, 
+		new VegetationGeometryBuilder(TYPE_INSTANCE_VEGETATION_DRAWABLE, &vegetationInstancesCount, solidSpace, 
+			new VegetationInstanceBuilderHandler(solidSpace, &vegetationInstancesCount))
+	);
+	debugProcessor = new OctreeProcessor(solidSpace, true,  
+		new OctreeGeometryBuilder(TYPE_INSTANCE_OCTREE_DRAWABLE, &octreeInstancesCount, solidSpace, 
+			new OctreeInstanceBuilderHandler(solidSpace, &octreeInstancesCount))
+	);
+	
 
 	solidRenderer = new OctreeVisibilityChecker(solidSpace, &visibleSolidNodes);
 	liquidRenderer = new OctreeVisibilityChecker(liquidSpace, &visibleLiquidNodes);
@@ -44,6 +52,7 @@ void Scene::processSpace() {
 	solidProcessor->loadCount = 1;
 	liquidProcessor->loadCount = 1;
 	vegetationProcessor->loadCount = 1;
+	debugProcessor->loadCount = 1;
 
 	for(OctreeNodeData &data : visibleSolidNodes){
 		if(solidProcessor->loadCount > 0) {
@@ -92,6 +101,14 @@ void Scene::processSpace() {
 			}
 		}
 	}
+
+	for(OctreeNodeData &data : visibleSolidNodes){
+		if(debugProcessor->loadCount > 0) {
+			debugProcessor->before(data);
+		} else {
+			break;
+		}
+	}
 }
 
 void Scene::setVisibility(glm::mat4 viewProjection, std::vector<std::pair<glm::mat4, glm::vec3>> lightProjection ,Camera &camera) {
@@ -137,19 +154,18 @@ void Scene::draw (uint drawableType, int mode, glm::vec3 cameraPosition, const s
 				if(amount > 0.8){
 					amount = 1.0;
 				}
-
-				//std::cout << "Scene.TYPE_INSTANCE_VEGETATION_DRAWABLE() " << std::to_string(vegetationInstancesVisible) << std::endl;
 				drawable->draw(mode, amount, &vegetationInstancesVisible);
 			}else if(drawableType == TYPE_INSTANCE_SOLID_DRAWABLE) {
-				//std::cout << "Scene.TYPE_INSTANCE_SOLID_DRAWABLE() " << std::to_string(solidInstancesVisible) << std::endl;
 				drawable->draw(mode, 1.0, &solidInstancesVisible);
 				solidInstancesVisible += drawable->instancesCount;
 			}
 			else if(drawableType == TYPE_INSTANCE_LIQUID_DRAWABLE) {
-				//std::cout << "Scene.TYPE_INSTANCE_LIQUID_DRAWABLE() " << std::to_string(liquidInstancesVisible) << std::endl;
 				drawable->draw(mode, 1.0, &liquidInstancesVisible);
 			}
-		
+			else if(drawableType == TYPE_INSTANCE_OCTREE_DRAWABLE) {
+				std::cout << "Draw octree wireframe" << std::endl;
+				drawable->draw(mode, 1.0, &solidInstancesVisible);
+			}	
 		}
 	}
 }
@@ -161,16 +177,17 @@ void Scene::drawVegetation(glm::vec3 cameraPosition, const std::vector<OctreeNod
 }
 
 void Scene::draw3dSolid(glm::vec3 cameraPosition, const std::vector<OctreeNodeData> &list) {
-	if(settings->solidEnabled) {
-		draw(TYPE_INSTANCE_SOLID_DRAWABLE, GL_PATCHES, cameraPosition, list);
-	}
+	draw(TYPE_INSTANCE_SOLID_DRAWABLE, GL_PATCHES, cameraPosition, list);
 }
 
 void Scene::draw3dLiquid(glm::vec3 cameraPosition, const std::vector<OctreeNodeData> &list) {
-	if(settings->liquidEnabled) {
-		draw(TYPE_INSTANCE_LIQUID_DRAWABLE, GL_PATCHES, cameraPosition, list);
-	}
+	draw(TYPE_INSTANCE_LIQUID_DRAWABLE, GL_PATCHES, cameraPosition, list);
 }
+
+void Scene::draw3dOctree(glm::vec3 cameraPosition, const std::vector<OctreeNodeData> &list) {
+	draw(TYPE_INSTANCE_OCTREE_DRAWABLE, GL_LINES, cameraPosition, list);
+}
+
 
 void Scene::generate(Camera &camera) {
 	int sizePerTile = 30;

@@ -1,5 +1,5 @@
-#include <bitset>
 #include "math.hpp"
+
 
 OctreeVisibilityChecker::OctreeVisibilityChecker(Octree * tree, std::vector<OctreeNodeData> * visibleNodes) {
 	this->tree = tree;

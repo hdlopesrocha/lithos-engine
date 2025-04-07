@@ -1,4 +1,3 @@
-#include <bitset>
 #include "math.hpp"
 
 
