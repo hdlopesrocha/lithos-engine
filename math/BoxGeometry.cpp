@@ -4,7 +4,7 @@ Vertex getVertex(glm::vec3 v) {
     return Vertex(v,glm::normalize(v), Math::triplanarMapping(v,0),0 );
 }
 
-BoxGeometry::BoxGeometry(const BoundingBox &box) {
+BoxGeometry::BoxGeometry(const BoundingBox &box) : Geometry(true) {
     glm::vec3 corners[8] = {
         {box.getMinX(), box.getMinY(), box.getMinZ()},
         {box.getMaxX(), box.getMinY(), box.getMinZ()},
@@ -25,6 +25,5 @@ BoxGeometry::BoxGeometry(const BoundingBox &box) {
     for(int i=0; i < 24 ; ++i) {
         addVertex(getVertex(corners[indices[i]]));
     }
-
 }
 

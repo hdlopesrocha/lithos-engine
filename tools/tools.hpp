@@ -1,7 +1,8 @@
 #ifndef TOOLS_HPP
 #define TOOLS_HPP
 #include "../gl/gl.hpp"
-
+#include <algorithm>
+#include <random>
 
 class WaveSurface : public HeightFunction {
     float amplitude;// = 10;

@@ -374,7 +374,9 @@ public:
 	std::vector<uint> indices;
 	std::unordered_map <Vertex, size_t, VertexHasher> compactMap;
 	glm::vec3 center;
-	Geometry();
+	bool reusable;
+
+	Geometry(bool reusable);
 	~Geometry();
 
 	Vertex * addVertex(const Vertex &vertex);
@@ -540,7 +542,6 @@ class InstanceBuilderHandler {
 
 class InstanceBuilder : public IteratorHandler{
 	Octree * tree;
-	Geometry chunk;
     uint mode;
 	InstanceBuilderHandler * handler;
 	InstanceGeometry * geometry;
@@ -730,7 +731,6 @@ class OctreeNodeFile {
 
 
 class OctreeVisibilityChecker : public IteratorHandler{
-	Geometry chunk;
 	Frustum frustum;
     public: 
 		Octree * tree;
@@ -750,14 +750,11 @@ class OctreeVisibilityChecker : public IteratorHandler{
 
 class OctreeProcessor : public IteratorHandler{
 	Octree * tree;
-	Geometry chunk;
-
-
     bool createInstances;
     public: 
 		int loadCount = 0;
-        glm::vec3 cameraPosition;
-        GeometryBuilder * builder;
+		glm::vec3 cameraPosition;
+		GeometryBuilder * builder;
 		OctreeProcessor(Octree * tree,bool createInstances, GeometryBuilder * builder);
 
 		void before(OctreeNodeData &params) override;

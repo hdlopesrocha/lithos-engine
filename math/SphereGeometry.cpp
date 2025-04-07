@@ -16,7 +16,7 @@
 
         }
 
-    SphereGeometry::SphereGeometry(int lats, int longs) {
+    SphereGeometry::SphereGeometry(int lats, int longs) : Geometry(true) {
         float PI = glm::pi<float>();
 
         for(int i = 0; i <= lats; i++) {

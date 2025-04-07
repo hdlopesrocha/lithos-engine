@@ -19,7 +19,7 @@ const NodeInfo MeshGeometryBuilder::build(OctreeNodeData &params){
     simplifier.iterateFlatOut(params);
 
     // Tesselate
-    Geometry * geometry = new Geometry();
+    Geometry * geometry = new Geometry(false);
 
     Tesselator tesselator(tree, geometry, count);
     tesselator.iterateFlatIn(params);

@@ -1,7 +1,8 @@
 #include "math.hpp"
 
-Geometry::Geometry() {
+Geometry::Geometry(bool reusable) {
     this->center = glm::vec3(0);
+    this->reusable = reusable;
 }
 
 Geometry::~Geometry() {

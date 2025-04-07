@@ -14,7 +14,7 @@ Scene::Scene(Settings * settings) {
 	liquidInstancesVisible = 0;
 	vegetationInstancesVisible = 0;
 
-	geometryLevel = 7;
+	geometryLevel = 6;
 
 
 
@@ -141,7 +141,7 @@ void Scene::draw (uint drawableType, int mode, glm::vec3 cameraPosition, const s
 				InstanceGeometry * pre = (InstanceGeometry *) info->temp;
 				info->data = new DrawableInstanceGeometry(drawableType, pre->geometry, &pre->instances);
 				info->temp = NULL;
-				if(drawableType != TYPE_INSTANCE_VEGETATION_DRAWABLE){
+				if(!pre->geometry->reusable){
 					delete pre->geometry;
 				} 
 				delete pre;
@@ -163,7 +163,6 @@ void Scene::draw (uint drawableType, int mode, glm::vec3 cameraPosition, const s
 				drawable->draw(mode, 1.0, &liquidInstancesVisible);
 			}
 			else if(drawableType == TYPE_INSTANCE_OCTREE_DRAWABLE) {
-				std::cout << "Draw octree wireframe" << std::endl;
 				drawable->draw(mode, 1.0, &solidInstancesVisible);
 			}	
 		}
@@ -191,11 +190,11 @@ void Scene::draw3dOctree(glm::vec3 cameraPosition, const std::vector<OctreeNodeD
 
 void Scene::generate(Camera &camera) {
 	int sizePerTile = 30;
-	int tiles= 512;
+	int tiles= 256;
 	int height = 2048;
 
 
-	BoundingBox mapBox = BoundingBox(glm::vec3(0,-512,0), glm::vec3(sizePerTile*1201,4096,sizePerTile*1201));
+	BoundingBox mapBox = BoundingBox(glm::vec3(-sizePerTile*tiles*0.5,-height*0.5,-sizePerTile*tiles*0.5), glm::vec3(sizePerTile*tiles*0.5,height*0.5,sizePerTile*tiles*0.5));
 	camera.position.x = mapBox.getCenter().x;
 	camera.position.y = mapBox.getMaxY();
 	camera.position.z = mapBox.getCenter().z;

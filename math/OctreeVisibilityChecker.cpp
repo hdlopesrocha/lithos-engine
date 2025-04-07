@@ -10,8 +10,6 @@ void OctreeVisibilityChecker::update(glm::mat4 m) {
 	frustum = Frustum(m);
 }
 
-
-
 void OctreeVisibilityChecker::before(OctreeNodeData &params) {		
 	if(params.lod == 0){
 		visibleNodes->push_back({params.level, params.height, params.lod, params.node, params.cube, params.context});

@@ -1,6 +1,5 @@
 #include "tools.hpp"
-#include <algorithm>
-#include <random>
+
 
 
 OctreeGeometryBuilder::~OctreeGeometryBuilder(){
@@ -18,12 +17,17 @@ OctreeGeometryBuilder::OctreeGeometryBuilder(int drawableType,long * count, Octr
 
 const NodeInfo OctreeGeometryBuilder::build(OctreeNodeData &params){
     InstanceGeometry * instanceGeometry = new InstanceGeometry(geometry);
-    InstanceBuilder instanceBuilder(tree, &instanceGeometry->instances, handler, instanceGeometry);
+    //InstanceBuilder instanceBuilder(tree, &instanceGeometry->instances, handler, instanceGeometry);
+    //instanceBuilder.iterateFlatIn(params);
+	glm::mat4 mat(1.0);
+	mat = glm::translate(mat, params.cube.getMin());
+	mat = glm::scale(mat, params.cube.getLength());
+	
+    
+    InstanceData instance(0u, mat , 0.0f);
+	instanceGeometry->instances.push_back(instance);
 
-    instanceBuilder.iterateFlatIn(params);
-
-
-    *count += instanceBuilder.instanceCount;
+    *count += 1;
 
     return NodeInfo(infoType, NULL, instanceGeometry, false);
 }
