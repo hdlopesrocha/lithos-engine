@@ -173,7 +173,6 @@ struct OctreeNodeFrame {
     OctreeNode** nodePtr;
     BoundingCube cube;
     int level;
-    int height;
 };
 
 uint buildMask(const ContainmentHandler &handler, BoundingCube &cube) {
@@ -221,7 +220,7 @@ void Octree::expand(const ContainmentHandler &handler) {
 	}
 }
 
-void Octree::add(const ContainmentHandler &handler) {
+void Octree::add(const ContainmentHandler &handler, float minSize) {
 	expand(handler);	
 
     Octree &tree = *this;
@@ -230,7 +229,7 @@ void Octree::add(const ContainmentHandler &handler) {
     int level = 0;
 
     std::stack<OctreeNodeFrame> stack;
-    stack.push({ &node, cube, level , tree.getHeight(cube)});
+    stack.push({ &node, cube, level});
 
     while (!stack.empty()) {
         OctreeNodeFrame frame = stack.top();
@@ -260,16 +259,16 @@ void Octree::add(const ContainmentHandler &handler) {
 
         if (check == ContainmentType::Contains) {
             (*nodePtr)->clear();
-        } else if (frame.height != 0) {
+        } else if (frame.cube.getLengthX() > minSize) {
             for (int i = 7; i >= 0; --i) {  // Push children in reverse order to maintain order
                 BoundingCube subCube = Octree::getChildCube(frame.cube, i);
-                stack.push({ &((*nodePtr)->children[i]), subCube, frame.level + 1 , frame.height -1});
+                stack.push({ &((*nodePtr)->children[i]), subCube, frame.level + 1 });
             }
         }
     }
 }
 
-void Octree::del(const ContainmentHandler &handler) {
+void Octree::del(const ContainmentHandler &handler, float minSize) {
     Octree &tree = *this;  
     OctreeNode *node = root;
     BoundingCube &cube = *this; 
@@ -277,7 +276,7 @@ void Octree::del(const ContainmentHandler &handler) {
 
 
     std::stack<OctreeNodeFrame> stack;
-    stack.push({ &node, cube, level , tree.getHeight(cube) });
+    stack.push({ &node, cube, level });
 
     while (!stack.empty()) {
         OctreeNodeFrame frame = stack.top();
@@ -303,7 +302,7 @@ void Octree::del(const ContainmentHandler &handler) {
         }
 
         if (*nodePtr != NULL) {
-            if ((*nodePtr)->solid == ContainmentType::Contains && isIntersecting && frame.height != 0) {
+            if ((*nodePtr)->solid == ContainmentType::Contains && isIntersecting && frame.cube.getLengthX() > minSize) {
                 split(*nodePtr, frame.cube);
             }
 
@@ -317,10 +316,10 @@ void Octree::del(const ContainmentHandler &handler) {
             (*nodePtr)->mask &= buildMask(handler, frame.cube) ^ 0xff;
             (*nodePtr)->solid = check;
 
-            if (frame.height != 0) {
+            if (frame.cube.getLengthX() > minSize) {
                 for (int i = 7; i >= 0; --i) {  // Push children in reverse order
                     BoundingCube subCube = Octree::getChildCube(frame.cube, i);
-                    stack.push({ &((*nodePtr)->children[i]), subCube, frame.level + 1 , frame.height -1});
+                    stack.push({ &((*nodePtr)->children[i]), subCube, frame.level + 1 });
                 }
             }
         }

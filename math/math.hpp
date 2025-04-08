@@ -422,8 +422,8 @@ class Octree: public BoundingCube {
 
 		Octree(BoundingCube minCube);
 		void expand(const ContainmentHandler &handler);
-		void add(const ContainmentHandler &handler);
-		void del(const ContainmentHandler &handler);
+		void add(const ContainmentHandler &handler, float minSize);
+		void del(const ContainmentHandler &handler, float minSize);
 		void iterate(IteratorHandler &handler, float chunkSize);
 		void iterateFlat(IteratorHandler &handler, float chunkSize);
 
