@@ -10,7 +10,7 @@ InstanceBuilder::InstanceBuilder(Octree * tree, std::vector<InstanceData> * inst
 }
 
 void InstanceBuilder::before(OctreeNodeData &params) {		
-	if(params.height==0){
+	if(params.node->isEmpty()){
 		handler->handle(params, geometry);
 	}
 }
@@ -20,7 +20,7 @@ void InstanceBuilder::after(OctreeNodeData &params) {
 }
 
 bool InstanceBuilder::test(OctreeNodeData &params) {	
-	return params.height >= 0;
+	return true;
 }
 
 void InstanceBuilder::getOrder(OctreeNodeData &params, int * order){

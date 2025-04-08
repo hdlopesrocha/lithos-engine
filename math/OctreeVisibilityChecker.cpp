@@ -12,7 +12,7 @@ void OctreeVisibilityChecker::update(glm::mat4 m) {
 
 void OctreeVisibilityChecker::before(OctreeNodeData &params) {		
 	if(params.cube.getLengthX() <= params.chunkSize){
-		visibleNodes->push_back({params.level, params.height, params.chunkSize, params.node, params.cube, params.context});
+		visibleNodes->push_back({params.level, params.chunkSize, params.node, params.cube, params.context});
 	}
 }
 

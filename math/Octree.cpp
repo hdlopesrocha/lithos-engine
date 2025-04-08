@@ -13,7 +13,7 @@ static bool initialized = false;
 
 Octree::Octree(BoundingCube minCube) : BoundingCube(minCube){
 	this->minSize = minCube.getLengthX();
-	this->root = new OctreeNode(glm::vec3(minSize*0.5));
+	this->root = new OctreeNode(glm::vec3(minCube.getCenter()));
 	if(!initialized) {
 		tessOrder.push_back(glm::ivec4(0,1,3,2));tessEdge.push_back(glm::ivec2(3,7));
 		tessOrder.push_back(glm::ivec4(0,2,6,4));tessEdge.push_back(glm::ivec2(6,7));
@@ -329,14 +329,12 @@ void Octree::del(const ContainmentHandler &handler, float minSize) {
 
 void Octree::iterate(IteratorHandler &handler, float chunkSize) {
 	BoundingCube cube(glm::vec3(getMinX(),getMinY(),getMinZ()),getLengthX());
-    int h = getHeight(cube);
-	handler.iterate(OctreeNodeData(0, h, chunkSize, root, cube, NULL));
+	handler.iterate(OctreeNodeData(0, chunkSize, root, cube, NULL));
 }
 
 void Octree::iterateFlat(IteratorHandler &handler, float chunkSize) {
 	BoundingCube cube(glm::vec3(getMinX(),getMinY(),getMinZ()),getLengthX());
-    int h = getHeight(cube);
-    handler.iterateFlatIn(OctreeNodeData(0, h, chunkSize,root, cube, NULL));
+    handler.iterateFlatIn(OctreeNodeData(0, chunkSize,root, cube, NULL));
 }
 
 

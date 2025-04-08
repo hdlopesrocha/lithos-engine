@@ -399,14 +399,12 @@ class OctreeNodeTriangleHandler {
 struct OctreeNodeData {
 	public:
 	int level;
-	int height;
 	float chunkSize;
 	OctreeNode * node;
 	BoundingCube cube;
 	void * context;
-	OctreeNodeData(int level, int height, float chunkSize, OctreeNode * node, BoundingCube cube, void * context) {
+	OctreeNodeData(int level, float chunkSize, OctreeNode * node, BoundingCube cube, void * context) {
 		this->level = level;
-		this->height = height;
 		this->chunkSize = chunkSize;
 		this->node = node;
 		this->cube = cube;

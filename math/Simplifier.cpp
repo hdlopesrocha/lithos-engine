@@ -83,7 +83,7 @@ void Simplifier::after(OctreeNodeData &params) {
 }
 
 bool Simplifier::test(OctreeNodeData &params) {			
-	return params.node->solid != ContainmentType::Contains && params.height >= 0;
+	return params.node->solid != ContainmentType::Contains;
 }
 
 void Simplifier::getOrder(OctreeNodeData &params, int * order){

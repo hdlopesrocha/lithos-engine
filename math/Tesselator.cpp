@@ -7,7 +7,7 @@ Tesselator::Tesselator(Octree * tree, Geometry * chunk, long * count): OctreeNod
 }
 
 void Tesselator::before(OctreeNodeData &params) {		
-    if(params.height==0){		
+    if(params.node->isEmpty()) {		
         // Must go to zero and try to create triangles in the border with highest detail
         // If the node is simplified then the triangles could have equal vertices
         // If a triangle as 2 equal vertices, it's a line, this triangle will be ignored
@@ -21,7 +21,7 @@ void Tesselator::after(OctreeNodeData &params) {
 }
 
 bool Tesselator::test(OctreeNodeData &params) {			
-	return params.node->solid != ContainmentType::Contains && params.height >= 0;
+	return params.node->solid != ContainmentType::Contains;
 }
 
 void Tesselator::getOrder(OctreeNodeData &params, int * order){
