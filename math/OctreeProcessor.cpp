@@ -14,7 +14,7 @@ void OctreeProcessor::before(OctreeNodeData &params) {
 	NodeInfo * info = params.node->getNodeInfo(builder->infoType);
 	bool canGenerate  = info == NULL || info->dirty;
 
-	if(params.lod==0){
+	if(params.cube.getLengthX() <= params.chunkSize){
 		if(canGenerate && createInstances) {
 			if(info == NULL) {
 				params.node->info.push_back(builder->build(params));
@@ -33,7 +33,7 @@ void OctreeProcessor::after(OctreeNodeData &params) {
 }
 
 bool OctreeProcessor::test(OctreeNodeData &params) {	
-	return loadCount > 0 && params.lod>=0;
+	return loadCount > 0 && params.cube.getLengthX() >= params.chunkSize;
 }
 
 void OctreeProcessor::getOrder(OctreeNodeData &params, int * order){

@@ -17,10 +17,7 @@ Scene::Scene(Settings * settings) {
 	liquidInstancesVisible = 0;
 	vegetationInstancesVisible = 0;
 
-	geometryLevel = 6;
-
-
-
+	chunkSize = glm::pow(2, 11);
 
 	solidProcessor = new OctreeProcessor(solidSpace , true, 
 		new MeshGeometryBuilder(TYPE_INSTANCE_SOLID_DRAWABLE, &solidInstancesCount, &solidTrianglesCount, solidSpace, 0.8, 1.0, true)
@@ -36,7 +33,6 @@ Scene::Scene(Settings * settings) {
 		new OctreeGeometryBuilder(TYPE_INSTANCE_OCTREE_DRAWABLE, &octreeInstancesCount, solidSpace, 
 			new OctreeInstanceBuilderHandler(solidSpace, &octreeInstancesCount))
 	);
-	
 
 	solidRenderer = new OctreeVisibilityChecker(solidSpace, &visibleSolidNodes);
 	liquidRenderer = new OctreeVisibilityChecker(liquidSpace, &visibleLiquidNodes);
@@ -129,7 +125,7 @@ void Scene::setVisibleNodes(glm::mat4 viewProjection, glm::vec3 sortPosition, Oc
 	checker.sortPosition = sortPosition;
 	
 	checker.update(viewProjection);
-	checker.tree->iterateFlat(checker, geometryLevel);	//here we get the visible nodes for that LOD + geometryLEvel
+	checker.tree->iterateFlat(checker, chunkSize);	//here we get the visible nodes for that LOD + geometryLEvel
 }
 
 
@@ -209,6 +205,10 @@ void Scene::generate(Camera &camera) {
 			), mapBox, sizePerTile
 		), LandBrush()
 	));
+
+
+	solidSpace->del(SphereContainmentHandler(BoundingSphere(glm::vec3(0,768,0),1024), SimpleBrush(14)));
+
 
 	BoundingBox waterBox = mapBox;
 	waterBox.setMaxY(0);

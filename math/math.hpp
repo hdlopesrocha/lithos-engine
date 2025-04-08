@@ -400,14 +400,14 @@ struct OctreeNodeData {
 	public:
 	int level;
 	int height;
-	int lod;
+	float chunkSize;
 	OctreeNode * node;
 	BoundingCube cube;
 	void * context;
-	OctreeNodeData(int level, int height, int lod, OctreeNode * node, BoundingCube cube, void * context) {
+	OctreeNodeData(int level, int height, float chunkSize, OctreeNode * node, BoundingCube cube, void * context) {
 		this->level = level;
 		this->height = height;
-		this->lod = lod;
+		this->chunkSize = chunkSize;
 		this->node = node;
 		this->cube = cube;
 		this->context = context;
@@ -424,8 +424,8 @@ class Octree: public BoundingCube {
 		void expand(const ContainmentHandler &handler);
 		void add(const ContainmentHandler &handler);
 		void del(const ContainmentHandler &handler);
-		void iterate(IteratorHandler &handler, int geometryLevel);
-		void iterateFlat(IteratorHandler &handler, int geometryLevel);
+		void iterate(IteratorHandler &handler, float chunkSize);
+		void iterateFlat(IteratorHandler &handler, float chunkSize);
 
 		OctreeNode* getNodeAt(const glm::vec3 &pos, int level, bool simplification);
 		void handleQuadNodes(OctreeNodeData &data, OctreeNodeTriangleHandler * handler, bool simplification);

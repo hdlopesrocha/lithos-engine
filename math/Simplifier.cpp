@@ -15,7 +15,7 @@ void Simplifier::before(OctreeNodeData &params) {
 
 void Simplifier::after(OctreeNodeData &params) {
 
-	if(params.height == 0) {
+	if(params.node->isEmpty()) {
 		params.node->simplified = true;
 		return;
 	}else {

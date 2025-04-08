@@ -221,7 +221,14 @@ void Octree::expand(const ContainmentHandler &handler) {
 	}
 }
 
-OctreeNode* addAux(Octree &tree, const ContainmentHandler &handler, OctreeNode *node, BoundingCube &cube, int level) {
+void Octree::add(const ContainmentHandler &handler) {
+	expand(handler);	
+
+    Octree &tree = *this;
+    OctreeNode *node = root;
+    BoundingCube &cube = *this; 
+    int level = 0;
+
     std::stack<OctreeNodeFrame> stack;
     stack.push({ &node, cube, level , tree.getHeight(cube)});
 
@@ -260,12 +267,15 @@ OctreeNode* addAux(Octree &tree, const ContainmentHandler &handler, OctreeNode *
             }
         }
     }
-
-    return node;
 }
 
+void Octree::del(const ContainmentHandler &handler) {
+    Octree &tree = *this;  
+    OctreeNode *node = root;
+    BoundingCube &cube = *this; 
+    int level = 0;
 
-OctreeNode* delAux(Octree &tree, const ContainmentHandler &handler, OctreeNode *node, BoundingCube &cube, int level) {
+
     std::stack<OctreeNodeFrame> stack;
     stack.push({ &node, cube, level , tree.getHeight(cube) });
 
@@ -315,32 +325,19 @@ OctreeNode* delAux(Octree &tree, const ContainmentHandler &handler, OctreeNode *
             }
         }
     }
-
-    return node;
-}
-
-void Octree::add(const ContainmentHandler &handler) {
-	expand(handler);	
-	root = addAux(*this, handler, root, *this, 0);
-}
-
-void Octree::del(const ContainmentHandler &handler) {
-	root = delAux(*this, handler, root, *this, 0);
 }
 
 
-void Octree::iterate(IteratorHandler &handler, int geometryLevel) {
+void Octree::iterate(IteratorHandler &handler, float chunkSize) {
 	BoundingCube cube(glm::vec3(getMinX(),getMinY(),getMinZ()),getLengthX());
     int h = getHeight(cube);
-    int lod = glm::max(0,h-geometryLevel);
-	handler.iterate(OctreeNodeData(0, h, lod, root, cube, NULL));
+	handler.iterate(OctreeNodeData(0, h, chunkSize, root, cube, NULL));
 }
 
-void Octree::iterateFlat(IteratorHandler &handler, int geometryLevel) {
+void Octree::iterateFlat(IteratorHandler &handler, float chunkSize) {
 	BoundingCube cube(glm::vec3(getMinX(),getMinY(),getMinZ()),getLengthX());
     int h = getHeight(cube);
-    int lod = glm::max(0,h-geometryLevel);
-    handler.iterateFlatIn(OctreeNodeData(0, h, lod,root, cube, NULL));
+    handler.iterateFlatIn(OctreeNodeData(0, h, chunkSize,root, cube, NULL));
 }
 
 

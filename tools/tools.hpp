@@ -147,7 +147,7 @@ class Scene {
 		std::vector<OctreeNodeData> visibleLiquidNodes;
 		std::vector<OctreeNodeData> visibleShadowNodes[SHADOW_MATRIX_COUNT];
 		Settings * settings;
-		int geometryLevel;
+		float chunkSize;
 
 
 
