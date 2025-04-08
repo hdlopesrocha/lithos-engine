@@ -12,7 +12,6 @@ static std::vector<glm::ivec2> tessEdge;
 static bool initialized = false;
 
 Octree::Octree(BoundingCube minCube) : BoundingCube(minCube){
-	this->minSize = minCube.getLengthX();
 	this->root = new OctreeNode(glm::vec3(minCube.getCenter()));
 	if(!initialized) {
 		tessOrder.push_back(glm::ivec4(0,1,3,2));tessEdge.push_back(glm::ivec2(3,7));
@@ -78,9 +77,8 @@ ContainmentType Octree::contains(const AbstractBoundingBox &c) {
 ContainmentType Octree::contains(const glm::vec3 &pos) {
     OctreeNode* node = root;
     BoundingCube cube = *this;
-    int level = getHeight(*this);
 
-    for (; node && level > 0; --level) {
+    while (node) {
         bool testResult = cube.contains(pos);
 
         // If completely outside, return Disjoint immediately
@@ -131,10 +129,6 @@ OctreeNode* Octree::getNodeAt(const glm::vec3 &pos, int level, bool simplificati
     return node;
 }
 
-int Octree::getHeight(const BoundingCube &cube){
-	float r = glm::log2(cube.getLengthX() / minSize);
-	return r >= 0  ? (int) glm::floor(r) : -1;
-}
 
 void Octree::getNodeNeighbors(OctreeNodeData &data, bool simplification, OctreeNode ** out, int direction, int initialIndex, int finalIndex) {
 	for(int i=initialIndex; i < finalIndex; ++i) {

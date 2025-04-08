@@ -13,7 +13,7 @@ std::string getChunkName(BoundingCube cube) {
 	return std::to_string(cube.getLengthX()) + "_" + std::to_string(p.x) + "_" +  std::to_string(p.y) + "_" + std::to_string(p.z);
 }
 
-OctreeNode * loadRecursive(int i, std::vector<OctreeNodeSerialized> * nodes, int height, std::string filename, BoundingCube cube, std::string baseFolder) {
+OctreeNode * loadRecursive(int i, std::vector<OctreeNodeSerialized> * nodes, float chunkSize, std::string filename, BoundingCube cube, std::string baseFolder) {
 	OctreeNodeSerialized serialized = nodes->at(i);
 	Vertex vertex(serialized.position, serialized.normal, glm::vec2(0), serialized.brushIndex);
 
@@ -22,12 +22,12 @@ OctreeNode * loadRecursive(int i, std::vector<OctreeNodeSerialized> * nodes, int
 	node->solid = serialized.solid;
 
 	
-	if(height>0) {
+	if(cube.getLengthX() > chunkSize) {
 		for(int j=0 ; j <8 ; ++j){
 			int index = serialized.children[j];
 			if(index != 0) {
 				BoundingCube c = Octree::getChildCube(cube, j);
-				node->setChild(j , loadRecursive(index, nodes, height -1, filename, c,baseFolder));
+				node->setChild(j , loadRecursive(index, nodes, chunkSize, filename, c,baseFolder));
 			}
 		}
 	}else {
@@ -42,7 +42,7 @@ OctreeNode * loadRecursive(int i, std::vector<OctreeNodeSerialized> * nodes, int
 }
 
 
-void OctreeFile::load(std::string baseFolder) {
+void OctreeFile::load(std::string baseFolder, float chunkSize) {
 	std::string filePath = baseFolder + "/" + filename+".bin";
 	std::ifstream file = std::ifstream(filePath, std::ios::binary);
     if (!file) {
@@ -65,12 +65,10 @@ void OctreeFile::load(std::string baseFolder) {
 	nodes.resize(size);
    	decompressed.read(reinterpret_cast<char*>(nodes.data()), size * sizeof(OctreeNodeSerialized));
 
-	tree->minSize = octreeSerialized.minSize;
 	tree->setMin(octreeSerialized.min);
 	tree->setLength(octreeSerialized.length);
 
-	int height = tree->getHeight(*tree);
-	tree->root = loadRecursive(0,&nodes, height - chunkHeight, filename, *tree, baseFolder);
+	tree->root = loadRecursive(0,&nodes, chunkSize, filename, *tree, baseFolder);
 
     file.close();
 	nodes.clear();
@@ -79,7 +77,7 @@ void OctreeFile::load(std::string baseFolder) {
 }
 
 
-uint saveRecursive(OctreeNode * node, std::vector<OctreeNodeSerialized*> * nodes, int height, std::string filename, BoundingCube cube, std::string baseFolder) {
+uint saveRecursive(OctreeNode * node, std::vector<OctreeNodeSerialized*> * nodes, float chunkSize, std::string filename, BoundingCube cube, std::string baseFolder) {
 	if(node!=NULL) {
 		OctreeNodeSerialized * n = new OctreeNodeSerialized();
 		n->position = node->vertex.position;
@@ -90,10 +88,10 @@ uint saveRecursive(OctreeNode * node, std::vector<OctreeNodeSerialized*> * nodes
 		uint index = nodes->size(); 
 		nodes->push_back(n);
 
-		if(height>0) {
+		if(cube.getLengthX() > chunkSize) {
 			for(int i=0; i < 8; ++i) {
 				BoundingCube c = Octree::getChildCube(cube, i);
-				n->children[i] = saveRecursive(node->children[i], nodes, height -1, filename, c, baseFolder);
+				n->children[i] = saveRecursive(node->children[i], nodes, chunkSize, filename, c, baseFolder);
 			}
 		} else {
 			std::string chunkName = getChunkName(cube);
@@ -105,7 +103,7 @@ uint saveRecursive(OctreeNode * node, std::vector<OctreeNodeSerialized*> * nodes
 	return 0;
 }
 
-void OctreeFile::save(std::string baseFolder){
+void OctreeFile::save(std::string baseFolder, float chunkSize){
 	ensureFolderExists(baseFolder);
     std::vector<OctreeNodeSerialized*> nodes;
 	std::string filePath = baseFolder + "/" + filename+".bin";
@@ -115,13 +113,11 @@ void OctreeFile::save(std::string baseFolder){
         return;
     }
 
-	int height = tree->getHeight(*tree);
-	saveRecursive(tree->root, &nodes, height - chunkHeight, filename, *tree, baseFolder);
+	saveRecursive(tree->root, &nodes, chunkSize, filename, *tree, baseFolder);
 
 	OctreeSerialized  octreeSerialized;
 	octreeSerialized.min = tree->getMin();
 	octreeSerialized.length = tree->getLengthX();
-	octreeSerialized.minSize = tree->minSize;
 
     std::ostringstream decompressed;
 	decompressed.write(reinterpret_cast<const char*>(&octreeSerialized), sizeof(OctreeSerialized));

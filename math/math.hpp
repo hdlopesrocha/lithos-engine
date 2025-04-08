@@ -415,7 +415,6 @@ struct OctreeNodeData {
 class Octree: public BoundingCube {
 	using BoundingCube::BoundingCube;
 	public: 
-		float minSize;
 		OctreeNode * root;
 
 		Octree(BoundingCube minCube);
@@ -436,7 +435,6 @@ class Octree: public BoundingCube {
 		static BoundingCube getChildCube(const BoundingCube &cube, int i);
 		static BoundingCube getCube3(const BoundingCube &cube, int i);
 
-		int getHeight(const BoundingCube  &cube);
 
 };
 
@@ -703,7 +701,6 @@ struct OctreeSerialized {
     public:
     glm::vec3 min;
     float length;
-	float minSize;
 };
 
 class OctreeFile {
@@ -712,8 +709,8 @@ class OctreeFile {
     int chunkHeight;
     public: 
 		OctreeFile(Octree * tree, std::string filename, int chunkHeight);
-        void save(std::string baseFolder);
-        void load(std::string baseFolder);
+        void save(std::string baseFolder, float chunkSize);
+        void load(std::string baseFolder, float chunkSize);
 		AbstractBoundingBox& getBox();
 
 };

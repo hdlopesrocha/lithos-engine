@@ -261,15 +261,15 @@ void Scene::import(const std::string &filename, Camera &camera) {
 void Scene::save(std::string folderPath, Camera &camera) {
 	OctreeFile saver1(solidSpace, "solid", 9);
 	OctreeFile saver2(liquidSpace, "liquid", 9);
-	saver1.save(folderPath);
-	saver2.save(folderPath);
+	saver1.save(folderPath, 1024);
+	saver2.save(folderPath, 1024);
 }
 
 void Scene::load(std::string folderPath, Camera &camera) {
 	OctreeFile loader1(solidSpace, "solid", 9);
 	OctreeFile loader2(liquidSpace, "liquid", 9);
-	loader1.load(folderPath);
-	loader2.load(folderPath);
+	loader1.load(folderPath, 1024);
+	loader2.load(folderPath, 1024);
 	//camera.position.x = loader1.getBox().getCenter().x;
 	//camera.position.y = loader1.getBox().getMaxY();
 	//camera.position.z = loader1.getBox().getCenter().z;
