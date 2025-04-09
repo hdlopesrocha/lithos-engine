@@ -768,6 +768,8 @@ class Camera {
     glm::vec3 position;
     float near;
     float far;
+	float rotationSensitivity;
+	float translationSensitivity;
 
     Camera(glm::vec3 position, glm::quat quaternion, float near, float far);
     glm::vec3 getCameraDirection();

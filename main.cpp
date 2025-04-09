@@ -483,12 +483,11 @@ public:
     virtual void update(float deltaTime){
 		time += deltaTime;
 		GLFWgamepadstate state;
-		float rsense = 0.05;
 		float leftAxisX = 0;
 		float leftAxisY = 0;
 		float rightAxisX = 0;
 		float rightAxisY = 0;
-		float tsense = deltaTime*256;
+
 		float leftTrigger = 0;
 		float rightTrigger = 0;
 		bool lbPressed = 0;
@@ -548,10 +547,10 @@ public:
 		}
 
 		if(glm::abs(leftAxisY) > 0.2) {
-			camera.quaternion = glm::angleAxis(rsense*leftAxisY, glm::vec3(1,0,0))*camera.quaternion;
+			camera.quaternion = glm::angleAxis(deltaTime*camera.rotationSensitivity*leftAxisY, glm::vec3(1,0,0))*camera.quaternion;
 		}
 		if(glm::abs(leftAxisX) > 0.2) {
-			camera.quaternion = glm::angleAxis(rsense*leftAxisX, glm::vec3(0,1,0))*camera.quaternion;
+			camera.quaternion = glm::angleAxis(deltaTime*camera.rotationSensitivity*leftAxisX, glm::vec3(0,1,0))*camera.quaternion;
 		}
 
 		glm::vec3 xAxis = glm::vec3(1.0f, 0.0f, 0.0f)*camera.quaternion;
@@ -559,24 +558,24 @@ public:
 		glm::vec3 zAxis = glm::vec3(0.0f, 0.0f, 1.0f)*camera.quaternion;
 
 		if(lbPressed) {
-		 	camera.quaternion = glm::angleAxis(-rsense, glm::vec3(0,0,1))*camera.quaternion;
+		 	camera.quaternion = glm::angleAxis(-deltaTime*camera.rotationSensitivity, glm::vec3(0,0,1))*camera.quaternion;
 		}
 		if(rbPressed) {
-			camera.quaternion = glm::angleAxis(+rsense, glm::vec3(0,0,1))*camera.quaternion;
+			camera.quaternion = glm::angleAxis(+deltaTime*camera.rotationSensitivity, glm::vec3(0,0,1))*camera.quaternion;
 		}
 
 
 		if(glm::abs(rightAxisY) > 0.2) {
-			camera.position -= yAxis*rightAxisY*tsense;
+			camera.position -= deltaTime*yAxis*rightAxisY*camera.translationSensitivity;
 		}
 		if(glm::abs(rightAxisX) > 0.2) {
-			camera.position += xAxis*rightAxisX*tsense;
+			camera.position += deltaTime*xAxis*rightAxisX*camera.translationSensitivity;
 		}
 		if(rightTrigger > 0.2) {
-			camera.position -= zAxis*rightTrigger*tsense;
+			camera.position -= deltaTime*zAxis*rightTrigger*camera.translationSensitivity;
 		}
 		if(leftTrigger > 0.2) {
-			camera.position += zAxis*leftTrigger*tsense;
+			camera.position += deltaTime*zAxis*leftTrigger*camera.translationSensitivity;
 		}
 		for(AnimateParams &params : animations) {
 			textureAnimator->animate(time, params);
