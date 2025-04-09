@@ -1,9 +1,8 @@
 #include "ui.hpp"
 
 
-SettingsEditor::SettingsEditor(Settings * settings, Camera * camera) {
+SettingsEditor::SettingsEditor(Settings * settings) {
     this->settings = settings;
-    this->camera = camera;
 }   
 
 
@@ -23,10 +22,7 @@ void SettingsEditor::draw2d(float time){
 //glm::vec3 ypr = getYawPitchRoll( camera->quaternion) ;
 
     ImGui::Begin("Settings", &open, ImGuiWindowFlags_AlwaysAutoResize);
-    ImGui::Text("Camera Position: (%.3f, %.3f, %.3f)", camera->position.x, camera->position.y, camera->position.z);
-    ImGui::Text("Camera Quaternion: (%.5f, %.5f, %.5f, %.5f)", camera->quaternion.x, camera->quaternion.y, camera->quaternion.z, camera->quaternion.w);
-    //ImGui::Text("Camera yaw: %.5f pitch: %.5f roll: %.5f",camera->quaternion.x,camera->quaternion.y,camera->quaternion.z ,camera->quaternion.w);
-
+  
 
     ImGui::Checkbox("Billboards", &settings->billboardEnabled);
 

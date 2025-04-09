@@ -107,6 +107,14 @@ class BrushEditor: public Closable {
     void resetPosition();
 };
 
+class CameraEditor: public Closable {
+    Camera * camera;
+  
+    public:
+    CameraEditor(Camera * camera);
+    void draw2d(float time) override;
+};
+
 class ShadowMapViewer : public Closable{
 	std::vector<std::pair<RenderBuffer, int>> * shadowBuffers;
   	int selectedBuffer;
@@ -167,9 +175,8 @@ class ImageViewer : public Closable{
 
 class SettingsEditor : public Closable {
     Settings * settings;
-    Camera * camera;
     public:
-    SettingsEditor(Settings * settings, Camera * camera);
+    SettingsEditor(Settings * settings);
 
     void draw2d(float time) override;
 };

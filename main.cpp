@@ -79,6 +79,7 @@ class MainApplication : public LithosApplication {
 	AnimatedTextureEditor * animatedTextureEditor;
 	DepthBufferViewer * depthBufferViewer;
 	SettingsEditor * settingsEditor;
+	CameraEditor * cameraEditor;
 	TextureViewer * textureViewer;
 	ImpostorViewer * impostorViewer;
 
@@ -461,11 +462,12 @@ public:
 		atlasPainter = new AtlasPainter(&atlasParams, &atlasTextures, atlasDrawer, programAtlas, programTexture, 256,256, &billboardLayers);
 		atlasViewer = new AtlasViewer(&atlasTextures, atlasDrawer, programAtlas, programTexture, 256,256, &atlasLayers, programCopy);
 		brushEditor = new BrushEditor(brush3d, &camera, &brushes, program3d, programTexture, &textureLayers, &textureMapper);
+		cameraEditor = new CameraEditor(&camera);
 		shadowMapViewer = new ShadowMapViewer(&shadowFrameBuffers, 512, 512);
 		textureMixerEditor = new TextureMixerEditor(textureMixer, &mixers, programTexture, &textureLayers);
 		animatedTextureEditor = new AnimatedTextureEditor(&animations, programTexture, 256,256, &textureLayers);
 		depthBufferViewer = new DepthBufferViewer(programDepth,depthFrameBuffer.depthTexture,512,512);
-		settingsEditor = new SettingsEditor(settings, &camera);
+		settingsEditor = new SettingsEditor(settings);
 		textureViewer = new TextureViewer(programTexture, &textureLayers);
 		impostorViewer = new ImpostorViewer(impostorDrawer, &impostors , programTexture, 256, 256, &impostorLayers);
 
@@ -886,10 +888,10 @@ void drawBrush3d(ProgramData data){
 		ImGui::NewFrame();
 		
 
-		glm::vec2 myVec(0.0f);
-		glm::vec2 myDelta(0.0f);
+		//glm::vec2 myVec(0.0f);
+		//glm::vec2 myDelta(0.0f);
 	
-		MouseDragViewer::render(myVec, myDelta);
+		//MouseDragViewer::render(myVec, myDelta);
 	
 		glm::vec3 frontDirection = glm::vec3(0.0f, 0.0f, 1.0f)*camera.quaternion;
 		glm::vec3 leftDirection = glm::vec3(1.0f, 0.0f, 0.0f)*camera.quaternion;
@@ -900,7 +902,7 @@ void drawBrush3d(ProgramData data){
 		leftDirection.y = 0;
 		leftDirection = glm::normalize(leftDirection);
 
-		camera.position += (frontDirection * myDelta.y + leftDirection*myDelta.x)*0.01f;
+		//camera.position += (frontDirection * myDelta.y + leftDirection*myDelta.x)*0.01f;
 	
 		if (ImGui::BeginMainMenuBar()) {
 			// File Menu
@@ -1009,6 +1011,9 @@ void drawBrush3d(ProgramData data){
 				if (ImGui::MenuItem("Atlas Viewer", "Ctrl+B")) {
 					atlasViewer->show();
 				}		
+				if (ImGui::MenuItem("Camera Editor", "Ctrl+B")) {
+					cameraEditor->show();
+				}	
 				if (ImGui::MenuItem("Depth Buffer Viewer", "Ctrl+B")) {
 					depthBufferViewer->show();
 				}
@@ -1081,6 +1086,7 @@ void drawBrush3d(ProgramData data){
 		uniformBlockViewer->draw2dIfOpen(time);
 		animatedTextureEditor->draw2dIfOpen(time);
 		brushEditor->draw2dIfOpen(time);
+		cameraEditor->draw2dIfOpen(time);
 		shadowMapViewer->draw2dIfOpen(time);
 		textureMixerEditor->draw2dIfOpen(time);
 		depthBufferViewer->draw2dIfOpen(time);
