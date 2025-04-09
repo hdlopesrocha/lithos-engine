@@ -36,10 +36,4 @@ void ImpostorViewer::draw2d(float time){
     ImGui::End();
 }
 
-void ImpostorViewer::draw3d(UniformBlock block){
-
-}
-
-
-
 

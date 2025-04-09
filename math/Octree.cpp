@@ -35,44 +35,54 @@ int getNodeIndex(const glm::vec3 &vec, const BoundingCube &cube) {
     return (vec.x >= c.x ? 4 : 0) + (vec.y >= c.y ? 2 : 0) + (vec.z >= c.z ? 1 : 0);
 }
 
-ContainmentType Octree::contains(const AbstractBoundingBox &c) {
-    OctreeNode* node = root;
-    BoundingCube cube = *this;
-    
-    // If c is not completely within the overall cube, it's disjoint.
-    if (!cube.contains(c))
+ContainmentType containsRecursive(OctreeNode* node, const BoundingCube& cube, const AbstractBoundingBox& c) {
+    if (!cube.intersects(c))
         return ContainmentType::Disjoint;
-    
-    while (node) {
-        // If we hit a node that is fully solid, it must be a leaf.
-        if (node->solid == ContainmentType::Contains)
+
+    if (!node)
+        return ContainmentType::Disjoint;
+
+    if (node->solid == ContainmentType::Contains) {
+        if (cube.contains(c))
             return ContainmentType::Contains;
-        
-        // Determine the candidate child based on c's center.
-        int idx = getNodeIndex(c.getCenter(), cube);
-        if (idx < 0)
-            return ContainmentType::Disjoint;
-        
-        // Get the bounding cube for the candidate child.
-        BoundingCube childCube = getChildCube(cube, idx);
-        
-        // If c is not fully inside this child cube, then c spans multiple children.
-        if (!childCube.contains(c))
+        else
             return ContainmentType::Intersects;
-        
-        // If the child does not exist, we cannot descend further,
-        // so the cube is not completely inside a fully solid region.
-        if (node->children[idx] == nullptr)
-            return ContainmentType::Intersects;
-        
-        // Descend into the candidate child.
-        node = node->children[idx];
-        cube = childCube;
     }
-    
-    return ContainmentType::Intersects;
+
+    if (node->solid == ContainmentType::Disjoint)
+        return ContainmentType::Disjoint;
+
+    bool allContained = true;
+    bool anyIntersecting = false;
+
+    for (int i = 0; i < 8; ++i) {
+        BoundingCube childCube = Octree::getChildCube(cube, i);
+
+        if (!childCube.intersects(c))
+            continue;
+
+        ContainmentType result = containsRecursive(node->children[i], childCube, c);
+
+        if (result == ContainmentType::Intersects)
+            return ContainmentType::Intersects;
+        else if (result == ContainmentType::Disjoint)
+            allContained = false;
+        else if (result == ContainmentType::Contains)
+            anyIntersecting = true;
+    }
+
+    if (allContained && anyIntersecting)
+        return ContainmentType::Contains;
+    else if (anyIntersecting)
+        return ContainmentType::Intersects;
+    else
+        return ContainmentType::Disjoint;
 }
 
+
+ContainmentType Octree::contains(const AbstractBoundingBox &c) {
+    return containsRecursive(root, *this, c);
+}
 
 ContainmentType Octree::contains(const glm::vec3 &pos) {
     OctreeNode* node = root;

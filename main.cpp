@@ -47,6 +47,8 @@ class MainApplication : public LithosApplication {
 
 	ProgramData * uniformBlockData;
 	ProgramData * uniformBrushData;
+	Brush3d * brush3d;
+	DrawableInstanceGeometry * brushSphere;
 
 	UniformBlock viewerBlock;
 	UniformBlock uniformBlock;
@@ -221,6 +223,14 @@ public:
 		textureAnimator = new AnimatedTexture(1024,1024, programWaterTexture ,&textureLayers, textureBlitter1024);
 		atlasDrawer = new AtlasDrawer(programAtlas, 1024, 1024, &atlasLayers, &billboardLayers, textureBlitter1024);
 		impostorDrawer = new ImpostorDrawer(programDeferred, 256, 256, &billboardLayers, &impostorLayers, textureBlitter256);
+
+		{
+			brush3d = new Brush3d();
+			SphereGeometry sphereGeometry(40,80);
+			std::vector<InstanceData> instances;
+			instances.push_back(InstanceData(0,glm::mat4(1.0),0));
+			brushSphere = new DrawableInstanceGeometry(TYPE_INSTANCE_SOLID_DRAWABLE, &sphereGeometry, &instances);
+		}
 
 		{
 			UniformBlockBrush * tb = new UniformBlockBrush( glm::vec2(0.2), 0.02, 8, 32, 16,4, 10.0, 0.5 , 1.33);
@@ -450,7 +460,7 @@ public:
 		uniformBlockViewer = new UniformBlockViewer(&viewerBlock);
 		atlasPainter = new AtlasPainter(&atlasParams, &atlasTextures, atlasDrawer, programAtlas, programTexture, 256,256, &billboardLayers);
 		atlasViewer = new AtlasViewer(&atlasTextures, atlasDrawer, programAtlas, programTexture, 256,256, &atlasLayers, programCopy);
-		brushEditor = new BrushEditor(uniformBlockData,&camera, &brushes, program3d, programTexture, &textureLayers, &textureMapper);
+		brushEditor = new BrushEditor(brush3d, &camera, &brushes, program3d, programTexture, &textureLayers, &textureMapper);
 		shadowMapViewer = new ShadowMapViewer(&shadowFrameBuffers, 512, 512);
 		textureMixerEditor = new TextureMixerEditor(textureMixer, &mixers, programTexture, &textureLayers);
 		animatedTextureEditor = new AnimatedTextureEditor(&animations, programTexture, 256,256, &textureLayers);
@@ -608,6 +618,38 @@ glm::vec3 getDirection(float time) {
 
     return smoothDirection;
 }
+
+void drawBrush3d(ProgramData data){
+	glUseProgram(program3d);
+	UniformBlockBrush * brush = brushes.at(brush3d->index);
+
+	auto it = textureMapper.find(brush);
+	if (it == textureMapper.end()) {
+		std::cerr << "Warning: BrushEditor::brush not found in textureMapper!" << std::endl;
+	}
+	else {
+		GLuint index = it->second;
+		UniformBlockBrush::uniform(program3d, brush, "brushes", "brushTextures", brush3d->index, index);
+	}
+
+   glm::mat4 model = glm::scale(
+	   glm::translate(  
+		   glm::mat4(1.0f), 
+		   brush3d->position
+	   ), 
+	   glm::vec3(brush3d->radius)
+   );
+
+   uniformBlock.world = model;
+   uniformBlock.set(OVERRIDE_FLAG, true);
+   uniformBlock.uintData.w = uint(brush3d->index);
+
+   UniformBlockBrush::uniform(program3d, brush, "overrideProps");
+   UniformBlock::uniform(0, &uniformBlock, sizeof(UniformBlock) , &data);
+   long count = 0;
+   brushSphere->draw(GL_PATCHES, &count);
+}
+
 
     virtual void draw3d() {
 	
@@ -813,9 +855,10 @@ glm::vec3 getDirection(float time) {
 			mainScene->draw3dLiquid(camera.position, mainScene->visibleLiquidNodes);
 		}
 
-		//glUseProgram(program3d);
-		brushEditor->draw3dIfOpen(&uniformBlock);
-		
+		if(brush3d->enabled) {
+			drawBrush3d(*uniformBlockData);
+		}	
+
 		glPolygonMode(GL_FRONT, GL_FILL);
 
 

@@ -20,10 +20,10 @@ Scene::Scene(Settings * settings) {
 	chunkSize = glm::pow(2, 11);
 
 	solidProcessor = new OctreeProcessor(solidSpace , true, 
-		new MeshGeometryBuilder(TYPE_INSTANCE_SOLID_DRAWABLE, &solidInstancesCount, &solidTrianglesCount, solidSpace, 0.8, 1.0, true)
+		new MeshGeometryBuilder(TYPE_INSTANCE_SOLID_DRAWABLE, &solidInstancesCount, &solidTrianglesCount, solidSpace, 0.95, 0.5, true)
 	);
 	liquidProcessor = new OctreeProcessor(liquidSpace, true, 
-		new MeshGeometryBuilder(TYPE_INSTANCE_LIQUID_DRAWABLE, &liquidInstancesCount, &liquidTrianglesCount, liquidSpace, 0.8, 1.0, true)
+		new MeshGeometryBuilder(TYPE_INSTANCE_LIQUID_DRAWABLE, &liquidInstancesCount, &liquidTrianglesCount, liquidSpace, 0.95, 0.5, true)
 	);
 	vegetationProcessor = new OctreeProcessor(solidSpace, true, 
 		new VegetationGeometryBuilder(TYPE_INSTANCE_VEGETATION_DRAWABLE, &vegetationInstancesCount, solidSpace, 
@@ -213,19 +213,32 @@ void Scene::generate(Camera &camera) {
 	BoundingBox waterBox = mapBox;
 	waterBox.setMaxY(0);
 	
-	liquidSpace->add(BoxContainmentHandler(BoundingBox(glm::vec3(30,-20,30),glm::vec3(70,20,70)),SimpleBrush(0)), 1.0);
+	BoundingBox testBox =BoundingBox(glm::vec3(0,-200,0),glm::vec3(100,100,100));
+	liquidSpace->add(BoxContainmentHandler(testBox,SimpleBrush(0)), 1.0);
 
 	//liquidSpace->add(SphereContainmentHandler(BoundingSphere(glm::vec3(11,61,-11),4), SimpleBrush(0)));
 	liquidSpace->add(OctreeContainmentHandler(solidSpace, waterBox, WaterBrush(0)), minSize);
 
-	solidSpace->add(BoxContainmentHandler(BoundingBox(glm::vec3(-20,-5,-20),glm::vec3(20,10,20)),SimpleBrush(8)), 1.0);
-	solidSpace->del(BoxContainmentHandler(BoundingBox(glm::vec3(-17,-4,-17),glm::vec3(17,12,17)),SimpleBrush(6)), 1.0);
-	liquidSpace->del(BoxContainmentHandler(BoundingBox(glm::vec3(-18,-5,-18),glm::vec3(18,12,18)),SimpleBrush(0)), 1.0);
+	//solidSpace->add(BoxContainmentHandler(BoundingBox(glm::vec3(-20,-5,-20),glm::vec3(20,10,20)),SimpleBrush(8)), 1.0);
+	//solidSpace->del(BoxContainmentHandler(BoundingBox(glm::vec3(-17,-4,-17),glm::vec3(17,12,17)),SimpleBrush(6)), 1.0);
+	//liquidSpace->del(BoxContainmentHandler(BoundingBox(glm::vec3(-18,-5,-18),glm::vec3(18,12,18)),SimpleBrush(0)), 1.0);
 
-	solidSpace->add(SphereContainmentHandler(BoundingSphere(glm::vec3(0,50,0),20), SimpleBrush(4)), 1.0);
-	solidSpace->add(SphereContainmentHandler(BoundingSphere(glm::vec3(-11,61,11),10), SimpleBrush(5)), 1.0);
-	solidSpace->del(SphereContainmentHandler(BoundingSphere(glm::vec3(11,61,-11),10), SimpleBrush(4)), 1.0);
-	solidSpace->del(SphereContainmentHandler(BoundingSphere(glm::vec3(4,54,-4),8), SimpleBrush(1)), 1.0);
+	//solidSpace->add(SphereContainmentHandler(BoundingSphere(glm::vec3(0,50,0),20), SimpleBrush(4)), 1.0);
+	//solidSpace->add(SphereContainmentHandler(BoundingSphere(glm::vec3(-11,61,11),10), SimpleBrush(5)), 1.0);
+	//solidSpace->del(SphereContainmentHandler(BoundingSphere(glm::vec3(11,61,-11),10), SimpleBrush(4)), 1.0);
+	//solidSpace->del(SphereContainmentHandler(BoundingSphere(glm::vec3(4,54,-4),8), SimpleBrush(1)), 1.0);
+
+
+	ContainmentType ct = solidSpace->contains(testBox);
+	if(ct == ContainmentType::Contains) {
+		std::cout << "\tContains" << std :: endl;
+	}
+	else if(ct == ContainmentType::Intersects) {
+		std::cout << "\tIntersects" << std :: endl;
+	}
+	else  {
+		std::cout << "\tDisjoint" << std :: endl;
+	}
 }
 
 
@@ -261,15 +274,15 @@ void Scene::import(const std::string &filename, Camera &camera) {
 void Scene::save(std::string folderPath, Camera &camera) {
 	OctreeFile saver1(solidSpace, "solid", 9);
 	OctreeFile saver2(liquidSpace, "liquid", 9);
-	saver1.save(folderPath, 1024);
-	saver2.save(folderPath, 1024);
+	saver1.save(folderPath, 4096);
+	saver2.save(folderPath, 4096);
 }
 
 void Scene::load(std::string folderPath, Camera &camera) {
 	OctreeFile loader1(solidSpace, "solid", 9);
 	OctreeFile loader2(liquidSpace, "liquid", 9);
-	loader1.load(folderPath, 1024);
-	loader2.load(folderPath, 1024);
+	loader1.load(folderPath, 4096);
+	loader2.load(folderPath, 4096);
 	//camera.position.x = loader1.getBox().getCenter().x;
 	//camera.position.y = loader1.getBox().getMaxY();
 	//camera.position.z = loader1.getBox().getCenter().z;

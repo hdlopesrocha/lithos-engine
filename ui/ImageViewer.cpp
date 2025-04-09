@@ -13,6 +13,3 @@ void ImageViewer::draw2d(float time){
 	ImGui::End();
 }
 
-void ImageViewer::draw3d(UniformBlock block){
-
-}

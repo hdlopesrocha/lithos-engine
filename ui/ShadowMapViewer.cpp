@@ -27,7 +27,3 @@ void ShadowMapViewer::draw2d(float time){
 	ImGui::Image((ImTextureID)(intptr_t)shadowBuffers->at(selectedBuffer).first.depthTexture.index, ImVec2(width, height));
 	ImGui::End();
 }
-
-void ShadowMapViewer::draw3d(UniformBlock block){
-
-}

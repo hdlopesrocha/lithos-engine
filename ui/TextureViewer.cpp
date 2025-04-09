@@ -27,9 +27,6 @@ void TextureViewer::draw2d(float time){
     ImGui::End();
 }
 
-void TextureViewer::draw3d(UniformBlock block){
-
-}
 
 
 

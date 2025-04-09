@@ -103,7 +103,3 @@ void SettingsEditor::draw2d(float time){
     ImGui::Checkbox("Octree Wireframe", &settings->octreeWireframe);
 	ImGui::End();
 }
-
-void SettingsEditor::draw3d(UniformBlock block){
-
-}

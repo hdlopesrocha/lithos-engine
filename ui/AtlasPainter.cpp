@@ -98,10 +98,6 @@ void AtlasPainter::draw2d(float time){
     ImGui::End();
 }
 
-void AtlasPainter::draw3d(UniformBlock block){
-
-}
-
 
 
 

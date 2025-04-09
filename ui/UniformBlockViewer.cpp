@@ -12,6 +12,3 @@ void UniformBlockViewer::draw2d(float time){
     ImGui::End();
 }
 
-void UniformBlockViewer::draw3d(UniformBlock block){
-
-}

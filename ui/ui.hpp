@@ -4,13 +4,6 @@
 #include <vector>
 #include "../gl/gl.hpp"
 
-enum BrushMode {
-    ADD, REMOVE, REPLACE, COUNT
-};
-
-
-
-
 class TexturePreviewer {
     RenderBuffer previewBuffer;
     RenderBuffer renderBuffer;
@@ -35,7 +28,6 @@ class Closable {
     bool isOpen();
     
     virtual void draw2d(float time) = 0;
-    virtual void draw3d(UniformBlock block) = 0;
 
     void draw2dIfOpen(float time){
         if(open) {
@@ -43,11 +35,6 @@ class Closable {
         }
     }
 
-    void draw3dIfOpen(UniformBlock * block){
-        if(open) {
-            draw3d(*block);
-        } 
-    }
 };
 
 class TextureViewer: public Closable {
@@ -57,7 +44,6 @@ class TextureViewer: public Closable {
     public:
     TextureViewer(GLuint previewProgram, TextureLayers * layers);
     void draw2d(float time) override;
-    void draw3d(UniformBlock block) override;
 };
 
 class UniformBlockViewer: public Closable {
@@ -66,7 +52,6 @@ class UniformBlockViewer: public Closable {
     UniformBlock * block;
     UniformBlockViewer(UniformBlock * block);
     void draw2d(float time) override;
-    void draw3d(UniformBlock block) override;
 };
 
 
@@ -79,7 +64,6 @@ class AtlasViewer: public Closable {
     public:
     AtlasViewer(std::vector<AtlasTexture*> * atlasTextures, AtlasDrawer * drawer, GLuint programAtlas, GLuint previewProgram, int width, int height, TextureLayers * sourceLayers, GLuint copyProgram) ;
     void draw2d(float time) override;
-    void draw3d(UniformBlock block) override;
 };
 
 class AtlasPainter: public Closable {
@@ -93,7 +77,6 @@ class AtlasPainter: public Closable {
     public:
     AtlasPainter(std::vector<AtlasParams> * atlasParams, std::vector<AtlasTexture*> * atlasTextures, AtlasDrawer * atlasDrawer, GLuint programAtlas, GLuint previewProgram, int width, int height, TextureLayers * layers);
     void draw2d(float time);
-    void draw3d(UniformBlock block) override;
 };
 
 class ImpostorViewer: public Closable {
@@ -105,7 +88,6 @@ class ImpostorViewer: public Closable {
     public:
     ImpostorViewer(ImpostorDrawer* impostorDrawer, std::vector<ImpostorParams> * impostors ,GLuint previewProgram, int width, int height, TextureLayers * layers);
     void draw2d(float time) override;
-    void draw3d(UniformBlock block) override;
 };
 
 
@@ -113,20 +95,14 @@ class BrushEditor: public Closable {
     std::vector<UniformBlockBrush*> * brushes;
     std::map<UniformBlockBrush*, GLuint > *textureMapper;
     GLuint program;
-    ProgramData * data;
-	DrawableInstanceGeometry * sphere;
+    Brush3d * brush;
     Camera * camera;
-  
     TexturePreviewer * previewer;
-    BrushMode mode;
-  	int selectedBrush = 0;
-    glm::vec3 brushPosition;
-    float brushRadius;
+
 
     public:
-    BrushEditor(ProgramData * data, Camera * camera,std::vector<UniformBlockBrush*> * brushes, GLuint program3d, GLuint previewProgram, TextureLayers * layers, std::map<UniformBlockBrush*, GLuint > *textureMapper);
+    BrushEditor(Brush3d * brush,Camera * camera, std::vector<UniformBlockBrush*> * brushes, GLuint program3d, GLuint previewProgram, TextureLayers * layers, std::map<UniformBlockBrush*, GLuint > *textureMapper);
     void draw2d(float time) override;
-    void draw3d(UniformBlock block) override;
     int getSelectedBrush();
     void resetPosition();
 };
@@ -141,7 +117,6 @@ class ShadowMapViewer : public Closable{
     ShadowMapViewer(std::vector<std::pair<RenderBuffer, int>> * shadowBuffers, int width, int height);
 
     void draw2d(float time) override;
-    void draw3d(UniformBlock block) override;
 };
 
 
@@ -156,7 +131,6 @@ class DepthBufferViewer : public Closable{
     DepthBufferViewer(GLuint previewProgram, TextureImage depthTexture, int width, int height);
 
     void draw2d(float time) override;
-    void draw3d(UniformBlock block) override;
 };
 
 class TextureMixerEditor : public Closable{
@@ -168,7 +142,6 @@ class TextureMixerEditor : public Closable{
     public:
     TextureMixerEditor(TextureMixer * mixer, std::vector<MixerParams> * mixers, GLuint previewProgram, TextureLayers * layers);
     void draw2d(float time) override;
-    void draw3d(UniformBlock block) override;
 };
 
 class AnimatedTextureEditor : public Closable{
@@ -179,7 +152,6 @@ class AnimatedTextureEditor : public Closable{
     AnimatedTextureEditor(std::vector<AnimateParams> * animations, GLuint previewProgram, int width, int height, TextureLayers * layers);
 
     void draw2d(float time) override;
-    void draw3d(UniformBlock block) override;
 };
 
 class ImageViewer : public Closable{
@@ -191,7 +163,6 @@ class ImageViewer : public Closable{
     ImageViewer(GLuint texture, int width, int height);
 
     void draw2d(float time) override;
-    void draw3d(UniformBlock block) override;
 };
 
 class SettingsEditor : public Closable {
@@ -201,7 +172,6 @@ class SettingsEditor : public Closable {
     SettingsEditor(Settings * settings, Camera * camera);
 
     void draw2d(float time) override;
-    void draw3d(UniformBlock block) override;
 };
 
 class MouseDragViewer {

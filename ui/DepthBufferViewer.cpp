@@ -34,6 +34,3 @@ void DepthBufferViewer::draw2d(float time){
 
 }
 
-void DepthBufferViewer::draw3d(UniformBlock block){
-
-}

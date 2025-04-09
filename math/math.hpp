@@ -181,6 +181,7 @@ class AbstractBoundingBox {
 	bool contains(const BoundingSphere &sphere) const;
 	bool contains(const AbstractBoundingBox &cube) const;
 	bool intersects(const BoundingSphere &sphere) const;
+	bool intersects(const AbstractBoundingBox &cube) const;
 	ContainmentType test(const AbstractBoundingBox &cube) const;
 };
 
@@ -429,7 +430,6 @@ class Octree: public BoundingCube {
 		void getNodeNeighbors(OctreeNodeData &data, bool simplification, OctreeNode ** out, int direction,int initialIndex, int finalIndex);
 		ContainmentType contains(const glm::vec3 &pos);
 		ContainmentType contains(const AbstractBoundingBox&cube);
-
 		static glm::vec3 getShift(int i);
 		static glm::vec3 getShift3(int i);
 		static BoundingCube getChildCube(const BoundingCube &cube, int i);
@@ -793,6 +793,21 @@ struct TileDraw {
     TileDraw(uint index,glm::vec2 size, glm::vec2 offset, glm::vec2 pivot, float angle);
 };
 
+enum BrushMode {
+    ADD, REMOVE, REPLACE, COUNT
+};
+
+class Brush3d {
+	public:
+		BrushMode mode;
+		int index = 0;
+		glm::vec3 position;
+		float radius;
+		bool enabled;
+
+		Brush3d();
+		void reset(Camera * camera);
+};
 
 class Math
 {

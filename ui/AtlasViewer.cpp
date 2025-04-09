@@ -68,10 +68,4 @@ void AtlasViewer::draw2d(float time){
     ImGui::End();
 }
 
-void AtlasViewer::draw3d(UniformBlock block){
-
-}
-
-
-
 
