@@ -229,7 +229,7 @@ public:
 		{
 			brush3d = new Brush3d();
 			SphereGeometry sphereGeometry(40,80);
-			BoxGeometry boxGeometry(BoundingBox(glm::vec3(0), glm::vec3(1)));
+			BoxGeometry boxGeometry(BoundingBox(glm::vec3(-0.5), glm::vec3(0.5)));
 
 			std::vector<InstanceData> instances;
 			instances.push_back(InstanceData(0,glm::mat4(1.0),0));
