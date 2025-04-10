@@ -21,8 +21,6 @@ Octree::Octree(BoundingCube minCube) : BoundingCube(minCube){
 	}
 }
 
-
-
 int getNodeIndex(const glm::vec3 &vec, const BoundingCube &cube) {
 	glm::vec3 c = cube.getCenter();
     return (vec.x >= c.x ? 4 : 0) + (vec.y >= c.y ? 2 : 0) + (vec.z >= c.z ? 1 : 0);
@@ -145,7 +143,6 @@ void Octree::handleQuadNodes(OctreeNodeData &data, OctreeNodeTriangleHandler * h
     
 	getNodeNeighbors(data, simplification, neighbors, 1, 0, 8);
 
-	
 	for(size_t k =0 ; k < tessOrder.size(); ++k) {
 		glm::ivec2 edge = tessEdge[k];
 		uint mask = data.node->mask;
