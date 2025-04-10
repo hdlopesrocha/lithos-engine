@@ -1,4 +1,4 @@
-#include "math.hpp"
+#include "space.hpp"
 
 
 Simplifier::Simplifier(Octree * tree, BoundingCube chunkCube, float angle, float distance, bool texturing) {

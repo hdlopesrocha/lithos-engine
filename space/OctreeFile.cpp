@@ -1,4 +1,4 @@
-#include "math.hpp"
+#include "space.hpp"
 
 
 
@@ -26,7 +26,7 @@ OctreeNode * loadRecursive(int i, std::vector<OctreeNodeSerialized> * nodes, flo
 		for(int j=0 ; j <8 ; ++j){
 			int index = serialized.children[j];
 			if(index != 0) {
-				BoundingCube c = Octree::getChildCube(cube, j);
+				BoundingCube c = cube.getChild(j);
 				node->setChild(j , loadRecursive(index, nodes, chunkSize, filename, c,baseFolder));
 			}
 		}
@@ -90,7 +90,7 @@ uint saveRecursive(OctreeNode * node, std::vector<OctreeNodeSerialized*> * nodes
 
 		if(cube.getLengthX() > chunkSize) {
 			for(int i=0; i < 8; ++i) {
-				BoundingCube c = Octree::getChildCube(cube, i);
+				BoundingCube c = cube.getChild(i);
 				n->children[i] = saveRecursive(node->children[i], nodes, chunkSize, filename, c, baseFolder);
 			}
 		} else {

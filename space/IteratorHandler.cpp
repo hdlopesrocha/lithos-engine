@@ -1,4 +1,4 @@
-#include "math.hpp"
+#include "space.hpp"
 
 void IteratorHandler::iterate(OctreeNodeData params) {
     if(params.node != NULL) {
@@ -10,7 +10,7 @@ void IteratorHandler::iterate(OctreeNodeData params) {
                 int j = internalOrder[i];
                 OctreeNode * child = params.node->children[j];
                 if(child != NULL) {
-                    this->iterate(OctreeNodeData( params.level+1, params.chunkSize, child, Octree::getChildCube(params.cube,j) , params.context));
+                    this->iterate(OctreeNodeData( params.level+1, params.chunkSize, child, params.cube.getChild(j) , params.context));
                 }
             }
             after(params);
@@ -34,7 +34,7 @@ void IteratorHandler::iterateFlatIn(OctreeNodeData params) {
                 int j = internalOrder[i];
                 OctreeNode * child = data.node->children[j];
                 if(child != NULL) {
-                    flatData.push(OctreeNodeData(data.level + 1, data.chunkSize,child, Octree::getChildCube(data.cube,j), data.context));
+                    flatData.push(OctreeNodeData(data.level + 1, data.chunkSize,child, data.cube.getChild(j), data.context));
                 }
             }
             after(data);
@@ -71,7 +71,7 @@ void IteratorHandler::iterateFlat(OctreeNodeData params) {
             OctreeNode* child = frame.node->children[j];
 
             if (child) {
-                OctreeNodeData data(frame.level+1, frame.chunkSize, child, Octree::getChildCube(frame.cube,j), frame.context);
+                OctreeNodeData data(frame.level+1, frame.chunkSize, child, frame.cube.getChild(j), frame.context);
                 stack.push(StackFrame(data, 0, false));
             }
         } else {
@@ -115,7 +115,7 @@ void IteratorHandler::iterateFlatOut(OctreeNodeData params) {
                 int j = internalOrder[i];
                 OctreeNode* child = frame.node->children[j];
                 if (child) {
-                    stackOut.push(StackFrameOut(OctreeNodeData(frame.level + 1, frame.chunkSize, child, Octree::getChildCube(frame.cube, j), frame.context), false));
+                    stackOut.push(StackFrameOut(OctreeNodeData(frame.level + 1, frame.chunkSize, child, frame.cube.getChild(j), frame.context), false));
                 }
             }
         } else {

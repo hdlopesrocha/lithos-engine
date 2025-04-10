@@ -1,4 +1,4 @@
-#include "math.hpp"
+#include "space.hpp"
 
 
 Tesselator::Tesselator(Octree * tree, Geometry * chunk, long * count): OctreeNodeTriangleHandler(chunk, count) {

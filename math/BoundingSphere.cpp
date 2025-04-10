@@ -62,7 +62,7 @@ ContainmentType BoundingSphere::test(const AbstractBoundingBox& cube) const {
     unsigned char mask = 0;
 
     for(int i=0; i < 8; ++i) {
-        glm::vec3 point(cube.getMin()+ Octree::getShift(i)*cube.getLengthX());
+        glm::vec3 point(cube.getMin()+ AbstractBoundingBox::getShift(i)*cube.getLengthX());
         if(contains(point)){
             mask |= (1 << i);
         }

@@ -590,74 +590,74 @@ public:
 
 
 	// Camera settings
-glm::vec3 noiseScale = glm::vec3(256.0f, 64.0, 256.0);  // Controls movement magnitude
-glm::vec3 basePosition = glm::vec3(0.0f,32.0f, 0.0f); // Starting position
+	glm::vec3 noiseScale = glm::vec3(256.0f, 64.0, 256.0);  // Controls movement magnitude
+	glm::vec3 basePosition = glm::vec3(0.0f,32.0f, 0.0f); // Starting position
 
-// Camera settings
-float speed = 0.2f;
-float lerpSpeed = 0.1f;  // Controls how smoothly we transition between directions
-glm::vec3 lastDirection = glm::vec3(0.0f, 0.0f, 1.0f); // Initial direction, pointing forward
+	// Camera settings
+	float speed = 0.2f;
+	float lerpSpeed = 0.1f;  // Controls how smoothly we transition between directions
+	glm::vec3 lastDirection = glm::vec3(0.0f, 0.0f, 1.0f); // Initial direction, pointing forward
 
-// Function to compute Perlin noise-based camera position at a given time
-glm::vec3 getCameraPosition(float time) {
-    float x = stb_perlin_noise3(time * speed, 0.0f, 0.0f, 0, 0, 0) * noiseScale[0];
-    float y = stb_perlin_noise3(0.0f, time * speed, 100.0f, 0, 0, 0) * noiseScale[1];
-    float z = stb_perlin_noise3(0.0f, 0.0f, time * speed, 0, 0, 0) * noiseScale[2];
+	// Function to compute Perlin noise-based camera position at a given time
+	glm::vec3 getCameraPosition(float time) {
+		float x = stb_perlin_noise3(time * speed, 0.0f, 0.0f, 0, 0, 0) * noiseScale[0];
+		float y = stb_perlin_noise3(0.0f, time * speed, 100.0f, 0, 0, 0) * noiseScale[1];
+		float z = stb_perlin_noise3(0.0f, 0.0f, time * speed, 0, 0, 0) * noiseScale[2];
 
-    return basePosition + glm::vec3(x, y, z);
-}
-
-// Function to get the direction, smoothing it with Lerp
-glm::vec3 getDirection(float time) {
-    glm::vec3 currentPos = getCameraPosition(time);
-    glm::vec3 nextPos = getCameraPosition(time + 0.05f); // A small step forward in time
-
-    // Compute the direction vector
-    glm::vec3 direction = glm::normalize(nextPos - currentPos);
-
-    // Linearly interpolate between the last direction and the current direction using glm::mix
-    glm::vec3 smoothDirection = glm::mix(lastDirection, direction, lerpSpeed);
-
-    // Update lastDirection for the next frame
-    lastDirection = smoothDirection;
-
-    return smoothDirection;
-}
-
-void drawBrush3d(ProgramData data){
-	glUseProgram(program3d);
-	UniformBlockBrush * brush = brushes.at(brush3d->index);
-
-	auto it = textureMapper.find(brush);
-	if (it == textureMapper.end()) {
-		std::cerr << "Warning: BrushEditor::brush not found in textureMapper!" << std::endl;
-	}
-	else {
-		GLuint index = it->second;
-		UniformBlockBrush::uniform(program3d, brush, "brushes", "brushTextures", brush3d->index, index);
+		return basePosition + glm::vec3(x, y, z);
 	}
 
-   glm::mat4 model = glm::scale(
-	   glm::translate(  
-		   glm::mat4(1.0f), 
-		   brush3d->position
-	   ), 
-	   brush3d->scale
-   );
+	// Function to get the direction, smoothing it with Lerp
+	glm::vec3 getDirection(float time) {
+		glm::vec3 currentPos = getCameraPosition(time);
+		glm::vec3 nextPos = getCameraPosition(time + 0.05f); // A small step forward in time
 
-   uniformBlock.world = model;
-   uniformBlock.set(OVERRIDE_FLAG, true);
-   uniformBlock.uintData.w = uint(brush3d->index);
+		// Compute the direction vector
+		glm::vec3 direction = glm::normalize(nextPos - currentPos);
 
-   UniformBlockBrush::uniform(program3d, brush, "overrideProps");
-   UniformBlock::uniform(0, &uniformBlock, sizeof(UniformBlock) , &data);
-   long count = 0;
-   if(brush3d->mode3d == BrushShape::SPHERE) {
-   		brushSphere->draw(GL_PATCHES, &count);
-   }else {
-		brushBox->draw(GL_PATCHES, &count);
-   }
-}
+		// Linearly interpolate between the last direction and the current direction using glm::mix
+		glm::vec3 smoothDirection = glm::mix(lastDirection, direction, lerpSpeed);
+
+		// Update lastDirection for the next frame
+		lastDirection = smoothDirection;
+
+		return smoothDirection;
+	}
+
+	void drawBrush3d(ProgramData data){
+		glUseProgram(program3d);
+		UniformBlockBrush * brush = brushes.at(brush3d->index);
+
+		auto it = textureMapper.find(brush);
+		if (it == textureMapper.end()) {
+			std::cerr << "Warning: BrushEditor::brush not found in textureMapper!" << std::endl;
+		}
+		else {
+			GLuint index = it->second;
+			UniformBlockBrush::uniform(program3d, brush, "brushes", "brushTextures", brush3d->index, index);
+		}
+
+	glm::mat4 model = glm::scale(
+		glm::translate(  
+			glm::mat4(1.0f), 
+			brush3d->position
+		), 
+		brush3d->scale
+	);
+
+	uniformBlock.world = model;
+	uniformBlock.set(OVERRIDE_FLAG, true);
+	uniformBlock.uintData.w = uint(brush3d->index);
+
+	UniformBlockBrush::uniform(program3d, brush, "overrideProps");
+	UniformBlock::uniform(0, &uniformBlock, sizeof(UniformBlock) , &data);
+	long count = 0;
+	if(brush3d->mode3d == BrushShape::SPHERE) {
+			brushSphere->draw(GL_PATCHES, &count);
+	}else {
+			brushBox->draw(GL_PATCHES, &count);
+	}
+	}
 
 
     virtual void draw3d() {

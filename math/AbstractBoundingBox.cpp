@@ -73,7 +73,7 @@ ContainmentType AbstractBoundingBox::test(const AbstractBoundingBox &cube) const
     unsigned char outterMask = 0;
 
     for(int i=0; i < 8; ++i) {
-        glm::vec3 sh = Octree::getShift(i);
+        glm::vec3 sh = AbstractBoundingBox::getShift(i);
         glm::vec3 p1(min1 + sh*cube.getLength());
         glm::vec3 p2(min2 + sh*getLength());
 
@@ -118,3 +118,13 @@ bool AbstractBoundingBox::intersects(const AbstractBoundingBox& box) const {
 
     return true;
 }
+
+glm::vec3 AbstractBoundingBox::getShift(int i) {
+    return glm::vec3(4 & i? 1:0, 2 & i? 1:0, 1 & i? 1:0);
+}
+
+
+glm::vec3 AbstractBoundingBox::getShift3(int i) {
+    return glm::vec3((i / 9) - 1, (i / 3) % 3 - 1, i % 3 - 1);
+}
+

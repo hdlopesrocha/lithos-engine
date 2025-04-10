@@ -1,4 +1,4 @@
-#include "math.hpp"
+#include "space.hpp"
 
 //      6-----7
 //     /|    /|
@@ -21,14 +21,7 @@ Octree::Octree(BoundingCube minCube) : BoundingCube(minCube){
 	}
 }
 
-BoundingCube Octree::getChildCube(const BoundingCube &cube, int i) {
-	float newLength = 0.5*cube.getLengthX();
-    return BoundingCube(cube.getMin() + newLength * Octree::getShift(i), newLength);
-}
 
-BoundingCube Octree::getCube3(const BoundingCube &cube, int i) {
-    return BoundingCube(cube.getMin() + cube.getLengthX() * Octree::getShift3(i), cube.getLengthX());
-}
 
 int getNodeIndex(const glm::vec3 &vec, const BoundingCube &cube) {
 	glm::vec3 c = cube.getCenter();
@@ -56,7 +49,7 @@ ContainmentType containsRecursive(OctreeNode* node, const BoundingCube& cube, co
     bool anyIntersecting = false;
 
     for (int i = 0; i < 8; ++i) {
-        BoundingCube childCube = Octree::getChildCube(cube, i);
+        BoundingCube childCube = cube.getChild(i);
 
         if (!childCube.intersects(c))
             continue;
@@ -111,7 +104,7 @@ ContainmentType Octree::contains(const glm::vec3 &pos) {
             return node->solid;
         }
 
-        cube = getChildCube(cube, i);
+        cube = cube.getChild(i);
         node = candidate;
     }
     if (node == NULL){
@@ -133,7 +126,7 @@ OctreeNode* Octree::getNodeAt(const glm::vec3 &pos, int level, bool simplificati
             break;
         }
         int i = getNodeIndex(pos, cube);
-        cube = getChildCube(cube, i);
+        cube = cube.getChild(i);
         node = node->children[i];
     }
     return node;
@@ -195,7 +188,7 @@ void split(OctreeNode * node, BoundingCube &cube) {
     Vertex vertex = node->vertex;
 
 	for(int i=0; i <8 ; ++i) {
-		BoundingCube subCube = Octree::getChildCube(cube,i);
+		BoundingCube subCube = cube.getChild(i);
 		node->children[i] = new OctreeNode(Vertex(subCube.getCenter(), glm::vec3(0), glm::vec2(0.0), vertex.brushIndex));
 		node->children[i]->solid = node->solid;
 		node->children[i]->mask = node->mask;
@@ -265,7 +258,7 @@ void Octree::add(const ContainmentHandler &handler, float minSize) {
             (*nodePtr)->clear();
         } else if (frame.cube.getLengthX() > minSize) {
             for (int i = 7; i >= 0; --i) {  // Push children in reverse order to maintain order
-                BoundingCube subCube = Octree::getChildCube(frame.cube, i);
+                BoundingCube subCube = frame.cube.getChild(i);
                 stack.push({ &((*nodePtr)->children[i]), subCube, frame.level + 1 });
             }
         }
@@ -322,7 +315,7 @@ void Octree::del(const ContainmentHandler &handler, float minSize) {
 
             if (frame.cube.getLengthX() > minSize) {
                 for (int i = 7; i >= 0; --i) {  // Push children in reverse order
-                    BoundingCube subCube = Octree::getChildCube(frame.cube, i);
+                    BoundingCube subCube = frame.cube.getChild(i);
                     stack.push({ &((*nodePtr)->children[i]), subCube, frame.level + 1 });
                 }
             }
@@ -341,12 +334,3 @@ void Octree::iterateFlat(IteratorHandler &handler, float chunkSize) {
     handler.iterateFlatIn(OctreeNodeData(0, chunkSize,root, cube, NULL));
 }
 
-
-glm::vec3 Octree::getShift(int i) {
-    return glm::vec3(4 & i? 1:0, 2 & i? 1:0, 1 & i? 1:0);
-}
-
-
-glm::vec3 Octree::getShift3(int i) {
-    return glm::vec3((i / 9) - 1, (i / 3) % 3 - 1, i % 3 - 1);
-}

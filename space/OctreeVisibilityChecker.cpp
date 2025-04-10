@@ -1,4 +1,4 @@
-#include "math.hpp"
+#include "space.hpp"
 
 
 OctreeVisibilityChecker::OctreeVisibilityChecker(Octree * tree, std::vector<OctreeNodeData> * visibleNodes) {
@@ -44,7 +44,7 @@ void OctreeVisibilityChecker::getOrder(OctreeNodeData &params, int * order){
 	static std::pair<float, int> internalSortingVector[8]={};
 	
 	for(int i =0; i< 8; ++i){
-		BoundingCube c = Octree::getChildCube(params.cube, i);
+		BoundingCube c = params.cube.getChild(i);
 		internalSortingVector[i] = std::pair<float, int>(glm::distance2(c.getCenter(), sortPosition), i);
 	}
 

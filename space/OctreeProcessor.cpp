@@ -1,4 +1,4 @@
-#include "math.hpp"
+#include "space.hpp"
 
 
 OctreeProcessor::OctreeProcessor(Octree * tree,bool createInstances, GeometryBuilder * builder) {

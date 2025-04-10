@@ -1,4 +1,4 @@
-#include "math.hpp"
+#include "space.hpp"
 
 OctreeNode::OctreeNode(Vertex vertex) {
 	this->solid = ContainmentType::Disjoint;

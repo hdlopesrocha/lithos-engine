@@ -1,6 +1,7 @@
 #ifndef TOOLS_HPP
 #define TOOLS_HPP
 #include "../gl/gl.hpp"
+#include "../space/space.hpp"
 #include <algorithm>
 #include <random>
 

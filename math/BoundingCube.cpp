@@ -44,3 +44,11 @@ void BoundingCube::setLength(float l) {
     this->length = l;
 }
 
+BoundingCube BoundingCube::getChild(int i) const {
+	float newLength = 0.5*getLengthX();
+    return BoundingCube(getMin() + newLength * AbstractBoundingBox::getShift(i), newLength);
+}
+
+BoundingCube BoundingCube::getChild3(int i) const {
+    return BoundingCube(getMin() + getLengthX() * AbstractBoundingBox::getShift3(i), getLengthX());
+}

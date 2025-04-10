@@ -20,6 +20,7 @@
 #define TYPE_INSTANCE_OCTREE_DRAWABLE 0x8
 
 #include "../math/math.hpp"
+#include "../space/space.hpp"
 
 #include <imgui/imgui.h>
 #include <imgui/backends/imgui_impl_glfw.h>
