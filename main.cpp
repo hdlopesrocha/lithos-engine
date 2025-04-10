@@ -49,6 +49,7 @@ class MainApplication : public LithosApplication {
 	ProgramData * uniformBrushData;
 	Brush3d * brush3d;
 	DrawableInstanceGeometry * brushSphere;
+	DrawableInstanceGeometry * brushBox;
 
 	UniformBlock viewerBlock;
 	UniformBlock uniformBlock;
@@ -228,9 +229,12 @@ public:
 		{
 			brush3d = new Brush3d();
 			SphereGeometry sphereGeometry(40,80);
+			BoxGeometry boxGeometry(BoundingBox(glm::vec3(0), glm::vec3(1)));
+
 			std::vector<InstanceData> instances;
 			instances.push_back(InstanceData(0,glm::mat4(1.0),0));
 			brushSphere = new DrawableInstanceGeometry(TYPE_INSTANCE_SOLID_DRAWABLE, &sphereGeometry, &instances);
+			brushBox = new DrawableInstanceGeometry(TYPE_INSTANCE_SOLID_DRAWABLE, &boxGeometry, &instances);
 		}
 
 		{
@@ -638,7 +642,7 @@ void drawBrush3d(ProgramData data){
 		   glm::mat4(1.0f), 
 		   brush3d->position
 	   ), 
-	   glm::vec3(brush3d->radius)
+	   brush3d->scale
    );
 
    uniformBlock.world = model;
@@ -648,7 +652,11 @@ void drawBrush3d(ProgramData data){
    UniformBlockBrush::uniform(program3d, brush, "overrideProps");
    UniformBlock::uniform(0, &uniformBlock, sizeof(UniformBlock) , &data);
    long count = 0;
-   brushSphere->draw(GL_PATCHES, &count);
+   if(brush3d->mode3d == BrushShape::SPHERE) {
+   		brushSphere->draw(GL_PATCHES, &count);
+   }else {
+		brushBox->draw(GL_PATCHES, &count);
+   }
 }
 
 

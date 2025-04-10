@@ -238,3 +238,24 @@ float Math::randomFloat() {
     static std::uniform_real_distribution<float> dis(0.0f, 1.0f);
     return dis(gen);
 }
+
+const char* toString(BrushMode v)
+{
+    switch (v)
+    {
+        case BrushMode::ADD:     return "Add";
+        case BrushMode::REMOVE:  return "Remove";
+        case BrushMode::REPLACE: return "Replace";
+        default:      return "Unknown";
+    }
+}
+
+const char* toString(BrushShape v)
+{
+    switch (v)
+    {
+        case BrushShape::SPHERE:     return "Sphere";
+        case BrushShape::BOX:  return "Box";
+        default:      return "Unknown";
+    }
+}

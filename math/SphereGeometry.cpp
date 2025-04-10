@@ -4,17 +4,15 @@
         return Vertex(v,glm::normalize(v), Math::triplanarMapping(v,plane),0 );
     }
 
-        void SphereGeometry::addTriangle(glm::vec3 a,glm::vec3 b, glm::vec3 c) {
-            glm::vec3 v0 = b-a;
-            glm::vec3 v1 = c-a;
-            glm::vec3 n = glm::cross(v0,v1);
-            int plane = Math::triplanarPlane(a, n);
-            addVertex(getVertex(a, plane));
-            addVertex(getVertex(b, plane));
-            addVertex(getVertex(c, plane));
-
-
-        }
+    void SphereGeometry::addTriangle(glm::vec3 a,glm::vec3 b, glm::vec3 c) {
+        glm::vec3 v0 = b-a;
+        glm::vec3 v1 = c-a;
+        glm::vec3 n = glm::cross(v0,v1);
+        int plane = Math::triplanarPlane(a, n);
+        addVertex(getVertex(a, plane));
+        addVertex(getVertex(b, plane));
+        addVertex(getVertex(c, plane));
+    }
 
     SphereGeometry::SphereGeometry(int lats, int longs) : Geometry(true) {
         float PI = glm::pi<float>();
@@ -46,12 +44,6 @@
             
                 addTriangle(v0,v1,v2);
                 addTriangle(v0,v3,v1);
-
-        
-   
-
-
-
             }
         }
 

@@ -17,16 +17,6 @@ int BrushEditor::getSelectedBrush() {
 
 
 
-const char* toString(BrushMode v)
-{
-    switch (v)
-    {
-        case ADD:     return "Add";
-        case REMOVE:  return "Remove";
-        case REPLACE: return "Replace";
-        default:      return "Unknown";
-    }
-}
 
 void BrushEditor::draw2d(float time){
     ImGui::Begin("Brush Editor", &open, ImGuiWindowFlags_AlwaysAutoResize);
@@ -66,7 +56,7 @@ void BrushEditor::draw2d(float time){
 
     ImGui::Text("Mode: ");
 
-    for (int i = 0; i < BrushMode::COUNT; ++i) {
+    for (int i = 0; i < BrushMode::BrushMode_COUNT; ++i) {
         BrushMode bm = BrushMode(i);
         std::string label = std::string(toString(bm));
         if(ImGui::RadioButton(label.c_str(), brush->mode == bm)){
@@ -74,12 +64,21 @@ void BrushEditor::draw2d(float time){
         }
     }
 
+    ImGui::Text("Shape: ");
+
+    for (int i = 0; i < BrushShape::BrushShape_COUNT; ++i) {
+        BrushShape bm = BrushShape(i);
+        std::string label = std::string(toString(bm));
+        if(ImGui::RadioButton(label.c_str(), brush->mode3d == bm)){
+            brush->mode3d = bm;
+        }
+    }
 
     ImGui::Text("Position: ");
     ImGui::InputFloat3("m##brushPosition", &brush->position[0]);
     
-    ImGui::Text("Radius: ");
-    ImGui::InputFloat("m##brushRadius", &brush->radius);
+    ImGui::Text("Scale: ");
+    ImGui::InputFloat3("m##brushScale", &brush->scale[0]);
 
     ImGui::Text("Texture Scale: ");
     ImGui::InputFloat2("\%##textureScale", &uniformBrush->textureScale[0]);

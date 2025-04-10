@@ -17,10 +17,10 @@ void CameraEditor::draw2d(float time){
 
     ImGui::Text("Quaternion: ");
 
-    ImGui::SliderFloat("##quaternionX", &camera->quaternion.x, -1, 1, "%.3f", 0.01f); // Step size: 0.1
-    ImGui::SliderFloat("##quaternionY", &camera->quaternion.y, -1, 1, "%.3f", 0.01f); // Step size: 0.1
-    ImGui::SliderFloat("##quaternionZ", &camera->quaternion.z, -1, 1, "%.3f", 0.01f); // Step size: 0.1
-    ImGui::SliderFloat("##quaternionW", &camera->quaternion.w, -1, 1, "%.3f", 0.01f); // Step size: 0.1
+    ImGui::SliderFloat("##quaternionX", &camera->quaternion.x, -1, 1, "%.3f", 0.01f); 
+    ImGui::SliderFloat("##quaternionY", &camera->quaternion.y, -1, 1, "%.3f", 0.01f); 
+    ImGui::SliderFloat("##quaternionZ", &camera->quaternion.z, -1, 1, "%.3f", 0.01f); 
+    ImGui::SliderFloat("##quaternionW", &camera->quaternion.w, -1, 1, "%.3f", 0.01f); 
     camera->quaternion = glm::normalize(camera->quaternion);
 
     ImGui::Text("Rotation speed: ");

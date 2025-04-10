@@ -566,6 +566,14 @@ public:
 
 };
 
+class BoxLineGeometry : public Geometry {
+
+	public:
+		BoxLineGeometry(const BoundingBox &box);
+		void addTriangle(glm::vec3 a,glm::vec3 b, glm::vec3 c);
+	
+	};
+
 
 class BoxGeometry : public Geometry {
 
@@ -796,15 +804,23 @@ struct TileDraw {
 };
 
 enum BrushMode {
-    ADD, REMOVE, REPLACE, COUNT
+    ADD, REMOVE, REPLACE, BrushMode_COUNT
 };
+
+enum BrushShape {
+    SPHERE, BOX, BrushShape_COUNT
+};
+
+const char* toString(BrushMode v);
+const char* toString(BrushShape v);
 
 class Brush3d {
 	public:
 		BrushMode mode;
+		BrushShape mode3d; 
 		int index = 0;
 		glm::vec3 position;
-		float radius;
+		glm::vec3 scale;
 		bool enabled;
 
 		Brush3d();
