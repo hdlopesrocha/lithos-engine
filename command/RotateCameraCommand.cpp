@@ -1,8 +1,6 @@
 #include "command.hpp"
 
 
-
-
 RotateCameraCommand::RotateCameraCommand(Camera &camera) : camera(camera) {
 
 }
