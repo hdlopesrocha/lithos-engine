@@ -46,20 +46,7 @@ glm::vec3 getShift(int i) {
 void HeightMap::getPoint(const BoundingCube &cube, glm::vec3 &p) const {
     glm::vec3 v = cube.getCenter();
     float h = func.getHeightAt(v.x,v.z);
-    if( Math::isBetween(h, cube.getMinY(), cube.getMaxY())){
-        p= glm::vec3(v.x, h, v.z);
-        return;
-    }  
-   
-    for(int i =0; i < 4 ; ++i) {
-        v = cube.getMin() + cube.getLengthX() * getShift(i);
-        h = func.getHeightAt(v.x,v.z);
-        if( Math::isBetween(h, cube.getMinY(), cube.getMaxY())){
-            p= glm::vec3(v.x, h, v.z);
-            return;
-        }
-    }
-    p= cube.getCenter();
+    p= glm::vec3(v.x, h, v.z);
 }
 
 bool HeightMap::contains(const glm::vec3 &point) const {

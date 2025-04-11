@@ -8,15 +8,17 @@ class OctreeNode {
 		Vertex vertex;
 		OctreeNode *children[8];
 		bool simplified;
+		bool leaf;
 		uint mask;
 		ContainmentType solid;
 		std::vector<NodeInfo> info;
-		OctreeNode(Vertex vertex);
+		OctreeNode(Vertex vertex, bool leaf);
 		~OctreeNode();
 		void clear();
 		bool isEmpty();
 		void setChild(int i, OctreeNode * node);
 		NodeInfo * getNodeInfo(uint infoType);
+		bool isLeaf();
 };
 
 
@@ -163,7 +165,6 @@ class InstanceBuilder : public IteratorHandler{
 class Tesselator : public IteratorHandler, OctreeNodeTriangleHandler{
 	public:
 		Octree * tree;
-		long triangles;
 		Tesselator(Octree * tree, Geometry * chunk, long * count);
 		void before(OctreeNodeData &params) override;
 		void after(OctreeNodeData &params) override;
@@ -196,6 +197,7 @@ struct OctreeNodeSerialized {
     glm::vec3 normal;
     uint brushIndex;
     uint mask;
+	bool leaf;
     ContainmentType solid;
     uint children[8] = {0,0,0,0,0,0,0,0};
 };

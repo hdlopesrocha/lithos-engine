@@ -3,11 +3,10 @@
 
 Tesselator::Tesselator(Octree * tree, Geometry * chunk, long * count): OctreeNodeTriangleHandler(chunk, count) {
 	this->tree = tree;
-	this->triangles = 0;
 }
 
 void Tesselator::before(OctreeNodeData &params) {		
-    if(params.node->isEmpty()) {		
+    if(params.node->isLeaf()) {		
         // Must go to zero and try to create triangles in the border with highest detail
         // If the node is simplified then the triangles could have equal vertices
         // If a triangle as 2 equal vertices, it's a line, this triangle will be ignored
