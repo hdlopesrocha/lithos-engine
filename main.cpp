@@ -2,6 +2,7 @@
 #include "math/math.hpp"
 #include "gl/gl.hpp"
 #include "ui/ui.hpp"
+#include "command/command.hpp"
 #include "tools/tools.hpp"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -486,103 +487,93 @@ public:
 
 	}
 
+
+	glm::vec3 applyDeadzone(glm::vec3 input, float threshold) {
+		glm::vec3 absInput = glm::abs(input);
+		glm::vec3 mask = glm::step(glm::vec3(threshold), absInput); // 0 if < threshold, 1 otherwise
+		return input * mask;
+	}
+
+	bool isAboveDeadzone(const glm::vec3& v, float threshold) {
+		return glm::any(glm::greaterThan(glm::abs(v), glm::vec3(threshold)));
+	}
+	
     virtual void update(float deltaTime){
 		time += deltaTime;
+
+		if (getKeyboardStatus(GLFW_KEY_ESCAPE) != GLFW_RELEASE) {
+			close();
+	 	}
+
 		GLFWgamepadstate state;
-		float leftAxisX = 0;
-		float leftAxisY = 0;
-		float rightAxisX = 0;
-		float rightAxisY = 0;
-
-		float leftTrigger = 0;
-		float rightTrigger = 0;
-		bool lbPressed = 0;
-        bool rbPressed = 0;
-
+		glm::vec3 translate = glm::vec3(0);
+		glm::vec3 rotate = glm::vec3(0);
 
 		if (glfwGetGamepadState(GLFW_JOYSTICK_1, &state)) {
 			//ImGui::Text("Button A: %s", (state.buttons[GLFW_GAMEPAD_BUTTON_A] ? "Pressed" : "Released"));
-			leftAxisX = state.axes[GLFW_GAMEPAD_AXIS_LEFT_X];
-			leftAxisY = state.axes[GLFW_GAMEPAD_AXIS_LEFT_Y];
-			rightAxisX = state.axes[GLFW_GAMEPAD_AXIS_RIGHT_X];
-			rightAxisY = state.axes[GLFW_GAMEPAD_AXIS_RIGHT_Y];
-			leftTrigger = state.axes[GLFW_GAMEPAD_AXIS_LEFT_TRIGGER];
-			rightTrigger = state.axes[GLFW_GAMEPAD_AXIS_RIGHT_TRIGGER];
-			lbPressed = state.buttons[GLFW_GAMEPAD_BUTTON_LEFT_BUMPER] == GLFW_PRESS;
-			rbPressed = state.buttons[GLFW_GAMEPAD_BUTTON_RIGHT_BUMPER] == GLFW_PRESS;	
+			rotate.y = state.axes[GLFW_GAMEPAD_AXIS_LEFT_X];
+			rotate.x = state.axes[GLFW_GAMEPAD_AXIS_LEFT_Y];
+			rotate.z = (state.buttons[GLFW_GAMEPAD_BUTTON_RIGHT_BUMPER] == GLFW_PRESS ? 1 : 0) - (state.buttons[GLFW_GAMEPAD_BUTTON_LEFT_BUMPER] == GLFW_PRESS ? 1 : 0);	
+		
+			translate.x = state.axes[GLFW_GAMEPAD_AXIS_RIGHT_X];
+			translate.y = -state.axes[GLFW_GAMEPAD_AXIS_RIGHT_Y];
+			translate.z = state.axes[GLFW_GAMEPAD_AXIS_RIGHT_TRIGGER] - state.axes[GLFW_GAMEPAD_AXIS_LEFT_TRIGGER];
+		
 		}
 
 		
-		if (getKeyboardStatus(GLFW_KEY_ESCAPE) != GLFW_RELEASE) {
-		   	close();
-		}
+
 
 	//    camera.projection[1][1] *= -1;
 	 //   modelMatrix = glm::rotate(modelMatrix, deltaTime * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 
-	   	if (getKeyboardStatus(GLFW_KEY_W) != GLFW_RELEASE) {
-			leftAxisY = 1;
-		}
-	   	if (getKeyboardStatus(GLFW_KEY_S) != GLFW_RELEASE) {
-			leftAxisY = -1;
-		}
    		if (getKeyboardStatus(GLFW_KEY_A) != GLFW_RELEASE) {
-			leftAxisX = 1;
+			rotate.y = -1;
 		}
 	   	if (getKeyboardStatus(GLFW_KEY_D) != GLFW_RELEASE) {
-			leftAxisX = -1;
+			rotate.y = 1;
 		}
-		if (getKeyboardStatus(GLFW_KEY_UP) != GLFW_RELEASE) {
-			rightAxisY = -1;
-	 	}
-		if (getKeyboardStatus(GLFW_KEY_DOWN) != GLFW_RELEASE) {
-			rightAxisY = 1;
-		 }
-		if (getKeyboardStatus(GLFW_KEY_RIGHT) != GLFW_RELEASE) {
-			rightAxisX = 1;
-	 	}
-		if (getKeyboardStatus(GLFW_KEY_LEFT) != GLFW_RELEASE) {
-			rightAxisX = -1;
+		if (getKeyboardStatus(GLFW_KEY_W) != GLFW_RELEASE) {
+			rotate.x = -1;
 		}
-
+	   	if (getKeyboardStatus(GLFW_KEY_S) != GLFW_RELEASE) {
+			rotate.x = 1;
+		}
 		if (getKeyboardStatus(GLFW_KEY_Q) != GLFW_RELEASE) {
-			lbPressed = true;
+			rotate.z = -1;
 		}
 		if (getKeyboardStatus(GLFW_KEY_E) != GLFW_RELEASE) {
-			rbPressed = true;
-		}
-
-		if(glm::abs(leftAxisY) > 0.2) {
-			camera.quaternion = glm::angleAxis(deltaTime*camera.rotationSensitivity*leftAxisY, glm::vec3(1,0,0))*camera.quaternion;
-		}
-		if(glm::abs(leftAxisX) > 0.2) {
-			camera.quaternion = glm::angleAxis(deltaTime*camera.rotationSensitivity*leftAxisX, glm::vec3(0,1,0))*camera.quaternion;
-		}
-
-		glm::vec3 xAxis = glm::vec3(1.0f, 0.0f, 0.0f)*camera.quaternion;
-		glm::vec3 yAxis = glm::vec3(0.0f, 1.0f, 0.0f)*camera.quaternion;
-		glm::vec3 zAxis = glm::vec3(0.0f, 0.0f, 1.0f)*camera.quaternion;
-
-		if(lbPressed) {
-		 	camera.quaternion = glm::angleAxis(-deltaTime*camera.rotationSensitivity, glm::vec3(0,0,1))*camera.quaternion;
-		}
-		if(rbPressed) {
-			camera.quaternion = glm::angleAxis(+deltaTime*camera.rotationSensitivity, glm::vec3(0,0,1))*camera.quaternion;
+			rotate.z = 1;
 		}
 
 
-		if(glm::abs(rightAxisY) > 0.2) {
-			camera.position -= deltaTime*yAxis*rightAxisY*camera.translationSensitivity;
+		if (getKeyboardStatus(GLFW_KEY_RIGHT) != GLFW_RELEASE) {
+			translate.x = 1;
+	 	}
+		if (getKeyboardStatus(GLFW_KEY_LEFT) != GLFW_RELEASE) {
+			translate.x = -1;
 		}
-		if(glm::abs(rightAxisX) > 0.2) {
-			camera.position += deltaTime*xAxis*rightAxisX*camera.translationSensitivity;
+		if (getKeyboardStatus(GLFW_KEY_UP) != GLFW_RELEASE) {
+			translate.z = 1;
+	 	}
+		if (getKeyboardStatus(GLFW_KEY_DOWN) != GLFW_RELEASE) {
+			translate.z = -1;
+		 }
+
+		float threshold = 0.2;
+		translate = applyDeadzone(translate, threshold);
+		rotate = applyDeadzone(rotate, threshold);
+		
+		if(isAboveDeadzone(translate, threshold)) {
+			TranslateCameraCommand tc(camera);
+			tc.execute(translate*deltaTime);
 		}
-		if(rightTrigger > 0.2) {
-			camera.position -= deltaTime*zAxis*rightTrigger*camera.translationSensitivity;
+
+		if(isAboveDeadzone(rotate, threshold)) {
+			RotateCameraCommand rc(camera);
+			rc.execute(rotate*deltaTime);
 		}
-		if(leftTrigger > 0.2) {
-			camera.position += deltaTime*zAxis*leftTrigger*camera.translationSensitivity;
-		}
+
 		for(AnimateParams &params : animations) {
 			textureAnimator->animate(time, params);
 		}
