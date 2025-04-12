@@ -27,12 +27,10 @@ void GamepadControllerStrategy::handleInput(float deltaTime) {
     rotate = applyDeadzone(rotate, threshold);
     
     if(isAboveDeadzone(translate, threshold)) {
-        TranslateCameraCommand tc(camera);
-        tc.execute(translate*deltaTime);
+        translateCameraCommand->execute(translate*deltaTime);
     }
 
     if(isAboveDeadzone(rotate, threshold)) {
-        RotateCameraCommand rc(camera);
-        rc.execute(rotate*deltaTime);
+        rotateCameraCommand->execute(rotate*deltaTime);
     }
 }
