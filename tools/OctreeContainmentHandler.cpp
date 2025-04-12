@@ -24,11 +24,13 @@ glm::vec3 OctreeContainmentHandler::getNormal(const glm::vec3 pos) const {
 
 ContainmentType OctreeContainmentHandler::check(const BoundingCube &cube) const {
     ContainmentType boxResult = box.test(cube);
-
-    if (boxResult == ContainmentType::Disjoint)
-        return ContainmentType::Disjoint;
+//    if (boxResult == ContainmentType::Disjoint)
+//        return ContainmentType::Disjoint;
 
     ContainmentType sourceResult = octree->contains(cube);
+return sourceResult;
+
+
 
     if (sourceResult == ContainmentType::Disjoint)
         return boxResult;

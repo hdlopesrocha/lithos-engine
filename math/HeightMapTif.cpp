@@ -108,7 +108,7 @@ HeightMapTif::HeightMapTif(const std::string &filename, BoundingBox box, int siz
         this->data[y][x] = floatValue;
         ++sz;
         if (i < 8) {  // Debugging first few values
-            std::cout << "\th[" << y << "," << x << "] = " << floatValue << std::endl;
+           // std::cout << "\th[" << y << "," << x << "] = " << floatValue << std::endl;
         }
         
     }        

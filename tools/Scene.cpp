@@ -29,9 +29,9 @@ Scene::Scene(Settings * settings) {
 		new VegetationGeometryBuilder(TYPE_INSTANCE_VEGETATION_DRAWABLE, &vegetationInstancesCount, solidSpace, 
 			new VegetationInstanceBuilderHandler(solidSpace, &vegetationInstancesCount))
 	);
-	debugProcessor = new OctreeProcessor(solidSpace, true,  
-		new OctreeGeometryBuilder(TYPE_INSTANCE_OCTREE_DRAWABLE, &octreeInstancesCount, solidSpace, 
-			new OctreeInstanceBuilderHandler(solidSpace, &octreeInstancesCount))
+	debugProcessor = new OctreeProcessor(liquidSpace, true,  
+		new OctreeGeometryBuilder(TYPE_INSTANCE_OCTREE_DRAWABLE, &octreeInstancesCount, liquidSpace, 
+			new OctreeInstanceBuilderHandler(liquidSpace, &octreeInstancesCount))
 	);
 
 	solidRenderer = new OctreeVisibilityChecker(solidSpace, &visibleSolidNodes);
@@ -101,7 +101,7 @@ void Scene::processSpace() {
 		}
 	}
 
-	for(OctreeNodeData &data : visibleSolidNodes){
+	for(OctreeNodeData &data : visibleLiquidNodes){
 		if(debugProcessor->loadCount > 0) {
 			debugProcessor->before(data);
 		} else {
