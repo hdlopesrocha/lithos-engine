@@ -1,6 +1,6 @@
 #include "command.hpp"
 
-GamepadControllerStrategy::GamepadControllerStrategy(Camera &camera) : camera(camera) {
+GamepadControllerStrategy::GamepadControllerStrategy(Camera &camera, Brush3d &brush3d) : camera(camera), brush3d(brush3d) {
     this->translateCameraCommand = new TranslateCameraCommand(camera);
     this->rotateCameraCommand = new RotateCameraCommand(camera);
 }

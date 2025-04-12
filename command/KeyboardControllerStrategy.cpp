@@ -6,7 +6,6 @@ KeyboardControllerStrategy::KeyboardControllerStrategy(Camera &camera, LithosApp
     this->translateCameraCommand = new TranslateCameraCommand(camera);
     this->rotateCameraCommand = new RotateCameraCommand(camera);
     this->closeWindowCommand = new CloseWindowCommand(app);
-
 }
 
 void KeyboardControllerStrategy::handleInput(float deltaTime) {

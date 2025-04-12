@@ -115,6 +115,15 @@ class CameraEditor: public Closable {
     void draw2d(float time) override;
 };
 
+class GamepadEditor: public Closable {
+    TextureImage gamepadTexture;
+  
+    public:
+    GamepadEditor(TextureImage gamepadTexture);
+    void draw2d(float time) override;
+};
+
+
 class ShadowMapViewer : public Closable{
 	std::vector<std::pair<RenderBuffer, int>> * shadowBuffers;
   	int selectedBuffer;

@@ -57,6 +57,7 @@ class MainApplication : public LithosApplication {
 
 
 	TextureImage noiseTexture;
+	TextureImage gamepadTexture;
 	TextureBlitter * textureBlitter1024;
 	TextureBlitter * textureBlitter256;
 	RenderBuffer depthFrameBuffer;
@@ -84,6 +85,7 @@ class MainApplication : public LithosApplication {
 	CameraEditor * cameraEditor;
 	TextureViewer * textureViewer;
 	ImpostorViewer * impostorViewer;
+	GamepadEditor * gamepadEditor;
 
 	TextureLayers atlasLayers;
 	TextureLayers textureLayers;
@@ -114,8 +116,9 @@ public:
 
 		uniformBlockData = new ProgramData();
 		uniformBrushData = new ProgramData();
+		brush3d = new Brush3d();
 
-		gamepadControllerStrategy = new GamepadControllerStrategy(camera);
+		gamepadControllerStrategy = new GamepadControllerStrategy(camera, *brush3d);
 		keyboardControllerStrategy = new KeyboardControllerStrategy(camera, *this);
 
 		std::vector<GlslInclude> includes;
@@ -233,7 +236,6 @@ public:
 		impostorDrawer = new ImpostorDrawer(programDeferred, 256, 256, &billboardLayers, &impostorLayers, textureBlitter256);
 
 		{
-			brush3d = new Brush3d();
 			SphereGeometry sphereGeometry(40,80);
 			BoxGeometry boxGeometry(BoundingBox(glm::vec3(-0.5), glm::vec3(0.5)));
 
@@ -408,6 +410,7 @@ public:
 		}
 		
 		noiseTexture = loadTextureImage("textures/noise.jpg", false);
+		gamepadTexture = loadTextureImage("textures/gamepad.png", true);
 
 		Texture::bindTexture(program3d, activeTexture, glGetUniformLocation(program3d, "noise"), noiseTexture);
 		activeTexture = Texture::bindTexture(programBillboard, activeTexture, glGetUniformLocation(programBillboard, "noise"), noiseTexture);
@@ -473,6 +476,7 @@ public:
 		atlasViewer = new AtlasViewer(&atlasTextures, atlasDrawer, programAtlas, programTexture, 256,256, &atlasLayers, programCopy);
 		brushEditor = new BrushEditor(brush3d, &camera, &brushes, program3d, programTexture, &textureLayers, &textureMapper);
 		cameraEditor = new CameraEditor(&camera);
+		gamepadEditor = new GamepadEditor(gamepadTexture);
 		shadowMapViewer = new ShadowMapViewer(&shadowFrameBuffers, 512, 512);
 		textureMixerEditor = new TextureMixerEditor(textureMixer, &mixers, programTexture, &textureLayers);
 		animatedTextureEditor = new AnimatedTextureEditor(&animations, programTexture, 256,256, &textureLayers);
@@ -947,6 +951,9 @@ public:
 				if (ImGui::MenuItem("Depth Buffer Viewer", "Ctrl+B")) {
 					depthBufferViewer->show();
 				}
+				if (ImGui::MenuItem("Gamepad Editor", "Ctrl+B")) {
+					gamepadEditor->show();
+				}
 				if (ImGui::MenuItem("Impostor Viewer", "Ctrl+B")) {
 					impostorViewer->show();
 				}
@@ -1017,6 +1024,7 @@ public:
 		animatedTextureEditor->draw2dIfOpen(time);
 		brushEditor->draw2dIfOpen(time);
 		cameraEditor->draw2dIfOpen(time);
+		gamepadEditor->draw2dIfOpen(time);
 		shadowMapViewer->draw2dIfOpen(time);
 		textureMixerEditor->draw2dIfOpen(time);
 		depthBufferViewer->draw2dIfOpen(time);

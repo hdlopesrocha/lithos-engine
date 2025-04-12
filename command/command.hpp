@@ -45,8 +45,9 @@ class GamepadControllerStrategy : public ControllerStrategy {
     TranslateCameraCommand * translateCameraCommand;
     RotateCameraCommand * rotateCameraCommand;
     Camera &camera;
+    Brush3d &brush3d;
     public:
-        GamepadControllerStrategy(Camera &camera);
+        GamepadControllerStrategy(Camera &camera, Brush3d &brush3d);
         void handleInput(float deltaTime) override;
 
 };

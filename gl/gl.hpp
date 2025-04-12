@@ -127,6 +127,8 @@ struct TextureImage {
     bool mipmapEnabled;
     GLuint index;
     GLuint format;
+    size_t width;
+    size_t height;
 };
 
 
