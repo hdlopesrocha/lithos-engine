@@ -26,54 +26,52 @@ int getNodeIndex(const glm::vec3 &vec, const BoundingCube &cube) {
     return (vec.x >= c.x ? 4 : 0) + (vec.y >= c.y ? 2 : 0) + (vec.z >= c.z ? 1 : 0);
 }
 
-ContainmentType containsRecursive(OctreeNode* node, const BoundingCube& cube, const AbstractBoundingBox& c) {
-    if (!cube.intersects(c))
-        return ContainmentType::Disjoint;
-
-    if (!node)
-        return ContainmentType::Disjoint;
-
-    if (node->solid == ContainmentType::Contains) {
-        if (cube.contains(c))
-            return ContainmentType::Contains;
-        else
-            return ContainmentType::Intersects;
-    }
-
-    if (node->solid == ContainmentType::Disjoint)
-        return ContainmentType::Disjoint;
-
-    bool allContained = true;
-    bool anyIntersecting = false;
-
-    for (int i = 0; i < 8; ++i) {
-        BoundingCube childCube = cube.getChild(i);
-
-        if (!childCube.intersects(c))
-            continue;
-
-        ContainmentType result = containsRecursive(node->children[i], childCube, c);
-
-        if (result == ContainmentType::Intersects)
-            return ContainmentType::Intersects;
-        else if (result == ContainmentType::Disjoint)
-            allContained = false;
-        else if (result == ContainmentType::Contains)
-            anyIntersecting = true;
-    }
-
-    if (allContained && anyIntersecting)
-        return ContainmentType::Contains;
-    else if (anyIntersecting)
-        return ContainmentType::Intersects;
-    else
-        return ContainmentType::Disjoint;
-}
 
 
 ContainmentType Octree::contains(const AbstractBoundingBox &c) {
-    return containsRecursive(root, *this, c);
+    OctreeNode* node = root;
+    BoundingCube cube = *this;
+
+    while (node) {
+        bool allContains = true;
+        bool anyIntersection = false;
+        OctreeNode* candidate = NULL;
+        BoundingCube candidateCube;
+
+        for(int i =0 ; i < 8 ; ++i) {
+            OctreeNode* subNode = node->children[i];
+            if(subNode != NULL) {
+                BoundingCube subCube = cube.getChild(i);
+                bool cubeIntersects = subCube.intersects(c);
+                if(cubeIntersects) {               
+                    candidate = subNode;
+                    candidateCube = subCube;
+                    anyIntersection = true;
+                    if(candidate->solid != ContainmentType::Contains) {
+                        allContains = false;
+                    }
+                }
+            }
+        }
+
+        if (allContains) {
+            return ContainmentType::Contains;
+        }
+        if (!anyIntersection) {
+            return ContainmentType::Disjoint;
+        }
+
+        node = candidate;
+        cube = candidateCube;
+    }
+    if (node == NULL){
+		return ContainmentType::Disjoint;
+	} 
+
+    return node->solid;
 }
+
+
 
 ContainmentType Octree::contains(const glm::vec3 &pos) {
     OctreeNode* node = root;

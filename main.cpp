@@ -94,6 +94,8 @@ class MainApplication : public LithosApplication {
 	TextureMixer * textureMixer;
 	AnimatedTexture * textureAnimator;
 	AtlasDrawer * atlasDrawer;
+	GamepadControllerStrategy * gamepadControllerStrategy;
+	KeyboardControllerStrategy * keyboardControllerStrategy;
 
 public:
 	MainApplication() {
@@ -112,6 +114,9 @@ public:
 
 		uniformBlockData = new ProgramData();
 		uniformBrushData = new ProgramData();
+
+		gamepadControllerStrategy = new GamepadControllerStrategy(camera);
+		keyboardControllerStrategy = new KeyboardControllerStrategy(camera, *this);
 
 		std::vector<GlslInclude> includes;
 		includes.push_back(GlslInclude("#include<functions.glsl>" , readFile("shaders/util/functions.glsl")));
@@ -488,91 +493,17 @@ public:
 	}
 
 
-	glm::vec3 applyDeadzone(glm::vec3 input, float threshold) {
-		glm::vec3 absInput = glm::abs(input);
-		glm::vec3 mask = glm::step(glm::vec3(threshold), absInput); // 0 if < threshold, 1 otherwise
-		return input * mask;
-	}
 
-	bool isAboveDeadzone(const glm::vec3& v, float threshold) {
-		return glm::any(glm::greaterThan(glm::abs(v), glm::vec3(threshold)));
-	}
 	
     virtual void update(float deltaTime){
 		time += deltaTime;
 
-		if (getKeyboardStatus(GLFW_KEY_ESCAPE) != GLFW_RELEASE) {
-			close();
-	 	}
 
-		GLFWgamepadstate state;
-		glm::vec3 translate = glm::vec3(0);
-		glm::vec3 rotate = glm::vec3(0);
-
-		if (glfwGetGamepadState(GLFW_JOYSTICK_1, &state)) {
-			//ImGui::Text("Button A: %s", (state.buttons[GLFW_GAMEPAD_BUTTON_A] ? "Pressed" : "Released"));
-			rotate.y = state.axes[GLFW_GAMEPAD_AXIS_LEFT_X];
-			rotate.x = state.axes[GLFW_GAMEPAD_AXIS_LEFT_Y];
-			rotate.z = (state.buttons[GLFW_GAMEPAD_BUTTON_RIGHT_BUMPER] == GLFW_PRESS ? 1 : 0) - (state.buttons[GLFW_GAMEPAD_BUTTON_LEFT_BUMPER] == GLFW_PRESS ? 1 : 0);	
-		
-			translate.x = state.axes[GLFW_GAMEPAD_AXIS_RIGHT_X];
-			translate.y = -state.axes[GLFW_GAMEPAD_AXIS_RIGHT_Y];
-			translate.z = state.axes[GLFW_GAMEPAD_AXIS_RIGHT_TRIGGER] - state.axes[GLFW_GAMEPAD_AXIS_LEFT_TRIGGER];
-		
-		}
-
-		
-
-
+		gamepadControllerStrategy->handleInput(deltaTime);
+		keyboardControllerStrategy->handleInput(deltaTime);
 	//    camera.projection[1][1] *= -1;
 	 //   modelMatrix = glm::rotate(modelMatrix, deltaTime * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 
-   		if (getKeyboardStatus(GLFW_KEY_A) != GLFW_RELEASE) {
-			rotate.y = -1;
-		}
-	   	if (getKeyboardStatus(GLFW_KEY_D) != GLFW_RELEASE) {
-			rotate.y = 1;
-		}
-		if (getKeyboardStatus(GLFW_KEY_W) != GLFW_RELEASE) {
-			rotate.x = -1;
-		}
-	   	if (getKeyboardStatus(GLFW_KEY_S) != GLFW_RELEASE) {
-			rotate.x = 1;
-		}
-		if (getKeyboardStatus(GLFW_KEY_Q) != GLFW_RELEASE) {
-			rotate.z = -1;
-		}
-		if (getKeyboardStatus(GLFW_KEY_E) != GLFW_RELEASE) {
-			rotate.z = 1;
-		}
-
-
-		if (getKeyboardStatus(GLFW_KEY_RIGHT) != GLFW_RELEASE) {
-			translate.x = 1;
-	 	}
-		if (getKeyboardStatus(GLFW_KEY_LEFT) != GLFW_RELEASE) {
-			translate.x = -1;
-		}
-		if (getKeyboardStatus(GLFW_KEY_UP) != GLFW_RELEASE) {
-			translate.z = 1;
-	 	}
-		if (getKeyboardStatus(GLFW_KEY_DOWN) != GLFW_RELEASE) {
-			translate.z = -1;
-		 }
-
-		float threshold = 0.2;
-		translate = applyDeadzone(translate, threshold);
-		rotate = applyDeadzone(rotate, threshold);
-		
-		if(isAboveDeadzone(translate, threshold)) {
-			TranslateCameraCommand tc(camera);
-			tc.execute(translate*deltaTime);
-		}
-
-		if(isAboveDeadzone(rotate, threshold)) {
-			RotateCameraCommand rc(camera);
-			rc.execute(rotate*deltaTime);
-		}
 
 		for(AnimateParams &params : animations) {
 			textureAnimator->animate(time, params);
