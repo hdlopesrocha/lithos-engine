@@ -79,10 +79,12 @@ class KeyboardControllerStrategy : public ControllerStrategy {
     RotateCameraCommand * rotateCameraCommand;
     CloseWindowCommand * closeWindowCommand;
     TranslateBrushCommand * translateBrushCommand;
+    PaintBrushCommand * paintBrushCommand;
     ControllerMode controllerMode;
     LithosApplication &app;
+    Octree &octree;
     public:
-        KeyboardControllerStrategy(Camera &camera, Brush3d &brush3d, LithosApplication &app);
+        KeyboardControllerStrategy(Camera &camera, Brush3d &brush3d, LithosApplication &app,Octree &octree);
         void handleInput(float deltaTime) override;
 };
 

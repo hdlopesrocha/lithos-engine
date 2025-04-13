@@ -13,7 +13,6 @@ class MainApplication : public LithosApplication {
 	std::vector<UniformBlockBrush*> brushes;
 	std::vector<UniformBlockBrush*> billboardBrushes;
 	std::vector<AtlasTexture*> atlasTextures;
-	std::vector<UniformBlockBrush> uniformBlockBrushes;
 	std::map<UniformBlockBrush*, GLuint > textureMapper;
 
 	std::vector<AtlasParams> atlasParams;
@@ -122,7 +121,7 @@ public:
 		brush3d = new Brush3d();
 
 		gamepadControllerStrategy = new GamepadControllerStrategy(camera, *brush3d, *mainScene->solidSpace);
-		keyboardControllerStrategy = new KeyboardControllerStrategy(camera, *brush3d, *this);
+		keyboardControllerStrategy = new KeyboardControllerStrategy(camera, *brush3d, *this, *mainScene->solidSpace);
 
 		std::vector<GlslInclude> includes;
 		includes.push_back(GlslInclude("#include<functions.glsl>" , readFile("shaders/util/functions.glsl")));
