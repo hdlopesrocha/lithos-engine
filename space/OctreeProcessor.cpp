@@ -19,8 +19,15 @@ void OctreeProcessor::before(OctreeNodeData &params) {
 			if(info == NULL) {
 				params.node->info.push_back(builder->build(params));
 				--loadCount;
-			}else {
-				//TODO replace info, delete vs new ?
+			}else if(info->dirty) {
+				if(info->data != NULL) {
+					delete info->data;
+				}
+				if(info->temp != NULL) {
+					delete info->temp;
+				}
+
+				*info = builder->build(params);
 				info->dirty = false;
 			}
 		}

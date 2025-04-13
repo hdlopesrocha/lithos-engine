@@ -114,11 +114,14 @@ public:
 		// Register all GDAL drivers
 		GDALAllRegister();
 
+		mainScene = new Scene(settings);
+		//mainScene->load("data");
+	
 		uniformBlockData = new ProgramData();
 		uniformBrushData = new ProgramData();
 		brush3d = new Brush3d();
 
-		gamepadControllerStrategy = new GamepadControllerStrategy(camera, *brush3d);
+		gamepadControllerStrategy = new GamepadControllerStrategy(camera, *brush3d, *mainScene->solidSpace);
 		keyboardControllerStrategy = new KeyboardControllerStrategy(camera, *brush3d, *this);
 
 		std::vector<GlslInclude> includes;
@@ -463,9 +466,7 @@ public:
 			impostorDrawer->draw(params, 0);
 		}
 
-		mainScene = new Scene(settings);
-		//mainScene->load("data");
-	
+
 
 
         light.direction = glm::normalize(glm::vec3(-1.0,-1.0,-1.0));
@@ -578,7 +579,7 @@ public:
 		UniformBlockBrush::uniform(program3d, brush, "overrideProps");
 		UniformBlock::uniform(0, &uniformBlock, sizeof(UniformBlock) , &data);
 		long count = 0;
-		if(brush3d->mode3d == BrushShape::SPHERE) {
+		if(brush3d->shape == BrushShape::SPHERE) {
 				brushSphere->draw(GL_PATCHES, &count);
 		}else {
 				brushBox->draw(GL_PATCHES, &count);

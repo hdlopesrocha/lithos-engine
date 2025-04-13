@@ -3,6 +3,8 @@
 #define KEYBOARD_SIZE 1024
 
 #include "../gl/gl.hpp"
+#include "../tools/tools.hpp"
+
 template<typename T> class ICommand {
     public:
     virtual ~ICommand() = default;
@@ -33,6 +35,15 @@ class TranslateBrushCommand : public ICommand<glm::vec3>{
     void execute(const glm::vec3 &value) override ;
 };
 
+class PaintBrushCommand : public ICommand<float>{
+    Brush3d &brush3d;
+    Octree &octree;
+    public:
+    PaintBrushCommand(Brush3d &brush3d, Octree &octree);
+    void execute(const float &value) override ;
+};
+
+
 class RotateCameraCommand : public ICommand<glm::vec3>{
     Camera &camera;
     public:
@@ -55,9 +66,10 @@ class GamepadControllerStrategy : public ControllerStrategy {
     TranslateCameraCommand * translateCameraCommand;
     TranslateBrushCommand * translateBrushCommand;
     RotateCameraCommand * rotateCameraCommand;
+    PaintBrushCommand * paintBrushCommand;
     ControllerMode controllerMode;
     public:
-        GamepadControllerStrategy(Camera &camera, Brush3d &brush3d);
+        GamepadControllerStrategy(Camera &camera, Brush3d &brush3d, Octree &octree);
         void handleInput(float deltaTime) override;
 
 };

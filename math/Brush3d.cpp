@@ -4,10 +4,11 @@ Brush3d::Brush3d() {
     this->position = glm::vec3(0);
     this->scale = glm::vec3(1.0f);
     this->mode = BrushMode::ADD;
-    this->mode3d = BrushShape::SPHERE;
+    this->shape = BrushShape::SPHERE;
     this->index = 0;
    	this->translationSensitivity = 32.0f;
     this->enabled =true;
+    this->detail = 1.0;
 }
 
 void Brush3d::reset(Camera * camera) {

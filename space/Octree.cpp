@@ -213,6 +213,12 @@ void Octree::expand(const ContainmentHandler &handler) {
 	}
 }
 
+void markAsDirty(OctreeNode * node){
+    for(NodeInfo &info : node->info) {
+        info.dirty = true;
+    }
+}
+
 void Octree::add(const ContainmentHandler &handler, float minSize) {
 	expand(handler);	
 
@@ -249,7 +255,7 @@ void Octree::add(const ContainmentHandler &handler, float minSize) {
         }
         (*nodePtr)->mask |= buildMask(handler, frame.cube);
         (*nodePtr)->solid = check;
-
+        markAsDirty(*nodePtr);
         if (check == ContainmentType::Contains) {
             (*nodePtr)->clear();
         } else if (!isLeaf) {
@@ -308,6 +314,7 @@ void Octree::del(const ContainmentHandler &handler, float minSize) {
 
             (*nodePtr)->mask &= buildMask(handler, frame.cube) ^ 0xff;
             (*nodePtr)->solid = check;
+            markAsDirty(*nodePtr);
 
             if (!isLeaf) {
                 for (int i = 7; i >= 0; --i) {  // Push children in reverse order

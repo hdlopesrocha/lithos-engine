@@ -67,12 +67,14 @@ void BrushEditor::draw2d(float time){
     ImGui::Text("Shape: ");
 
     for (int i = 0; i < BrushShape::BrushShape_COUNT; ++i) {
-        BrushShape bm = BrushShape(i);
-        std::string label = std::string(toString(bm));
-        if(ImGui::RadioButton(label.c_str(), brush->mode3d == bm)){
-            brush->mode3d = bm;
+        BrushShape bs = BrushShape(i);
+        std::string label = std::string(toString(bs));
+        if(ImGui::RadioButton(label.c_str(), brush->shape == bs)){
+            brush->shape = bs;
         }
     }
+    ImGui::Text("Detail: ");
+    ImGui::InputFloat("m##brushDetail", &brush->detail);
 
     ImGui::Text("Position: ");
     ImGui::InputFloat3("m##brushPosition", &brush->position[0]);

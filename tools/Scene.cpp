@@ -20,10 +20,10 @@ Scene::Scene(Settings * settings) {
 	chunkSize = glm::pow(2, 11);
 
 	solidProcessor = new OctreeProcessor(solidSpace , true, 
-		new MeshGeometryBuilder(TYPE_INSTANCE_SOLID_DRAWABLE, &solidInstancesCount, &solidTrianglesCount, solidSpace, 0.95, 0.5, true)
+		new MeshGeometryBuilder(TYPE_INSTANCE_SOLID_DRAWABLE, &solidInstancesCount, &solidTrianglesCount, solidSpace, 0.9, 1.0, true)
 	);
 	liquidProcessor = new OctreeProcessor(liquidSpace, true, 
-		new MeshGeometryBuilder(TYPE_INSTANCE_LIQUID_DRAWABLE, &liquidInstancesCount, &liquidTrianglesCount, liquidSpace, 0.95, 0.5, true)
+		new MeshGeometryBuilder(TYPE_INSTANCE_LIQUID_DRAWABLE, &liquidInstancesCount, &liquidTrianglesCount, liquidSpace, 0.9, 1.0, true)
 	);
 	vegetationProcessor = new OctreeProcessor(solidSpace, true, 
 		new VegetationGeometryBuilder(TYPE_INSTANCE_VEGETATION_DRAWABLE, &vegetationInstancesCount, solidSpace, 

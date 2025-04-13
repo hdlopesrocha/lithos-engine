@@ -80,6 +80,7 @@ DrawableInstanceGeometry::~DrawableInstanceGeometry() {
 	glDeleteBuffers(1, &instanceBuffer);
 	glDeleteBuffers(1, &indexBuffer);
 	glDeleteVertexArrays(1, &vertexArrayObject);
+	std::cout << "delete DrawableInstanceGeometry()" << std::endl; 
  }
 
 void DrawableInstanceGeometry::draw(uint mode, float amount, long * count) {
