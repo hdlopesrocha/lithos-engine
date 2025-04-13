@@ -17,11 +17,6 @@ int BrushEditor::getSelectedBrush() {
 void BrushEditor::draw2d(float time){
     ImGui::Begin("Brush Editor", &open, ImGuiWindowFlags_AlwaysAutoResize);
 
-    brush->index = Math::mod(brush->index, brushes->size());
-
-
-    UniformBlockBrush * uniformBrush = (*brushes)[brush->index];
-
     previewer->draw2d(brush->index);
 
     ImGui::Checkbox("Enabled", &brush->enabled);
@@ -36,6 +31,8 @@ void BrushEditor::draw2d(float time){
     if (ImGui::ArrowButton("##arrow_right", ImGuiDir_Right)) {
         ++brush->index;
     }
+    brush->index = Math::mod(brush->index, brushes->size());
+    UniformBlockBrush * uniformBrush = (*brushes)[brush->index];
 
     const char* buttonText = "Reset Position";
     ImVec2 textSize = ImGui::CalcTextSize(buttonText);
