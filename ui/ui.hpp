@@ -93,7 +93,6 @@ class ImpostorViewer: public Closable {
 
 class BrushEditor: public Closable {
     std::vector<UniformBlockBrush*> * brushes;
-    std::map<UniformBlockBrush*, GLuint > *textureMapper;
     GLuint program;
     Brush3d * brush;
     Camera * camera;
@@ -101,7 +100,7 @@ class BrushEditor: public Closable {
 
 
     public:
-    BrushEditor(Brush3d * brush,Camera * camera, std::vector<UniformBlockBrush*> * brushes, GLuint program3d, GLuint previewProgram, TextureLayers * layers, std::map<UniformBlockBrush*, GLuint > *textureMapper);
+    BrushEditor(Brush3d * brush,Camera * camera, std::vector<UniformBlockBrush*> * brushes, GLuint program3d, GLuint previewProgram, TextureLayers * layers);
     void draw2d(float time) override;
     int getSelectedBrush();
     void resetPosition();

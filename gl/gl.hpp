@@ -103,11 +103,12 @@ struct UniformBlockBrush {
     float specularStrength;
     float refractiveIndex;
     glm::vec2 textureScale;
+    int textureIndex;
 
     UniformBlockBrush();
-    UniformBlockBrush(glm::vec2 textureScale);
-    UniformBlockBrush(glm::vec2 textureScale,float parallaxScale, float parallaxMinLayers, float parallaxMaxLayers, float parallaxFade, float parallaxRefine, float shininess, float specularStrength, float refractiveIndex);
-    static void uniform(GLuint program, std::vector<UniformBlockBrush*> *brushes, std::string objectName, std::string textureMap,std::map<UniformBlockBrush*, GLuint > *textureMapper);
+    UniformBlockBrush(int textureIndex, glm::vec2 textureScale);
+    UniformBlockBrush(int textureIndex, glm::vec2 textureScale,float parallaxScale, float parallaxMinLayers, float parallaxMaxLayers, float parallaxFade, float parallaxRefine, float shininess, float specularStrength, float refractiveIndex);
+    static void uniform(GLuint program, std::vector<UniformBlockBrush*> *brushes, std::string objectName, std::string textureMap);
     static void uniform(GLuint program, UniformBlockBrush * brush, std::string objectName, std::string textureMap, int index,uint textureIndex);
     static void uniform(GLuint program, UniformBlockBrush * brush, std::string objectName);
     static void save(std::vector<UniformBlockBrush> * brushes, std::string baseFolder, std::string path);

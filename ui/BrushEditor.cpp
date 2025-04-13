@@ -1,10 +1,9 @@
 #include "ui.hpp"
 
 
-BrushEditor::BrushEditor( Brush3d * brush, Camera * camera, std::vector<UniformBlockBrush*> * brushes, GLuint program, GLuint previewProgram, TextureLayers * layers, std::map<UniformBlockBrush*, GLuint > *textureMapper) {
+BrushEditor::BrushEditor( Brush3d * brush, Camera * camera, std::vector<UniformBlockBrush*> * brushes, GLuint program, GLuint previewProgram, TextureLayers * layers) {
     this->program = program;
     this->camera = camera;
-    this->textureMapper = textureMapper;
     this->brush = brush;
     this->brushes = brushes;
     this->previewer = new TexturePreviewer(previewProgram, 256, 256, {"Color", "Normal", "Bump" }, layers);
@@ -14,9 +13,6 @@ BrushEditor::BrushEditor( Brush3d * brush, Camera * camera, std::vector<UniformB
 int BrushEditor::getSelectedBrush() {
     return brush->index;
 }
-
-
-
 
 void BrushEditor::draw2d(float time){
     ImGui::Begin("Brush Editor", &open, ImGuiWindowFlags_AlwaysAutoResize);
@@ -30,7 +26,6 @@ void BrushEditor::draw2d(float time){
 
     ImGui::Checkbox("Enabled", &brush->enabled);
 
-
     ImGui::Text("Selected texture: %d", brush->index);
     ImGui::SameLine();
 
@@ -41,8 +36,6 @@ void BrushEditor::draw2d(float time){
     if (ImGui::ArrowButton("##arrow_right", ImGuiDir_Right)) {
         ++brush->index;
     }
-
-
 
     const char* buttonText = "Reset Position";
     ImVec2 textSize = ImGui::CalcTextSize(buttonText);

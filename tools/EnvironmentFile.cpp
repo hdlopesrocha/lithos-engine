@@ -58,22 +58,23 @@ EnvironmentFile::EnvironmentFile(std::string filename, Camera * camera) {
     memset(str, 0, 256);
 	decompressed.read(reinterpret_cast<char*>(&sizeOfData), sizeof(size_t) );
 	decompressed.read(reinterpret_cast<char*>(str), sizeOfData);
-    solidFilename = std::string(str);
+    this->solidFilename = std::string(str, sizeOfData);
     
     memset(str, 0, 256);
 	decompressed.read(reinterpret_cast<char*>(&sizeOfData), sizeof(size_t) );
 	decompressed.read(reinterpret_cast<char*>(str), sizeOfData);
-    liquidFilename = std::string(str);
+    this->liquidFilename = std::string(str, sizeOfData);
     
     memset(str, 0, 256);
 	decompressed.read(reinterpret_cast<char*>(&sizeOfData), sizeof(size_t) );
 	decompressed.read(reinterpret_cast<char*>(str), sizeOfData);
-    brushesFilename = std::string(str);
+    this->brushesFilename = std::string(str, sizeOfData);
 
     decompressed.read(reinterpret_cast<char*>(&camera->position), 3*sizeof(float) );
     decompressed.read(reinterpret_cast<char*>(&camera->quaternion), 4*sizeof(float) );
 
     file.close();
+
 
     std::cout << "EnvironmentFile::EnvironmentFile('" << filename <<"') Ok!" << std::endl;
 }

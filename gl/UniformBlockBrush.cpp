@@ -10,9 +10,10 @@ UniformBlockBrush::UniformBlockBrush(){
     this->specularStrength = 0.4;
     this->textureScale = glm::vec2(1.0);
     this->refractiveIndex = 0;
+	this->textureIndex = 0;
 }
 
-UniformBlockBrush::UniformBlockBrush(glm::vec2 textureScale){
+UniformBlockBrush::UniformBlockBrush(int textureIndex, glm::vec2 textureScale){
 	this->textureScale = textureScale;
 	this->parallaxScale = 0.0;
     this->parallaxMinLayers = 0;
@@ -22,9 +23,10 @@ UniformBlockBrush::UniformBlockBrush(glm::vec2 textureScale){
     this->shininess = 32;
     this->specularStrength = 0.4;
     this->refractiveIndex = 0;
+	this->textureIndex = textureIndex;
 }
 
-UniformBlockBrush::UniformBlockBrush(glm::vec2 textureScale,float parallaxScale, float parallaxMinLayers, float parallaxMaxLayers, float parallaxFade, float parallaxRefine, float shininess, float specularStrength, float refractiveIndex){
+UniformBlockBrush::UniformBlockBrush(int textureIndex, glm::vec2 textureScale,float parallaxScale, float parallaxMinLayers, float parallaxMaxLayers, float parallaxFade, float parallaxRefine, float shininess, float specularStrength, float refractiveIndex){
 	this->parallaxScale = parallaxScale;
     this->parallaxMinLayers = parallaxMinLayers;
     this->parallaxMaxLayers = parallaxMaxLayers;
@@ -34,6 +36,7 @@ UniformBlockBrush::UniformBlockBrush(glm::vec2 textureScale,float parallaxScale,
     this->specularStrength = specularStrength;
     this->textureScale = textureScale;
     this->refractiveIndex = refractiveIndex;
+	this->textureIndex = textureIndex;
 }
 
 void UniformBlockBrush::save(std::vector<UniformBlockBrush> * brushes, std::string baseFolder, std::string filename){
@@ -49,7 +52,7 @@ void UniformBlockBrush::save(std::vector<UniformBlockBrush> * brushes, std::stri
     std::ostringstream decompressed;
 	decompressed.write(reinterpret_cast<const char*>(&size), sizeof(size_t) );
 	for(size_t i =0 ; i < size ; ++i) {
-		decompressed.write(reinterpret_cast<const char*>(&brushes[i]), sizeof(UniformBlockBrush) );
+		decompressed.write(reinterpret_cast<const char*>(&brushes->data()[i]), sizeof(UniformBlockBrush) );
 	}	
 	std::istringstream inputStream(decompressed.str());
  	gzipCompressToOfstream(inputStream, file);
@@ -71,7 +74,7 @@ void UniformBlockBrush::load(std::vector<UniformBlockBrush> * brushes, std::stri
 	decompressed.read(reinterpret_cast<char*>(&size), sizeof(size_t) );
 	brushes->resize(size);
 	for(size_t i =0 ; i < size ; ++i) {
-		decompressed.read(reinterpret_cast<char*>(&brushes[i]), sizeof(UniformBlockBrush));
+		decompressed.read(reinterpret_cast<char*>(&brushes->data()[i]), sizeof(UniformBlockBrush));
 	}
 
 	file.close();
@@ -97,19 +100,10 @@ void UniformBlockBrush::uniform(GLuint program, UniformBlockBrush * brush, std::
 	uniform(program, brush, propName);
 }
 
-void UniformBlockBrush::uniform(GLuint program, std::vector<UniformBlockBrush*> *brushes, std::string objectName, std::string textureMap,std::map<UniformBlockBrush*, GLuint > *textureMapper) {	
+void UniformBlockBrush::uniform(GLuint program, std::vector<UniformBlockBrush*> *brushes, std::string objectName, std::string textureMap) {	
 	for(size_t i = 0; i < brushes->size() ; ++i) {
 		UniformBlockBrush * brush = brushes->at(i);
-       	// Correct way to find the texture index
-	   	auto it = textureMapper->find(brush);
-	   	if (it == textureMapper->end()) {
-		   	std::cerr << "Warning: TextureBrush not found in textureMapper!" << std::endl;
-			continue;  // Skip if not found
-	   	}
-	   	else {
-	   		GLuint index = it->second;
-	   		UniformBlockBrush::uniform(program, brush, objectName, textureMap, i,  index);
-		}
+	   	UniformBlockBrush::uniform(program, brush, objectName, textureMap, i,  brush->textureIndex);
 	}
 }
 
