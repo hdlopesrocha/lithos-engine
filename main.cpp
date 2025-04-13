@@ -119,7 +119,7 @@ public:
 		brush3d = new Brush3d();
 
 		gamepadControllerStrategy = new GamepadControllerStrategy(camera, *brush3d);
-		keyboardControllerStrategy = new KeyboardControllerStrategy(camera, *this);
+		keyboardControllerStrategy = new KeyboardControllerStrategy(camera, *brush3d, *this);
 
 		std::vector<GlslInclude> includes;
 		includes.push_back(GlslInclude("#include<functions.glsl>" , readFile("shaders/util/functions.glsl")));
@@ -563,26 +563,26 @@ public:
 			UniformBlockBrush::uniform(program3d, brush, "brushes", "brushTextures", brush3d->index, index);
 		}
 
-	glm::mat4 model = glm::scale(
-		glm::translate(  
-			glm::mat4(1.0f), 
-			brush3d->position
-		), 
-		brush3d->scale
-	);
+		glm::mat4 model = glm::scale(
+			glm::translate(  
+				glm::mat4(1.0f), 
+				brush3d->position
+			), 
+			brush3d->scale
+		);
 
-	uniformBlock.world = model;
-	uniformBlock.set(OVERRIDE_FLAG, true);
-	uniformBlock.uintData.w = uint(brush3d->index);
+		uniformBlock.world = model;
+		uniformBlock.set(OVERRIDE_FLAG, true);
+		uniformBlock.uintData.w = uint(brush3d->index);
 
-	UniformBlockBrush::uniform(program3d, brush, "overrideProps");
-	UniformBlock::uniform(0, &uniformBlock, sizeof(UniformBlock) , &data);
-	long count = 0;
-	if(brush3d->mode3d == BrushShape::SPHERE) {
-			brushSphere->draw(GL_PATCHES, &count);
-	}else {
-			brushBox->draw(GL_PATCHES, &count);
-	}
+		UniformBlockBrush::uniform(program3d, brush, "overrideProps");
+		UniformBlock::uniform(0, &uniformBlock, sizeof(UniformBlock) , &data);
+		long count = 0;
+		if(brush3d->mode3d == BrushShape::SPHERE) {
+				brushSphere->draw(GL_PATCHES, &count);
+		}else {
+				brushBox->draw(GL_PATCHES, &count);
+		}
 	}
 
 

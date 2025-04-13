@@ -2,10 +2,12 @@
 
 
 
-KeyboardControllerStrategy::KeyboardControllerStrategy(Camera &camera, LithosApplication &app): camera(camera), app(app) {
+KeyboardControllerStrategy::KeyboardControllerStrategy(Camera &camera, Brush3d &brush3d, LithosApplication &app): app(app) {
     this->translateCameraCommand = new TranslateCameraCommand(camera);
     this->rotateCameraCommand = new RotateCameraCommand(camera);
     this->closeWindowCommand = new CloseWindowCommand(app);
+    this->translateBrushCommand = new TranslateBrushCommand(brush3d, camera);
+    this->controllerMode = ControllerMode::CAMERA;
 }
 
 void KeyboardControllerStrategy::handleInput(float deltaTime) {
@@ -42,13 +44,30 @@ void KeyboardControllerStrategy::handleInput(float deltaTime) {
     if (app.getKeyboardStatus(GLFW_KEY_DOWN) != GLFW_RELEASE) {
         translate.z = -1;
     }
+    if (app.getKeyboardStatus(GLFW_KEY_PAGE_UP) != GLFW_RELEASE) {
+        translate.y = 1;
+    }
+    if (app.getKeyboardStatus(GLFW_KEY_PAGE_DOWN) != GLFW_RELEASE) {
+        translate.y = -1;
+    }
+    if (app.getKeyboardStatus(GLFW_KEY_1) != GLFW_RELEASE) {
+        controllerMode = ControllerMode::CAMERA;
+    }
+    if (app.getKeyboardStatus(GLFW_KEY_2) != GLFW_RELEASE) {
+        controllerMode = ControllerMode::BRUSH;
+    }
+
 
     float threshold = 0.2;
     translate = applyDeadzone(translate, threshold);
     rotate = applyDeadzone(rotate, threshold);
     
     if(isAboveDeadzone(translate, threshold)) {
-        translateCameraCommand->execute(translate*deltaTime);
+        if(this->controllerMode == ControllerMode::CAMERA) {
+            translateCameraCommand->execute(translate*deltaTime);
+        } else {
+            translateBrushCommand->execute(translate*deltaTime);
+        }
     }
 
     if(isAboveDeadzone(rotate, threshold)) {

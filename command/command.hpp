@@ -25,6 +25,14 @@ class TranslateCameraCommand : public ICommand<glm::vec3>{
     void execute(const glm::vec3 &value) override ;
 };
 
+class TranslateBrushCommand : public ICommand<glm::vec3>{
+    Brush3d &brush3d;
+    Camera &camera;
+    public:
+    TranslateBrushCommand(Brush3d &brush3d, Camera &camera);
+    void execute(const glm::vec3 &value) override ;
+};
+
 class RotateCameraCommand : public ICommand<glm::vec3>{
     Camera &camera;
     public:
@@ -39,13 +47,15 @@ class CloseWindowCommand : public ICommand<float>{
     void execute(const float &value) override ;
 };
 
-
+enum ControllerMode {
+    CAMERA, BRUSH
+};
 
 class GamepadControllerStrategy : public ControllerStrategy {
     TranslateCameraCommand * translateCameraCommand;
+    TranslateBrushCommand * translateBrushCommand;
     RotateCameraCommand * rotateCameraCommand;
-    Camera &camera;
-    Brush3d &brush3d;
+    ControllerMode controllerMode;
     public:
         GamepadControllerStrategy(Camera &camera, Brush3d &brush3d);
         void handleInput(float deltaTime) override;
@@ -56,10 +66,11 @@ class KeyboardControllerStrategy : public ControllerStrategy {
     TranslateCameraCommand * translateCameraCommand;
     RotateCameraCommand * rotateCameraCommand;
     CloseWindowCommand * closeWindowCommand;
-    Camera &camera;
+    TranslateBrushCommand * translateBrushCommand;
+    ControllerMode controllerMode;
     LithosApplication &app;
     public:
-        KeyboardControllerStrategy(Camera &camera, LithosApplication &app);
+        KeyboardControllerStrategy(Camera &camera, Brush3d &brush3d, LithosApplication &app);
         void handleInput(float deltaTime) override;
 };
 

@@ -6,6 +6,7 @@ Brush3d::Brush3d() {
     this->mode = BrushMode::ADD;
     this->mode3d = BrushShape::SPHERE;
     this->index = 0;
+   	this->translationSensitivity = 32.0f;
     this->enabled =true;
 }
 

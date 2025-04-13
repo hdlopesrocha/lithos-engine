@@ -10,7 +10,6 @@ UniformBlockBrush::UniformBlockBrush(){
     this->specularStrength = 0.4;
     this->textureScale = glm::vec2(1.0);
     this->refractiveIndex = 0;
-
 }
 
 UniformBlockBrush::UniformBlockBrush(glm::vec2 textureScale){
@@ -37,7 +36,6 @@ UniformBlockBrush::UniformBlockBrush(glm::vec2 textureScale,float parallaxScale,
     this->refractiveIndex = refractiveIndex;
 }
 
-
 void UniformBlockBrush::save(std::vector<UniformBlockBrush> * brushes, std::string baseFolder, std::string filename){
 	std::string filePath = baseFolder + "/" + filename+".bin";
 	std::ofstream file = std::ofstream(filePath, std::ios::binary);
@@ -47,17 +45,16 @@ void UniformBlockBrush::save(std::vector<UniformBlockBrush> * brushes, std::stri
     }
 
 	size_t size = brushes->size();
-	//std::cout << "Saving " << std::to_string(size) << " nodes" << std::endl;
 	//std::cout << std::to_string(sizeof(OctreeNodeSerialized)) << " bytes/node" << std::endl;
     std::ostringstream decompressed;
 	decompressed.write(reinterpret_cast<const char*>(&size), sizeof(size_t) );
-	for(size_t i=0; i < brushes->size(); ++i) {
-		decompressed.write(reinterpret_cast<const char*>(brushes), sizeof(OctreeNodeSerialized) );
-	}
-	
+	for(size_t i =0 ; i < size ; ++i) {
+		decompressed.write(reinterpret_cast<const char*>(&brushes[i]), sizeof(UniformBlockBrush) );
+	}	
 	std::istringstream inputStream(decompressed.str());
  	gzipCompressToOfstream(inputStream, file);
 	file.close();
+	std::cout << "UniformBlockBrush::save('" << filePath <<"'," << std::to_string(size) <<") Ok!" << std::endl;
 }
 
 void UniformBlockBrush::load(std::vector<UniformBlockBrush> * brushes, std::string baseFolder, std::string filename){
@@ -72,17 +69,16 @@ void UniformBlockBrush::load(std::vector<UniformBlockBrush> * brushes, std::stri
 
 	size_t size;
 	decompressed.read(reinterpret_cast<char*>(&size), sizeof(size_t) );
-	brushes->reserve(size);
-	decompressed.read(reinterpret_cast<char*>(brushes->data()), size);
-	
+	brushes->resize(size);
+	for(size_t i =0 ; i < size ; ++i) {
+		decompressed.read(reinterpret_cast<char*>(&brushes[i]), sizeof(UniformBlockBrush));
+	}
 
 	file.close();
-	std::cout << "UniformBlockBrush::load('" << filePath <<"') Ok!" << std::endl;
+	std::cout << "UniformBlockBrush::load('" << filePath <<"'," << std::to_string(size) <<") Ok!" << std::endl;
 }
 
 void UniformBlockBrush::uniform(GLuint program, UniformBlockBrush * brush, std::string objectName) {
-
-
 	glUniform1f(glGetUniformLocation(program, (objectName +".parallaxScale").c_str() ), brush->parallaxScale);
 	glUniform1f(glGetUniformLocation(program, (objectName +".parallaxMinLayers").c_str()), brush->parallaxMinLayers);
 	glUniform1f(glGetUniformLocation(program, (objectName +".parallaxMaxLayers").c_str()), brush->parallaxMaxLayers);
@@ -92,10 +88,7 @@ void UniformBlockBrush::uniform(GLuint program, UniformBlockBrush * brush, std::
 	glUniform1f(glGetUniformLocation(program, (objectName +".specularStrength").c_str()), brush->specularStrength);
 	glUniform1f(glGetUniformLocation(program, (objectName +".refractiveIndex").c_str()), brush->refractiveIndex);
 	glUniform2fv(glGetUniformLocation(program, (objectName +".textureScale").c_str()), 1, glm::value_ptr(brush->textureScale));
-
-
 }
-
 
 void UniformBlockBrush::uniform(GLuint program, UniformBlockBrush * brush, std::string objectName, std::string textureMap, int index, uint textureIndex) {
 	std::string propName = objectName + "[" + std::to_string(index)  +"]";
@@ -104,8 +97,7 @@ void UniformBlockBrush::uniform(GLuint program, UniformBlockBrush * brush, std::
 	uniform(program, brush, propName);
 }
 
-void UniformBlockBrush::uniform(GLuint program, std::vector<UniformBlockBrush*> *brushes, std::string objectName, std::string textureMap,std::map<UniformBlockBrush*, GLuint > *textureMapper) {
-	
+void UniformBlockBrush::uniform(GLuint program, std::vector<UniformBlockBrush*> *brushes, std::string objectName, std::string textureMap,std::map<UniformBlockBrush*, GLuint > *textureMapper) {	
 	for(size_t i = 0; i < brushes->size() ; ++i) {
 		UniformBlockBrush * brush = brushes->at(i);
        	// Correct way to find the texture index

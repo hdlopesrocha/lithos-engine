@@ -1,8 +1,11 @@
 #include "command.hpp"
 
-GamepadControllerStrategy::GamepadControllerStrategy(Camera &camera, Brush3d &brush3d) : camera(camera), brush3d(brush3d) {
+
+GamepadControllerStrategy::GamepadControllerStrategy(Camera &camera, Brush3d &brush3d) {
     this->translateCameraCommand = new TranslateCameraCommand(camera);
     this->rotateCameraCommand = new RotateCameraCommand(camera);
+    this->translateBrushCommand = new TranslateBrushCommand(brush3d, camera);
+    this->controllerMode = ControllerMode::CAMERA;
 }
 
 void GamepadControllerStrategy::handleInput(float deltaTime) {
@@ -20,6 +23,12 @@ void GamepadControllerStrategy::handleInput(float deltaTime) {
         translate.y = -state.axes[GLFW_GAMEPAD_AXIS_RIGHT_Y];
         translate.z = state.axes[GLFW_GAMEPAD_AXIS_RIGHT_TRIGGER] - state.axes[GLFW_GAMEPAD_AXIS_LEFT_TRIGGER];
     
+        if(state.buttons[GLFW_GAMEPAD_BUTTON_DPAD_UP] == GLFW_PRESS) {
+            controllerMode = ControllerMode::CAMERA;
+        }
+        if(state.buttons[GLFW_GAMEPAD_BUTTON_DPAD_LEFT] == GLFW_PRESS) {
+            controllerMode = ControllerMode::BRUSH;
+        }
     }
 
     float threshold = 0.2;
@@ -27,10 +36,18 @@ void GamepadControllerStrategy::handleInput(float deltaTime) {
     rotate = applyDeadzone(rotate, threshold);
     
     if(isAboveDeadzone(translate, threshold)) {
-        translateCameraCommand->execute(translate*deltaTime);
+        if(this->controllerMode == ControllerMode::CAMERA) {
+            translateCameraCommand->execute(translate*deltaTime);
+        } else {
+            translateBrushCommand->execute(translate*deltaTime);
+        }
     }
 
     if(isAboveDeadzone(rotate, threshold)) {
-        rotateCameraCommand->execute(rotate*deltaTime);
+        if(this->controllerMode == ControllerMode::CAMERA) {
+            rotateCameraCommand->execute(rotate*deltaTime);
+        } else {
+
+        }
     }
 }

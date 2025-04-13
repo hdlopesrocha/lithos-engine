@@ -568,6 +568,7 @@ class Brush3d {
 		int index = 0;
 		glm::vec3 position;
 		glm::vec3 scale;
+		float translationSensitivity;
 		bool enabled;
 
 		Brush3d();
