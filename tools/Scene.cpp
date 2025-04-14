@@ -20,16 +20,16 @@ Scene::Scene(Settings * settings) {
 	chunkSize = glm::pow(2, 11);
 
 	solidProcessor = new OctreeProcessor(solidSpace);
-	solidBuilder = new MeshGeometryBuilder(TYPE_INSTANCE_SOLID_DRAWABLE, &solidInstancesCount, &solidTrianglesCount, solidSpace, 0.9, 1.0, true, &solidGeometry);
+	solidBuilder = new MeshGeometryBuilder(TYPE_INSTANCE_SOLID_DRAWABLE, &solidInstancesCount, &solidTrianglesCount, solidSpace, 0.9, 1.0, true);
 
 	liquidProcessor = new OctreeProcessor(liquidSpace);	
-	liquidBuilder = new MeshGeometryBuilder(TYPE_INSTANCE_LIQUID_DRAWABLE, &liquidInstancesCount, &liquidTrianglesCount, liquidSpace, 0.9, 1.0, true, &liquidGeometry);
+	liquidBuilder = new MeshGeometryBuilder(TYPE_INSTANCE_LIQUID_DRAWABLE, &liquidInstancesCount, &liquidTrianglesCount, liquidSpace, 0.9, 1.0, true);
 
 	vegetationBuilder = new VegetationGeometryBuilder(TYPE_INSTANCE_VEGETATION_DRAWABLE, &vegetationInstancesCount, solidSpace, 
-		new VegetationInstanceBuilderHandler(solidSpace, &vegetationInstancesCount), &vegetationGeometry);
+		new VegetationInstanceBuilderHandler(solidSpace, &vegetationInstancesCount));
 
 	debugBuilder = new OctreeGeometryBuilder(TYPE_INSTANCE_OCTREE_DRAWABLE, &octreeInstancesCount, liquidSpace, 
-		new OctreeInstanceBuilderHandler(liquidSpace, &octreeInstancesCount), &debugGeometry);
+		new OctreeInstanceBuilderHandler(liquidSpace, &octreeInstancesCount));
 
 	solidRenderer = new OctreeVisibilityChecker(solidSpace, &visibleSolidNodes);
 	liquidRenderer = new OctreeVisibilityChecker(liquidSpace, &visibleLiquidNodes);
@@ -51,10 +51,10 @@ void Scene::processSpace() {
 
 	for(OctreeNodeData &data : visibleSolidNodes){
 		if(solidProcessor->loadCount > 0) {
-			solidProcessor->before(data);
-			solidBuilder->build(data);
-			debugBuilder->build(data);
-			vegetationBuilder->build(data);
+			solidProcessor->process(data);
+			solidInfo.try_emplace(data.node->dataId, new NodeInfo(solidBuilder->build(data)));
+			debugInfo.try_emplace(data.node->dataId, new NodeInfo(debugBuilder->build(data)));
+			vegetationInfo.try_emplace(data.node->dataId, new NodeInfo(vegetationBuilder->build(data)));
 		} else {
 			break;
 		}
@@ -62,8 +62,8 @@ void Scene::processSpace() {
 
 	for(OctreeNodeData &data : visibleLiquidNodes){
 		if(liquidProcessor->loadCount > 0) {
-			liquidProcessor->before(data);
-			liquidBuilder->build(data);
+			liquidProcessor->process(data);
+			liquidInfo.try_emplace(data.node->dataId, new NodeInfo(liquidBuilder->build(data)));
 		} else {
 			break;
 		}
@@ -73,7 +73,7 @@ void Scene::processSpace() {
 		std::vector<OctreeNodeData> &vec = visibleShadowNodes[i];
 		for(OctreeNodeData &data : vec) {
 			if(solidProcessor->loadCount > 0) {
-				solidProcessor->before(data);
+				solidProcessor->process(data);
 				liquidBuilder->build(data);
 			}
 			else {
@@ -101,23 +101,18 @@ void Scene::setVisibleNodes(glm::mat4 viewProjection, glm::vec3 sortPosition, Oc
 	checker.tree->iterateFlat(checker, chunkSize);	//here we get the visible nodes for that LOD + geometryLEvel
 }
 
-DrawableInstanceGeometry * Scene::loadIfNeeded(std::unordered_map<long, InstanceGeometry*> * loadables, std::unordered_map<long, DrawableInstanceGeometry*> * drawables, long index){
-    auto it = drawables->find(index);
-    if (it != drawables->end()) {
-        return it->second;
-    }
-
-    auto loadableIt = loadables->find(index);
-    if (loadableIt != loadables->end()) {
-
-		InstanceGeometry * pre = (InstanceGeometry *) loadableIt->second;
-        DrawableInstanceGeometry* drawable = new DrawableInstanceGeometry(pre->geometry, &pre->instances);
-
-        (*drawables)[index] = drawable;
-        return drawable;
-    }
-
-    return nullptr;
+DrawableInstanceGeometry * Scene::loadIfNeeded(std::unordered_map<long, NodeInfo*> * infos, long index){
+    auto i = infos->find(index);
+    
+	NodeInfo * ni = i != infos->end() ? i->second : NULL;
+	if (ni != NULL) {
+		if(ni->loadable) {
+    	    ni->drawable = new DrawableInstanceGeometry(ni->loadable->geometry, &ni->loadable->instances);
+			ni->loadable = NULL;
+		}
+		return ni->drawable;
+	}
+    return NULL;
 }
 
 void Scene::draw (uint drawableType, int mode, glm::vec3 cameraPosition, const std::vector<OctreeNodeData> &list) {
@@ -127,24 +122,32 @@ void Scene::draw (uint drawableType, int mode, glm::vec3 cameraPosition, const s
 		
 		if(node->dataId){
 			if(drawableType == TYPE_INSTANCE_VEGETATION_DRAWABLE) {
-				DrawableInstanceGeometry * drawable	= loadIfNeeded(&vegetationGeometry, &vegetationDrawable, node->dataId);
-				float amount = glm::clamp( 1.0 - glm::length(cameraPosition -  drawable->center)/(float(settings->billboardRange)), 0.0, 1.0);
-				if(amount > 0.8){
-					amount = 1.0;
+				DrawableInstanceGeometry * drawable	= loadIfNeeded(&vegetationInfo, node->dataId);
+				if(drawable != NULL) {
+					float amount = glm::clamp( 1.0 - glm::length(cameraPosition -  drawable->center)/(float(settings->billboardRange)), 0.0, 1.0);
+					if(amount > 0.8){
+						amount = 1.0;
+					}
+					drawable->draw(mode, amount, &vegetationInstancesVisible);
 				}
-				drawable->draw(mode, amount, &vegetationInstancesVisible);
 			}else if(drawableType == TYPE_INSTANCE_SOLID_DRAWABLE) {
-				DrawableInstanceGeometry * drawable	= loadIfNeeded(&solidGeometry, &solidDrawable, node->dataId);
-				drawable->draw(mode, 1.0, &solidInstancesVisible);
-				solidInstancesVisible += drawable->instancesCount;
+				DrawableInstanceGeometry * drawable	= loadIfNeeded(&solidInfo, node->dataId);
+				if(drawable != NULL) {
+					drawable->draw(mode, 1.0, &solidInstancesVisible);
+					solidInstancesVisible += drawable->instancesCount;
+				}
 			}
 			else if(drawableType == TYPE_INSTANCE_LIQUID_DRAWABLE) {
-				DrawableInstanceGeometry * drawable	= loadIfNeeded(&liquidGeometry, &liquidDrawable, node->dataId);
-				drawable->draw(mode, 1.0, &liquidInstancesVisible);
+				DrawableInstanceGeometry * drawable	= loadIfNeeded(&liquidInfo, node->dataId);
+				if(drawable != NULL) {
+					drawable->draw(mode, 1.0, &liquidInstancesVisible);
+				}
 			}
 			else if(drawableType == TYPE_INSTANCE_OCTREE_DRAWABLE) {
-				DrawableInstanceGeometry * drawable	= loadIfNeeded(&debugGeometry, &debugDrawable, node->dataId);
-				drawable->draw(mode, 1.0, &solidInstancesVisible);
+				DrawableInstanceGeometry * drawable	= loadIfNeeded(&debugInfo, node->dataId);
+				if(drawable != NULL) {
+					drawable->draw(mode, 1.0, &solidInstancesVisible);
+				}
 			}	
 		}
 	}

@@ -10,18 +10,17 @@ VegetationGeometryBuilder::~VegetationGeometryBuilder(){
 
 }
 
-VegetationGeometryBuilder::VegetationGeometryBuilder(int drawableType,long * instancesCount, Octree * tree, InstanceBuilderHandler * handler, std::unordered_map<long, InstanceGeometry*> * map) : GeometryBuilder(drawableType) {
+VegetationGeometryBuilder::VegetationGeometryBuilder(int drawableType,long * instancesCount, Octree * tree, InstanceBuilderHandler * handler) : GeometryBuilder(drawableType) {
     this->geometry = new Vegetation3d(1.0);
     this->tree = tree;
     this->handler = new VegetationInstanceBuilderHandler(tree, instancesCount );
     this->instancesCount = instancesCount;
-    this->map = map;
 }
 
 
 
 
-const void VegetationGeometryBuilder::build(OctreeNodeData &params){
+InstanceGeometry * VegetationGeometryBuilder::build(OctreeNodeData &params){
     //std::cout << "VegetationGeometryBuilder::build" <<std::endl;
     InstanceGeometry * instanceGeometry = new InstanceGeometry(geometry);
     InstanceBuilder instanceBuilder(tree, &instanceGeometry->instances, handler, instanceGeometry);
@@ -33,7 +32,6 @@ const void VegetationGeometryBuilder::build(OctreeNodeData &params){
         std::shuffle(instanceGeometry->instances.begin(), instanceGeometry->instances.end(), g);
     }
     *instancesCount += instanceBuilder.instanceCount;
-
-    map->try_emplace(params.node->dataId, instanceGeometry);
+    return instanceGeometry;
 }
 

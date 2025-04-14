@@ -92,12 +92,10 @@ class VegetationGeometryBuilder : public GeometryBuilder {
     Octree * tree;
     InstanceBuilderHandler * handler;
 	long * instancesCount;
-	std::unordered_map<long, InstanceGeometry*> * map;
-    VegetationGeometryBuilder(int drawableType, long * instancesCount, Octree * tree, InstanceBuilderHandler * handler,std::unordered_map<long, InstanceGeometry*> * map);
+    VegetationGeometryBuilder(int drawableType, long * instancesCount, Octree * tree, InstanceBuilderHandler * handler);
     ~VegetationGeometryBuilder();
 
-    const void build(OctreeNodeData &params) override;
-
+	InstanceGeometry * build(OctreeNodeData &params) override;
 };
 
 class OctreeGeometryBuilder : public GeometryBuilder {
@@ -105,12 +103,11 @@ class OctreeGeometryBuilder : public GeometryBuilder {
     Geometry * geometry;
     Octree * tree;
 	long * instancesCount;
-	std::unordered_map<long, InstanceGeometry*> * map;
     InstanceBuilderHandler * handler;
-    OctreeGeometryBuilder(int drawableType, long * instancesCount, Octree * tree, InstanceBuilderHandler * handler, std::unordered_map<long, InstanceGeometry*> * map);
+    OctreeGeometryBuilder(int drawableType, long * instancesCount, Octree * tree, InstanceBuilderHandler * handler);
     ~OctreeGeometryBuilder();
 
-    const void build(OctreeNodeData &params) override;
+    InstanceGeometry * build(OctreeNodeData &params) override;
 
 };
 
@@ -126,7 +123,16 @@ class VegetationInstanceBuilder : public OctreeNodeTriangleHandler {
 
 };
 
+struct NodeInfo {
+	InstanceGeometry * loadable;
+	DrawableInstanceGeometry * drawable;
+	bool dirty;
 
+	NodeInfo(InstanceGeometry * loadable){
+		this->loadable = loadable;
+		this->dirty = false;
+	}
+};
 
 class Scene {
 
@@ -160,22 +166,18 @@ MeshGeometryBuilder * liquidBuilder;
 VegetationGeometryBuilder * vegetationBuilder;
 OctreeGeometryBuilder * debugBuilder;
 
-std::unordered_map<long, InstanceGeometry*> solidGeometry;
-std::unordered_map<long, InstanceGeometry*> liquidGeometry;
-std::unordered_map<long, InstanceGeometry*> debugGeometry;
-std::unordered_map<long, InstanceGeometry*> vegetationGeometry;
+std::unordered_map<long, NodeInfo*> solidInfo;
+std::unordered_map<long, NodeInfo*> liquidInfo;
+std::unordered_map<long, NodeInfo*> debugInfo;
+std::unordered_map<long, NodeInfo*> vegetationInfo;
 
-std::unordered_map<long, DrawableInstanceGeometry*> solidDrawable;
-std::unordered_map<long, DrawableInstanceGeometry*> liquidDrawable;
-std::unordered_map<long, DrawableInstanceGeometry*> debugDrawable;
-std::unordered_map<long, DrawableInstanceGeometry*> vegetationDrawable;
 
 		OctreeVisibilityChecker * solidRenderer;
 		OctreeVisibilityChecker * liquidRenderer;
 		OctreeVisibilityChecker * shadowRenderer[SHADOW_MATRIX_COUNT];
 
 	Scene(Settings * settings);
-	DrawableInstanceGeometry * loadIfNeeded(std::unordered_map<long, InstanceGeometry*> * loadables, std::unordered_map<long, DrawableInstanceGeometry*> * drawables, long index);
+	DrawableInstanceGeometry * loadIfNeeded(std::unordered_map<long, NodeInfo*> * infos, long index);
 
 
 
