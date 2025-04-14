@@ -28,8 +28,8 @@ Scene::Scene(Settings * settings) {
 	vegetationBuilder = new VegetationGeometryBuilder(&vegetationInstancesCount, solidSpace, 
 		new VegetationInstanceBuilderHandler(solidSpace, &vegetationInstancesCount, 32, 4));
 
-	debugBuilder = new OctreeGeometryBuilder(&octreeInstancesCount, solidSpace, 
-		new OctreeInstanceBuilderHandler(solidSpace, &octreeInstancesCount));
+	debugBuilder = new OctreeGeometryBuilder(&octreeInstancesCount, liquidSpace, 
+		new OctreeInstanceBuilderHandler(liquidSpace, &octreeInstancesCount));
 
 	solidRenderer = new OctreeVisibilityChecker(solidSpace, &visibleSolidNodes);
 	liquidRenderer = new OctreeVisibilityChecker(liquidSpace, &visibleLiquidNodes);
@@ -67,7 +67,6 @@ void Scene::processSpace() {
 		if(solidProcessor->loadCount > 0) {
 			solidProcessor->process(data);
 			loadSpace(data, &solidInfo, solidBuilder);
-			loadSpace(data, &debugInfo, debugBuilder);
 			loadSpace(data, &vegetationInfo, vegetationBuilder);
 		} else {
 			break;
@@ -78,6 +77,7 @@ void Scene::processSpace() {
 		if(liquidProcessor->loadCount > 0) {
 			liquidProcessor->process(data);
 			loadSpace(data, &liquidInfo, liquidBuilder);
+			loadSpace(data, &debugInfo, debugBuilder);
 		} else {
 			break;
 		}
@@ -163,7 +163,7 @@ void Scene::draw (uint drawableType, int mode, glm::vec3 cameraPosition, const s
 			else if(drawableType == TYPE_INSTANCE_OCTREE_DRAWABLE) {
 				DrawableInstanceGeometry * drawable	= loadIfNeeded(&debugInfo, node->dataId);
 				if(drawable != NULL) {
-					drawable->draw(mode, 1.0, &solidInstancesVisible);
+					drawable->draw(mode, 1.0, &liquidInstancesVisible);
 				}
 			}	
 		}
@@ -262,7 +262,7 @@ void Scene::import(const std::string &filename, Camera &camera) {
 			), 
 			mapBox,sizePerTile
 		), 
-		LandBrush()
+		DerivativeLandBrush()
 	), DirtyHandler(*this), minSize);
 
 	BoundingBox waterBox = mapBox;

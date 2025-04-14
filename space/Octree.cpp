@@ -54,13 +54,13 @@ ContainmentType Octree::contains(const AbstractBoundingBox &c) {
                 }
             }
         }
-
-        if (allContains) {
-            return ContainmentType::Contains;
-        }
         if (!anyIntersection) {
             return ContainmentType::Disjoint;
         }
+        if (allContains) {
+            return ContainmentType::Contains;
+        }
+
 
         node = candidate;
         cube = candidateCube;

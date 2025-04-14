@@ -34,6 +34,25 @@ class LandBrush : public TexturePainter {
 	void paint(Vertex &vertex) const override;
 };
 
+
+class DerivativeLandBrush : public TexturePainter {
+	int underground;
+	int grass;
+	int sand;
+	int softSand;
+	int rock;
+	int snow;
+	int grassMixSand;
+	int grassMixSnow;
+	int rockMixGrass;
+	int rockMixSnow;
+	int rockMixSand;
+
+	public: 
+	DerivativeLandBrush();
+	void paint(Vertex &vertex) const override;
+};
+
 class SimpleBrush : public TexturePainter {
 	int brush;
 

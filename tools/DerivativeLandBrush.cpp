@@ -1,6 +1,6 @@
 #include "tools.hpp"
 
-LandBrush::LandBrush(){
+DerivativeLandBrush::DerivativeLandBrush(){
     this->underground = 7;
     this->grass = 2;
     this->sand = 3;
@@ -14,11 +14,11 @@ LandBrush::LandBrush(){
     this->rockMixSand = 13;
 }
 
-void LandBrush::paint(Vertex &vertex) const {
+void DerivativeLandBrush::paint(Vertex &vertex) const {
     float steepness =glm::dot(glm::vec3(0.0f,1.0f,0.0f), vertex.normal );
     int grassLevel = 256;
-    int sandLevel = 16;
-    int softSandLevel = 2;
+    int sandLevel = 60;
+    int softSandLevel = 54;
     uint brushIndex;
     if (glm::dot(glm::vec3(0.0f,1.0f,0.0f), vertex.normal ) <=0 ){
         brushIndex = DISCARD_BRUSH_INDEX;
@@ -34,11 +34,11 @@ void LandBrush::paint(Vertex &vertex) const {
         } else {
             brushIndex = rockMixSnow;
         }
-    } else if(vertex.position.y < softSandLevel){
+    } else if(vertex.position.y < softSandLevel && steepness > 0.99925){
         brushIndex = softSand;
-    } else if(vertex.position.y < sandLevel){
+    } else if(vertex.position.y < sandLevel && steepness>0.99){
         brushIndex = sand;
-    } else if(vertex.position.y < sandLevel+4){
+    } else if(vertex.position.y < sandLevel+4 && steepness>0.98){
         brushIndex = grassMixSand;
     } else if(vertex.position.y < grassLevel){
         brushIndex = grass;
