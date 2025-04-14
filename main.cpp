@@ -733,7 +733,7 @@ public:
 		glUseProgram(programDebug);
 		UniformBlock::uniform(0, &uniformBlock, sizeof(UniformBlock), uniformBlockData);
 		if(settings->octreeWireframe) {
-			mainScene->draw3dOctree(camera.position, mainScene->visibleLiquidNodes);
+			mainScene->draw3dOctree(camera.position, mainScene->visibleSolidNodes);
 		}
 
 		if(settings->wireFrameEnabled) {

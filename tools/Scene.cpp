@@ -17,7 +17,7 @@ Scene::Scene(Settings * settings) {
 	liquidInstancesVisible = 0;
 	vegetationInstancesVisible = 0;
 
-	chunkSize = glm::pow(2, 11);
+	chunkSize = glm::pow(2, 10);
 
 	solidProcessor = new OctreeProcessor(solidSpace);
 	solidBuilder = new MeshGeometryBuilder(&solidInstancesCount, &solidTrianglesCount, solidSpace, 0.9, 1.0, true);
@@ -28,8 +28,8 @@ Scene::Scene(Settings * settings) {
 	vegetationBuilder = new VegetationGeometryBuilder(&vegetationInstancesCount, solidSpace, 
 		new VegetationInstanceBuilderHandler(solidSpace, &vegetationInstancesCount));
 
-	debugBuilder = new OctreeGeometryBuilder(&octreeInstancesCount, liquidSpace, 
-		new OctreeInstanceBuilderHandler(liquidSpace, &octreeInstancesCount));
+	debugBuilder = new OctreeGeometryBuilder(&octreeInstancesCount, solidSpace, 
+		new OctreeInstanceBuilderHandler(solidSpace, &octreeInstancesCount));
 
 	solidRenderer = new OctreeVisibilityChecker(solidSpace, &visibleSolidNodes);
 	liquidRenderer = new OctreeVisibilityChecker(liquidSpace, &visibleLiquidNodes);
@@ -39,6 +39,21 @@ Scene::Scene(Settings * settings) {
 
 }
 
+void loadSpace(OctreeNodeData &data, std::unordered_map<long, NodeInfo*> *infos, GeometryBuilder * builder) {
+	auto it = infos->find(data.node->dataId);
+	if(it == infos->end()) {
+		infos->try_emplace(data.node->dataId, new NodeInfo(builder->build(data)));
+	} else {
+		NodeInfo * ni = it->second;
+		if(ni->dirty) {
+			if(ni->loadable) {
+				delete ni->loadable;
+			}
+			ni->loadable = builder->build(data);
+			ni->dirty = false;
+		}
+	}
+}
 
 void Scene::processSpace() {
 	// Set load counts per Processor
@@ -48,57 +63,12 @@ void Scene::processSpace() {
 	solidProcessor->loadCount = 1;
 	liquidProcessor->loadCount = 1;
 
-
 	for(OctreeNodeData &data : visibleSolidNodes){
 		if(solidProcessor->loadCount > 0) {
 			solidProcessor->process(data);
-			{
-				auto it = solidInfo.find(data.node->dataId);
-				if(it == solidInfo.end()) {
-					solidInfo.try_emplace(data.node->dataId, new NodeInfo(solidBuilder->build(data)));
-				} else {
-					NodeInfo * ni = it->second;
-					if(ni->dirty) {
-						if(ni->loadable) {
-							delete ni->loadable;
-						}
-						ni->loadable = solidBuilder->build(data);
-						ni->dirty = false;
-					}
-				}
-			}
-
-			{
-				auto it = debugInfo.find(data.node->dataId);
-				if(it == debugInfo.end()) {
-					debugInfo.try_emplace(data.node->dataId, new NodeInfo(debugBuilder->build(data)));
-				} else {
-					NodeInfo * ni = it->second;
-					if(ni->dirty) {
-						if(ni->loadable) {
-							delete ni->loadable;
-						}
-						ni->loadable = debugBuilder->build(data);
-						ni->dirty = false;
-					}
-				}
-			}
-
-			{
-				auto it = vegetationInfo.find(data.node->dataId);
-				if(it == vegetationInfo.end()) {
-					vegetationInfo.try_emplace(data.node->dataId, new NodeInfo(vegetationBuilder->build(data)));
-				} else {
-					NodeInfo * ni = it->second;
-					if(ni->dirty) {
-						if(ni->loadable) {
-							delete ni->loadable;
-						}
-						ni->loadable = vegetationBuilder->build(data);
-						ni->dirty = false;
-					}
-				}
-			}
+			loadSpace(data, &solidInfo, solidBuilder);
+			loadSpace(data, &debugInfo, debugBuilder);
+			loadSpace(data, &vegetationInfo, vegetationBuilder);
 		} else {
 			break;
 		}
@@ -107,23 +77,7 @@ void Scene::processSpace() {
 	for(OctreeNodeData &data : visibleLiquidNodes){
 		if(liquidProcessor->loadCount > 0) {
 			liquidProcessor->process(data);
-
-			{
-				auto it = liquidInfo.find(data.node->dataId);
-				if(it == liquidInfo.end()) {	
-					liquidInfo.try_emplace(data.node->dataId, new NodeInfo(liquidBuilder->build(data)));
-				} else {
-					NodeInfo * ni = it->second;
-					if(ni->dirty) {
-						if(ni->loadable) {
-							delete ni->loadable;
-						}
-						ni->loadable = liquidBuilder->build(data);
-						ni->dirty = false;
-					}
-				}
-			}
-
+			loadSpace(data, &liquidInfo, liquidBuilder);
 		} else {
 			break;
 		}

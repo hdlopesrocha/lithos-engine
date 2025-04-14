@@ -16,14 +16,14 @@ InstanceGeometry * OctreeGeometryBuilder::build(OctreeNodeData &params){
     InstanceBuilder instanceBuilder(tree, &instanceGeometry->instances, handler, instanceGeometry);
     instanceBuilder.iterateFlatIn(params);
 	
-    /*glm::mat4 mat(1.0);
+    glm::mat4 mat(1.0);
 	mat = glm::translate(mat, params.cube.getMin());
 	mat = glm::scale(mat, params.cube.getLength());
 	
     
     InstanceData instance(0u, mat , 0.0f);
 	instanceGeometry->instances.push_back(instance);
-    */
+    
     *instancesCount += instanceBuilder.instanceCount;
     return instanceGeometry;
 }
