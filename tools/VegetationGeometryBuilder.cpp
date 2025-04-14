@@ -13,7 +13,7 @@ VegetationGeometryBuilder::~VegetationGeometryBuilder(){
 VegetationGeometryBuilder::VegetationGeometryBuilder(long * instancesCount, Octree * tree, InstanceBuilderHandler * handler) {
     this->geometry = new Vegetation3d(1.0);
     this->tree = tree;
-    this->handler = new VegetationInstanceBuilderHandler(tree, instancesCount );
+    this->handler = handler;
     this->instancesCount = instancesCount;
 }
 

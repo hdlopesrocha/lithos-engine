@@ -14,7 +14,7 @@ glm::vec3 getYawPitchRoll(const glm::quat &q) {
 
 void SettingsEditor::draw2d(float time){
     unsigned int min_value = 0;
-    unsigned int max_range = 1024;
+    unsigned int max_range = 4096;
     unsigned int max_override = 32;
     int int_value = 0;
 

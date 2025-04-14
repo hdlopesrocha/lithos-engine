@@ -48,7 +48,7 @@ void main() {
 
 
     if(billboardEnabled) {
-        float freq = 1.0/ PI;
+        float freq = 0.02/ PI;
         vec3 wPosition = vPosition;
         if(position.y > 0.0) {
             vPosition.x += sin(wPosition.x*freq + time);

@@ -17,7 +17,7 @@ Scene::Scene(Settings * settings) {
 	liquidInstancesVisible = 0;
 	vegetationInstancesVisible = 0;
 
-	chunkSize = glm::pow(2, 10);
+	chunkSize = glm::pow(2, 9);
 
 	solidProcessor = new OctreeProcessor(solidSpace);
 	solidBuilder = new MeshGeometryBuilder(&solidInstancesCount, &solidTrianglesCount, solidSpace, 0.9, 1.0, true);
@@ -26,7 +26,7 @@ Scene::Scene(Settings * settings) {
 	liquidBuilder = new MeshGeometryBuilder(&liquidInstancesCount, &liquidTrianglesCount, liquidSpace, 0.9, 1.0, true);
 
 	vegetationBuilder = new VegetationGeometryBuilder(&vegetationInstancesCount, solidSpace, 
-		new VegetationInstanceBuilderHandler(solidSpace, &vegetationInstancesCount));
+		new VegetationInstanceBuilderHandler(solidSpace, &vegetationInstancesCount, 32, 4));
 
 	debugBuilder = new OctreeGeometryBuilder(&octreeInstancesCount, solidSpace, 
 		new OctreeInstanceBuilderHandler(solidSpace, &octreeInstancesCount));
@@ -133,7 +133,6 @@ DrawableInstanceGeometry * Scene::loadIfNeeded(std::unordered_map<long, NodeInfo
 }
 
 void Scene::draw (uint drawableType, int mode, glm::vec3 cameraPosition, const std::vector<OctreeNodeData> &list) {
-	//std::cout << "Scene.draw() " << std::to_string(drawableType) << "|" << std::to_string(list.size()) << std::endl;
 	for(const OctreeNodeData &data : list) {
 		OctreeNode * node = data.node;
 		
@@ -145,6 +144,7 @@ void Scene::draw (uint drawableType, int mode, glm::vec3 cameraPosition, const s
 					if(amount > 0.8){
 						amount = 1.0;
 					}
+					//std::cout << "Scene.draw() " << std::to_string(drawableType) << "|" << std::to_string(amount) << std::endl;
 					drawable->draw(mode, amount, &vegetationInstancesVisible);
 				}
 			}else if(drawableType == TYPE_INSTANCE_SOLID_DRAWABLE) {

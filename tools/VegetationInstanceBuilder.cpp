@@ -40,9 +40,10 @@ glm::vec3 randomPointInTriangle(const glm::vec3& A, const glm::vec3& B, const gl
 }
 
 
-VegetationInstanceBuilder::VegetationInstanceBuilder(Geometry * chunk, long * count,std::vector<InstanceData> * instances, int pointsPerTriangle) : OctreeNodeTriangleHandler(chunk, count){
+VegetationInstanceBuilder::VegetationInstanceBuilder(Geometry * chunk, long * count,std::vector<InstanceData> * instances, int pointsPerTriangle, float scale) : OctreeNodeTriangleHandler(chunk, count){
     this->instances = instances;
     this->pointsPerTriangle = pointsPerTriangle;
+    this->scale = scale;
 }
 
 void VegetationInstanceBuilder::handle(OctreeNode* c0,OctreeNode* c1,OctreeNode* c2, bool sign){    
@@ -54,7 +55,7 @@ void VegetationInstanceBuilder::handle(OctreeNode* c0,OctreeNode* c1,OctreeNode*
         if(c0!= c1 && c1 != c2 && c0!=c2) {
             glm::vec3 d1 = v1.position-v0.position;
             glm::vec3 d2 = v2.position-v0.position;
-            glm::vec3 n = glm::normalize(glm::cross(d2,d1));
+            glm::vec3 n = glm::normalize(glm::cross(d1,d2));
             glm::vec3 up = glm::vec3(0,1,0);
             float p = glm::dot(up, n);
 
@@ -63,18 +64,23 @@ void VegetationInstanceBuilder::handle(OctreeNode* c0,OctreeNode* c1,OctreeNode*
                 glm::vec3 point = randomPointInTriangle(v0.position, v1.position, v2.position);
                 
                 float force = 2.0;
-                p = 1.0- glm::pow(1-p, 3);
+                //p = 1.0- glm::pow(1-p, 3);
 
                 if(p > 0.0) {
-                    float h = 1.0 - glm::abs(2.0*p - 1.0);
-                    float deepness = Math::clamp(1.0-h, 0.0f , 1.0f);
+                    float height = p*force;
+                    float deepness = (1.0f-p);
 
                     glm::mat4 model(1.0);
+                    
+                    if(deepness  < 1.0f) {
+                        point.y -= deepness;
+                    }
+
                     model = glm::translate(model, point);
-                    if(h*force > 1.0) {
-                        model = glm::scale(model, glm::vec3(1.0, p*force, 1.0));
+                    if(height > 1.0) {
+                        model = glm::scale(model, scale*glm::vec3(1.0, height, 1.0));
                     }     
-                    model *=  Math::getRotationMatrixFromNormal(v0.normal, glm::vec3(0.0,1.0,0.0));
+                   // model *=  Math::getRotationMatrixFromNormal(n, up);
 
                     instances->push_back(InstanceData(0, model, deepness));
                     ++*count;

@@ -12,7 +12,7 @@ Settings::Settings() {
     this->tesselationEnabled = true;
     this->opacityEnabled = true;
     this->billboardEnabled = true;
-    this->billboardRange = 128;
+    this->billboardRange = 512;
     this->overrideBrush = 0;
     this->debugMode = 0;
     this->overrideEnabled = false;
