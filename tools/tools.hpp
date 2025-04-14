@@ -92,7 +92,7 @@ class VegetationGeometryBuilder : public GeometryBuilder {
     Octree * tree;
     InstanceBuilderHandler * handler;
 	long * instancesCount;
-    VegetationGeometryBuilder(int drawableType, long * instancesCount, Octree * tree, InstanceBuilderHandler * handler);
+    VegetationGeometryBuilder(long * instancesCount, Octree * tree, InstanceBuilderHandler * handler);
     ~VegetationGeometryBuilder();
 
 	InstanceGeometry * build(OctreeNodeData &params) override;
@@ -104,7 +104,7 @@ class OctreeGeometryBuilder : public GeometryBuilder {
     Octree * tree;
 	long * instancesCount;
     InstanceBuilderHandler * handler;
-    OctreeGeometryBuilder(int drawableType, long * instancesCount, Octree * tree, InstanceBuilderHandler * handler);
+    OctreeGeometryBuilder(long * instancesCount, Octree * tree, InstanceBuilderHandler * handler);
     ~OctreeGeometryBuilder();
 
     InstanceGeometry * build(OctreeNodeData &params) override;

@@ -10,7 +10,7 @@ VegetationGeometryBuilder::~VegetationGeometryBuilder(){
 
 }
 
-VegetationGeometryBuilder::VegetationGeometryBuilder(int drawableType,long * instancesCount, Octree * tree, InstanceBuilderHandler * handler) : GeometryBuilder(drawableType) {
+VegetationGeometryBuilder::VegetationGeometryBuilder(long * instancesCount, Octree * tree, InstanceBuilderHandler * handler) {
     this->geometry = new Vegetation3d(1.0);
     this->tree = tree;
     this->handler = new VegetationInstanceBuilderHandler(tree, instancesCount );

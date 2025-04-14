@@ -20,15 +20,15 @@ Scene::Scene(Settings * settings) {
 	chunkSize = glm::pow(2, 11);
 
 	solidProcessor = new OctreeProcessor(solidSpace);
-	solidBuilder = new MeshGeometryBuilder(TYPE_INSTANCE_SOLID_DRAWABLE, &solidInstancesCount, &solidTrianglesCount, solidSpace, 0.9, 1.0, true);
+	solidBuilder = new MeshGeometryBuilder(&solidInstancesCount, &solidTrianglesCount, solidSpace, 0.9, 1.0, true);
 
 	liquidProcessor = new OctreeProcessor(liquidSpace);	
-	liquidBuilder = new MeshGeometryBuilder(TYPE_INSTANCE_LIQUID_DRAWABLE, &liquidInstancesCount, &liquidTrianglesCount, liquidSpace, 0.9, 1.0, true);
+	liquidBuilder = new MeshGeometryBuilder(&liquidInstancesCount, &liquidTrianglesCount, liquidSpace, 0.9, 1.0, true);
 
-	vegetationBuilder = new VegetationGeometryBuilder(TYPE_INSTANCE_VEGETATION_DRAWABLE, &vegetationInstancesCount, solidSpace, 
+	vegetationBuilder = new VegetationGeometryBuilder(&vegetationInstancesCount, solidSpace, 
 		new VegetationInstanceBuilderHandler(solidSpace, &vegetationInstancesCount));
 
-	debugBuilder = new OctreeGeometryBuilder(TYPE_INSTANCE_OCTREE_DRAWABLE, &octreeInstancesCount, liquidSpace, 
+	debugBuilder = new OctreeGeometryBuilder(&octreeInstancesCount, liquidSpace, 
 		new OctreeInstanceBuilderHandler(liquidSpace, &octreeInstancesCount));
 
 	solidRenderer = new OctreeVisibilityChecker(solidSpace, &visibleSolidNodes);
@@ -52,9 +52,17 @@ void Scene::processSpace() {
 	for(OctreeNodeData &data : visibleSolidNodes){
 		if(solidProcessor->loadCount > 0) {
 			solidProcessor->process(data);
-			solidInfo.try_emplace(data.node->dataId, new NodeInfo(solidBuilder->build(data)));
-			debugInfo.try_emplace(data.node->dataId, new NodeInfo(debugBuilder->build(data)));
-			vegetationInfo.try_emplace(data.node->dataId, new NodeInfo(vegetationBuilder->build(data)));
+			if(solidInfo.find(data.node->dataId) == solidInfo.end()) {
+				solidInfo.try_emplace(data.node->dataId, new NodeInfo(solidBuilder->build(data)));
+			}
+
+			if(debugInfo.find(data.node->dataId) == debugInfo.end()) {
+				debugInfo.try_emplace(data.node->dataId, new NodeInfo(debugBuilder->build(data)));
+			}
+
+			if(vegetationInfo.find(data.node->dataId) == vegetationInfo.end()) {
+				vegetationInfo.try_emplace(data.node->dataId, new NodeInfo(vegetationBuilder->build(data)));
+			}
 		} else {
 			break;
 		}
@@ -63,7 +71,9 @@ void Scene::processSpace() {
 	for(OctreeNodeData &data : visibleLiquidNodes){
 		if(liquidProcessor->loadCount > 0) {
 			liquidProcessor->process(data);
-			liquidInfo.try_emplace(data.node->dataId, new NodeInfo(liquidBuilder->build(data)));
+			if(liquidInfo.find(data.node->dataId) == liquidInfo.end()) {	
+				liquidInfo.try_emplace(data.node->dataId, new NodeInfo(liquidBuilder->build(data)));
+			}
 		} else {
 			break;
 		}
@@ -74,7 +84,6 @@ void Scene::processSpace() {
 		for(OctreeNodeData &data : vec) {
 			if(solidProcessor->loadCount > 0) {
 				solidProcessor->process(data);
-				liquidBuilder->build(data);
 			}
 			else {
 				break;

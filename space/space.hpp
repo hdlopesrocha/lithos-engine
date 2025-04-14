@@ -91,9 +91,6 @@ struct StackFrameOut : public OctreeNodeData  {
 
 class GeometryBuilder {
     public:
-    int infoType;
-
-    GeometryBuilder(int infoType);
     virtual InstanceGeometry* build(OctreeNodeData &params) = 0;
 };
 
@@ -105,7 +102,7 @@ class MeshGeometryBuilder  : public GeometryBuilder {
 	long * instancesCount;
 	long * trianglesCount;
     Octree * tree;
-    MeshGeometryBuilder(int infoType,  long * instancesCount, long * trianglesCount,Octree * tree, float simplificationAngle, float simplificationDistance, bool simplificationTexturing);
+    MeshGeometryBuilder(long * instancesCount, long * trianglesCount,Octree * tree, float simplificationAngle, float simplificationDistance, bool simplificationTexturing);
     ~MeshGeometryBuilder();
 
     InstanceGeometry * build(OctreeNodeData &params) override;
