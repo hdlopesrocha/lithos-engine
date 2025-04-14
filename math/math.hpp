@@ -345,28 +345,12 @@ class ContainmentHandler {
 		virtual bool isContained(const BoundingCube &cube) const = 0;
 };
 
-struct NodeInfo {
-	public:
-	void * data;
-	void * temp;
-	uint type;
-	bool dirty = true;
-
-	NodeInfo(uint type, void * data, void * temp, bool dirty) {
-		this->type = type;
-		this->data = data;
-		this->temp = temp;
-		this->dirty = dirty;
-	}
-};
-
-
 class Geometry
 {
 public:
 	std::vector<Vertex> vertices;
 	std::vector<uint> indices;
-	std::unordered_map <Vertex, size_t, VertexHasher> compactMap;
+	std::unordered_map<Vertex, size_t, VertexHasher> compactMap;
 	glm::vec3 center;
 	bool reusable;
 

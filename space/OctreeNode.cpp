@@ -6,6 +6,7 @@ OctreeNode::OctreeNode(Vertex vertex, bool leaf) {
 	this->mask = 0x0;
 	this->leaf = leaf;
 	this->simplified = false;
+	this->dataId = 0;
 	for(int i=0; i < 8 ; ++i) {
 		setChild(i, NULL);
 	}
@@ -20,7 +21,6 @@ OctreeNode::~OctreeNode() {
 }
 
 void OctreeNode::clear() {
-	info.clear();
 	for(int i=0; i < 8 ; ++i) {
 		OctreeNode * child = children[i];
 		if(child != NULL) {
@@ -44,14 +44,4 @@ bool OctreeNode::isEmpty() {
 		}
 	}
 	return true;
-}
-
-
-NodeInfo * OctreeNode::getNodeInfo(uint infoType) {
-	for(NodeInfo &n : info){
-		if(n.type == infoType) {
-			return &n;
-		}
-	}
-	return NULL;
 }

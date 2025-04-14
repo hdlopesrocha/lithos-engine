@@ -230,13 +230,12 @@ class DrawableInstanceGeometry {
 	GLuint vertexBuffer = 0u;
 	GLuint indexBuffer = 0u;
 	GLuint instanceBuffer = 0u;
-    uint drawableType;
 
     glm::vec3 center;
 	int indicesCount;
     int instancesCount;
 
-	DrawableInstanceGeometry(uint drawableType, Geometry * t, std::vector<InstanceData> * instances);
+	DrawableInstanceGeometry(Geometry * t, std::vector<InstanceData> * instances);
     ~DrawableInstanceGeometry();
     void draw(uint mode, long * count);
     void draw(uint mode, float amount, long * count);

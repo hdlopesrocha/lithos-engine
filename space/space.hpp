@@ -11,13 +11,12 @@ class OctreeNode {
 		bool leaf;
 		uint mask;
 		ContainmentType solid;
-		std::vector<NodeInfo> info;
+		long dataId;
 		OctreeNode(Vertex vertex, bool leaf);
 		~OctreeNode();
 		void clear();
 		bool isEmpty();
 		void setChild(int i, OctreeNode * node);
-		NodeInfo * getNodeInfo(uint infoType);
 		bool isLeaf();
 };
 
@@ -51,6 +50,7 @@ struct OctreeNodeData {
 class Octree: public BoundingCube {
 	using BoundingCube::BoundingCube;
 	public: 
+		long dataId;
 		OctreeNode * root;
 
 		Octree(BoundingCube minCube);
@@ -94,7 +94,7 @@ class GeometryBuilder {
     int infoType;
 
     GeometryBuilder(int infoType);
-    virtual const NodeInfo build(OctreeNodeData &params) = 0;
+    virtual const void build(OctreeNodeData &params) = 0;
 };
 
 class MeshGeometryBuilder  : public GeometryBuilder {
@@ -104,11 +104,12 @@ class MeshGeometryBuilder  : public GeometryBuilder {
     bool simplificationTexturing;
 	long * instancesCount;
 	long * trianglesCount;
+	std::unordered_map<long, InstanceGeometry*> * map;
     Octree * tree;
-    MeshGeometryBuilder(int infoType,  long * instancesCount, long * trianglesCount,Octree * tree, float simplificationAngle, float simplificationDistance, bool simplificationTexturing);
+    MeshGeometryBuilder(int infoType,  long * instancesCount, long * trianglesCount,Octree * tree, float simplificationAngle, float simplificationDistance, bool simplificationTexturing, std::unordered_map<long, InstanceGeometry*> * map);
     ~MeshGeometryBuilder();
 
-    const NodeInfo build(OctreeNodeData &params) override;
+    const void build(OctreeNodeData &params) override;
 
 };
 
@@ -251,12 +252,10 @@ class OctreeVisibilityChecker : public IteratorHandler{
 
 class OctreeProcessor : public IteratorHandler{
 	Octree * tree;
-    bool createInstances;
     public: 
 		int loadCount = 0;
 		glm::vec3 cameraPosition;
-		GeometryBuilder * builder;
-		OctreeProcessor(Octree * tree,bool createInstances, GeometryBuilder * builder);
+		OctreeProcessor(Octree * tree);
 
 		void before(OctreeNodeData &params) override;
 		void after(OctreeNodeData &params) override;

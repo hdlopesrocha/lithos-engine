@@ -13,6 +13,7 @@ static bool initialized = false;
 
 Octree::Octree(BoundingCube minCube) : BoundingCube(minCube){
 	this->root = new OctreeNode(glm::vec3(minCube.getCenter()), false);
+    this->dataId = 0;
 	if(!initialized) {
 		tessOrder.push_back(glm::ivec4(0,1,3,2));tessEdge.push_back(glm::ivec2(3,7));
 		tessOrder.push_back(glm::ivec4(0,2,6,4));tessEdge.push_back(glm::ivec2(6,7));
@@ -214,9 +215,7 @@ void Octree::expand(const ContainmentHandler &handler) {
 }
 
 void markAsDirty(OctreeNode * node){
-    for(NodeInfo &info : node->info) {
-        info.dirty = true;
-    }
+   //TODO: rethink
 }
 
 void Octree::add(const ContainmentHandler &handler, float minSize) {

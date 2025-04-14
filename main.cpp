@@ -242,8 +242,8 @@ public:
 
 			std::vector<InstanceData> instances;
 			instances.push_back(InstanceData(0,glm::mat4(1.0),0));
-			brushSphere = new DrawableInstanceGeometry(TYPE_INSTANCE_SOLID_DRAWABLE, &sphereGeometry, &instances);
-			brushBox = new DrawableInstanceGeometry(TYPE_INSTANCE_SOLID_DRAWABLE, &boxGeometry, &instances);
+			brushSphere = new DrawableInstanceGeometry(&sphereGeometry, &instances);
+			brushBox = new DrawableInstanceGeometry(&boxGeometry, &instances);
 		}
 
 		{
@@ -389,7 +389,7 @@ public:
 		{
 			std::vector<InstanceData> vegetationInstances;
 			vegetationInstances.push_back(InstanceData(0, glm::mat4(1.0), 0));
-			DrawableInstanceGeometry * vegetationMesh = new DrawableInstanceGeometry(TYPE_INSTANCE_VEGETATION_DRAWABLE, new Vegetation3d(1), &vegetationInstances);
+			DrawableInstanceGeometry * vegetationMesh = new DrawableInstanceGeometry(new Vegetation3d(1), &vegetationInstances);
 			impostors.push_back(ImpostorParams(impostorLayers.count++, vegetationMesh));
 		}
 		

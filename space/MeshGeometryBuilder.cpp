@@ -5,16 +5,17 @@ MeshGeometryBuilder::~MeshGeometryBuilder(){
     
 }
 
-MeshGeometryBuilder::MeshGeometryBuilder(int infoType, long * instancesCount, long * trianglesCount, Octree * tree,float simplificationAngle, float simplificationDistance, bool simplificationTexturing) : GeometryBuilder(infoType){
+MeshGeometryBuilder::MeshGeometryBuilder(int infoType, long * instancesCount, long * trianglesCount, Octree * tree,float simplificationAngle, float simplificationDistance, bool simplificationTexturing, std::unordered_map<long, InstanceGeometry*> * map) : GeometryBuilder(infoType){
     this->tree = tree;
 	this->simplificationAngle = simplificationAngle;
 	this->simplificationDistance = simplificationDistance;
 	this->simplificationTexturing = simplificationTexturing;
     this->instancesCount = instancesCount;
     this->trianglesCount = trianglesCount;
+    this->map = map;
 }
 
-const NodeInfo MeshGeometryBuilder::build(OctreeNodeData &params){
+const void MeshGeometryBuilder::build(OctreeNodeData &params){
     //std::cout << "MeshGeometryBuilder::build" <<std::endl;
     // Simplify
     Simplifier simplifier(tree, params.cube, simplificationAngle, simplificationDistance, simplificationTexturing); 
@@ -31,5 +32,5 @@ const NodeInfo MeshGeometryBuilder::build(OctreeNodeData &params){
 
     *instancesCount += 1;
 
-    return NodeInfo(infoType, NULL, pre, false);
+    map->try_emplace(params.node->dataId, pre);
 }

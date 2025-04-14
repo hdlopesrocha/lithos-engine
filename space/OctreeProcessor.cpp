@@ -1,35 +1,15 @@
 #include "space.hpp"
 
 
-OctreeProcessor::OctreeProcessor(Octree * tree,bool createInstances, GeometryBuilder * builder) {
+OctreeProcessor::OctreeProcessor(Octree * tree) {
 	this->tree = tree;
-	this->builder = builder;
-	this->createInstances = createInstances;
 }
 
-
-
 void OctreeProcessor::before(OctreeNodeData &params) {		
-
-	NodeInfo * info = params.node->getNodeInfo(builder->infoType);
-	bool canGenerate  = info == NULL || info->dirty;
-
+	bool canGenerate  = params.node->dataId == 0;
 	if(params.cube.getLengthX() <= params.chunkSize){
-		if(canGenerate && createInstances) {
-			if(info == NULL) {
-				params.node->info.push_back(builder->build(params));
-				--loadCount;
-			}else if(info->dirty) {
-				if(info->data != NULL) {
-					delete info->data;
-				}
-				if(info->temp != NULL) {
-					delete info->temp;
-				}
-
-				*info = builder->build(params);
-				info->dirty = false;
-			}
+		if(canGenerate) {
+			params.node->dataId = ++tree->dataId;
 		}
 		params.context = params.node;
 	}

@@ -1,7 +1,6 @@
 #include "gl.hpp"
 
-DrawableInstanceGeometry::DrawableInstanceGeometry(uint drawableType,Geometry * t, std::vector<InstanceData> * instances){
-	this->drawableType = drawableType;
+DrawableInstanceGeometry::DrawableInstanceGeometry(Geometry * t, std::vector<InstanceData> * instances){
 
 	glm::vec3 geometryCenter = t->vertices.size() ? t->getCenter() : glm::vec3(0);
 

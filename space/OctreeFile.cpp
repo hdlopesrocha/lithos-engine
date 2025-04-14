@@ -33,7 +33,7 @@ OctreeNode * loadRecursive(int i, std::vector<OctreeNodeSerialized> * nodes, flo
 	}else {
 		std::string chunkName = getChunkName(cube);
 		OctreeNodeFile * file = new OctreeNodeFile(node, baseFolder + "/" + filename+ "_" + chunkName + ".bin");
-		NodeInfo info(INFO_TYPE_FILE, file, NULL, true);
+		//NodeInfo info(INFO_TYPE_FILE, file, NULL, true);
 		//node->info.push_back(info);
 		file->load(baseFolder);
 		delete file;
