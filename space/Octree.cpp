@@ -214,11 +214,8 @@ void Octree::expand(const ContainmentHandler &handler) {
 	}
 }
 
-void markAsDirty(OctreeNode * node){
-   //TODO: rethink
-}
 
-void Octree::add(const ContainmentHandler &handler, float minSize) {
+void Octree::add(const ContainmentHandler &handler, const OctreeNodeDirtyHandler &dirtyHandler, float minSize) {
 	expand(handler);	
 
     OctreeNode *node = root;
@@ -254,7 +251,9 @@ void Octree::add(const ContainmentHandler &handler, float minSize) {
         }
         (*nodePtr)->mask |= buildMask(handler, frame.cube);
         (*nodePtr)->solid = check;
-        markAsDirty(*nodePtr);
+        if((*nodePtr)->dataId) {
+            dirtyHandler.handle((*nodePtr)->dataId);
+        }
         if (check == ContainmentType::Contains) {
             (*nodePtr)->clear();
         } else if (!isLeaf) {
@@ -266,7 +265,7 @@ void Octree::add(const ContainmentHandler &handler, float minSize) {
     }
 }
 
-void Octree::del(const ContainmentHandler &handler, float minSize) {
+void Octree::del(const ContainmentHandler &handler, const OctreeNodeDirtyHandler &dirtyHandler, float minSize) {
     OctreeNode *node = root;
     BoundingCube &cube = *this; 
     int level = 0;
@@ -313,8 +312,9 @@ void Octree::del(const ContainmentHandler &handler, float minSize) {
 
             (*nodePtr)->mask &= buildMask(handler, frame.cube) ^ 0xff;
             (*nodePtr)->solid = check;
-            markAsDirty(*nodePtr);
-
+            if((*nodePtr)->dataId) {
+                dirtyHandler.handle((*nodePtr)->dataId);
+            }
             if (!isLeaf) {
                 for (int i = 7; i >= 0; --i) {  // Push children in reverse order
                     BoundingCube subCube = frame.cube.getChild(i);

@@ -38,8 +38,9 @@ class TranslateBrushCommand : public ICommand<glm::vec3>{
 class PaintBrushCommand : public ICommand<float>{
     Brush3d &brush3d;
     Octree &octree;
+    DirtyHandler dirtyHandler;
     public:
-    PaintBrushCommand(Brush3d &brush3d, Octree &octree);
+    PaintBrushCommand(Brush3d &brush3d, Scene &scene);
     void execute(const float &value) override ;
 };
 
@@ -69,7 +70,7 @@ class GamepadControllerStrategy : public ControllerStrategy {
     PaintBrushCommand * paintBrushCommand;
     ControllerMode controllerMode;
     public:
-        GamepadControllerStrategy(Camera &camera, Brush3d &brush3d, Octree &octree);
+        GamepadControllerStrategy(Camera &camera, Brush3d &brush3d, Scene &scene);
         void handleInput(float deltaTime) override;
 
 };
@@ -82,9 +83,8 @@ class KeyboardControllerStrategy : public ControllerStrategy {
     PaintBrushCommand * paintBrushCommand;
     ControllerMode controllerMode;
     LithosApplication &app;
-    Octree &octree;
     public:
-        KeyboardControllerStrategy(Camera &camera, Brush3d &brush3d, LithosApplication &app,Octree &octree);
+        KeyboardControllerStrategy(Camera &camera, Brush3d &brush3d, LithosApplication &app, Scene &scene);
         void handleInput(float deltaTime) override;
 };
 

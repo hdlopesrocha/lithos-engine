@@ -2,12 +2,12 @@
 
 
 
-KeyboardControllerStrategy::KeyboardControllerStrategy(Camera &camera, Brush3d &brush3d, LithosApplication &app, Octree &octree): app(app), octree(octree) {
+KeyboardControllerStrategy::KeyboardControllerStrategy(Camera &camera, Brush3d &brush3d, LithosApplication &app, Scene &scene): app(app) {
     this->translateCameraCommand = new TranslateCameraCommand(camera);
     this->rotateCameraCommand = new RotateCameraCommand(camera);
     this->closeWindowCommand = new CloseWindowCommand(app);
     this->translateBrushCommand = new TranslateBrushCommand(brush3d, camera);
-    this->paintBrushCommand = new PaintBrushCommand(brush3d, octree);
+    this->paintBrushCommand = new PaintBrushCommand(brush3d, scene);
     this->controllerMode = ControllerMode::CAMERA;
 }
 

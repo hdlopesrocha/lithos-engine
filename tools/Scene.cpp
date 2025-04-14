@@ -52,16 +52,52 @@ void Scene::processSpace() {
 	for(OctreeNodeData &data : visibleSolidNodes){
 		if(solidProcessor->loadCount > 0) {
 			solidProcessor->process(data);
-			if(solidInfo.find(data.node->dataId) == solidInfo.end()) {
-				solidInfo.try_emplace(data.node->dataId, new NodeInfo(solidBuilder->build(data)));
+			{
+				auto it = solidInfo.find(data.node->dataId);
+				if(it == solidInfo.end()) {
+					solidInfo.try_emplace(data.node->dataId, new NodeInfo(solidBuilder->build(data)));
+				} else {
+					NodeInfo * ni = it->second;
+					if(ni->dirty) {
+						if(ni->loadable) {
+							delete ni->loadable;
+						}
+						ni->loadable = solidBuilder->build(data);
+						ni->dirty = false;
+					}
+				}
 			}
 
-			if(debugInfo.find(data.node->dataId) == debugInfo.end()) {
-				debugInfo.try_emplace(data.node->dataId, new NodeInfo(debugBuilder->build(data)));
+			{
+				auto it = debugInfo.find(data.node->dataId);
+				if(it == debugInfo.end()) {
+					debugInfo.try_emplace(data.node->dataId, new NodeInfo(debugBuilder->build(data)));
+				} else {
+					NodeInfo * ni = it->second;
+					if(ni->dirty) {
+						if(ni->loadable) {
+							delete ni->loadable;
+						}
+						ni->loadable = debugBuilder->build(data);
+						ni->dirty = false;
+					}
+				}
 			}
 
-			if(vegetationInfo.find(data.node->dataId) == vegetationInfo.end()) {
-				vegetationInfo.try_emplace(data.node->dataId, new NodeInfo(vegetationBuilder->build(data)));
+			{
+				auto it = vegetationInfo.find(data.node->dataId);
+				if(it == vegetationInfo.end()) {
+					vegetationInfo.try_emplace(data.node->dataId, new NodeInfo(vegetationBuilder->build(data)));
+				} else {
+					NodeInfo * ni = it->second;
+					if(ni->dirty) {
+						if(ni->loadable) {
+							delete ni->loadable;
+						}
+						ni->loadable = vegetationBuilder->build(data);
+						ni->dirty = false;
+					}
+				}
 			}
 		} else {
 			break;
@@ -71,9 +107,23 @@ void Scene::processSpace() {
 	for(OctreeNodeData &data : visibleLiquidNodes){
 		if(liquidProcessor->loadCount > 0) {
 			liquidProcessor->process(data);
-			if(liquidInfo.find(data.node->dataId) == liquidInfo.end()) {	
-				liquidInfo.try_emplace(data.node->dataId, new NodeInfo(liquidBuilder->build(data)));
+
+			{
+				auto it = liquidInfo.find(data.node->dataId);
+				if(it == liquidInfo.end()) {	
+					liquidInfo.try_emplace(data.node->dataId, new NodeInfo(liquidBuilder->build(data)));
+				} else {
+					NodeInfo * ni = it->second;
+					if(ni->dirty) {
+						if(ni->loadable) {
+							delete ni->loadable;
+						}
+						ni->loadable = liquidBuilder->build(data);
+						ni->dirty = false;
+					}
+				}
 			}
+
 		} else {
 			break;
 		}
@@ -116,7 +166,11 @@ DrawableInstanceGeometry * Scene::loadIfNeeded(std::unordered_map<long, NodeInfo
 	NodeInfo * ni = i != infos->end() ? i->second : NULL;
 	if (ni != NULL) {
 		if(ni->loadable) {
+			if(ni->drawable) {
+				delete ni->drawable;
+			}
     	    ni->drawable = new DrawableInstanceGeometry(ni->loadable->geometry, &ni->loadable->instances);
+			delete ni->loadable;
 			ni->loadable = NULL;
 		}
 		return ni->drawable;
@@ -198,20 +252,20 @@ void Scene::generate(Camera &camera) {
 				mapBox, sizePerTile
 			), mapBox, sizePerTile
 		), LandBrush()
-	), minSize);
+	), DirtyHandler(*this), minSize);
 
 
-	solidSpace->del(SphereContainmentHandler(BoundingSphere(glm::vec3(0,768,0),1024), SimpleBrush(14)), minSize);
+	solidSpace->del(SphereContainmentHandler(BoundingSphere(glm::vec3(0,768,0),1024), SimpleBrush(14)), DirtyHandler(*this), minSize);
 
 
 	BoundingBox waterBox = mapBox;
 	waterBox.setMaxY(0);
 	
 	BoundingBox testBox =BoundingBox(glm::vec3(0,-200,0),glm::vec3(100,100,100));
-	liquidSpace->add(BoxContainmentHandler(testBox,SimpleBrush(0)), 1.0);
+	liquidSpace->add(BoxContainmentHandler(testBox,SimpleBrush(0)), DirtyHandler(*this), 1.0);
 
 	//liquidSpace->add(SphereContainmentHandler(BoundingSphere(glm::vec3(11,61,-11),4), SimpleBrush(0)));
-	liquidSpace->add(OctreeContainmentHandler(solidSpace, waterBox, WaterBrush(0)), minSize);
+	liquidSpace->add(OctreeContainmentHandler(solidSpace, waterBox, WaterBrush(0)), DirtyHandler(*this), minSize);
 
 	//solidSpace->add(BoxContainmentHandler(BoundingBox(glm::vec3(-20,-5,-20),glm::vec3(20,10,20)),SimpleBrush(8)), 1.0);
 	//solidSpace->del(BoxContainmentHandler(BoundingBox(glm::vec3(-17,-4,-17),glm::vec3(17,12,17)),SimpleBrush(6)), 1.0);
@@ -255,12 +309,12 @@ void Scene::import(const std::string &filename, Camera &camera) {
 			mapBox,sizePerTile
 		), 
 		LandBrush()
-	), minSize);
+	), DirtyHandler(*this), minSize);
 
 	BoundingBox waterBox = mapBox;
 	waterBox.setMaxY(0);
 	
-	liquidSpace->add(OctreeContainmentHandler(solidSpace, waterBox, WaterBrush(0)), minSize);
+	liquidSpace->add(OctreeContainmentHandler(solidSpace, waterBox, WaterBrush(0)), DirtyHandler(*this), minSize);
 
 }
 

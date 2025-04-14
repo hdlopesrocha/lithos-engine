@@ -47,6 +47,12 @@ struct OctreeNodeData {
 	}
 };
 
+class OctreeNodeDirtyHandler {
+	public:
+
+	virtual void handle(long dataId) const = 0;
+};
+
 class Octree: public BoundingCube {
 	using BoundingCube::BoundingCube;
 	public: 
@@ -55,8 +61,8 @@ class Octree: public BoundingCube {
 
 		Octree(BoundingCube minCube);
 		void expand(const ContainmentHandler &handler);
-		void add(const ContainmentHandler &handler, float minSize);
-		void del(const ContainmentHandler &handler, float minSize);
+		void add(const ContainmentHandler &handler, const OctreeNodeDirtyHandler &dirtyHandler, float minSize);
+		void del(const ContainmentHandler &handler, const OctreeNodeDirtyHandler &dirtyHandler, float minSize);
 		void iterate(IteratorHandler &handler, float chunkSize);
 		void iterateFlat(IteratorHandler &handler, float chunkSize);
 
@@ -138,8 +144,6 @@ class InstanceBuilderHandler {
 
 	virtual void handle(OctreeNodeData &data, InstanceGeometry * pre) = 0;
 };
-
-
 
 class InstanceBuilder : public IteratorHandler{
 	Octree * tree;

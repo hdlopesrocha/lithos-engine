@@ -384,6 +384,8 @@ struct InstanceGeometry {
     std::vector<InstanceData> instances;
 
     InstanceGeometry(Geometry * geometry);
+
+	~InstanceGeometry();
 };
 
 

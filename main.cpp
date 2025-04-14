@@ -119,8 +119,8 @@ public:
 		uniformBrushData = new ProgramData();
 		brush3d = new Brush3d();
 
-		gamepadControllerStrategy = new GamepadControllerStrategy(camera, *brush3d, *mainScene->solidSpace);
-		keyboardControllerStrategy = new KeyboardControllerStrategy(camera, *brush3d, *this, *mainScene->solidSpace);
+		gamepadControllerStrategy = new GamepadControllerStrategy(camera, *brush3d, *mainScene);
+		keyboardControllerStrategy = new KeyboardControllerStrategy(camera, *brush3d, *this, *mainScene);
 
 		std::vector<GlslInclude> includes;
 		includes.push_back(GlslInclude("#include<functions.glsl>" , readFile("shaders/util/functions.glsl")));

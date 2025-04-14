@@ -129,10 +129,12 @@ struct NodeInfo {
 	bool dirty;
 
 	NodeInfo(InstanceGeometry * loadable){
+		this->drawable = NULL;
 		this->loadable = loadable;
 		this->dirty = false;
 	}
 };
+
 
 class Scene {
 
@@ -198,6 +200,33 @@ std::unordered_map<long, NodeInfo*> vegetationInfo;
 
 	void save(std::string folderPath, Camera &camera);
 	void load(std::string folderPath, Camera &camera);
+};
+
+class DirtyHandler : public OctreeNodeDirtyHandler {
+
+	Scene &scene;
+
+	public:
+	DirtyHandler(Scene &scene) : scene(scene){
+
+	}
+
+	void singleHandle(std::unordered_map<long, NodeInfo*> * infos, long dataId) const {
+		auto i = infos->find(dataId);
+		NodeInfo * ni = i != infos->end() ? i->second : NULL;
+		if(ni!=NULL) {
+			ni->dirty = true;
+		}
+	}
+
+
+	void handle(long dataId) const {
+		singleHandle(&scene.solidInfo, dataId);
+		singleHandle(&scene.vegetationInfo, dataId);
+		singleHandle(&scene.liquidInfo, dataId);
+		singleHandle(&scene.debugInfo, dataId);
+	};
+
 };
 
 class EnvironmentFile {

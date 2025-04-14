@@ -1,11 +1,11 @@
 #include "command.hpp"
 
 
-GamepadControllerStrategy::GamepadControllerStrategy(Camera &camera, Brush3d &brush3d, Octree &octree) {
+GamepadControllerStrategy::GamepadControllerStrategy(Camera &camera, Brush3d &brush3d, Scene &scene) {
     this->translateCameraCommand = new TranslateCameraCommand(camera);
     this->rotateCameraCommand = new RotateCameraCommand(camera);
     this->translateBrushCommand = new TranslateBrushCommand(brush3d, camera);
-    this->paintBrushCommand = new PaintBrushCommand(brush3d, octree);
+    this->paintBrushCommand = new PaintBrushCommand(brush3d, scene);
     this->controllerMode = ControllerMode::CAMERA;
 }
 
