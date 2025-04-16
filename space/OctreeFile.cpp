@@ -17,7 +17,7 @@ OctreeNode * loadRecursive(int i, std::vector<OctreeNodeSerialized> * nodes, flo
 	OctreeNodeSerialized serialized = nodes->at(i);
 	Vertex vertex(serialized.position, serialized.normal, glm::vec2(0), serialized.brushIndex);
 
-	OctreeNode * node = new OctreeNode(vertex, serialized.leaf);
+	OctreeNode * node = new OctreeNode(vertex);
 	node->mask = serialized.mask;
 	node->solid = serialized.solid;
 
@@ -85,7 +85,6 @@ uint saveRecursive(OctreeNode * node, std::vector<OctreeNodeSerialized*> * nodes
 		n->brushIndex = node->vertex.brushIndex;
 		n->mask = node->mask;
 		n->solid = node->solid;
-		n->leaf = node->leaf;
 		uint index = nodes->size(); 
 		nodes->push_back(n);
 

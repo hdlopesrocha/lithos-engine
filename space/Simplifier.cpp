@@ -58,7 +58,7 @@ void Simplifier::after(OctreeNodeData &params) {
 				}
 				
 				float d = parentPlane.distance(node->vertex.position);
-				if( d > distance ) {
+				if( d > distance*cube.getLengthX() ) {
 					return;
 				}
 

@@ -20,16 +20,16 @@ Scene::Scene(Settings * settings) {
 	chunkSize = glm::pow(2, 9);
 
 	solidProcessor = new OctreeProcessor(solidSpace);
-	solidBuilder = new MeshGeometryBuilder(&solidInstancesCount, &solidTrianglesCount, solidSpace, 0.9, 1.0, true);
+	solidBuilder = new MeshGeometryBuilder(&solidInstancesCount, &solidTrianglesCount, solidSpace, 0.99, 0.1, true);
 
 	liquidProcessor = new OctreeProcessor(liquidSpace);	
-	liquidBuilder = new MeshGeometryBuilder(&liquidInstancesCount, &liquidTrianglesCount, liquidSpace, 0.9, 1.0, true);
+	liquidBuilder = new MeshGeometryBuilder(&liquidInstancesCount, &liquidTrianglesCount, liquidSpace, 0.99, 0.1, true);
 
 	vegetationBuilder = new VegetationGeometryBuilder(&vegetationInstancesCount, solidSpace, 
 		new VegetationInstanceBuilderHandler(solidSpace, &vegetationInstancesCount, 32, 4));
 
-	debugBuilder = new OctreeGeometryBuilder(&octreeInstancesCount, liquidSpace, 
-		new OctreeInstanceBuilderHandler(liquidSpace, &octreeInstancesCount));
+	debugBuilder = new OctreeGeometryBuilder(&octreeInstancesCount, solidSpace, 
+		new OctreeInstanceBuilderHandler(solidSpace, &octreeInstancesCount));
 
 	solidRenderer = new OctreeVisibilityChecker(solidSpace, &visibleSolidNodes);
 	liquidRenderer = new OctreeVisibilityChecker(liquidSpace, &visibleLiquidNodes);
@@ -68,6 +68,7 @@ void Scene::processSpace() {
 			solidProcessor->process(data);
 			loadSpace(data, &solidInfo, solidBuilder);
 			loadSpace(data, &vegetationInfo, vegetationBuilder);
+			loadSpace(data, &debugInfo, debugBuilder);
 		} else {
 			break;
 		}
@@ -77,7 +78,6 @@ void Scene::processSpace() {
 		if(liquidProcessor->loadCount > 0) {
 			liquidProcessor->process(data);
 			loadSpace(data, &liquidInfo, liquidBuilder);
-			loadSpace(data, &debugInfo, debugBuilder);
 		} else {
 			break;
 		}
@@ -151,7 +151,6 @@ void Scene::draw (uint drawableType, int mode, glm::vec3 cameraPosition, const s
 				DrawableInstanceGeometry * drawable	= loadIfNeeded(&solidInfo, node->dataId);
 				if(drawable != NULL) {
 					drawable->draw(mode, 1.0, &solidInstancesVisible);
-					solidInstancesVisible += drawable->instancesCount;
 				}
 			}
 			else if(drawableType == TYPE_INSTANCE_LIQUID_DRAWABLE) {

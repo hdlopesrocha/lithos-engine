@@ -1,10 +1,9 @@
 #include "space.hpp"
 
-OctreeNode::OctreeNode(Vertex vertex, bool leaf) {
+OctreeNode::OctreeNode(Vertex vertex) {
 	this->solid = ContainmentType::Disjoint;
 	this->vertex = vertex;
 	this->mask = 0x0;
-	this->leaf = leaf;
 	this->simplified = false;
 	this->dataId = 0;
 	for(int i=0; i < 8 ; ++i) {
@@ -30,11 +29,14 @@ void OctreeNode::clear() {
 	}
 }
 
-
 bool OctreeNode::isLeaf() {
-	return leaf;
+    for(int i=0 ; i < 8 ; ++i) {
+        if(children[i] != NULL) {
+            return false;
+        }
+    }
+    return true;
 }
-
 
 bool OctreeNode::isEmpty() {
 	for(int i=0; i < 8 ; ++i){

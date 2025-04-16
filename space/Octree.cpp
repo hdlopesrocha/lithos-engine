@@ -12,7 +12,7 @@ static std::vector<glm::ivec2> tessEdge;
 static bool initialized = false;
 
 Octree::Octree(BoundingCube minCube) : BoundingCube(minCube){
-	this->root = new OctreeNode(glm::vec3(minCube.getCenter()), false);
+	this->root = new OctreeNode(glm::vec3(minCube.getCenter()));
     this->dataId = 0;
 	if(!initialized) {
 		tessOrder.push_back(glm::ivec4(0,1,3,2));tessEdge.push_back(glm::ivec2(3,7));
@@ -166,6 +166,7 @@ struct OctreeNodeFrame {
     OctreeNode** nodePtr;
     BoundingCube cube;
     int level;
+    float minSize;
 };
 
 uint buildMask(const ContainmentHandler &handler, BoundingCube &cube) {
@@ -184,11 +185,12 @@ void split(OctreeNode * node, BoundingCube &cube, float minSize) {
     Vertex vertex = node->vertex;
 
 	for(int i=0; i <8 ; ++i) {
-		BoundingCube subCube = cube.getChild(i);
-        bool isLeaf = subCube.getLengthX() <= minSize;
-        node->children[i] = new OctreeNode(Vertex(subCube.getCenter(), glm::vec3(0), glm::vec2(0.0), vertex.brushIndex), isLeaf);
-		node->children[i]->solid = node->solid;
-		node->children[i]->mask = node->mask;
+        if(node->children[i] == NULL) {
+            BoundingCube subCube = cube.getChild(i);
+            node->children[i] = new OctreeNode(Vertex(subCube.getCenter(), glm::vec3(0), glm::vec2(0.0), vertex.brushIndex));
+            node->children[i]->solid = node->solid;
+            node->children[i]->mask = node->mask;
+        }
 	}	
 }
 
@@ -208,11 +210,12 @@ void Octree::expand(const ContainmentHandler &handler) {
 	    	delete root;
 			root = NULL;
 	    }
-	    OctreeNode * newNode = new OctreeNode(getCenter(), false);
+	    OctreeNode * newNode = new OctreeNode(getCenter());
 		newNode->setChild(i, root);
 	    root = newNode;
 	}
 }
+
 
 
 void Octree::add(const ContainmentHandler &handler, const OctreeNodeDirtyHandler &dirtyHandler, float minSize) {
@@ -223,7 +226,7 @@ void Octree::add(const ContainmentHandler &handler, const OctreeNodeDirtyHandler
     int level = 0;
 
     std::stack<OctreeNodeFrame> stack;
-    stack.push({ &node, cube, level});
+    stack.push({ &node, cube, level, minSize});
 
     while (!stack.empty()) {
         OctreeNodeFrame frame = stack.top();
@@ -231,14 +234,13 @@ void Octree::add(const ContainmentHandler &handler, const OctreeNodeDirtyHandler
 
         OctreeNode** nodePtr = frame.nodePtr;
         ContainmentType check = handler.check(frame.cube);
-        bool isLeaf = frame.cube.getLengthX() <= minSize;
-
+ 
         if (check == ContainmentType::Disjoint) {
             continue;  // Skip this node
         }
 
         if (*nodePtr == NULL) {
-            *nodePtr = new OctreeNode(Vertex(frame.cube.getCenter()), isLeaf);
+            *nodePtr = new OctreeNode(Vertex(frame.cube.getCenter()));
         } else if ((*nodePtr)->solid == ContainmentType::Contains) {
             continue;  // No need to process further
         }
@@ -254,12 +256,13 @@ void Octree::add(const ContainmentHandler &handler, const OctreeNodeDirtyHandler
         if((*nodePtr)->dataId) {
             dirtyHandler.handle((*nodePtr)->dataId);
         }
+        bool isLeaf = frame.cube.getLengthX() <= frame.minSize;
         if (check == ContainmentType::Contains) {
             (*nodePtr)->clear();
-        } else if (!isLeaf) {
-            for (int i = 7; i >= 0; --i) {  // Push children in reverse order to maintain order
+        } else if (!(*nodePtr)->isLeaf() || !isLeaf) {
+            for (int i = 7; i >= 0; --i) {  
                 BoundingCube subCube = frame.cube.getChild(i);
-                stack.push({ &((*nodePtr)->children[i]), subCube, frame.level + 1 });
+                stack.push({ &((*nodePtr)->children[i]), subCube, frame.level + 1, frame.minSize });
             }
         }
     }

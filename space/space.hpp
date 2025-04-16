@@ -8,11 +8,10 @@ class OctreeNode {
 		Vertex vertex;
 		OctreeNode *children[8];
 		bool simplified;
-		bool leaf;
 		uint mask;
 		ContainmentType solid;
 		long dataId;
-		OctreeNode(Vertex vertex, bool leaf);
+		OctreeNode(Vertex vertex);
 		~OctreeNode();
 		void clear();
 		bool isEmpty();
@@ -71,7 +70,7 @@ class Octree: public BoundingCube {
 		void getNodeNeighbors(OctreeNodeData &data, bool simplification, OctreeNode ** out, int direction,int initialIndex, int finalIndex);
 		ContainmentType contains(const glm::vec3 &pos);
 		ContainmentType contains(const AbstractBoundingBox&cube);
-
+		bool hasFinerNode(const OctreeNode *node);
 
 };
 
