@@ -197,7 +197,6 @@ struct OctreeNodeSerialized {
     glm::vec3 normal;
     uint brushIndex;
     uint mask;
-	bool leaf;
     ContainmentType solid;
     uint children[8] = {0,0,0,0,0,0,0,0};
 };
