@@ -26,13 +26,9 @@
 #include <gdal/gdal_priv.h>
 #include <gdal/cpl_conv.h> // For CPLFree
 
-
 #define INFO_TYPE_FILE 99
 #define INFO_TYPE_REMOVE 0
 #define DISCARD_BRUSH_INDEX -1
-
-
-
 
 class BoundingSphere;
 class BoundingBox;
@@ -42,14 +38,6 @@ enum ContainmentType {
 	Contains,
 	Intersects,
 	Disjoint
-};
-
-struct Plane {
-	glm::vec3 normal;
-	float d;
-	public:
-	Plane(glm::vec3 normal, glm::vec3 point);
-	float distance(glm::vec3 &point);
 };
 
 struct Vertex {
@@ -187,6 +175,15 @@ class AbstractBoundingBox {
 	static glm::vec3 getShift(int i);
 	static glm::vec3 getShift3(int i);
 
+};
+
+struct Plane {
+	glm::vec3 normal;
+	float d;
+	public:
+	Plane(glm::vec3 normal, glm::vec3 point);
+	float distance(glm::vec3 &point);
+	ContainmentType test(AbstractBoundingBox &box);
 };
 
 class BoundingCube : public AbstractBoundingBox {

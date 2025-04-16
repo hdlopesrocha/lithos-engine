@@ -27,8 +27,6 @@ int getNodeIndex(const glm::vec3 &vec, const BoundingCube &cube) {
     return (vec.x >= c.x ? 4 : 0) + (vec.y >= c.y ? 2 : 0) + (vec.z >= c.z ? 1 : 0);
 }
 
-
-
 ContainmentType Octree::contains(const AbstractBoundingBox &c) {
     OctreeNode* node = root;
     BoundingCube cube = *this;
@@ -60,8 +58,6 @@ ContainmentType Octree::contains(const AbstractBoundingBox &c) {
         if (allContains) {
             return ContainmentType::Contains;
         }
-
-
         node = candidate;
         cube = candidateCube;
     }
@@ -71,8 +67,6 @@ ContainmentType Octree::contains(const AbstractBoundingBox &c) {
 
     return node->solid;
 }
-
-
 
 ContainmentType Octree::contains(const glm::vec3 &pos) {
     OctreeNode* node = root;
@@ -129,7 +123,6 @@ OctreeNode* Octree::getNodeAt(const glm::vec3 &pos, int level, bool simplificati
     return node;
 }
 
-
 void Octree::getNodeNeighbors(OctreeNodeData &data, bool simplification, OctreeNode ** out, int direction, int initialIndex, int finalIndex) {
 	for(int i=initialIndex; i < finalIndex; ++i) {
 		glm::vec3 pos = data.cube.getCenter() + direction* data.cube.getLengthX() * Octree::getShift(i);
@@ -183,13 +176,15 @@ uint buildMask(const ContainmentHandler &handler, BoundingCube &cube) {
 
 void split(OctreeNode * node, BoundingCube &cube, float minSize) {
     Vertex vertex = node->vertex;
-
+    Plane plane(vertex.normal, vertex.position);
 	for(int i=0; i <8 ; ++i) {
         if(node->children[i] == NULL) {
             BoundingCube subCube = cube.getChild(i);
-            node->children[i] = new OctreeNode(Vertex(subCube.getCenter(), glm::vec3(0), glm::vec2(0.0), vertex.brushIndex));
-            node->children[i]->solid = node->solid;
-            node->children[i]->mask = node->mask;
+            if(plane.test(subCube) != ContainmentType::Disjoint) {
+                node->children[i] = new OctreeNode(Vertex(subCube.getCenter(), glm::vec3(0), glm::vec2(0.0), vertex.brushIndex));
+                node->children[i]->solid = node->solid;
+                node->children[i]->mask = node->mask;
+            }
         }
 	}	
 }
@@ -215,8 +210,6 @@ void Octree::expand(const ContainmentHandler &handler) {
 	    root = newNode;
 	}
 }
-
-
 
 void Octree::add(const ContainmentHandler &handler, const OctreeNodeDirtyHandler &dirtyHandler, float minSize) {
 	expand(handler);	
@@ -327,7 +320,6 @@ void Octree::del(const ContainmentHandler &handler, const OctreeNodeDirtyHandler
         }
     }
 }
-
 
 void Octree::iterate(IteratorHandler &handler, float chunkSize) {
 	BoundingCube cube(glm::vec3(getMinX(),getMinY(),getMinZ()),getLengthX());
