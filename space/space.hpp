@@ -100,28 +100,22 @@ class GeometryBuilder {
 };
 
 class MeshGeometryBuilder  : public GeometryBuilder {
-    public:
     float simplificationAngle;
     float simplificationDistance;
     bool simplificationTexturing;
 	long * instancesCount;
 	long * trianglesCount;
     Octree * tree;
-    MeshGeometryBuilder(long * instancesCount, long * trianglesCount,Octree * tree, float simplificationAngle, float simplificationDistance, bool simplificationTexturing);
-    ~MeshGeometryBuilder();
-
-    InstanceGeometry * build(OctreeNodeData &params) override;
-
+	public:
+		MeshGeometryBuilder(long * instancesCount, long * trianglesCount,Octree * tree, float simplificationAngle, float simplificationDistance, bool simplificationTexturing);
+		~MeshGeometryBuilder();
+		InstanceGeometry * build(OctreeNodeData &params) override;
 };
-
-
 
 class IteratorHandler {
     std::stack<OctreeNodeData> flatData;
     std::stack<StackFrame> stack;
     std::stack<StackFrameOut> stackOut;
-
-
 	public: 
 		virtual bool test(OctreeNodeData &params) = 0;
 		virtual void before(OctreeNodeData &params) = 0;
@@ -136,12 +130,10 @@ class IteratorHandler {
 
 class InstanceBuilderHandler {
 	public:
-	Octree * tree;
-	long * count;
-	
-	InstanceBuilderHandler(Octree * tree, long * count);
-
-	virtual void handle(OctreeNodeData &data, InstanceGeometry * pre) = 0;
+		Octree * tree;
+		long * count;
+		InstanceBuilderHandler(Octree * tree, long * count);
+		virtual void handle(OctreeNodeData &data, InstanceGeometry * pre) = 0;
 };
 
 class InstanceBuilder : public IteratorHandler{
@@ -149,11 +141,10 @@ class InstanceBuilder : public IteratorHandler{
     uint mode;
 	InstanceBuilderHandler * handler;
 	InstanceGeometry * geometry;
-    public: 
-        int instanceCount = 0;
-        std::vector<InstanceData> * instances;
+	std::vector<InstanceData> * instances;
+	public: 
+		int instanceCount = 0;
 		InstanceBuilder(Octree * tree, std::vector<InstanceData> * instances, InstanceBuilderHandler * handler, InstanceGeometry * geometry);
-
 		void before(OctreeNodeData &params) override;
 		void after(OctreeNodeData &params) override;
 		bool test(OctreeNodeData &params) override;
@@ -163,8 +154,8 @@ class InstanceBuilder : public IteratorHandler{
 
 
 class Tesselator : public IteratorHandler, OctreeNodeTriangleHandler{
+	Octree * tree;
 	public:
-		Octree * tree;
 		Tesselator(Octree * tree, Geometry * chunk, long * count);
 		void before(OctreeNodeData &params) override;
 		void after(OctreeNodeData &params) override;
@@ -175,14 +166,13 @@ class Tesselator : public IteratorHandler, OctreeNodeTriangleHandler{
 };
 
 class Simplifier : public IteratorHandler{
+	Octree * tree;
+	float angle;
+	float distance;
+	bool texturing;
+	BoundingCube chunkCube;
 	public:
-		Octree * tree;
-		float angle;
-		float distance;
-	    bool texturing;
-		BoundingCube chunkCube;
 		Simplifier(Octree * tree, BoundingCube chunkCube, float angle, float distance, bool texturing);
-
 		void before(OctreeNodeData &params) override;
 		void after(OctreeNodeData &params) override;
 		bool test(OctreeNodeData &params) override;
@@ -222,7 +212,6 @@ class OctreeFile {
 class OctreeNodeFile {
 	OctreeNode * node;
     std::string filename;
-
     public: 
 		OctreeNodeFile(OctreeNode * node, std::string filename);
         void save(std::string baseFolder);
@@ -232,13 +221,11 @@ class OctreeNodeFile {
 
 class OctreeVisibilityChecker : public IteratorHandler{
 	Frustum frustum;
-    public: 
+	public:
+		glm::vec3 sortPosition;
+		std::vector<OctreeNodeData> * visibleNodes;
 		Octree * tree;
-	    std::vector<OctreeNodeData> * visibleNodes;
-        glm::vec3 sortPosition;
-
 		OctreeVisibilityChecker(Octree * tree, std::vector<OctreeNodeData> * visibleNodes);
-
 		void update(glm::mat4 m);
 		void before(OctreeNodeData &params) override;
 		void after(OctreeNodeData &params) override;
@@ -253,9 +240,7 @@ class OctreeProcessor {
     public: 
 		int loadCount = 0;
 		OctreeProcessor(Octree * tree);
-
 		void process(OctreeNodeData &params);
-
 };
 
 #endif
