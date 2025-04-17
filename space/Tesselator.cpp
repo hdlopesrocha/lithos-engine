@@ -36,7 +36,7 @@ void Tesselator::after(OctreeNodeData &params) {
 }
 
 bool Tesselator::test(OctreeNodeData &params) {			
-	return params.node->solid != ContainmentType::Contains && !params.node->simplified;
+	return !params.node->isSolid && !params.node->simplified;
 }
 
 void Tesselator::getOrder(OctreeNodeData &params, int * order){

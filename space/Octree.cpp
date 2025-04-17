@@ -46,7 +46,7 @@ ContainmentType Octree::contains(const AbstractBoundingBox &c) {
                     candidate = subNode;
                     candidateCube = subCube;
                     anyIntersection = true;
-                    if(candidate->solid != ContainmentType::Contains) {
+                    if(!candidate->isSolid) {
                         allContains = false;
                     }
                 }
@@ -65,7 +65,7 @@ ContainmentType Octree::contains(const AbstractBoundingBox &c) {
 		return ContainmentType::Disjoint;
 	} 
 
-    return node->solid;
+    return node->isSolid ? ContainmentType::Contains : ContainmentType::Intersects;
 }
 
 ContainmentType Octree::contains(const glm::vec3 &pos) {
@@ -81,7 +81,7 @@ ContainmentType Octree::contains(const glm::vec3 &pos) {
         }
 
         // If the node is marked as solid and the cube is not Disjoint, return Contains
-        if (node->solid == ContainmentType::Contains) {
+        if (node->isSolid) {
             break;
         }
 		
@@ -92,7 +92,7 @@ ContainmentType Octree::contains(const glm::vec3 &pos) {
 
    		OctreeNode* candidate = node->children[i];
         if (candidate == NULL) {
-            return node->solid;
+            break;
         }
 
         cube = cube.getChild(i);
@@ -102,7 +102,7 @@ ContainmentType Octree::contains(const glm::vec3 &pos) {
 		return ContainmentType::Disjoint;
 	} 
 
-    return node->solid;
+    return node->isSolid ? ContainmentType::Contains : ContainmentType::Intersects;
 }
 
 OctreeNode* Octree::getNodeAt(const glm::vec3 &pos, int level, bool simplification) {
@@ -186,7 +186,7 @@ void Octree::handleQuadNodes(OctreeNodeData &data, OctreeNodeTriangleHandler * h
 			OctreeNode * quads[4];
 			for(int i =0; i<4 ; ++i) {
 				OctreeNode * n = neighbors[quad[i]];
-				quads[i] = (n != NULL && n->solid == ContainmentType::Intersects) ? n : NULL;
+				quads[i] = (n != NULL && !n->isSolid) ? n : NULL;
 			} 
 
 			handler->handle(quads[0],quads[2],quads[1],sign1);
@@ -221,7 +221,7 @@ void split(OctreeNode * node, BoundingCube &cube, bool reverse) {
             BoundingCube subCube = cube.getChild(i);
             if(plane.test(subCube) != (reverse ? ContainmentType::Contains : ContainmentType::Disjoint) ) {
                 node->children[i] = new OctreeNode(Vertex(subCube.getCenter(), vertex.normal, vertex.texCoord, vertex.brushIndex));
-                node->children[i]->solid = node->solid;
+                node->children[i]->isSolid = node->isSolid;
                 node->children[i]->mask = node->mask;
             }
         }
@@ -271,7 +271,7 @@ void Octree::add(const ContainmentHandler &handler, const OctreeNodeDirtyHandler
 
         if (*nodePtr == NULL) {
             *nodePtr = new OctreeNode(Vertex(frame.cube.getCenter()));
-        } else if ((*nodePtr)->solid == ContainmentType::Contains) {
+        } else if ((*nodePtr)->isSolid) {
             continue;  // No need to process further
         }
 
@@ -282,7 +282,7 @@ void Octree::add(const ContainmentHandler &handler, const OctreeNodeDirtyHandler
             (*nodePtr)->vertex = vertex;
         }
         (*nodePtr)->mask |= buildMask(handler, frame.cube);
-        (*nodePtr)->solid = check;
+        (*nodePtr)->isSolid = check == ContainmentType::Contains;
         if((*nodePtr)->dataId) {
             dirtyHandler.handle((*nodePtr)->dataId);
         }
@@ -329,7 +329,7 @@ void Octree::del(const ContainmentHandler &handler, const OctreeNodeDirtyHandler
 
         if (*nodePtr != NULL) {
             bool isLeaf = frame.cube.getLengthX() <= frame.minSize;
-            if ((*nodePtr)->solid == ContainmentType::Contains && isIntersecting && !isLeaf) {
+            if ((*nodePtr)->isSolid && isIntersecting && !isLeaf) {
                 split(*nodePtr, frame.cube, true);
             }
 
@@ -341,7 +341,7 @@ void Octree::del(const ContainmentHandler &handler, const OctreeNodeDirtyHandler
             }
 
             (*nodePtr)->mask &= buildMask(handler, frame.cube) ^ 0xff;
-            (*nodePtr)->solid = check;
+            (*nodePtr)->isSolid = check == ContainmentType::Contains;
             if((*nodePtr)->dataId) {
                 dirtyHandler.handle((*nodePtr)->dataId);
             }

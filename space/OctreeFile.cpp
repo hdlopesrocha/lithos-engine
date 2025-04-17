@@ -19,7 +19,7 @@ OctreeNode * loadRecursive(int i, std::vector<OctreeNodeSerialized> * nodes, flo
 
 	OctreeNode * node = new OctreeNode(vertex);
 	node->mask = serialized.mask;
-	node->solid = serialized.solid;
+	node->isSolid = serialized.isSolid;
 
 	
 	if(cube.getLengthX() > chunkSize) {
@@ -84,7 +84,7 @@ uint saveRecursive(OctreeNode * node, std::vector<OctreeNodeSerialized*> * nodes
 		n->normal = node->vertex.normal;
 		n->brushIndex = node->vertex.brushIndex;
 		n->mask = node->mask;
-		n->solid = node->solid;
+		n->isSolid = node->isSolid;
 		uint index = nodes->size(); 
 		nodes->push_back(n);
 

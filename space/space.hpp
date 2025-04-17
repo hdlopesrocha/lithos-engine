@@ -9,7 +9,7 @@ class OctreeNode {
 		OctreeNode *children[8];
 		bool simplified;
 		uint mask;
-		ContainmentType solid;
+		bool isSolid;
 		long dataId;
 		OctreeNode(Vertex vertex);
 		~OctreeNode();
@@ -185,7 +185,7 @@ struct OctreeNodeSerialized {
     glm::vec3 normal;
     uint brushIndex;
     uint mask;
-    ContainmentType solid;
+    bool isSolid;
     uint children[8] = {0,0,0,0,0,0,0,0};
 };
 

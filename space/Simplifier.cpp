@@ -50,7 +50,7 @@ void Simplifier::after(OctreeNodeData &params) {
 		// for leaf nodes shouldn't loop
 		for(int i=0; i < 8 ; ++i) {
 			OctreeNode * node = params.node->children[i];
-			if(node!=NULL && node->solid == ContainmentType::Intersects) {
+			if(node!=NULL && !node->isSolid) {
 				if(!node->simplified) {
 					return;	
 				}
@@ -86,14 +86,14 @@ void Simplifier::after(OctreeNodeData &params) {
 			parentVertex->position = sumP / (float)nodeCount;
 			parentVertex->normal = sumN / (float)nodeCount;
 			parent->mask = mask;
-			parent->solid = ContainmentType::Intersects;
+			parent->isSolid = false;
 		}
 	}
 	return;
 }
 
 bool Simplifier::test(OctreeNodeData &params) {			
-	return params.node->solid != ContainmentType::Contains;
+	return !params.node->isSolid;
 }
 
 void Simplifier::getOrder(OctreeNodeData &params, int * order){
