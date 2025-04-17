@@ -6,7 +6,7 @@ OctreeInstanceBuilderHandler::OctreeInstanceBuilderHandler(Octree * tree, long *
 }
 
 void OctreeInstanceBuilderHandler::handle(OctreeNodeData &data, InstanceGeometry * pre){
-	if(data.node->simplified && data.node->solid == ContainmentType::Intersects) {
+	if(data.node->isLeaf()) {
 		glm::mat4 mat(1.0);
 		mat = glm::translate(mat, data.cube.getMin());
 		mat = glm::scale(mat, data.cube.getLength());

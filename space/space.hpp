@@ -14,7 +14,6 @@ class OctreeNode {
 		OctreeNode(Vertex vertex);
 		~OctreeNode();
 		void clear();
-		bool isEmpty();
 		void setChild(int i, OctreeNode * node);
 		bool isLeaf();
 };
@@ -71,9 +70,10 @@ class Octree: public BoundingCube {
 		ContainmentType contains(const glm::vec3 &pos);
 		ContainmentType contains(const AbstractBoundingBox&cube);
 		bool hasFinerNode(const OctreeNode *node);
-
+		int getLevelAt(const glm::vec3 &pos, bool simplification);
+		int getNeighborLevel(OctreeNodeData &data, bool simplification, int direction);
+		int getMaxLevel(OctreeNode * node, int level);
 };
-
 
 struct StackFrame : public OctreeNodeData {
 	int childIndex; // Tracks which child is being processed
@@ -127,7 +127,6 @@ class IteratorHandler {
 		void iterateFlat(OctreeNodeData params);
 };
 
-
 class InstanceBuilderHandler {
 	public:
 		Octree * tree;
@@ -152,7 +151,6 @@ class InstanceBuilder : public IteratorHandler{
 
 };
 
-
 class Tesselator : public IteratorHandler, OctreeNodeTriangleHandler{
 	Octree * tree;
 	public:
@@ -162,6 +160,7 @@ class Tesselator : public IteratorHandler, OctreeNodeTriangleHandler{
 		bool test(OctreeNodeData &params) override;
 		void getOrder(OctreeNodeData &params, int * order) override;
 		void handle(OctreeNode* c0,OctreeNode* c1,OctreeNode* c2, bool sign) override;
+		void virtualize(OctreeNodeData &params, int levels);
 
 };
 
@@ -179,7 +178,6 @@ class Simplifier : public IteratorHandler{
 		void getOrder(OctreeNodeData &params, int * order) override;
 
 };
-
 
 struct OctreeNodeSerialized {
     public:

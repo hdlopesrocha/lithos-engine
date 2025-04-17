@@ -5,13 +5,29 @@ Tesselator::Tesselator(Octree * tree, Geometry * chunk, long * count): OctreeNod
 	this->tree = tree;
 }
 
-void Tesselator::before(OctreeNodeData &params) {		
-    if(params.node->isLeaf()) {		
-        // Must go to zero and try to create triangles in the border with highest detail
-        // If the node is simplified then the triangles could have equal vertices
-        // If a triangle as 2 equal vertices, it's a line, this triangle will be ignored
-        // The same happens when iterating fully inside a simplified chunk, that triangle will be a single point
+void Tesselator::virtualize(OctreeNodeData &params, int levels) {
+    Vertex v = params.node->vertex;
+    Plane p(v.normal, v.position);
+
+    if(levels > 0) {
+        for(int i = 7 ; i >= 0 ; --i) {
+            BoundingCube c = params.cube.getChild(i);
+            //if(p.test(c) == ContainmentType::Disjoint) {
+                OctreeNodeData p(params);
+                p.cube = c;
+                p.level = params.level + 1;
+                virtualize(p, levels - 1);
+            //}
+        }
+    } else {
 		tree->handleQuadNodes(params , this, true);
+    }
+}
+
+void Tesselator::before(OctreeNodeData &params) {		
+    if(params.node->simplified) {
+        int levels = tree->getMaxLevel(params.node, 0);
+		virtualize(params, levels);
 	}
 }
 
@@ -20,7 +36,7 @@ void Tesselator::after(OctreeNodeData &params) {
 }
 
 bool Tesselator::test(OctreeNodeData &params) {			
-	return params.node->solid != ContainmentType::Contains;
+	return params.node->solid != ContainmentType::Contains && !params.node->simplified;
 }
 
 void Tesselator::getOrder(OctreeNodeData &params, int * order){

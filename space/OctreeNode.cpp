@@ -38,12 +38,3 @@ bool OctreeNode::isLeaf() {
     return true;
 }
 
-bool OctreeNode::isEmpty() {
-	for(int i=0; i < 8 ; ++i){
-		OctreeNode * child = children[i];
-		if(child != NULL) {
-			return false;
-		}
-	}
-	return true;
-}

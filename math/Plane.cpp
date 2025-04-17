@@ -33,5 +33,5 @@ ContainmentType Plane::test(AbstractBoundingBox &box) {
             return ContainmentType::Intersects; 
     }
 
-    return hasNegative ? ContainmentType::Disjoint : ContainmentType::Contains;
+    return hasNegative ? ContainmentType::Contains : ContainmentType::Disjoint;
 }

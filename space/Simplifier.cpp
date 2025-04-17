@@ -44,6 +44,7 @@ void Simplifier::after(OctreeNodeData &params) {
 
 		glm::vec3 sumP = glm::vec3(0);
 		glm::vec3 sumN = glm::vec3(0);
+		uint mask = 0xff;
 		int nodeCount=0;
 
 		// for leaf nodes shouldn't loop
@@ -66,8 +67,15 @@ void Simplifier::after(OctreeNodeData &params) {
 				if(a < angle) {
 					return;
 				}
+				
+				if(mask != 0xff && mask != node->mask) {
+					return;
+				}
+				
+				mask = node->mask;
 				sumP += node->vertex.position;
 				sumN += node->vertex.normal;
+				
 				++nodeCount;
 			}
 		}
@@ -77,6 +85,8 @@ void Simplifier::after(OctreeNodeData &params) {
 			parent->simplified = true;
 			parentVertex->position = sumP / (float)nodeCount;
 			parentVertex->normal = sumN / (float)nodeCount;
+			parent->mask = mask;
+			parent->solid = ContainmentType::Intersects;
 		}
 	}
 	return;

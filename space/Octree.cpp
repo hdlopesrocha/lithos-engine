@@ -130,6 +130,46 @@ void Octree::getNodeNeighbors(OctreeNodeData &data, bool simplification, OctreeN
 	}
 }
 
+int Octree::getLevelAt(const glm::vec3 &pos, bool simplification) {
+    OctreeNode* node = root;
+    BoundingCube cube = *this;
+	if(!contains(pos)) {
+		return 0;
+	}
+    int level = 0;
+    while (node) {
+        if (simplification && node->simplified) {
+            break;
+        }
+        int i = getNodeIndex(pos, cube);
+        cube = cube.getChild(i);
+        node = node->children[i];
+        ++level;
+    }
+    return level;
+}
+
+int Octree::getMaxLevel(OctreeNode *node, int level) {
+    int l = level;
+    for(int i=0; i < 8; ++i) {
+        OctreeNode * n = node->children[i];
+        if(n!=NULL) {
+            l = glm::max(l, getMaxLevel(n, level + 1));
+        }
+    }
+    
+    return l;
+}
+
+int Octree::getNeighborLevel(OctreeNodeData &data, bool simplification, int direction) {
+	int level = 0;
+    for(int i=0; i < 8; ++i) {
+		glm::vec3 pos = data.cube.getCenter() + direction* data.cube.getLengthX() * Octree::getShift(i);
+        level = glm::max(level, getLevelAt(pos, simplification));
+	}
+    return level;
+}
+
 void Octree::handleQuadNodes(OctreeNodeData &data, OctreeNodeTriangleHandler * handler, bool simplification) {
 	OctreeNode * neighbors[8];
     
@@ -151,7 +191,7 @@ void Octree::handleQuadNodes(OctreeNodeData &data, OctreeNodeTriangleHandler * h
 
 			handler->handle(quads[0],quads[2],quads[1],sign1);
 			handler->handle(quads[0],quads[3],quads[2],sign1);
-		} 
+		}
 	}
 }
 
@@ -173,19 +213,19 @@ uint buildMask(const ContainmentHandler &handler, BoundingCube &cube) {
     return mask;
 }
 
-void split(OctreeNode * node, BoundingCube &cube, float minSize) {
+void split(OctreeNode * node, BoundingCube &cube, bool reverse) {
     Vertex vertex = node->vertex;
     Plane plane(vertex.normal, vertex.position);
 	for(int i=0; i <8 ; ++i) {
         if(node->children[i] == NULL) {
             BoundingCube subCube = cube.getChild(i);
-            if(plane.test(subCube) != ContainmentType::Disjoint) {
-                node->children[i] = new OctreeNode(Vertex(subCube.getCenter(), glm::vec3(0), glm::vec2(0.0), vertex.brushIndex));
+            if(plane.test(subCube) != (reverse ? ContainmentType::Contains : ContainmentType::Disjoint) ) {
+                node->children[i] = new OctreeNode(Vertex(subCube.getCenter(), vertex.normal, vertex.texCoord, vertex.brushIndex));
                 node->children[i]->solid = node->solid;
                 node->children[i]->mask = node->mask;
             }
         }
-	}	
+	}
 }
 
 void Octree::expand(const ContainmentHandler &handler) {
@@ -200,7 +240,7 @@ void Octree::expand(const ContainmentHandler &handler) {
 	    setMin(getMin() -  Octree::getShift(i) * getLengthX());
 	    setLength(getLengthX()*2);
 
-	    if(root != NULL && root->isEmpty()) {
+	    if(root != NULL && root->isLeaf()) {
 	    	delete root;
 			root = NULL;
 	    }
@@ -290,7 +330,7 @@ void Octree::del(const ContainmentHandler &handler, const OctreeNodeDirtyHandler
         if (*nodePtr != NULL) {
             bool isLeaf = frame.cube.getLengthX() <= frame.minSize;
             if ((*nodePtr)->solid == ContainmentType::Contains && isIntersecting && !isLeaf) {
-                split(*nodePtr, frame.cube, frame.minSize);
+                split(*nodePtr, frame.cube, true);
             }
 
             if (isIntersecting) {

@@ -10,7 +10,7 @@ InstanceBuilder::InstanceBuilder(Octree * tree, std::vector<InstanceData> * inst
 }
 
 void InstanceBuilder::before(OctreeNodeData &params) {		
-	if(params.node->isEmpty()){
+	if(params.node->isLeaf()){
 		handler->handle(params, geometry);
 	}
 }
