@@ -214,10 +214,13 @@ void Octree::handleQuadNodes(OctreeNodeData &data, OctreeNodeTriangleHandler * h
 
 		if(sign0 != sign1) {
 			glm::ivec4 quad = tessOrder[k];
-			OctreeNode * quads[4];
+			OctreeNode * quads[4] = {NULL, NULL, NULL, NULL};
 			for(int i =0; i<4 ; ++i) {
 				OctreeNode * n = fetch(data, neighbors, quad[i]);
 				quads[i] = (n != NULL && !n->isSolid) ? n : NULL;
+                if(n == NULL) {
+                    break;
+                }
 			} 
 
 			handler->handle(quads[0],quads[2],quads[1],sign1);
