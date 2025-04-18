@@ -196,8 +196,8 @@ int Octree::getNeighborLevel(OctreeNodeData &data, bool simplification, int dire
 OctreeNode * Octree::fetch(OctreeNodeData &data, OctreeNode ** out, int i) {
     int direction = 1;
     bool simplification = true;
-    glm::vec3 pos = data.cube.getCenter() + direction* data.cube.getLengthX() * Octree::getShift(i);
     if(out[i] == NULL) {
+        glm::vec3 pos = data.cube.getCenter() + direction* data.cube.getLengthX() * Octree::getShift(i);
         out[i] = getNodeAt(pos, data.level, simplification);
     }
     return out[i];
