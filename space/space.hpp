@@ -65,6 +65,7 @@ class Octree: public BoundingCube {
 		void iterateFlat(IteratorHandler &handler, float chunkSize);
 
 		OctreeNode* getNodeAt(const glm::vec3 &pos, int level, bool simplification);
+		OctreeNode* getNodeAt(const glm::vec3 &pos, bool simplification);
 		void handleQuadNodes(OctreeNodeData &data, OctreeNodeTriangleHandler * handler, bool simplification);
 		void getNodeNeighbors(OctreeNodeData &data, bool simplification, OctreeNode ** out, int direction,int initialIndex, int finalIndex);
 		ContainmentType contains(const glm::vec3 &pos);
@@ -72,6 +73,7 @@ class Octree: public BoundingCube {
 		bool hasFinerNode(const OctreeNode *node);
 		int getLevelAt(const glm::vec3 &pos, bool simplification);
 		int getNeighborLevel(OctreeNodeData &data, bool simplification, int direction);
+		OctreeNode * fetch(OctreeNodeData &data, OctreeNode ** out, int i);
 		int getMaxLevel(OctreeNode * node, int level);
 };
 
