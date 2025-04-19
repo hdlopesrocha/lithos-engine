@@ -13,21 +13,20 @@ std::string getChunkName(BoundingCube cube) {
 	return std::to_string(cube.getLengthX()) + "_" + std::to_string(p.x) + "_" +  std::to_string(p.y) + "_" + std::to_string(p.z);
 }
 
-OctreeNode * loadRecursive(int i, std::vector<OctreeNodeSerialized> * nodes, float chunkSize, std::string filename, BoundingCube cube, std::string baseFolder) {
+OctreeNode * loadRecursive(Octree * tree, int i, std::vector<OctreeNodeSerialized> * nodes, float chunkSize, std::string filename, BoundingCube cube, std::string baseFolder) {
 	OctreeNodeSerialized serialized = nodes->at(i);
 	Vertex vertex(serialized.position, serialized.normal, glm::vec2(0), serialized.brushIndex);
 
-	OctreeNode * node = new OctreeNode(vertex);
+	OctreeNode * node = tree->allocator.allocate()->init(vertex);
 	node->mask = serialized.mask;
 	node->isSolid = serialized.isSolid;
 
-	
 	if(cube.getLengthX() > chunkSize) {
 		for(int j=0 ; j <8 ; ++j){
 			int index = serialized.children[j];
 			if(index != 0) {
 				BoundingCube c = cube.getChild(j);
-				node->setChild(j , loadRecursive(index, nodes, chunkSize, filename, c,baseFolder));
+				node->setChild(j , loadRecursive(tree, index, nodes, chunkSize, filename, c,baseFolder));
 			}
 		}
 	}else {
@@ -35,7 +34,7 @@ OctreeNode * loadRecursive(int i, std::vector<OctreeNodeSerialized> * nodes, flo
 		OctreeNodeFile * file = new OctreeNodeFile(node, baseFolder + "/" + filename+ "_" + chunkName + ".bin");
 		//NodeInfo info(INFO_TYPE_FILE, file, NULL, true);
 		//node->info.push_back(info);
-		file->load(baseFolder);
+		file->load(tree, baseFolder);
 		delete file;
 	}
 	return node;
@@ -68,7 +67,7 @@ void OctreeFile::load(std::string baseFolder, float chunkSize) {
 	tree->setMin(octreeSerialized.min);
 	tree->setLength(octreeSerialized.length);
 
-	tree->root = loadRecursive(0,&nodes, chunkSize, filename, *tree, baseFolder);
+	tree->root = loadRecursive(tree, 0,&nodes, chunkSize, filename, *tree, baseFolder);
 
     file.close();
 	nodes.clear();

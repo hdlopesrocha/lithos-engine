@@ -13,11 +13,25 @@ class OctreeNode {
 		long dataId;
 		OctreeNode(Vertex vertex);
 		~OctreeNode();
+		OctreeNode * init(Vertex vertex);
 		void clear();
 		void setChild(int i, OctreeNode * node);
 		bool isLeaf();
 };
 
+class OctreeNodeAllocator {
+	std::vector<OctreeNode*> freeList; 
+	std::vector<OctreeNode*> allocatedBlocks;
+	size_t blockSize; 
+	void allocateBlock();
+	
+	public:
+        OctreeNodeAllocator();
+        ~OctreeNodeAllocator();
+
+        OctreeNode* allocate();
+        void deallocate(OctreeNode* ptr);
+};
 
 class OctreeNodeTriangleHandler {
 
@@ -56,6 +70,7 @@ class Octree: public BoundingCube {
 	public: 
 		long dataId;
 		OctreeNode * root;
+		OctreeNodeAllocator allocator;
 
 		Octree(BoundingCube minCube);
 		void expand(const ContainmentHandler &handler);
@@ -215,7 +230,7 @@ class OctreeNodeFile {
     public: 
 		OctreeNodeFile(OctreeNode * node, std::string filename);
         void save(std::string baseFolder);
-        void load(std::string baseFolder);
+        void load(Octree * tree, std::string baseFolder);
 };
 
 
