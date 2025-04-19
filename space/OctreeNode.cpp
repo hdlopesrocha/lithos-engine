@@ -21,14 +21,14 @@ void OctreeNode::setChild(int i, OctreeNode * node) {
 }
 
 OctreeNode::~OctreeNode() {
-	this->clear();
+	
 }
 
-void OctreeNode::clear() {
+void OctreeNode::clear(OctreeNodeAllocator * allocator) {
 	for(int i=0; i < 8 ; ++i) {
 		OctreeNode * child = children[i];
 		if(child != NULL) {
-			delete child;
+			allocator->deallocate(child);
 			children[i] = NULL;
 		}
 	}

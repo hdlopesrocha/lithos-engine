@@ -2,6 +2,7 @@
 #define SPACE_HPP
 
 #include "../math/math.hpp"
+class OctreeNodeAllocator;
 
 class OctreeNode {
 	public: 
@@ -14,7 +15,7 @@ class OctreeNode {
 		OctreeNode(Vertex vertex);
 		~OctreeNode();
 		OctreeNode * init(Vertex vertex);
-		void clear();
+		void clear(OctreeNodeAllocator * allocator);
 		void setChild(int i, OctreeNode * node);
 		bool isLeaf();
 };
