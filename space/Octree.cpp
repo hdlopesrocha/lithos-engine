@@ -230,7 +230,8 @@ void Octree::handleQuadNodes(OctreeNodeData &data, OctreeNodeTriangleHandler * h
 }
 
 struct OctreeNodeFrame {
-    OctreeNode** nodePtr;
+    OctreeNode* parent;
+    int childIndex;
     BoundingCube cube;
     float minSize;
 };
@@ -292,43 +293,46 @@ void Octree::add(const ContainmentHandler &handler, const OctreeNodeDirtyHandler
     OctreeNode *node = root;
     BoundingCube &cube = *this; 
     std::stack<OctreeNodeFrame> stack;
-    stack.push({ &node, cube, minSize});
+    stack.push({ node, -1, cube, minSize});
 
     while (!stack.empty()) {
         OctreeNodeFrame frame = stack.top();
         stack.pop();
 
-        OctreeNode** nodePtr = frame.nodePtr;
+        OctreeNode* node = frame.childIndex < 0 ? frame.parent : frame.parent->getChildNode(frame.childIndex);
         ContainmentType check = handler.check(frame.cube);
  
         if (check == ContainmentType::Disjoint) {
             continue;  // Skip this node
         }
 
-        if (*nodePtr == NULL) {
-            *nodePtr = allocator.allocate()->init(Vertex(frame.cube.getCenter()));
-        } else if ((*nodePtr)->isSolid) {
+        if (node == NULL) {
+            node = allocator.allocate()->init(Vertex(frame.cube.getCenter()));
+            if(frame.childIndex >= 0) {
+                frame.parent->setChildNode(frame.childIndex, node);
+            }
+        } else if (node->isSolid) {
             continue;  // No need to process further
         }
 
         if (check == ContainmentType::Intersects) {
-            glm::vec3 previousNormal = (*nodePtr)->vertex.normal;
-            Vertex vertex = handler.getVertex(frame.cube, check, (*nodePtr)->vertex.position);
+            glm::vec3 previousNormal = node->vertex.normal;
+            Vertex vertex = handler.getVertex(frame.cube, check, node->vertex.position);
             vertex.normal = glm::normalize(previousNormal + vertex.normal);
-            (*nodePtr)->vertex = vertex;
+            node->vertex = vertex;
         }
-        (*nodePtr)->mask |= buildMask(handler, frame.cube);
-        (*nodePtr)->isSolid = check == ContainmentType::Contains;
-        if((*nodePtr)->dataId) {
-            dirtyHandler.handle((*nodePtr)->dataId);
+        node->mask |= buildMask(handler, frame.cube);
+        node->isSolid = check == ContainmentType::Contains;
+        if(node->dataId) {
+            dirtyHandler.handle(node->dataId);
         }
         bool isLeaf = frame.cube.getLengthX() <= frame.minSize;
         if (check == ContainmentType::Contains) {
-            (*nodePtr)->clear(&allocator);
-        } else if (!(*nodePtr)->isLeaf() || !isLeaf) {
+            node->clear(&allocator);
+        } else if (!node->isLeaf() || !isLeaf) {
             for (int i = 7; i >= 0; --i) {  
                 BoundingCube subCube = frame.cube.getChild(i);
-                stack.push({ &((*nodePtr)->children[i]), subCube, frame.minSize });
+                stack.push({ node, i, subCube, frame.minSize });
             }
         }
     }
@@ -338,13 +342,13 @@ void Octree::del(const ContainmentHandler &handler, const OctreeNodeDirtyHandler
     OctreeNode *node = root;
     BoundingCube &cube = *this; 
     std::stack<OctreeNodeFrame> stack;
-    stack.push({ &node, cube, minSize });
+    stack.push({ node, -1, cube, minSize });
 
     while (!stack.empty()) {
         OctreeNodeFrame frame = stack.top();
         stack.pop();
 
-        OctreeNode** nodePtr = frame.nodePtr;
+        OctreeNode* node = frame.childIndex < 0 ? frame.parent : frame.parent->getChildNode(frame.childIndex);
 
         ContainmentType check = handler.check(frame.cube);
         if (check == ContainmentType::Disjoint) {
@@ -355,36 +359,38 @@ void Octree::del(const ContainmentHandler &handler, const OctreeNodeDirtyHandler
         bool isIntersecting = check == ContainmentType::Intersects;
 
         if (isContained) {
-            if (*nodePtr != NULL) {
-                (*nodePtr)->clear(&allocator);
-                allocator.deallocate(*nodePtr);
-                *nodePtr = NULL;
+            if (node != NULL) {
+                node->clear(&allocator);
+                allocator.deallocate(node);
+                if(frame.childIndex >= 0) {
+                    frame.parent->setChildNode(frame.childIndex, NULL);
+                }
             }
             continue;
         }
 
-        if (*nodePtr != NULL) {
+        if (node != NULL) {
             bool isLeaf = frame.cube.getLengthX() <= frame.minSize;
-            if ((*nodePtr)->isSolid && isIntersecting && !isLeaf) {
-                split(this, *nodePtr, frame.cube, true);
+            if (node->isSolid && isIntersecting && !isLeaf) {
+                split(this, node, frame.cube, true);
             }
 
             if (isIntersecting) {
-                glm::vec3 previousNormal = (*nodePtr)->vertex.normal;
-                Vertex vertex = handler.getVertex(frame.cube, check, (*nodePtr)->vertex.position);
+                glm::vec3 previousNormal = node->vertex.normal;
+                Vertex vertex = handler.getVertex(frame.cube, check, node->vertex.position);
                 vertex.normal = glm::normalize(previousNormal - vertex.normal);
-                (*nodePtr)->vertex = vertex;
+                node->vertex = vertex;
             }
 
-            (*nodePtr)->mask &= buildMask(handler, frame.cube) ^ 0xff;
-            (*nodePtr)->isSolid = check == ContainmentType::Contains;
-            if((*nodePtr)->dataId) {
-                dirtyHandler.handle((*nodePtr)->dataId);
+            node->mask &= buildMask(handler, frame.cube) ^ 0xff;
+            node->isSolid = check == ContainmentType::Contains;
+            if(node->dataId) {
+                dirtyHandler.handle(node->dataId);
             }
             if (!isLeaf) {
-                for (int i = 7; i >= 0; --i) {  // Push children in reverse order
+                for (int i = 7; i >= 0; --i) { 
                     BoundingCube subCube = frame.cube.getChild(i);
-                    stack.push({ &((*nodePtr)->children[i]), subCube, frame.minSize });
+                    stack.push({ node, i, subCube, frame.minSize });
                 }
             }
         }
