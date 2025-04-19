@@ -5,6 +5,7 @@
 class OctreeNodeAllocator;
 
 class OctreeNode {
+	OctreeNode *children[8];
 
 	public: 
 		Vertex vertex;
@@ -12,7 +13,6 @@ class OctreeNode {
 		uint mask;
 		bool isSolid;
 		long dataId;
-		OctreeNode *children[8];
 
 		OctreeNode(Vertex vertex);
 		~OctreeNode();

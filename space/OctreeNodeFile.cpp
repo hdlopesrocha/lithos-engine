@@ -61,7 +61,7 @@ uint saveRecursive2(OctreeNode * node, std::vector<OctreeNodeSerialized*> * node
 		nodes->push_back(n);
 
 		for(int i=0; i < 8; ++i) {
-            n->children[i] = saveRecursive2(node->children[i], nodes);
+            n->children[i] = saveRecursive2(node->getChildNode(i), nodes);
 		}
 		return index;
 	}

@@ -109,6 +109,9 @@ public:
 
 
     virtual void setup() {
+		std::cout << "sizeof(Vertex) = " << sizeof(Vertex) << std::endl; 
+		std::cout << "sizeof(OctreeNode) = " << sizeof(OctreeNode) << std::endl; 
+
 		// Register all GDAL drivers
 		GDALAllRegister();
 

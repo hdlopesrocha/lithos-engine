@@ -8,7 +8,7 @@ void IteratorHandler::iterate(OctreeNodeData params) {
             getOrder(params, internalOrder);
             for(int i=0; i <8 ; ++i) {
                 int j = internalOrder[i];
-                OctreeNode * child = params.node->children[j];
+                OctreeNode * child = params.node->getChildNode(j);
                 if(child != NULL) {
                     this->iterate(OctreeNodeData( params.level+1, params.chunkSize, child, params.cube.getChild(j) , params.context));
                 }
@@ -32,7 +32,7 @@ void IteratorHandler::iterateFlatIn(OctreeNodeData params) {
             getOrder(data, internalOrder);
             for(int i=7; i >= 0 ; --i) {
                 int j = internalOrder[i];
-                OctreeNode * child = data.node->children[j];
+                OctreeNode * child = data.node->getChildNode(j);
                 if(child != NULL) {
                     flatData.push(OctreeNodeData(data.level + 1, data.chunkSize,child, data.cube.getChild(j), data.context));
                 }
@@ -68,7 +68,7 @@ void IteratorHandler::iterateFlat(OctreeNodeData params) {
         // Process children in order
         if (frame.childIndex < 8) {
             int j = frame.internalOrder[frame.childIndex++];
-            OctreeNode* child = frame.node->children[j];
+            OctreeNode* child = frame.node->getChildNode(j);
 
             if (child) {
                 OctreeNodeData data(frame.level+1, frame.chunkSize, child, frame.cube.getChild(j), frame.context);
@@ -113,7 +113,7 @@ void IteratorHandler::iterateFlatOut(OctreeNodeData params) {
             // in the original (correct) order when popped.
             for (int i = 7; i >= 0; --i) {
                 int j = internalOrder[i];
-                OctreeNode* child = frame.node->children[j];
+                OctreeNode* child = frame.node->getChildNode(j);
                 if (child) {
                     stackOut.push(StackFrameOut(OctreeNodeData(frame.level + 1, frame.chunkSize, child, frame.cube.getChild(j), frame.context), false));
                 }

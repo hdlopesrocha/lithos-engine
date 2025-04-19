@@ -90,7 +90,7 @@ uint saveRecursive(OctreeNode * node, std::vector<OctreeNodeSerialized*> * nodes
 		if(cube.getLengthX() > chunkSize) {
 			for(int i=0; i < 8; ++i) {
 				BoundingCube c = cube.getChild(i);
-				n->children[i] = saveRecursive(node->children[i], nodes, chunkSize, filename, c, baseFolder);
+				n->children[i] = saveRecursive(node->getChildNode(i), nodes, chunkSize, filename, c, baseFolder);
 			}
 		} else {
 			std::string chunkName = getChunkName(cube);
