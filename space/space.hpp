@@ -5,18 +5,21 @@
 class OctreeNodeAllocator;
 
 class OctreeNode {
+
 	public: 
 		Vertex vertex;
-		OctreeNode *children[8];
 		bool simplified;
 		uint mask;
 		bool isSolid;
 		long dataId;
+		OctreeNode *children[8];
+
 		OctreeNode(Vertex vertex);
 		~OctreeNode();
 		OctreeNode * init(Vertex vertex);
 		void clear(OctreeNodeAllocator * allocator);
-		void setChild(int i, OctreeNode * node);
+		void setChildNode(int i, OctreeNode * node);
+		OctreeNode * getChildNode(int i);
 		bool isLeaf();
 };
 

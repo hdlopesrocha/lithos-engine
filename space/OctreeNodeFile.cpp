@@ -19,7 +19,7 @@ OctreeNode * loadRecursive2(Octree * tree, OctreeNode * node, int i, std::vector
 	for(int j=0 ; j <8 ; ++j){
 		int index = serialized.children[j];
 		if(index != 0) {
-			node->setChild(j , loadRecursive2(tree, NULL, index, nodes));
+			node->setChildNode(j , loadRecursive2(tree, NULL, index, nodes));
 		}
 	}
 

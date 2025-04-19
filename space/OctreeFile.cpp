@@ -26,7 +26,7 @@ OctreeNode * loadRecursive(Octree * tree, int i, std::vector<OctreeNodeSerialize
 			int index = serialized.children[j];
 			if(index != 0) {
 				BoundingCube c = cube.getChild(j);
-				node->setChild(j , loadRecursive(tree, index, nodes, chunkSize, filename, c,baseFolder));
+				node->setChildNode(j , loadRecursive(tree, index, nodes, chunkSize, filename, c,baseFolder));
 			}
 		}
 	}else {

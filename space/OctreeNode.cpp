@@ -11,17 +11,21 @@ OctreeNode * OctreeNode::init(Vertex vertex) {
 	this->simplified = false;
 	this->dataId = 0;
 	for(int i=0; i < 8 ; ++i) {
-		setChild(i, NULL);
+		setChildNode(i, NULL);
 	}
 	return this;
 }
 
-void OctreeNode::setChild(int i, OctreeNode * node) {
+void OctreeNode::setChildNode(int i, OctreeNode * node) {
 	this->children[i] = node;
 }
 
+OctreeNode * OctreeNode::getChildNode(int i){
+	return children[i];
+}
+
 OctreeNode::~OctreeNode() {
-	
+
 }
 
 void OctreeNode::clear(OctreeNodeAllocator * allocator) {
