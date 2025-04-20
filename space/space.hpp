@@ -3,9 +3,10 @@
 
 #include "../math/math.hpp"
 #include "Allocator.hpp"
+class Octree;
 
 class OctreeNode {
-	OctreeNode *children[8];
+	uint children[8];
 
 	public: 
 		Vertex vertex;
@@ -18,8 +19,8 @@ class OctreeNode {
 		~OctreeNode();
 		OctreeNode * init(Vertex vertex);
 		void clear(Allocator<OctreeNode> * allocator);
-		void setChildNode(int i, OctreeNode * node);
-		OctreeNode * getChildNode(int i);
+		void setChildNode(int i, OctreeNode * node, Allocator<OctreeNode> * allocator);
+		OctreeNode * getChildNode(int i, Allocator<OctreeNode> * allocator);
 		bool isLeaf();
 };
 
@@ -40,12 +41,14 @@ struct OctreeNodeData {
 	OctreeNode * node;
 	BoundingCube cube;
 	void * context;
-	OctreeNodeData(int level, float chunkSize, OctreeNode * node, BoundingCube cube, void * context) {
+	Octree * tree;
+	OctreeNodeData(int level, float chunkSize, OctreeNode * node, BoundingCube cube, void * context, Octree * tree) {
 		this->level = level;
 		this->chunkSize = chunkSize;
 		this->node = node;
 		this->cube = cube;
 		this->context = context;
+		this->tree = tree;
 	}
 };
 
@@ -215,10 +218,11 @@ class OctreeFile {
 };
 
 class OctreeNodeFile {
+	Octree * tree;
 	OctreeNode * node;
     std::string filename;
     public: 
-		OctreeNodeFile(OctreeNode * node, std::string filename);
+		OctreeNodeFile(Octree * tree, OctreeNode * node, std::string filename);
         void save(std::string baseFolder);
         void load(Octree * tree, std::string baseFolder);
 };

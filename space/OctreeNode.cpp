@@ -11,17 +11,17 @@ OctreeNode * OctreeNode::init(Vertex vertex) {
 	this->simplified = false;
 	this->dataId = 0;
 	for(int i=0; i < 8 ; ++i) {
-		setChildNode(i, NULL);
+		this->children[i] = UINT_MAX;
 	}
 	return this;
 }
 
-void OctreeNode::setChildNode(int i, OctreeNode * node) {
-	this->children[i] = node;
+void OctreeNode::setChildNode(int i, OctreeNode * node, Allocator<OctreeNode> * allocator) {
+	this->children[i] = allocator->getIndex(node);
 }
 
-OctreeNode * OctreeNode::getChildNode(int i){
-	return children[i];
+OctreeNode * OctreeNode::getChildNode(int i, Allocator<OctreeNode> * allocator){
+	return allocator->getFromIndex(children[i]);
 }
 
 OctreeNode::~OctreeNode() {
@@ -30,17 +30,17 @@ OctreeNode::~OctreeNode() {
 
 void OctreeNode::clear(Allocator<OctreeNode> * allocator) {
 	for(int i=0; i < 8 ; ++i) {
-		OctreeNode * child = children[i];
+		OctreeNode * child = allocator->getFromIndex(children[i]);
 		if(child != NULL) {
 			allocator->deallocate(child);
-			children[i] = NULL;
+			setChildNode(i, NULL, allocator);
 		}
 	}
 }
 
 bool OctreeNode::isLeaf() {
     for(int i=0 ; i < 8 ; ++i) {
-        if(children[i] != NULL) {
+        if(children[i] != UINT_MAX) {
             return false;
         }
     }

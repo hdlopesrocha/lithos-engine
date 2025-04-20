@@ -24,7 +24,7 @@ void Simplifier::after(OctreeNodeData &params) {
 
 	bool hasSimplifiedChildren = false;
 	for(int i=0; i < 8 ; ++i) {
-		OctreeNode * c = params.node->getChildNode(i);
+		OctreeNode * c = params.node->getChildNode(i, &tree->allocator);
 		if(c != NULL && c->simplified) {
 			hasSimplifiedChildren = true;
 			break;
@@ -49,7 +49,7 @@ void Simplifier::after(OctreeNodeData &params) {
 
 		// for leaf nodes shouldn't loop
 		for(int i=0; i < 8 ; ++i) {
-			OctreeNode * node = params.node->getChildNode(i);
+			OctreeNode * node = params.node->getChildNode(i, &tree->allocator);
 			if(node!=NULL && !node->isSolid) {
 				if(!node->simplified) {
 					return;	
