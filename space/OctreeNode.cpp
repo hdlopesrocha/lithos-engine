@@ -28,7 +28,7 @@ OctreeNode::~OctreeNode() {
 
 }
 
-void OctreeNode::clear(OctreeNodeAllocator * allocator) {
+void OctreeNode::clear(Allocator<OctreeNode> * allocator) {
 	for(int i=0; i < 8 ; ++i) {
 		OctreeNode * child = children[i];
 		if(child != NULL) {

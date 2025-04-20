@@ -2,7 +2,7 @@
 #define SPACE_HPP
 
 #include "../math/math.hpp"
-class OctreeNodeAllocator;
+#include "Allocator.hpp"
 
 class OctreeNode {
 	OctreeNode *children[8];
@@ -17,24 +17,10 @@ class OctreeNode {
 		OctreeNode(Vertex vertex);
 		~OctreeNode();
 		OctreeNode * init(Vertex vertex);
-		void clear(OctreeNodeAllocator * allocator);
+		void clear(Allocator<OctreeNode> * allocator);
 		void setChildNode(int i, OctreeNode * node);
 		OctreeNode * getChildNode(int i);
 		bool isLeaf();
-};
-
-class OctreeNodeAllocator {
-	std::vector<OctreeNode*> freeList; 
-	std::vector<OctreeNode*> allocatedBlocks;
-	size_t blockSize; 
-	void allocateBlock();
-	
-	public:
-        OctreeNodeAllocator();
-        ~OctreeNodeAllocator();
-
-        OctreeNode* allocate();
-        void deallocate(OctreeNode* ptr);
 };
 
 class OctreeNodeTriangleHandler {
@@ -74,7 +60,7 @@ class Octree: public BoundingCube {
 	public: 
 		long dataId;
 		OctreeNode * root;
-		OctreeNodeAllocator allocator;
+		Allocator<OctreeNode> allocator;
 
 		Octree(BoundingCube minCube);
 		void expand(const ContainmentHandler &handler);
