@@ -19,7 +19,7 @@ void OctreeNode::setChildNode(int i, OctreeNode * node, OctreeAllocator * alloca
 		return;
 	}
 	if(this->block == NULL) {
-		this->block = new ChildBlock();
+		this->block = allocator->childAllocator.allocate()->init();
 	}
 	this->block->children[i] = allocator->nodeAllocator.getIndex(node);
 }
@@ -38,7 +38,7 @@ OctreeNode::~OctreeNode() {
 void OctreeNode::clear(OctreeAllocator * allocator) {
 	if(this->block != NULL) {
 		this->block->clear(allocator);
-		delete this->block;
+		allocator->childAllocator.deallocate(this->block);
 		this->block = NULL;
 	}
 }

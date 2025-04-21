@@ -10,7 +10,9 @@ class OctreeAllocator;
 struct ChildBlock {
 	uint children[8]; 
 
+	public:
 	ChildBlock();
+	ChildBlock * init();
 	void clear(OctreeAllocator * allocator);
 };
 
