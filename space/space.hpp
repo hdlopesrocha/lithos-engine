@@ -3,10 +3,19 @@
 
 #include "../math/math.hpp"
 #include "Allocator.hpp"
+
 class Octree;
+class OctreeAllocator;
+
+struct ChildBlock {
+	uint children[8]; 
+
+	ChildBlock();
+	void clear(OctreeAllocator * allocator);
+};
 
 class OctreeNode {
-	uint children[8];
+	ChildBlock * block;
 
 	public: 
 		Vertex vertex;
@@ -18,9 +27,9 @@ class OctreeNode {
 		OctreeNode(Vertex vertex);
 		~OctreeNode();
 		OctreeNode * init(Vertex vertex);
-		void clear(Allocator<OctreeNode> * allocator);
-		void setChildNode(int i, OctreeNode * node, Allocator<OctreeNode> * allocator);
-		OctreeNode * getChildNode(int i, Allocator<OctreeNode> * allocator);
+		void clear(OctreeAllocator * allocator);
+		void setChildNode(int i, OctreeNode * node, OctreeAllocator * allocator);
+		OctreeNode * getChildNode(int i, OctreeAllocator * allocator);
 		bool isLeaf();
 };
 
@@ -41,14 +50,14 @@ struct OctreeNodeData {
 	OctreeNode * node;
 	BoundingCube cube;
 	void * context;
-	Octree * tree;
-	OctreeNodeData(int level, float chunkSize, OctreeNode * node, BoundingCube cube, void * context, Octree * tree) {
+	OctreeAllocator * allocator;
+	OctreeNodeData(int level, float chunkSize, OctreeNode * node, BoundingCube cube, void * context, OctreeAllocator * allocator) {
 		this->level = level;
 		this->chunkSize = chunkSize;
 		this->node = node;
 		this->cube = cube;
 		this->context = context;
-		this->tree = tree;
+		this->allocator = allocator;
 	}
 };
 
@@ -58,12 +67,19 @@ class OctreeNodeDirtyHandler {
 	virtual void handle(long dataId) const = 0;
 };
 
+class OctreeAllocator {
+	public: 
+	Allocator<OctreeNode> nodeAllocator;
+	Allocator<ChildBlock> childAllocator;
+
+};
+
 class Octree: public BoundingCube {
 	using BoundingCube::BoundingCube;
 	public: 
 		long dataId;
 		OctreeNode * root;
-		Allocator<OctreeNode> allocator;
+		OctreeAllocator allocator;
 
 		Octree(BoundingCube minCube);
 		void expand(const ContainmentHandler &handler);
@@ -218,13 +234,12 @@ class OctreeFile {
 };
 
 class OctreeNodeFile {
-	Octree * tree;
 	OctreeNode * node;
     std::string filename;
     public: 
-		OctreeNodeFile(Octree * tree, OctreeNode * node, std::string filename);
-        void save(std::string baseFolder);
-        void load(Octree * tree, std::string baseFolder);
+		OctreeNodeFile(OctreeNode * node, std::string filename);
+        void save(OctreeAllocator * allocator, std::string baseFolder);
+        void load(OctreeAllocator * allocator, std::string baseFolder);
 };
 
 

@@ -2,17 +2,16 @@
 
 
 
-OctreeNodeFile::OctreeNodeFile(Octree * tree,	OctreeNode * node, std::string filename) {
+OctreeNodeFile::OctreeNodeFile(OctreeNode * node, std::string filename) {
 	this->node = node;
-	this->tree = tree;
 	this->filename = filename;
 }
 
-OctreeNode * loadRecursive2(Octree * tree, OctreeNode * node, int i, std::vector<OctreeNodeSerialized> * nodes) {
+OctreeNode * loadRecursive2(OctreeAllocator * allocator, OctreeNode * node, int i, std::vector<OctreeNodeSerialized> * nodes) {
 	OctreeNodeSerialized serialized = nodes->at(i);
 	if(node == NULL) {
 		Vertex vertex(serialized.position, serialized.normal, glm::vec2(0), serialized.brushIndex);
-		node = tree->allocator.allocate()->init(vertex);
+		node = allocator->nodeAllocator.allocate()->init(vertex);
 		node->mask = serialized.mask;
 		node->isSolid = serialized.isSolid;
 	}
@@ -20,7 +19,7 @@ OctreeNode * loadRecursive2(Octree * tree, OctreeNode * node, int i, std::vector
 	for(int j=0 ; j <8 ; ++j){
 		int index = serialized.children[j];
 		if(index != 0) {
-			node->setChildNode(j , loadRecursive2(tree, NULL, index, nodes), &tree->allocator);
+			node->setChildNode(j , loadRecursive2(allocator, NULL, index, nodes), allocator);
 		}
 	}
 
@@ -28,7 +27,7 @@ OctreeNode * loadRecursive2(Octree * tree, OctreeNode * node, int i, std::vector
 }
 
 
-void OctreeNodeFile::load(Octree * tree, std::string baseFolder) {
+void OctreeNodeFile::load(OctreeAllocator * allocator, std::string baseFolder) {
 	std::ifstream file = std::ifstream(filename, std::ios::binary);
     if (!file) {
         std::cerr << "Error opening file for reading: " << filename << std::endl;
@@ -44,13 +43,13 @@ void OctreeNodeFile::load(Octree * tree, std::string baseFolder) {
 	nodes.resize(size);
 
    	decompressed.read(reinterpret_cast<char*>(nodes.data()), size * sizeof(OctreeNodeSerialized));
-	loadRecursive2(tree, node, 0, &nodes);
+	loadRecursive2(allocator, node, 0, &nodes);
     file.close();
 	nodes.clear();
 }
 
 
-uint saveRecursive2(Octree * tree,	OctreeNode * node, std::vector<OctreeNodeSerialized*> * nodes) {
+uint saveRecursive2(OctreeAllocator * allocator, OctreeNode * node, std::vector<OctreeNodeSerialized*> * nodes) {
 	if(node!=NULL) {
 		OctreeNodeSerialized * n = new OctreeNodeSerialized();
 		n->position = node->vertex.position;
@@ -62,14 +61,14 @@ uint saveRecursive2(Octree * tree,	OctreeNode * node, std::vector<OctreeNodeSeri
 		nodes->push_back(n);
 
 		for(int i=0; i < 8; ++i) {
-            n->children[i] = saveRecursive2(tree, node->getChildNode(i, &tree->allocator), nodes);
+            n->children[i] = saveRecursive2(allocator, node->getChildNode(i, allocator), nodes);
 		}
 		return index;
 	}
 	return 0;
 }
 
-void OctreeNodeFile::save(std::string baseFolder){
+void OctreeNodeFile::save(OctreeAllocator * allocator, std::string baseFolder){
     std::vector<OctreeNodeSerialized*> nodes;
 
 	std::ofstream file = std::ofstream(filename, std::ios::binary);
@@ -78,7 +77,7 @@ void OctreeNodeFile::save(std::string baseFolder){
         return;
     }
 
-	saveRecursive2(tree, node, &nodes);
+	saveRecursive2(allocator, node, &nodes);
 
 	size_t size = nodes.size();
 	//std::cout << "Saving " << std::to_string(size) << " nodes" << std::endl;

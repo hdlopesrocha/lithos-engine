@@ -10,37 +10,45 @@ OctreeNode * OctreeNode::init(Vertex vertex) {
 	this->mask = 0x0;
 	this->simplified = false;
 	this->dataId = 0;
-	for(int i=0; i < 8 ; ++i) {
-		this->children[i] = UINT_MAX;
-	}
+	this->block = NULL;
 	return this;
 }
 
-void OctreeNode::setChildNode(int i, OctreeNode * node, Allocator<OctreeNode> * allocator) {
-	this->children[i] = allocator->getIndex(node);
+void OctreeNode::setChildNode(int i, OctreeNode * node, OctreeAllocator * allocator) {
+	if(node==NULL && this->block == NULL) {
+		return;
+	}
+	if(this->block == NULL) {
+		this->block = new ChildBlock();
+	}
+	this->block->children[i] = allocator->nodeAllocator.getIndex(node);
 }
 
-OctreeNode * OctreeNode::getChildNode(int i, Allocator<OctreeNode> * allocator){
-	return allocator->getFromIndex(children[i]);
+OctreeNode * OctreeNode::getChildNode(int i, OctreeAllocator * allocator){
+	if(this->block == NULL) {
+		return NULL;
+	}
+	return allocator->nodeAllocator.getFromIndex(this->block->children[i]);
 }
 
 OctreeNode::~OctreeNode() {
 
 }
 
-void OctreeNode::clear(Allocator<OctreeNode> * allocator) {
-	for(int i=0; i < 8 ; ++i) {
-		OctreeNode * child = allocator->getFromIndex(children[i]);
-		if(child != NULL) {
-			allocator->deallocate(child);
-			setChildNode(i, NULL, allocator);
-		}
+void OctreeNode::clear(OctreeAllocator * allocator) {
+	if(this->block != NULL) {
+		this->block->clear(allocator);
+		delete this->block;
+		this->block = NULL;
 	}
 }
 
 bool OctreeNode::isLeaf() {
+	if(this->block == NULL) {
+		return true;
+	}
     for(int i=0 ; i < 8 ; ++i) {
-        if(children[i] != UINT_MAX) {
+        if(this->block->children[i] != UINT_MAX) {
             return false;
         }
     }
