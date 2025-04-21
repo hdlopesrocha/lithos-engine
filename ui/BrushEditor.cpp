@@ -1,7 +1,7 @@
 #include "ui.hpp"
 
 
-BrushEditor::BrushEditor( Brush3d * brush, Camera * camera, std::vector<UniformBlockBrush*> * brushes, GLuint program, GLuint previewProgram, TextureLayers * layers) {
+BrushEditor::BrushEditor( Brush3d * brush, Camera * camera, std::vector<UniformBlockBrush> * brushes, GLuint program, GLuint previewProgram, TextureLayers * layers) {
     this->program = program;
     this->camera = camera;
     this->brush = brush;
@@ -32,7 +32,7 @@ void BrushEditor::draw2d(float time){
         ++brush->index;
     }
     brush->index = Math::mod(brush->index, brushes->size());
-    UniformBlockBrush * uniformBrush = (*brushes)[brush->index];
+    UniformBlockBrush * uniformBrush = &(*brushes)[brush->index];
 
     const char* buttonText = "Reset Position";
     ImVec2 textSize = ImGui::CalcTextSize(buttonText);

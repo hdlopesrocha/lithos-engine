@@ -1,7 +1,7 @@
 #include "ui.hpp"
 
 
-AtlasPainter::AtlasPainter(std::vector<AtlasParams> * atlasParams, std::vector<AtlasTexture*> * atlasTextures, AtlasDrawer * atlasDrawer, GLuint programAtlas, GLuint previewProgram, int width, int height, TextureLayers * layers) {
+AtlasPainter::AtlasPainter(std::vector<AtlasParams> * atlasParams, std::vector<AtlasTexture> * atlasTextures, AtlasDrawer * atlasDrawer, GLuint programAtlas, GLuint previewProgram, int width, int height, TextureLayers * layers) {
     this->atlasParams = atlasParams;
     this->atlasDrawer = atlasDrawer;
     this->atlasTextures = atlasTextures;

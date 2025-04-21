@@ -3,7 +3,7 @@
 
 
 
-AtlasViewer::AtlasViewer(std::vector<AtlasTexture*> * atlasTextures, AtlasDrawer * drawer, GLuint programAtlas, GLuint previewProgram, int width, int height, TextureLayers * sourceLayers, GLuint copyProgram) {
+AtlasViewer::AtlasViewer(std::vector<AtlasTexture> * atlasTextures, AtlasDrawer * drawer, GLuint programAtlas, GLuint previewProgram, int width, int height, TextureLayers * sourceLayers, GLuint copyProgram) {
     TextureLayers * targetLayers = new TextureLayers();
     targetLayers->textures[0] = createTextureArray(width, height, 1, GL_RGB8);
     targetLayers->textures[1] = createTextureArray(width, height, 1, GL_RGB8);
@@ -24,7 +24,7 @@ void AtlasViewer::draw2d(float time){
     ImGui::Begin("Atlas Viewer", &open, ImGuiWindowFlags_AlwaysAutoResize);
 
     selectedTexture = Math::mod(selectedTexture, atlasTextures->size());
-    AtlasTexture * atlasTexture = atlasTextures->at(selectedTexture);
+    AtlasTexture * atlasTexture = &(*atlasTextures)[selectedTexture];
 
     selectedTile =Math::mod(selectedTile, atlasTexture->tiles.size());
 

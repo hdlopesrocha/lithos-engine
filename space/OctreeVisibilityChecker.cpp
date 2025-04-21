@@ -40,7 +40,7 @@ bool OctreeVisibilityChecker::test(OctreeNodeData &params) {
 }
 
 
-void OctreeVisibilityChecker::getOrder(OctreeNodeData &params, int * order){
+void OctreeVisibilityChecker::getOrder(OctreeNodeData &params, uint8_t * order){
 	static std::pair<float, int> internalSortingVector[8]={};
 	
 	for(int i =0; i< 8; ++i){

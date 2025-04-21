@@ -56,26 +56,26 @@ class UniformBlockViewer: public Closable {
 
 
 class AtlasViewer: public Closable {
-    std::vector<AtlasTexture*> * atlasTextures;
+    std::vector<AtlasTexture> * atlasTextures;
     TexturePreviewer * previewer;
     AtlasDrawer * drawer;
   	int selectedTexture = 0;
   	int selectedTile = 0;
     public:
-    AtlasViewer(std::vector<AtlasTexture*> * atlasTextures, AtlasDrawer * drawer, GLuint programAtlas, GLuint previewProgram, int width, int height, TextureLayers * sourceLayers, GLuint copyProgram) ;
+    AtlasViewer(std::vector<AtlasTexture> * atlasTextures, AtlasDrawer * drawer, GLuint programAtlas, GLuint previewProgram, int width, int height, TextureLayers * sourceLayers, GLuint copyProgram) ;
     void draw2d(float time) override;
 };
 
 class AtlasPainter: public Closable {
     std::vector<AtlasParams> * atlasParams;
-    std::vector<AtlasTexture*> * atlasTextures;
+    std::vector<AtlasTexture> * atlasTextures;
     AtlasDrawer * atlasDrawer;
     TexturePreviewer * previewer;
   	int selectedDrawer = 0;
   	int selectedDraw = 0;
 
     public:
-    AtlasPainter(std::vector<AtlasParams> * atlasParams, std::vector<AtlasTexture*> * atlasTextures, AtlasDrawer * atlasDrawer, GLuint programAtlas, GLuint previewProgram, int width, int height, TextureLayers * layers);
+    AtlasPainter(std::vector<AtlasParams> * atlasParams, std::vector<AtlasTexture> * atlasTextures, AtlasDrawer * atlasDrawer, GLuint programAtlas, GLuint previewProgram, int width, int height, TextureLayers * layers);
     void draw2d(float time);
 };
 
@@ -92,7 +92,7 @@ class ImpostorViewer: public Closable {
 
 
 class BrushEditor: public Closable {
-    std::vector<UniformBlockBrush*> * brushes;
+    std::vector<UniformBlockBrush> * brushes;
     GLuint program;
     Brush3d * brush;
     Camera * camera;
@@ -100,7 +100,7 @@ class BrushEditor: public Closable {
 
 
     public:
-    BrushEditor(Brush3d * brush,Camera * camera, std::vector<UniformBlockBrush*> * brushes, GLuint program3d, GLuint previewProgram, TextureLayers * layers);
+    BrushEditor(Brush3d * brush,Camera * camera, std::vector<UniformBlockBrush> * brushes, GLuint program3d, GLuint previewProgram, TextureLayers * layers);
     void draw2d(float time) override;
     int getSelectedBrush();
     void resetPosition();

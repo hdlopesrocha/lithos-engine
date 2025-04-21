@@ -100,9 +100,9 @@ void UniformBlockBrush::uniform(GLuint program, UniformBlockBrush * brush, std::
 	uniform(program, brush, propName);
 }
 
-void UniformBlockBrush::uniform(GLuint program, std::vector<UniformBlockBrush*> *brushes, std::string objectName, std::string textureMap) {	
+void UniformBlockBrush::uniform(GLuint program, std::vector<UniformBlockBrush> *brushes, std::string objectName, std::string textureMap) {	
 	for(size_t i = 0; i < brushes->size() ; ++i) {
-		UniformBlockBrush * brush = brushes->at(i);
+		UniformBlockBrush * brush = &(*brushes)[i];
 	   	UniformBlockBrush::uniform(program, brush, objectName, textureMap, i,  brush->textureIndex);
 	}
 }

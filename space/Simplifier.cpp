@@ -96,7 +96,7 @@ bool Simplifier::test(OctreeNodeData &params) {
 	return !params.node->isSolid();
 }
 
-void Simplifier::getOrder(OctreeNodeData &params, int * order){
+void Simplifier::getOrder(OctreeNodeData &params, uint8_t * order){
 	for(int i = 7 ; i >= 0 ; --i) {
 		order[i] = i;
 	}

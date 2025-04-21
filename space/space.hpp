@@ -51,13 +51,13 @@ class OctreeNodeTriangleHandler {
 
 struct OctreeNodeData {
 	public:
-	int level;
+	uint level;
 	float chunkSize;
 	OctreeNode * node;
 	BoundingCube cube;
 	void * context;
 	OctreeAllocator * allocator;
-	OctreeNodeData(int level, float chunkSize, OctreeNode * node, BoundingCube cube, void * context, OctreeAllocator * allocator) {
+	OctreeNodeData(uint level, float chunkSize, OctreeNode * node, BoundingCube cube, void * context, OctreeAllocator * allocator) {
 		this->level = level;
 		this->chunkSize = chunkSize;
 		this->node = node;
@@ -108,11 +108,11 @@ class Octree: public BoundingCube {
 };
 
 struct StackFrame : public OctreeNodeData {
-	int childIndex; // Tracks which child is being processed
-	int internalOrder[8]; // Stores child processing order
+	uint8_t childIndex; // Tracks which child is being processed
+	uint8_t internalOrder[8]; // Stores child processing order
 	bool secondVisit; // Tracks whether we are on the second visit
 
-	StackFrame(const OctreeNodeData &data, int childIndex, bool secondVisit) : OctreeNodeData(data){
+	StackFrame(const OctreeNodeData &data, uint8_t childIndex, bool secondVisit) : OctreeNodeData(data){
 		this->childIndex = childIndex;
 		this->secondVisit = secondVisit;
 	}
@@ -152,7 +152,7 @@ class IteratorHandler {
 		virtual bool test(OctreeNodeData &params) = 0;
 		virtual void before(OctreeNodeData &params) = 0;
 		virtual void after(OctreeNodeData &params) = 0;
-		virtual void getOrder(OctreeNodeData &params, int * order) = 0;
+		virtual void getOrder(OctreeNodeData &params, uint8_t * order) = 0;
 		void iterate(OctreeNodeData params);
 		void iterateFlatIn(OctreeNodeData params);
 		void iterateFlatOut(OctreeNodeData params);
@@ -179,7 +179,7 @@ class InstanceBuilder : public IteratorHandler{
 		void before(OctreeNodeData &params) override;
 		void after(OctreeNodeData &params) override;
 		bool test(OctreeNodeData &params) override;
-		void getOrder(OctreeNodeData &params, int * order) override;
+		void getOrder(OctreeNodeData &params, uint8_t * order) override;
 
 };
 
@@ -190,7 +190,7 @@ class Tesselator : public IteratorHandler, OctreeNodeTriangleHandler{
 		void before(OctreeNodeData &params) override;
 		void after(OctreeNodeData &params) override;
 		bool test(OctreeNodeData &params) override;
-		void getOrder(OctreeNodeData &params, int * order) override;
+		void getOrder(OctreeNodeData &params, uint8_t * order) override;
 		void handle(OctreeNode* c0,OctreeNode* c1,OctreeNode* c2, bool sign) override;
 		void virtualize(OctreeNodeData &params, int levels);
 
@@ -207,7 +207,7 @@ class Simplifier : public IteratorHandler{
 		void before(OctreeNodeData &params) override;
 		void after(OctreeNodeData &params) override;
 		bool test(OctreeNodeData &params) override;
-		void getOrder(OctreeNodeData &params, int * order) override;
+		void getOrder(OctreeNodeData &params, uint8_t * order) override;
 
 };
 
@@ -260,7 +260,7 @@ class OctreeVisibilityChecker : public IteratorHandler{
 		void before(OctreeNodeData &params) override;
 		void after(OctreeNodeData &params) override;
 		bool test(OctreeNodeData &params) override;
-		void getOrder(OctreeNodeData &params, int * order) override;
+		void getOrder(OctreeNodeData &params, uint8_t * order) override;
 
 };
 

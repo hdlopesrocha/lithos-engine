@@ -23,8 +23,8 @@ bool InstanceBuilder::test(OctreeNodeData &params) {
 	return true;
 }
 
-void InstanceBuilder::getOrder(OctreeNodeData &params, int * order){
-	for(int i = 0 ; i < 8 ; ++i) {
+void InstanceBuilder::getOrder(OctreeNodeData &params, uint8_t * order){
+	for(size_t i = 0 ; i < 8 ; ++i) {
 		order[i] = i;
 	}
 }
