@@ -16,16 +16,16 @@ void Simplifier::before(OctreeNodeData &params) {
 void Simplifier::after(OctreeNodeData &params) {
 
 	if(params.node->isLeaf()) {
-		params.node->simplified = true;
+		params.node->setSimplified(true);
 		return;
 	}else {
-		params.node->simplified = false;
+		params.node->setSimplified(false);
 	}
 
 	bool hasSimplifiedChildren = false;
 	for(int i=0; i < 8 ; ++i) {
 		OctreeNode * c = params.node->getChildNode(i, &tree->allocator);
-		if(c != NULL && c->simplified) {
+		if(c != NULL && c->isSimplified()) {
 			hasSimplifiedChildren = true;
 			break;
 		}
@@ -50,8 +50,8 @@ void Simplifier::after(OctreeNodeData &params) {
 		// for leaf nodes shouldn't loop
 		for(int i=0; i < 8 ; ++i) {
 			OctreeNode * node = params.node->getChildNode(i, &tree->allocator);
-			if(node!=NULL && !node->isSolid) {
-				if(!node->simplified) {
+			if(node!=NULL && !node->isSolid()) {
+				if(!node->isSimplified()) {
 					return;	
 				}
 				if(texturing && node->vertex.brushIndex != parentVertex->brushIndex) {
@@ -82,18 +82,18 @@ void Simplifier::after(OctreeNodeData &params) {
 		
 
 		if(nodeCount > 0) {	
-			parent->simplified = true;
+			parent->setSimplified(true);
 			parentVertex->position = sumP / (float)nodeCount;
 			parentVertex->normal = sumN / (float)nodeCount;
 			parent->mask = mask;
-			parent->isSolid = false;
+			parent->setSolid(false);
 		}
 	}
 	return;
 }
 
 bool Simplifier::test(OctreeNodeData &params) {			
-	return !params.node->isSolid;
+	return !params.node->isSolid();
 }
 
 void Simplifier::getOrder(OctreeNodeData &params, int * order){

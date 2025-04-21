@@ -5,10 +5,10 @@ OctreeNode::OctreeNode(Vertex vertex) {
 }
 
 OctreeNode * OctreeNode::init(Vertex vertex) {
-	this->isSolid = false;
+	this->setSolid(false);
+	this->setSimplified(false);
 	this->vertex = vertex;
 	this->mask = 0x0;
-	this->simplified = false;
 	this->dataId = 0;
 	this->block = NULL;
 	return this;
@@ -55,3 +55,18 @@ bool OctreeNode::isLeaf() {
     return true;
 }
 
+bool OctreeNode::isSolid(){
+	return this->bits & 0x01;
+}
+
+void OctreeNode::setSolid(bool value){
+	this->bits = (this->bits & 0b10) | (value ? 0x1 : 0x0);
+}
+
+bool OctreeNode::isSimplified(){
+	return this->bits & 0x02;
+}
+
+void OctreeNode::setSimplified(bool value){
+	this->bits = (this->bits & 0b01) | (value ? 0x2 : 0x0);
+}

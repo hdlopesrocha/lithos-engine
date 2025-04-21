@@ -25,7 +25,7 @@ void Tesselator::virtualize(OctreeNodeData &params, int levels) {
 }
 
 void Tesselator::before(OctreeNodeData &params) {		
-    if(params.node->simplified) {
+    if(params.node->isSimplified()) {
         int levels = tree->getMaxLevel(params.node, 0);
 		virtualize(params, levels);
 	}
@@ -36,7 +36,7 @@ void Tesselator::after(OctreeNodeData &params) {
 }
 
 bool Tesselator::test(OctreeNodeData &params) {			
-	return !params.node->isSolid && !params.node->simplified;
+	return !params.node->isSolid() && !params.node->isSimplified();
 }
 
 void Tesselator::getOrder(OctreeNodeData &params, int * order){

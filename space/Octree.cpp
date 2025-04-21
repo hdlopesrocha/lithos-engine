@@ -46,7 +46,7 @@ ContainmentType Octree::contains(const AbstractBoundingBox &c) {
                     candidate = subNode;
                     candidateCube = subCube;
                     anyIntersection = true;
-                    if(!candidate->isSolid) {
+                    if(!candidate->isSolid()) {
                         allContains = false;
                     }
                 }
@@ -65,7 +65,7 @@ ContainmentType Octree::contains(const AbstractBoundingBox &c) {
 		return ContainmentType::Disjoint;
 	} 
 
-    return node->isSolid ? ContainmentType::Contains : ContainmentType::Intersects;
+    return node->isSolid() ? ContainmentType::Contains : ContainmentType::Intersects;
 }
 
 ContainmentType Octree::contains(const glm::vec3 &pos) {
@@ -81,7 +81,7 @@ ContainmentType Octree::contains(const glm::vec3 &pos) {
         }
 
         // If the node is marked as solid and the cube is not Disjoint, return Contains
-        if (node->isSolid) {
+        if (node->isSolid()) {
             break;
         }
 		
@@ -102,7 +102,7 @@ ContainmentType Octree::contains(const glm::vec3 &pos) {
 		return ContainmentType::Disjoint;
 	} 
 
-    return node->isSolid ? ContainmentType::Contains : ContainmentType::Intersects;
+    return node->isSolid() ? ContainmentType::Contains : ContainmentType::Intersects;
 }
 
 OctreeNode* Octree::getNodeAt(const glm::vec3 &pos, int level, bool simplification) {
@@ -113,7 +113,7 @@ OctreeNode* Octree::getNodeAt(const glm::vec3 &pos, int level, bool simplificati
 	}
 
     for (; node && level > 0; --level) {
-        if (simplification && node->simplified) {
+        if (simplification && node->isSimplified()) {
             break;
         }
         int i = getNodeIndex(pos, cube);
@@ -133,7 +133,7 @@ OctreeNode* Octree::getNodeAt(const glm::vec3 &pos, bool simplification) {
 	}
     while (candidate) {
         node = candidate;
-        if (simplification && node->simplified) {
+        if (simplification && node->isSimplified()) {
             break;
         }
         int i = getNodeIndex(pos, cube);
@@ -161,7 +161,7 @@ int Octree::getLevelAt(const glm::vec3 &pos, bool simplification) {
 	}
     int level = 0;
     while (node) {
-        if (simplification && node->simplified) {
+        if (simplification && node->isSimplified()) {
             break;
         }
         int i = getNodeIndex(pos, cube);
@@ -217,7 +217,7 @@ void Octree::handleQuadNodes(OctreeNodeData &data, OctreeNodeTriangleHandler * h
 			OctreeNode * quads[4] = {NULL, NULL, NULL, NULL};
 			for(int i =0; i<4 ; ++i) {
 				OctreeNode * n = fetch(data, neighbors, quad[i]);
-				quads[i] = (n != NULL && !n->isSolid) ? n : NULL;
+				quads[i] = (n != NULL && !n->isSolid()) ? n : NULL;
                 if(n == NULL) {
                     break;
                 }
@@ -257,7 +257,7 @@ void split(Octree * tree, OctreeNode * node, BoundingCube &cube, bool reverse) {
             BoundingCube subCube = cube.getChild(i);
             if(plane.test(subCube) != (reverse ? ContainmentType::Contains : ContainmentType::Disjoint) ) {
                 child = tree->allocator.nodeAllocator.allocate()->init(Vertex(subCube.getCenter(), vertex.normal, vertex.texCoord, vertex.brushIndex));
-                child->isSolid = node->isSolid;
+                child->setSolid(node->isSolid());
                 child->mask = node->mask;
                 node->setChildNode(i, child, &tree->allocator);
             }
@@ -311,7 +311,7 @@ void Octree::add(const ContainmentHandler &handler, const OctreeNodeDirtyHandler
             if(frame.childIndex >= 0) {
                 frame.parent->setChildNode(frame.childIndex, node, &allocator);
             }
-        } else if (node->isSolid) {
+        } else if (node->isSolid()) {
             continue;  // No need to process further
         }
 
@@ -322,7 +322,7 @@ void Octree::add(const ContainmentHandler &handler, const OctreeNodeDirtyHandler
             node->vertex = vertex;
         }
         node->mask |= buildMask(handler, frame.cube);
-        node->isSolid = check == ContainmentType::Contains;
+        node->setSolid(check == ContainmentType::Contains);
         if(node->dataId) {
             dirtyHandler.handle(node->dataId);
         }
@@ -371,7 +371,7 @@ void Octree::del(const ContainmentHandler &handler, const OctreeNodeDirtyHandler
 
         if (node != NULL) {
             bool isLeaf = frame.cube.getLengthX() <= frame.minSize;
-            if (node->isSolid && isIntersecting && !isLeaf) {
+            if (node->isSolid() && isIntersecting && !isLeaf) {
                 split(this, node, frame.cube, true);
             }
 
@@ -383,7 +383,7 @@ void Octree::del(const ContainmentHandler &handler, const OctreeNodeDirtyHandler
             }
 
             node->mask &= buildMask(handler, frame.cube) ^ 0xff;
-            node->isSolid = check == ContainmentType::Contains;
+            node->setSolid(check == ContainmentType::Contains);
             if(node->dataId) {
                 dirtyHandler.handle(node->dataId);
             }

@@ -21,9 +21,8 @@ class OctreeNode {
 
 	public: 
 		Vertex vertex;
-		bool simplified;
-		uint mask;
-		bool isSolid;
+		uint8_t mask;
+		uint8_t bits;
 		long dataId;
 
 		OctreeNode(Vertex vertex);
@@ -33,6 +32,11 @@ class OctreeNode {
 		void setChildNode(int i, OctreeNode * node, OctreeAllocator * allocator);
 		OctreeNode * getChildNode(int i, OctreeAllocator * allocator);
 		bool isLeaf();
+		bool isSolid();
+		void setSolid(bool value);
+		bool isSimplified();
+		void setSimplified(bool value);
+
 };
 
 class OctreeNodeTriangleHandler {
