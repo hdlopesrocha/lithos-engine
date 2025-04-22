@@ -7,7 +7,7 @@ layout(std140, binding = 0) uniform UniformBlock {
 	mat4 matrixShadow[SHADOW_MATRIX_COUNT];
 	vec4 lightDirection;
 	vec4 cameraPosition;
-    vec4 floatData;
+    vec4 floatData[2];
     uvec4 uintData; 
 };
 
@@ -38,7 +38,9 @@ bool billboardEnabled  = (uintData.y & uint(BILLBOARD_FLAG)) != 0u;
 
 uint debugMode  = uintData.z;
 uint overrideBrush  = uintData.w;
-float time = floatData.x;
-float blendSharpness = floatData.y;
-float parallaxDistance = floatData.z;
-float parallaxPower = floatData.w;
+float time = floatData[0].x;
+float blendSharpness = floatData[0].y;
+float parallaxDistance = floatData[0].z;
+float parallaxPower = floatData[0].w;
+float near = floatData[1].x;
+float far = floatData[1].y;

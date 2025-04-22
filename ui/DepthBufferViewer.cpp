@@ -1,9 +1,10 @@
 #include "ui.hpp"
 
 
-DepthBufferViewer::DepthBufferViewer(GLuint previewProgram, TextureImage depthTexture, int width, int height) {
+DepthBufferViewer::DepthBufferViewer(GLuint program, TextureImage depthTexture, int width, int height, Camera * camera) {
     this->depthTexture = depthTexture;
-    this->previewProgram = previewProgram;
+    this->program = program;
+    this->camera = camera;
     this->previewBuffer = createRenderFrameBuffer(width,height, false);
     this->previewVao = DrawableGeometry::create2DVAO(-1,-1, 1,1);
     this->width = width;
@@ -16,10 +17,12 @@ void DepthBufferViewer::draw2d(float time){
 	glClearColor (0.0,0.0,0.0,0.0);    
     glClear(GL_COLOR_BUFFER_BIT);
 
-    glUseProgram(previewProgram);
+    glUseProgram(program);
     glActiveTexture(GL_TEXTURE0); 
     glBindTexture(GL_TEXTURE_2D, depthTexture.index);
-    glUniform1i(glGetUniformLocation(previewProgram, "textureSampler"), 0); 
+    glUniform1i(glGetUniformLocation(program, "textureSampler"), 0); 
+    glUniform1f(glGetUniformLocation(program, "near"), camera->near); 
+    glUniform1f(glGetUniformLocation(program, "far"), camera->far); 
     glBindVertexArray(previewVao);
     glDisable(GL_CULL_FACE);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);

@@ -139,12 +139,13 @@ class ShadowMapViewer : public Closable{
 class DepthBufferViewer : public Closable{
     TextureImage depthTexture;
     RenderBuffer previewBuffer;
-    GLuint previewProgram;
+    GLuint program;
     GLuint previewVao;
     int width;
     int height;
+    Camera * camera;
     public:
-    DepthBufferViewer(GLuint previewProgram, TextureImage depthTexture, int width, int height);
+    DepthBufferViewer(GLuint previewProgram, TextureImage depthTexture, int width, int height, Camera * camera);
 
     void draw2d(float time) override;
 };

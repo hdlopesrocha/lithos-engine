@@ -81,7 +81,7 @@ struct UniformBlock {
     glm::mat4 matrixShadow[SHADOW_MATRIX_COUNT];      
     glm::vec4 lightDirection;   
     glm::vec4 cameraPosition;   
-    glm::vec4 floatData;  
+    glm::vec4 floatData[2];  
     glm::uvec4 uintData;      
 
     public:

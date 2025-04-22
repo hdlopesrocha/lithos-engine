@@ -456,7 +456,7 @@ public:
 		shadowMapViewer = new ShadowMapViewer(&shadowFrameBuffers, 512, 512);
 		textureMixerEditor = new TextureMixerEditor(textureMixer, &mixers, programTexture, &textureLayers);
 		animatedTextureEditor = new AnimatedTextureEditor(&animations, programTexture, 256,256, &textureLayers);
-		depthBufferViewer = new DepthBufferViewer(programDepth,depthFrameBuffer.depthTexture,512,512);
+		depthBufferViewer = new DepthBufferViewer(programDepth,depthFrameBuffer.depthTexture,512,512, &camera);
 		settingsEditor = new SettingsEditor(settings);
 		textureViewer = new TextureViewer(programTexture, &textureLayers);
 		impostorViewer = new ImpostorViewer(impostorDrawer, &impostors , programTexture, 256, 256, &impostorLayers);
@@ -593,7 +593,8 @@ public:
 		glPointSize(4.0);	
 
         uniformBlock.uintData = glm::uvec4(0u, 0u, settings->debugMode, settings->overrideBrush);
-		uniformBlock.floatData = glm::vec4( time, settings->blendSharpness, settings->parallaxDistance ,settings->parallaxPower);
+		uniformBlock.floatData[0] = glm::vec4( time, settings->blendSharpness, settings->parallaxDistance ,settings->parallaxPower);
+		uniformBlock.floatData[1] = glm::vec4( camera.near , camera.far, 0, 0);
 		uniformBlock.world = worldModel;
 		uniformBlock.lightDirection = glm::vec4(light.direction, 0.0f);
 		uniformBlock.cameraPosition = glm::vec4(camera.position, 0.0f);

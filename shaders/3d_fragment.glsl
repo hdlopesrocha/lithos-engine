@@ -189,8 +189,6 @@ void main() {
             color = vec4(visual(normalMap),1.0);
         }
         else if(debugMode == 10) {
-            float near = 0.1;
-            float far = 8192.0;
             color = vec4(vec3(linearizeDepth(currentDepth, near, far)/far),1.0);
         }
         else if(debugMode == 11) {
