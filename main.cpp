@@ -841,11 +841,7 @@ public:
 					std::cout << "Selected file: " << filePath << std::endl;
 					EnvironmentFile environment ("solid", "liquid", "brushes", &camera);
 					environment.save(filePath);
-					std::vector<UniformBlockBrush> vec;
-					for(UniformBlockBrush &ubb : brushes){
-						vec.push_back(ubb);
-					}
-					UniformBlockBrush::save(&vec, folderPath, environment.brushesFilename);				
+					Seriallizer<UniformBlockBrush>::serialize(folderPath + "/" + environment.brushesFilename+".bin", brushes);
 					mainScene->save(folderPath, camera);
 				}
 				ImGuiFileDialog::Instance()->Close();
@@ -856,12 +852,10 @@ public:
 					auto instance = ImGuiFileDialog::Instance();
 					std::string filePath = instance->GetFilePathName();
 					std::string folderPath = instance->GetCurrentPath();
-					
 					std::cout << "Selected file: " << filePath << std::endl;
-				
 					EnvironmentFile environment (filePath, &camera);
 					brushes.clear();
-					UniformBlockBrush::load(&brushes, folderPath, environment.brushesFilename);				
+					Seriallizer<UniformBlockBrush>::deserialize(folderPath + "/" + environment.brushesFilename+".bin", brushes);
 					mainScene->load(folderPath, camera);
 				}
 				ImGuiFileDialog::Instance()->Close();

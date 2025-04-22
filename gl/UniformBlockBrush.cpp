@@ -39,48 +39,6 @@ UniformBlockBrush::UniformBlockBrush(int textureIndex, glm::vec2 textureScale,fl
 	this->textureIndex = textureIndex;
 }
 
-void UniformBlockBrush::save(std::vector<UniformBlockBrush> * brushes, std::string baseFolder, std::string filename){
-	std::string filePath = baseFolder + "/" + filename+".bin";
-	std::ofstream file = std::ofstream(filePath, std::ios::binary);
-    if (!file) {
-        std::cerr << "Error opening file for writing: " << filePath << std::endl;
-        return;
-    }
-
-	size_t size = brushes->size();
-	//std::cout << std::to_string(sizeof(OctreeNodeSerialized)) << " bytes/node" << std::endl;
-    std::ostringstream decompressed;
-	decompressed.write(reinterpret_cast<const char*>(&size), sizeof(size_t) );
-	for(size_t i =0 ; i < size ; ++i) {
-		decompressed.write(reinterpret_cast<const char*>(&brushes->data()[i]), sizeof(UniformBlockBrush) );
-	}	
-	std::istringstream inputStream(decompressed.str());
- 	gzipCompressToOfstream(inputStream, file);
-	file.close();
-	std::cout << "UniformBlockBrush::save('" << filePath <<"'," << std::to_string(size) <<") Ok!" << std::endl;
-}
-
-void UniformBlockBrush::load(std::vector<UniformBlockBrush> * brushes, std::string baseFolder, std::string filename){
-	std::string filePath = baseFolder + "/" + filename+".bin";
-	std::ifstream file = std::ifstream(filePath, std::ios::binary);
-    if (!file) {
-        std::cerr << "Error opening file for reading: " << filePath << std::endl;
-        return;
-    }
-
-    std::stringstream decompressed = gzipDecompressFromIfstream(file);
-
-	size_t size;
-	decompressed.read(reinterpret_cast<char*>(&size), sizeof(size_t) );
-	brushes->resize(size);
-	for(size_t i =0 ; i < size ; ++i) {
-		decompressed.read(reinterpret_cast<char*>(&brushes->data()[i]), sizeof(UniformBlockBrush));
-	}
-
-	file.close();
-	std::cout << "UniformBlockBrush::load('" << filePath <<"'," << std::to_string(size) <<") Ok!" << std::endl;
-}
-
 void UniformBlockBrush::uniform(GLuint program, UniformBlockBrush * brush, std::string objectName) {
 	glUniform1f(glGetUniformLocation(program, (objectName +".parallaxScale").c_str() ), brush->parallaxScale);
 	glUniform1f(glGetUniformLocation(program, (objectName +".parallaxMinLayers").c_str()), brush->parallaxMinLayers);

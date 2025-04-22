@@ -251,6 +251,56 @@ class DirtyHandler : public OctreeNodeDirtyHandler {
 
 };
 
+template <typename T> class Seriallizer {
+	public:
+
+		static void serialize(std::string filename, std::vector<T> &list){
+			std::ofstream file = std::ofstream(filename, std::ios::binary);
+			if (!file) {
+				std::cerr << "Error opening file for writing: " << filename << std::endl;
+				return;
+			}
+		
+			size_t size = list.size();
+			//std::cout << std::to_string(sizeof(OctreeNodeSerialized)) << " bytes/node" << std::endl;
+			std::ostringstream decompressed;
+			decompressed.write(reinterpret_cast<const char*>(&size), sizeof(size_t) );
+			for(size_t i =0 ; i < size ; ++i) {
+				decompressed.write(reinterpret_cast<const char*>(&list.data()[i]), sizeof(T) );
+			}	
+			std::istringstream inputStream(decompressed.str());
+			 gzipCompressToOfstream(inputStream, file);
+			file.close();
+			std::cout << "T::serialize('" << filename <<"'," << std::to_string(size) <<") Ok!" << std::endl;
+		}
+		
+		static void deserialize(std::string filename, std::vector<T> &list){
+			std::ifstream file = std::ifstream(filename, std::ios::binary);
+			if (!file) {
+				std::cerr << "Error opening file for reading: " << filename << std::endl;
+				return;
+			}
+		
+			std::stringstream decompressed = gzipDecompressFromIfstream(file);
+		
+			size_t size;
+			decompressed.read(reinterpret_cast<char*>(&size), sizeof(size_t) );
+			list.resize(size);
+			for(size_t i =0 ; i < size ; ++i) {
+				decompressed.read(reinterpret_cast<char*>(&list.data()[i]), sizeof(T));
+			}
+		
+			file.close();
+			std::cout << "T::deserialize('" << filename <<"'," << std::to_string(size) <<") Ok!" << std::endl;
+		}
+		
+
+
+
+
+};
+
+
 class EnvironmentFile {
 	public:
 	std::string solidFilename;
