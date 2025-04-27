@@ -30,6 +30,14 @@ template <typename T> class Allocator {
         }
     }
 
+    size_t getBlockSize() const {
+        return blockSize;
+    }
+
+    size_t getAllocatedBlocksCount() const {
+        return allocatedBlocks.size();
+    }
+
     uint getIndex(T* ptr) {
         if(ptr == NULL) {
             return UINT_MAX;

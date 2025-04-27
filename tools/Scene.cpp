@@ -60,24 +60,28 @@ void Scene::processSpace() {
 	solidInstancesVisible = 0;
 	liquidInstancesVisible = 0;
 	vegetationInstancesVisible = 0;
-	solidProcessor->loadCount = 1;
-	liquidProcessor->loadCount = 1;
+	int loadCountSolid = 1;
+	int loadCountLiquid = 1;
 
 	for(OctreeNodeData &data : visibleSolidNodes){
-		if(solidProcessor->loadCount > 0) {
-			solidProcessor->process(data);
-			loadSpace(data, &solidInfo, solidBuilder);
-			loadSpace(data, &vegetationInfo, vegetationBuilder);
+		if(loadCountSolid > 0) {
+			if(solidProcessor->process(data)) {
+				loadSpace(data, &solidInfo, solidBuilder);
+				loadSpace(data, &vegetationInfo, vegetationBuilder);
+				--loadCountSolid;
+			}
 		} else {
 			break;
 		}
 	}
 
 	for(OctreeNodeData &data : visibleLiquidNodes){
-		if(liquidProcessor->loadCount > 0) {
-			liquidProcessor->process(data);
-			loadSpace(data, &debugInfo, debugBuilder);
-			loadSpace(data, &liquidInfo, liquidBuilder);
+		if(loadCountLiquid > 0) {
+			if(liquidProcessor->process(data)) {
+				loadSpace(data, &debugInfo, debugBuilder);
+				loadSpace(data, &liquidInfo, liquidBuilder);
+				--loadCountLiquid;
+			}
 		} else {
 			break;
 		}
@@ -86,8 +90,10 @@ void Scene::processSpace() {
 	for(int i =0 ; i < SHADOW_MATRIX_COUNT ; ++i){
 		std::vector<OctreeNodeData> &vec = visibleShadowNodes[i];
 		for(OctreeNodeData &data : vec) {
-			if(solidProcessor->loadCount > 0) {
-				solidProcessor->process(data);
+			if(loadCountSolid > 0) {
+				if(solidProcessor->process(data)) {
+					--loadCountSolid;
+				}
 			}
 			else {
 				break;
@@ -214,11 +220,23 @@ void Scene::generate(Camera &camera) {
 	BoundingBox waterBox = mapBox;
 	waterBox.setMaxY(0);
 	
-	BoundingBox testBox =BoundingBox(glm::vec3(0,-200,0),glm::vec3(100,100,100));
-	liquidSpace->add(BoxContainmentHandler(testBox,SimpleBrush(0)), DirtyHandler(*this), 1.0);
+	BoundingBox testBox =BoundingBox(glm::vec3(1500,0,0),glm::vec3(1500+256,256,256));
+	solidSpace->add(BoxContainmentHandler(testBox,SimpleBrush(4)), DirtyHandler(*this), 2.0);
+
+	BoundingBox testBox2 =BoundingBox(glm::vec3(2000,0,0),glm::vec3(2000+256,256,256));
+	solidSpace->add(BoxContainmentHandler(testBox2,SimpleBrush(4)), DirtyHandler(*this), minSize);
+
 
 	//liquidSpace->add(SphereContainmentHandler(BoundingSphere(glm::vec3(11,61,-11),4), SimpleBrush(0)));
 	liquidSpace->add(OctreeContainmentHandler(solidSpace, waterBox, WaterBrush(0)), DirtyHandler(*this), minSize);
+
+
+	BoundingBox testBox3 =BoundingBox(glm::vec3(1500,0,500),glm::vec3(1500+256,256,500+256));
+	solidSpace->add(BoxContainmentHandler(testBox3,SimpleBrush(4)), DirtyHandler(*this), 2.0);
+
+	BoundingBox testBox4 =BoundingBox(glm::vec3(2000,0,500),glm::vec3(2000+256,256,500+256));
+	solidSpace->add(BoxContainmentHandler(testBox4,SimpleBrush(4)), DirtyHandler(*this), minSize);
+
 
 	//solidSpace->add(BoxContainmentHandler(BoundingBox(glm::vec3(-20,-5,-20),glm::vec3(20,10,20)),SimpleBrush(8)), 1.0);
 	//solidSpace->del(BoxContainmentHandler(BoundingBox(glm::vec3(-17,-4,-17),glm::vec3(17,12,17)),SimpleBrush(6)), 1.0);

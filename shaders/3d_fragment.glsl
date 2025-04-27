@@ -27,6 +27,7 @@ in vec3 teTextureWeights;
 in vec3 teBlendFactors;
 flat in uvec3 teTextureIndices;
 in TextureBrush teProps;
+in float teLogDepth;
 
 out vec4 color;    // Final fragment color
 
@@ -42,6 +43,9 @@ const vec4 colors[8] = vec4[8](
 );
 
 void main() {
+    float logDepth = log2(1.0 + gl_FragCoord.z) / log2(far + 1.0);
+    gl_FragDepth = logDepth;
+
 
     vec2 uv = teTextureCoord;
     float parallaxDepth = 0.0;

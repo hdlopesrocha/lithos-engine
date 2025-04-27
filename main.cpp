@@ -26,7 +26,7 @@ class MainApplication : public LithosApplication {
 	// pitch yaw roll
 	
 	//Camera camera = Camera(glm::vec3(21649, 600, 5271), quaternion , 0.1f, 8192.0f);
-	Camera camera = Camera(glm::vec3(0, 500, 0), quaternion , 0.1f, 8192.0f);
+	Camera camera = Camera(glm::vec3(0, 500, 0), quaternion , 1.0f, 8192.0f);
 	DirectionalLight light;
 
 	GLuint programSwap;
@@ -101,6 +101,11 @@ public:
 	}
 
 	virtual void setup() {
+		glEnable(GL_DEPTH_TEST);
+		glDepthFunc(GL_LEQUAL);
+		glClearDepth(1.0f);
+		glEnable(GL_DEPTH_CLAMP);
+		
 		std::cout << "sizeof(Vertex) = " << sizeof(Vertex) << std::endl; 
 		std::cout << "sizeof(OctreeNode) = " << sizeof(OctreeNode) << std::endl; 
 		std::cout << "sizeof(ChildBlock) = " << sizeof(ChildBlock) << std::endl; 
@@ -942,6 +947,18 @@ public:
 			ImGui::Text("%ld/%ld vegetation instances", mainScene->vegetationInstancesVisible, mainScene->vegetationInstancesCount);
 			ImGui::Text("%ld solid triangles", mainScene->solidTrianglesCount);
 			ImGui::Text("%ld liquid triangles", mainScene->liquidTrianglesCount);
+
+			size_t allocatedBlocks = mainScene->solidSpace->allocator.nodeAllocator.getAllocatedBlocksCount();
+			size_t blockSize = mainScene->solidSpace->allocator.nodeAllocator.getBlockSize();
+
+			size_t allocatedChildren = mainScene->solidSpace->allocator.childAllocator.getAllocatedBlocksCount();
+			size_t childrenSize = mainScene->solidSpace->allocator.childAllocator.getBlockSize();
+
+
+
+			ImGui::Text("%ld (%ld KB) allocatted nodes",  allocatedBlocks*blockSize, allocatedBlocks*blockSize* sizeof(OctreeNode)/1024);
+			ImGui::Text("%ld (%ld KB) allocatted children",  allocatedChildren*childrenSize, allocatedChildren*childrenSize* sizeof(ChildBlock)/1024);
+
 			if (glfwJoystickIsGamepad(GLFW_JOYSTICK_1)) {
 				ImGui::Text("Gamepad detected");
 			} 

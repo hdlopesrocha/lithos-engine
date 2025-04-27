@@ -268,9 +268,8 @@ class OctreeVisibilityChecker : public IteratorHandler{
 class OctreeProcessor {
 	Octree * tree;
     public: 
-		int loadCount = 0;
 		OctreeProcessor(Octree * tree);
-		void process(OctreeNodeData &params);
+		bool process(OctreeNodeData &params);
 };
 
 #endif

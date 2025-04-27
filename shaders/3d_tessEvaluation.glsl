@@ -30,6 +30,7 @@ out vec3 teBitangent;
 out vec3 teNormal;
 out vec3 teTextureWeights;
 out vec3 teBlendFactors;
+out float teLogDepth;
 
 void main() {
     teProps.textureScale = tcProps[0].textureScale * gl_TessCoord[0] + 
@@ -106,5 +107,5 @@ void main() {
     teBlendFactors = blend;
 
     gl_Position = viewProjection * vec4(tePosition, 1.0);    
-
+    teLogDepth = 1.0 + gl_Position.w / near;
 }
