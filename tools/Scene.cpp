@@ -220,23 +220,26 @@ void Scene::generate(Camera &camera) {
 	BoundingBox waterBox = mapBox;
 	waterBox.setMaxY(0);
 	
-	BoundingBox testBox =BoundingBox(glm::vec3(1500,0,0),glm::vec3(1500+256,256,256));
-	solidSpace->add(BoxContainmentHandler(testBox,SimpleBrush(4)), DirtyHandler(*this), 2.0);
+	solidSpace->add(BoxContainmentHandler(BoundingBox(glm::vec3(1500,0,0),glm::vec3(1500+256,256,256)),
+		SimpleBrush(4)), DirtyHandler(*this), 2.0);
 
-	BoundingBox testBox2 =BoundingBox(glm::vec3(2000,0,0),glm::vec3(2000+256,256,256));
-	solidSpace->add(BoxContainmentHandler(testBox2,SimpleBrush(4)), DirtyHandler(*this), minSize);
+	solidSpace->add(BoxContainmentHandler(BoundingBox(glm::vec3(2000,0,0),glm::vec3(2000+256,256,256)),
+		SimpleBrush(4)), DirtyHandler(*this), minSize);
 
+	solidSpace->add(BoxContainmentHandler(BoundingBox(glm::vec3(2500,0,0),glm::vec3(2500+256,256,256)),
+		SimpleBrush(4)), DirtyHandler(*this), minSize*2);
 
 	//liquidSpace->add(SphereContainmentHandler(BoundingSphere(glm::vec3(11,61,-11),4), SimpleBrush(0)));
 	liquidSpace->add(OctreeContainmentHandler(solidSpace, waterBox, WaterBrush(0)), DirtyHandler(*this), minSize);
 
+	solidSpace->add(BoxContainmentHandler(BoundingBox(glm::vec3(1500,0,500),glm::vec3(1500+256,256,500+256)),
+		SimpleBrush(4)), DirtyHandler(*this), 2.0);
 
-	BoundingBox testBox3 =BoundingBox(glm::vec3(1500,0,500),glm::vec3(1500+256,256,500+256));
-	solidSpace->add(BoxContainmentHandler(testBox3,SimpleBrush(4)), DirtyHandler(*this), 2.0);
-
-	BoundingBox testBox4 =BoundingBox(glm::vec3(2000,0,500),glm::vec3(2000+256,256,500+256));
-	solidSpace->add(BoxContainmentHandler(testBox4,SimpleBrush(4)), DirtyHandler(*this), minSize);
-
+	solidSpace->add(BoxContainmentHandler(BoundingBox(glm::vec3(2000,0,500),glm::vec3(2000+256,256,500+256)),
+		SimpleBrush(4)), DirtyHandler(*this), minSize);
+	
+	solidSpace->add(BoxContainmentHandler(BoundingBox(glm::vec3(2500,0,500),glm::vec3(2500+256,256,500+256)),
+		SimpleBrush(4)), DirtyHandler(*this), minSize*2);
 
 	//solidSpace->add(BoxContainmentHandler(BoundingBox(glm::vec3(-20,-5,-20),glm::vec3(20,10,20)),SimpleBrush(8)), 1.0);
 	//solidSpace->del(BoxContainmentHandler(BoundingBox(glm::vec3(-17,-4,-17),glm::vec3(17,12,17)),SimpleBrush(6)), 1.0);
@@ -248,16 +251,7 @@ void Scene::generate(Camera &camera) {
 	//solidSpace->del(SphereContainmentHandler(BoundingSphere(glm::vec3(4,54,-4),8), SimpleBrush(1)), 1.0);
 
 
-	ContainmentType ct = solidSpace->contains(testBox);
-	if(ct == ContainmentType::Contains) {
-		std::cout << "\tContains" << std :: endl;
-	}
-	else if(ct == ContainmentType::Intersects) {
-		std::cout << "\tIntersects" << std :: endl;
-	}
-	else  {
-		std::cout << "\tDisjoint" << std :: endl;
-	}
+
 }
 
 

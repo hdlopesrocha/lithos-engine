@@ -25,10 +25,13 @@ InstanceGeometry * MeshGeometryBuilder::build(OctreeNodeData &params){
 
     Tesselator tesselator(tree, geometry, trianglesCount);
     tesselator.iterateFlatIn(params);
-
-    InstanceGeometry * pre = new InstanceGeometry(geometry);
-    pre->instances.push_back(InstanceData(0, glm::mat4(1.0), 0.0f));
-
-    *instancesCount += 1;
-    return pre;
+    if(geometry->indices.size() > 0) {
+        InstanceGeometry * pre = new InstanceGeometry(geometry);
+        pre->instances.push_back(InstanceData(0, glm::mat4(1.0), 0.0f));
+        *instancesCount += 1;
+        return pre;
+    } else {
+        delete geometry;
+        return NULL;
+    }
 }
