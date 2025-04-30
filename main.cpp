@@ -958,6 +958,7 @@ public:
 
 			ImGui::Text("%ld (%ld KB) allocatted nodes",  allocatedBlocks*blockSize, allocatedBlocks*blockSize* sizeof(OctreeNode)/1024);
 			ImGui::Text("%ld (%ld KB) allocatted children",  allocatedChildren*childrenSize, allocatedChildren*childrenSize* sizeof(ChildBlock)/1024);
+			ImGui::Text("%ld loaded chunks",  mainScene->loadedChunks);
 
 			if (glfwJoystickIsGamepad(GLFW_JOYSTICK_1)) {
 				ImGui::Text("Gamepad detected");
