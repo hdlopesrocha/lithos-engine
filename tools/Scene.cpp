@@ -39,10 +39,10 @@ Scene::Scene(Settings * settings) {
 
 bool Scene::loadSpace(Octree * tree, OctreeNodeData &data, std::unordered_map<long, NodeInfo*> *infos, GeometryBuilder * builder) {	
 	if(data.node->dataId == 0){
+		data.node->dataId = ++tree->dataId;
 		InstanceGeometry * loadable = builder->build(data);
-		if(loadable) {
 			++loadedChunks;
-			data.node->dataId = ++tree->dataId;
+		if(loadable) {
 			infos->try_emplace(data.node->dataId, new NodeInfo(loadable));
 			return true;
 		}
@@ -114,6 +114,9 @@ void Scene::processSpace() {
 		for(OctreeNodeData &data : vec) {
 			if(loadCountSolid > 0) {
 				if(loadSpace(solidSpace, data, &solidInfo, solidBuilder)){
+					--loadCountSolid;
+				}
+				if(loadSpace(solidSpace, data, &vegetationInfo, vegetationBuilder)) {
 					--loadCountSolid;
 				}
 			}
@@ -222,26 +225,6 @@ void Scene::generate(Camera &camera) {
 	int height = 2048;
 	float minSize = 30;
 
-	BoundingBox mapBox = BoundingBox(glm::vec3(-sizePerTile*tiles*0.5,-height*0.5,-sizePerTile*tiles*0.5), glm::vec3(sizePerTile*tiles*0.5,height*0.5,sizePerTile*tiles*0.5));
-	camera.position.x = mapBox.getCenter().x;
-	camera.position.y = mapBox.getMaxY();
-	camera.position.z = mapBox.getCenter().z;
-	solidSpace->add(HeightMapContainmentHandler(
-		HeightMap(
-			CachedHeightMapSurface(
-				GradientPerlinSurface(height, 1.0/(256.0f*sizePerTile), -64), 
-				mapBox, sizePerTile
-			), mapBox, sizePerTile
-		), LandBrush()
-	), DirtyHandler(*this), minSize);
-
-
-	solidSpace->del(SphereContainmentHandler(BoundingSphere(glm::vec3(0,768,0),1024), SimpleBrush(14)), DirtyHandler(*this), minSize);
-
-
-	BoundingBox waterBox = mapBox;
-	waterBox.setMaxY(0);
-	
 	solidSpace->add(BoxContainmentHandler(BoundingBox(glm::vec3(1500,0,0),glm::vec3(1500+256,256,256)),
 		SimpleBrush(4)), DirtyHandler(*this), 2.0);
 
@@ -251,7 +234,25 @@ void Scene::generate(Camera &camera) {
 	solidSpace->add(BoxContainmentHandler(BoundingBox(glm::vec3(2500,0,0),glm::vec3(2500+256,256,256)),
 		SimpleBrush(4)), DirtyHandler(*this), minSize*2);
 
+	BoundingBox mapBox = BoundingBox(glm::vec3(-sizePerTile*tiles*0.5,-height*0.5,-sizePerTile*tiles*0.5), glm::vec3(sizePerTile*tiles*0.5,height*0.5,sizePerTile*tiles*0.5));
+	camera.position.x = mapBox.getCenter().x;
+	camera.position.y = mapBox.getMaxY();
+	camera.position.z = mapBox.getCenter().z;
+
+	solidSpace->add(HeightMapContainmentHandler(
+		HeightMap(
+			CachedHeightMapSurface(
+				GradientPerlinSurface(height, 1.0/(256.0f*sizePerTile), -64), 
+				mapBox, sizePerTile
+			), mapBox, sizePerTile
+		), LandBrush()
+	), DirtyHandler(*this), minSize);
+
+	//solidSpace->del(SphereContainmentHandler(BoundingSphere(glm::vec3(0,768,0),1024), SimpleBrush(14)), DirtyHandler(*this), minSize);
+
 	//liquidSpace->add(SphereContainmentHandler(BoundingSphere(glm::vec3(11,61,-11),4), SimpleBrush(0)));
+	BoundingBox waterBox = mapBox;
+	waterBox.setMaxY(0);
 	liquidSpace->add(OctreeContainmentHandler(solidSpace, waterBox, WaterBrush(0)), DirtyHandler(*this), minSize);
 
 	solidSpace->add(BoxContainmentHandler(BoundingBox(glm::vec3(1500,0,500),glm::vec3(1500+256,256,500+256)),
