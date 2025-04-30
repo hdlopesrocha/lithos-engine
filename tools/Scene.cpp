@@ -17,12 +17,10 @@ Scene::Scene(Settings * settings) {
 	liquidInstancesVisible = 0;
 	vegetationInstancesVisible = 0;
 
+	loadedChunks = 0; 
 	chunkSize = glm::pow(2, 9);
 
-	solidProcessor = new OctreeProcessor(solidSpace);
 	solidBuilder = new MeshGeometryBuilder(&solidInstancesCount, &solidTrianglesCount, solidSpace, 0.99, 0.1, true);
-
-	liquidProcessor = new OctreeProcessor(liquidSpace);	
 	liquidBuilder = new MeshGeometryBuilder(&liquidInstancesCount, &liquidTrianglesCount, liquidSpace, 0.99, 0.1, true);
 
 	vegetationBuilder = new VegetationGeometryBuilder(&vegetationInstancesCount, solidSpace, 
@@ -39,20 +37,42 @@ Scene::Scene(Settings * settings) {
 
 }
 
-void loadSpace(OctreeNodeData &data, std::unordered_map<long, NodeInfo*> *infos, GeometryBuilder * builder) {
-	auto it = infos->find(data.node->dataId);
-	if(it == infos->end()) {
-		infos->try_emplace(data.node->dataId, new NodeInfo(builder->build(data)));
-	} else {
-		NodeInfo * ni = it->second;
-		if(ni->dirty) {
-			if(ni->loadable) {
-				delete ni->loadable;
-			}
-			ni->loadable = builder->build(data);
-			ni->dirty = false;
+bool Scene::loadSpace(Octree * tree, OctreeNodeData &data, std::unordered_map<long, NodeInfo*> *infos, GeometryBuilder * builder) {	
+	if(data.node->dataId == 0){
+		InstanceGeometry * loadable = builder->build(data);
+		if(loadable) {
+			++loadedChunks;
+			data.node->dataId = ++tree->dataId;
+			infos->try_emplace(data.node->dataId, new NodeInfo(loadable));
+			return true;
 		}
+	}else {
+		auto it = infos->find(data.node->dataId);
+		if(it != infos->end()) {
+			NodeInfo * ni = it->second;
+			if(ni->dirty) {
+				++loadedChunks;
+				if(ni->loadable) {
+					delete ni->loadable;
+					ni->loadable = NULL;
+				}
+				InstanceGeometry * loadable = builder->build(data);
+				if(loadable) {
+					ni->loadable = loadable;
+					ni->dirty = false;
+					return true;
+				}
+				else {
+					infos->erase(it);
+					delete ni;
+				}				
+			}
+		}
+
 	}
+
+	
+	return false;
 }
 
 void Scene::processSpace() {
@@ -65,9 +85,10 @@ void Scene::processSpace() {
 
 	for(OctreeNodeData &data : visibleSolidNodes){
 		if(loadCountSolid > 0) {
-			if(solidProcessor->process(data)) {
-				loadSpace(data, &solidInfo, solidBuilder);
-				loadSpace(data, &vegetationInfo, vegetationBuilder);
+			if(loadSpace(solidSpace, data, &solidInfo, solidBuilder)) {
+				--loadCountSolid;
+			}
+			if(loadSpace(solidSpace, data, &vegetationInfo, vegetationBuilder)) {
 				--loadCountSolid;
 			}
 		} else {
@@ -77,9 +98,10 @@ void Scene::processSpace() {
 
 	for(OctreeNodeData &data : visibleLiquidNodes){
 		if(loadCountLiquid > 0) {
-			if(liquidProcessor->process(data)) {
-				loadSpace(data, &debugInfo, debugBuilder);
-				loadSpace(data, &liquidInfo, liquidBuilder);
+			if(loadSpace(liquidSpace, data, &debugInfo, debugBuilder)) {
+				--loadCountLiquid;			
+			}
+			if(loadSpace(liquidSpace, data, &liquidInfo, liquidBuilder)) {
 				--loadCountLiquid;
 			}
 		} else {
@@ -91,7 +113,7 @@ void Scene::processSpace() {
 		std::vector<OctreeNodeData> &vec = visibleShadowNodes[i];
 		for(OctreeNodeData &data : vec) {
 			if(loadCountSolid > 0) {
-				if(solidProcessor->process(data)) {
+				if(loadSpace(solidSpace, data, &solidInfo, solidBuilder)){
 					--loadCountSolid;
 				}
 			}

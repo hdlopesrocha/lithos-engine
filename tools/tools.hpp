@@ -171,7 +171,7 @@ class Scene {
 		long liquidInstancesCount;
 		long vegetationInstancesCount;
 		long octreeInstancesCount;
-
+		long loadedChunks;
 		long solidInstancesVisible;
 		long liquidInstancesVisible;
 		long vegetationInstancesVisible;
@@ -182,8 +182,6 @@ class Scene {
 		Settings * settings;
 		float chunkSize;
 
-		OctreeProcessor * solidProcessor; 
-		OctreeProcessor * liquidProcessor;
 
 MeshGeometryBuilder * solidBuilder;
 MeshGeometryBuilder * liquidBuilder;
@@ -219,7 +217,7 @@ std::unordered_map<long, NodeInfo*> vegetationInfo;
 	void draw3dOctree(glm::vec3 cameraPosition, const std::vector<OctreeNodeData> &list);
 	void import(const std::string &filename, Camera &camera) ;
 	void generate(Camera &camera) ;
-
+	bool loadSpace(Octree * tree, OctreeNodeData &data, std::unordered_map<long, NodeInfo*> *infos, GeometryBuilder * builder);
 	void save(std::string folderPath, Camera &camera);
 	void load(std::string folderPath, Camera &camera);
 };
