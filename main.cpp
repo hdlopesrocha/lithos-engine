@@ -942,9 +942,9 @@ public:
 										ImGuiWindowFlags_NoNav);
 			
 			ImGui::Text("%d FPS", framesPerSecond);
-			ImGui::Text("%ld/%ld solid instances", mainScene->solidInstancesVisible, mainScene->solidInstancesCount);
-			ImGui::Text("%ld/%ld liquid instances", mainScene->liquidInstancesVisible, mainScene->liquidInstancesCount);
-			ImGui::Text("%ld/%ld vegetation instances", mainScene->vegetationInstancesVisible, mainScene->vegetationInstancesCount);
+			ImGui::Text("%ld/%ld solid instances", mainScene->solidInstancesVisible, mainScene->solidInfo.size());
+			ImGui::Text("%ld/%ld liquid instances", mainScene->liquidInstancesVisible, mainScene->liquidInfo.size());
+			ImGui::Text("%ld/%ld vegetation instances", mainScene->vegetationInstancesVisible, mainScene->vegetationInfo.size());
 			ImGui::Text("%ld solid triangles", mainScene->solidTrianglesCount);
 			ImGui::Text("%ld liquid triangles", mainScene->liquidTrianglesCount);
 
@@ -954,11 +954,8 @@ public:
 			size_t allocatedChildren = mainScene->solidSpace->allocator.childAllocator.getAllocatedBlocksCount();
 			size_t childrenSize = mainScene->solidSpace->allocator.childAllocator.getBlockSize();
 
-
-
 			ImGui::Text("%ld (%ld KB) allocatted nodes",  allocatedBlocks*blockSize, allocatedBlocks*blockSize* sizeof(OctreeNode)/1024);
 			ImGui::Text("%ld (%ld KB) allocatted children",  allocatedChildren*childrenSize, allocatedChildren*childrenSize* sizeof(ChildBlock)/1024);
-			ImGui::Text("%ld loaded chunks",  mainScene->loadedChunks);
 
 			if (glfwJoystickIsGamepad(GLFW_JOYSTICK_1)) {
 				ImGui::Text("Gamepad detected");

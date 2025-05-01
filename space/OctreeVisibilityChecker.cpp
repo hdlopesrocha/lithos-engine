@@ -1,8 +1,7 @@
 #include "space.hpp"
 
 
-OctreeVisibilityChecker::OctreeVisibilityChecker(Octree * tree, std::vector<OctreeNodeData> * visibleNodes) {
-	this->tree = tree;
+OctreeVisibilityChecker::OctreeVisibilityChecker(std::vector<OctreeNodeData> * visibleNodes) {
 	this->visibleNodes = visibleNodes;
 }
 

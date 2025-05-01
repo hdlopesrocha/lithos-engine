@@ -9,49 +9,38 @@ Scene::Scene(Settings * settings) {
 	solidTrianglesCount = 0;
 	liquidTrianglesCount = 0;
 
-	solidInstancesCount = 0;
-	liquidInstancesCount = 0;
-	vegetationInstancesCount = 0;
-
 	solidInstancesVisible = 0;
 	liquidInstancesVisible = 0;
 	vegetationInstancesVisible = 0;
 
-	loadedChunks = 0; 
 	chunkSize = glm::pow(2, 9);
 
-	solidBuilder = new MeshGeometryBuilder(&solidInstancesCount, &solidTrianglesCount, solidSpace, 0.99, 0.1, true);
-	liquidBuilder = new MeshGeometryBuilder(&liquidInstancesCount, &liquidTrianglesCount, liquidSpace, 0.99, 0.1, true);
+	solidBuilder = new MeshGeometryBuilder(&solidTrianglesCount, solidSpace, 0.99, 0.1, true);
+	liquidBuilder = new MeshGeometryBuilder(&liquidTrianglesCount, liquidSpace, 0.99, 0.1, true);
+	vegetationBuilder = new VegetationGeometryBuilder(solidSpace, new VegetationInstanceBuilderHandler(solidSpace, 32, 4));
+	debugBuilder = new OctreeGeometryBuilder(liquidSpace, new OctreeInstanceBuilderHandler());
 
-	vegetationBuilder = new VegetationGeometryBuilder(&vegetationInstancesCount, solidSpace, 
-		new VegetationInstanceBuilderHandler(solidSpace, &vegetationInstancesCount, 32, 4));
-
-	debugBuilder = new OctreeGeometryBuilder(&octreeInstancesCount, liquidSpace, 
-		new OctreeInstanceBuilderHandler(&octreeInstancesCount));
-
-	solidRenderer = new OctreeVisibilityChecker(solidSpace, &visibleSolidNodes);
-	liquidRenderer = new OctreeVisibilityChecker(liquidSpace, &visibleLiquidNodes);
+	solidRenderer = new OctreeVisibilityChecker(&visibleSolidNodes);
+	liquidRenderer = new OctreeVisibilityChecker(&visibleLiquidNodes);
 	for(int i = 0 ; i < SHADOW_MATRIX_COUNT ; ++i) {
-		shadowRenderer[i]= new OctreeVisibilityChecker(solidSpace, &visibleShadowNodes[i]);
+		shadowRenderer[i]= new OctreeVisibilityChecker(&visibleShadowNodes[i]);
 	}
 
 }
 
 bool Scene::loadSpace(Octree * tree, OctreeNodeData &data, std::unordered_map<long, NodeInfo*> *infos, GeometryBuilder * builder) {	
-	if(data.node->dataId == 0){
+	if(data.node->dataId == 0) {
 		data.node->dataId = ++tree->dataId;
 		InstanceGeometry * loadable = builder->build(data);
-			++loadedChunks;
 		if(loadable) {
 			infos->try_emplace(data.node->dataId, new NodeInfo(loadable));
 			return true;
 		}
-	}else if(data.node->isDirty()) {
+	} else if(data.node->isDirty()) {
 		data.node->setDirty(false);
 		auto it = infos->find(data.node->dataId);
 		if(it != infos->end()) {
 			NodeInfo * ni = it->second;
-			++loadedChunks;
 			if(ni->loadable) {
 				delete ni->loadable;
 				ni->loadable = NULL;
@@ -123,21 +112,20 @@ void Scene::processSpace() {
 }
 
 void Scene::setVisibility(glm::mat4 viewProjection, std::vector<std::pair<glm::mat4, glm::vec3>> lightProjection ,Camera &camera) {
-	setVisibleNodes(viewProjection, camera.position, *solidRenderer);
-	setVisibleNodes(viewProjection, camera.position, *liquidRenderer);
+	setVisibleNodes(solidSpace, viewProjection, camera.position, *solidRenderer);
+	setVisibleNodes(liquidSpace, viewProjection, camera.position, *liquidRenderer);
 
 	int i =0;
 	for(std::pair<glm::mat4, glm::vec3> pair :  lightProjection){
-		setVisibleNodes(pair.first, pair.second, *shadowRenderer[i++]);
+		setVisibleNodes(solidSpace, pair.first, pair.second, *shadowRenderer[i++]);
 	}
 }
 
-void Scene::setVisibleNodes(glm::mat4 viewProjection, glm::vec3 sortPosition, OctreeVisibilityChecker &checker) {
+void Scene::setVisibleNodes(Octree * tree, glm::mat4 viewProjection, glm::vec3 sortPosition, OctreeVisibilityChecker &checker) {
 	checker.visibleNodes->clear();
 	checker.sortPosition = sortPosition;
-	
 	checker.update(viewProjection);
-	checker.tree->iterateFlat(checker, chunkSize);	//here we get the visible nodes for that LOD + geometryLEvel
+	tree->iterateFlat(checker, chunkSize);	//here we get the visible nodes for that LOD + geometryLEvel
 }
 
 DrawableInstanceGeometry * Scene::loadIfNeeded(std::unordered_map<long, NodeInfo*> * infos, long index){

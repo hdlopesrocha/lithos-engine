@@ -137,11 +137,10 @@ class MeshGeometryBuilder  : public GeometryBuilder {
     float simplificationAngle;
     float simplificationDistance;
     bool simplificationTexturing;
-	long * instancesCount;
 	long * trianglesCount;
     Octree * tree;
 	public:
-		MeshGeometryBuilder(long * instancesCount, long * trianglesCount,Octree * tree, float simplificationAngle, float simplificationDistance, bool simplificationTexturing);
+		MeshGeometryBuilder(long * trianglesCount,Octree * tree, float simplificationAngle, float simplificationDistance, bool simplificationTexturing);
 		~MeshGeometryBuilder();
 		InstanceGeometry * build(OctreeNodeData &params) override;
 };
@@ -163,8 +162,7 @@ class IteratorHandler {
 
 class InstanceBuilderHandler {
 	public:
-		long * count;
-		InstanceBuilderHandler(long * count);
+		InstanceBuilderHandler();
 		virtual void handle(OctreeNodeData &data, InstanceGeometry * pre) = 0;
 };
 
@@ -251,8 +249,7 @@ class OctreeVisibilityChecker : public IteratorHandler{
 	public:
 		glm::vec3 sortPosition;
 		std::vector<OctreeNodeData> * visibleNodes;
-		Octree * tree;
-		OctreeVisibilityChecker(Octree * tree, std::vector<OctreeNodeData> * visibleNodes);
+		OctreeVisibilityChecker(std::vector<OctreeNodeData> * visibleNodes);
 		void update(glm::mat4 m);
 		void before(OctreeNodeData &params) override;
 		void after(OctreeNodeData &params) override;

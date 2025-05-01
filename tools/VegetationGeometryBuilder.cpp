@@ -10,11 +10,10 @@ VegetationGeometryBuilder::~VegetationGeometryBuilder(){
 
 }
 
-VegetationGeometryBuilder::VegetationGeometryBuilder(long * instancesCount, Octree * tree, InstanceBuilderHandler * handler) {
+VegetationGeometryBuilder::VegetationGeometryBuilder(Octree * tree, InstanceBuilderHandler * handler) {
     this->geometry = new Vegetation3d(1.0);
     this->tree = tree;
     this->handler = handler;
-    this->instancesCount = instancesCount;
 }
 
 InstanceGeometry * VegetationGeometryBuilder::build(OctreeNodeData &params){
@@ -28,7 +27,6 @@ InstanceGeometry * VegetationGeometryBuilder::build(OctreeNodeData &params){
     if(instanceGeometry->instances.size()) {
         std::shuffle(instanceGeometry->instances.begin(), instanceGeometry->instances.end(), g);
     }
-    *instancesCount += instanceGeometry->instances.size();
     return instanceGeometry;
 }
 

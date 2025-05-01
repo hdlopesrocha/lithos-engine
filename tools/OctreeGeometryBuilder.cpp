@@ -4,11 +4,10 @@ OctreeGeometryBuilder::~OctreeGeometryBuilder(){
 
 }
 
-OctreeGeometryBuilder::OctreeGeometryBuilder(long * instancesCount, Octree * tree, InstanceBuilderHandler * handler) {
+OctreeGeometryBuilder::OctreeGeometryBuilder(Octree * tree, InstanceBuilderHandler * handler) {
     this->geometry = new BoxLineGeometry(BoundingBox(glm::vec3(0), glm::vec3(1)));
     this->tree = tree;
-    this->handler = new OctreeInstanceBuilderHandler(instancesCount );
-    this->instancesCount = instancesCount;
+    this->handler = new OctreeInstanceBuilderHandler();
 }
 
 InstanceGeometry * OctreeGeometryBuilder::build(OctreeNodeData &params){
@@ -22,8 +21,7 @@ InstanceGeometry * OctreeGeometryBuilder::build(OctreeNodeData &params){
 	
     InstanceData instance(0u, mat , 0.0f);
 	instanceGeometry->instances.push_back(instance);
-    
-    *instancesCount += instanceGeometry->instances.size();
+
     return instanceGeometry;
 }
 

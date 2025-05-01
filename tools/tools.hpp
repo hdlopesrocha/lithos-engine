@@ -92,7 +92,7 @@ class VegetationInstanceBuilderHandler : public InstanceBuilderHandler {
 	int pointsPerTriangle;
 	float scale;
 	Octree * tree;
-	VegetationInstanceBuilderHandler(Octree * tree, long * count, int pointsPerTriangle, float scale);
+	VegetationInstanceBuilderHandler(Octree * tree, int pointsPerTriangle, float scale);
 
 	void handle(OctreeNodeData &data, InstanceGeometry * pre) override;
 };
@@ -101,7 +101,7 @@ class VegetationInstanceBuilderHandler : public InstanceBuilderHandler {
 class OctreeInstanceBuilderHandler : public InstanceBuilderHandler {
 	public:
 
-	OctreeInstanceBuilderHandler(long * count);
+	OctreeInstanceBuilderHandler();
 
 	void handle(OctreeNodeData &data, InstanceGeometry * pre) override;
 };
@@ -113,7 +113,7 @@ class VegetationGeometryBuilder : public GeometryBuilder {
     Octree * tree;
     InstanceBuilderHandler * handler;
 	long * instancesCount;
-    VegetationGeometryBuilder(long * instancesCount, Octree * tree, InstanceBuilderHandler * handler);
+    VegetationGeometryBuilder(Octree * tree, InstanceBuilderHandler * handler);
     ~VegetationGeometryBuilder();
 
 	InstanceGeometry * build(OctreeNodeData &params) override;
@@ -123,9 +123,8 @@ class OctreeGeometryBuilder : public GeometryBuilder {
     public:
     Geometry * geometry;
     Octree * tree;
-	long * instancesCount;
     InstanceBuilderHandler * handler;
-    OctreeGeometryBuilder(long * instancesCount, Octree * tree, InstanceBuilderHandler * handler);
+    OctreeGeometryBuilder(Octree * tree, InstanceBuilderHandler * handler);
     ~OctreeGeometryBuilder();
 
     InstanceGeometry * build(OctreeNodeData &params) override;
@@ -140,7 +139,7 @@ class VegetationInstanceBuilder : public OctreeNodeTriangleHandler {
 	float scale;
 	
 	using OctreeNodeTriangleHandler::OctreeNodeTriangleHandler;
-	VegetationInstanceBuilder(Geometry * chunk, long * count,std::vector<InstanceData> * instances, int pointsPerTriangle, float scale);
+	VegetationInstanceBuilder(Geometry * chunk,std::vector<InstanceData> * instances, int pointsPerTriangle, float scale);
 	void handle(OctreeNode* c0,OctreeNode* c1,OctreeNode* c2, bool sign) override;
 
 };
@@ -165,11 +164,6 @@ class Scene {
 
 		long solidTrianglesCount;
 		long liquidTrianglesCount;
-		long solidInstancesCount;
-		long liquidInstancesCount;
-		long vegetationInstancesCount;
-		long octreeInstancesCount;
-		long loadedChunks;
 		long solidInstancesVisible;
 		long liquidInstancesVisible;
 		long vegetationInstancesVisible;
@@ -206,7 +200,7 @@ std::unordered_map<long, NodeInfo*> vegetationInfo;
 
 	void setVisibility(glm::mat4 viewProjection, std::vector<std::pair<glm::mat4, glm::vec3>> lightProjection ,Camera &camera);
 
-	void setVisibleNodes(glm::mat4 viewProjection, glm::vec3 sortPosition, OctreeVisibilityChecker &checker);
+	void setVisibleNodes(Octree * tree, glm::mat4 viewProjection, glm::vec3 sortPosition, OctreeVisibilityChecker &checker);
 
 	void draw (uint drawableType, int mode, glm::vec3 cameraPosition, const std::vector<OctreeNodeData> &list);
 	void drawVegetation(glm::vec3 cameraPosition, const std::vector<OctreeNodeData> &list);

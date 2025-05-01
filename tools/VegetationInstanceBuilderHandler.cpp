@@ -1,7 +1,7 @@
 #include "tools.hpp"
 
 
-VegetationInstanceBuilderHandler::VegetationInstanceBuilderHandler(Octree * tree, long * count, int pointsPerTriangle, float scale) : InstanceBuilderHandler(count){
+VegetationInstanceBuilderHandler::VegetationInstanceBuilderHandler(Octree * tree, int pointsPerTriangle, float scale) : InstanceBuilderHandler(){
 	this->pointsPerTriangle = pointsPerTriangle;
 	this->scale = scale;
 	this->tree = tree;
@@ -10,7 +10,7 @@ VegetationInstanceBuilderHandler::VegetationInstanceBuilderHandler(Octree * tree
 void VegetationInstanceBuilderHandler::handle(OctreeNodeData &data, InstanceGeometry * pre){
 	Vertex * vertex = &data.node->vertex;
 	if(vertex->brushIndex == 2) { 
-		VegetationInstanceBuilder handler(pre->geometry, count , &pre->instances, pointsPerTriangle, scale);
+		VegetationInstanceBuilder handler(pre->geometry , &pre->instances, pointsPerTriangle, scale);
 		tree->handleQuadNodes(data, &handler, false);
 	}
 }
