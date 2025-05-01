@@ -7,7 +7,7 @@ OctreeGeometryBuilder::~OctreeGeometryBuilder(){
 OctreeGeometryBuilder::OctreeGeometryBuilder(long * instancesCount, Octree * tree, InstanceBuilderHandler * handler) {
     this->geometry = new BoxLineGeometry(BoundingBox(glm::vec3(0), glm::vec3(1)));
     this->tree = tree;
-    this->handler = new OctreeInstanceBuilderHandler(tree, instancesCount );
+    this->handler = new OctreeInstanceBuilderHandler(instancesCount );
     this->instancesCount = instancesCount;
 }
 

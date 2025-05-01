@@ -1,8 +1,7 @@
 #include "space.hpp"
 
 
-InstanceBuilderHandler::InstanceBuilderHandler(Octree * tree, long * count){
-	this->tree = tree;
+InstanceBuilderHandler::InstanceBuilderHandler(long * count){
 	this->count = count;
 }
 

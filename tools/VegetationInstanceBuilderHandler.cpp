@@ -1,9 +1,10 @@
 #include "tools.hpp"
 
 
-VegetationInstanceBuilderHandler::VegetationInstanceBuilderHandler(Octree * tree, long * count, int pointsPerTriangle, float scale) : InstanceBuilderHandler(tree, count){
+VegetationInstanceBuilderHandler::VegetationInstanceBuilderHandler(Octree * tree, long * count, int pointsPerTriangle, float scale) : InstanceBuilderHandler(count){
 	this->pointsPerTriangle = pointsPerTriangle;
 	this->scale = scale;
+	this->tree = tree;
 }
 
 void VegetationInstanceBuilderHandler::handle(OctreeNodeData &data, InstanceGeometry * pre){

@@ -1,7 +1,7 @@
 #include "tools.hpp"
 
 
-OctreeInstanceBuilderHandler::OctreeInstanceBuilderHandler(Octree * tree, long * count) : InstanceBuilderHandler(tree, count){
+OctreeInstanceBuilderHandler::OctreeInstanceBuilderHandler(long * count) : InstanceBuilderHandler(count){
 
 }
 

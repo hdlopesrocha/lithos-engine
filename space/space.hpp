@@ -163,9 +163,8 @@ class IteratorHandler {
 
 class InstanceBuilderHandler {
 	public:
-		Octree * tree;
 		long * count;
-		InstanceBuilderHandler(Octree * tree, long * count);
+		InstanceBuilderHandler(long * count);
 		virtual void handle(OctreeNodeData &data, InstanceGeometry * pre) = 0;
 };
 

@@ -27,7 +27,7 @@ Scene::Scene(Settings * settings) {
 		new VegetationInstanceBuilderHandler(solidSpace, &vegetationInstancesCount, 32, 4));
 
 	debugBuilder = new OctreeGeometryBuilder(&octreeInstancesCount, liquidSpace, 
-		new OctreeInstanceBuilderHandler(liquidSpace, &octreeInstancesCount));
+		new OctreeInstanceBuilderHandler(&octreeInstancesCount));
 
 	solidRenderer = new OctreeVisibilityChecker(solidSpace, &visibleSolidNodes);
 	liquidRenderer = new OctreeVisibilityChecker(liquidSpace, &visibleLiquidNodes);
@@ -170,7 +170,7 @@ void Scene::draw (uint drawableType, int mode, glm::vec3 cameraPosition, const s
 					if(amount > 0.8){
 						amount = 1.0;
 					}
-					//std::cout << "Scene.draw() " << std::to_string(drawableType) << "|" << std::to_string(amount) << std::endl;
+					std::cout << "Scene.draw() " << std::to_string(drawableType) << "|" << std::to_string(amount) << std::endl;
 					drawable->draw(mode, amount, &vegetationInstancesVisible);
 				}
 			}else if(drawableType == TYPE_INSTANCE_SOLID_DRAWABLE) {

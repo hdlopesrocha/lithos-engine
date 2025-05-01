@@ -91,7 +91,7 @@ class VegetationInstanceBuilderHandler : public InstanceBuilderHandler {
 	public:
 	int pointsPerTriangle;
 	float scale;
-
+	Octree * tree;
 	VegetationInstanceBuilderHandler(Octree * tree, long * count, int pointsPerTriangle, float scale);
 
 	void handle(OctreeNodeData &data, InstanceGeometry * pre) override;
@@ -101,7 +101,7 @@ class VegetationInstanceBuilderHandler : public InstanceBuilderHandler {
 class OctreeInstanceBuilderHandler : public InstanceBuilderHandler {
 	public:
 
-	OctreeInstanceBuilderHandler(Octree * tree, long * count);
+	OctreeInstanceBuilderHandler(long * count);
 
 	void handle(OctreeNodeData &data, InstanceGeometry * pre) override;
 };
