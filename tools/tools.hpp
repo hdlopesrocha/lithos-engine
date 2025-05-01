@@ -148,12 +148,10 @@ class VegetationInstanceBuilder : public OctreeNodeTriangleHandler {
 struct NodeInfo {
 	InstanceGeometry * loadable;
 	DrawableInstanceGeometry * drawable;
-	bool dirty;
 
 	NodeInfo(InstanceGeometry * loadable){
 		this->drawable = NULL;
 		this->loadable = loadable;
-		this->dirty = false;
 	}
 };
 
@@ -231,20 +229,11 @@ class DirtyHandler : public OctreeNodeDirtyHandler {
 
 	}
 
-	void singleHandle(std::unordered_map<long, NodeInfo*> * infos, long dataId) const {
-		auto i = infos->find(dataId);
-		NodeInfo * ni = i != infos->end() ? i->second : NULL;
-		if(ni!=NULL) {
-			ni->dirty = true;
-		}
-	}
 
 
-	void handle(long dataId) const {
-		singleHandle(&scene.solidInfo, dataId);
-		singleHandle(&scene.vegetationInfo, dataId);
-		singleHandle(&scene.liquidInfo, dataId);
-		singleHandle(&scene.debugInfo, dataId);
+
+	void handle(OctreeNode * node) const {
+		node->setDirty(true);
 	};
 
 };

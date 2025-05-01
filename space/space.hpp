@@ -36,6 +36,8 @@ class OctreeNode {
 		void setSolid(bool value);
 		bool isSimplified();
 		void setSimplified(bool value);
+		bool isDirty();
+		void setDirty(bool value);
 
 };
 
@@ -70,7 +72,7 @@ struct OctreeNodeData {
 class OctreeNodeDirtyHandler {
 	public:
 
-	virtual void handle(long dataId) const = 0;
+	virtual void handle(OctreeNode * node) const = 0;
 };
 
 class OctreeAllocator {

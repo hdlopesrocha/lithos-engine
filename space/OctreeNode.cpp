@@ -7,6 +7,7 @@ OctreeNode::OctreeNode(Vertex vertex) {
 OctreeNode * OctreeNode::init(Vertex vertex) {
 	this->setSolid(false);
 	this->setSimplified(false);
+	this->setDirty(false);
 	this->vertex = vertex;
 	this->mask = 0x0;
 	this->dataId = 0;
@@ -59,14 +60,22 @@ bool OctreeNode::isSolid(){
 	return this->bits & 0x01;
 }
 
-void OctreeNode::setSolid(bool value){
-	this->bits = (this->bits & 0b10) | (value ? 0x1 : 0x0);
-}
-
 bool OctreeNode::isSimplified(){
 	return this->bits & 0x02;
 }
 
+bool OctreeNode::isDirty(){
+	return this->bits & 0x04;
+}
+
+void OctreeNode::setSolid(bool value){
+	this->bits = (this->bits & (0x1 ^ 0xff)) | (value ? 0x1 : 0x0);
+}
+
 void OctreeNode::setSimplified(bool value){
-	this->bits = (this->bits & 0b01) | (value ? 0x2 : 0x0);
+	this->bits = (this->bits & (0x2 ^ 0xff)) | (value ? 0x2 : 0x0);
+}
+
+void OctreeNode::setDirty(bool value){
+	this->bits = (this->bits & (0x4 ^ 0xff)) | (value ? 0x4 : 0x0);
 }

@@ -46,32 +46,27 @@ bool Scene::loadSpace(Octree * tree, OctreeNodeData &data, std::unordered_map<lo
 			infos->try_emplace(data.node->dataId, new NodeInfo(loadable));
 			return true;
 		}
-	}else {
+	}else if(data.node->isDirty()) {
+		data.node->setDirty(false);
 		auto it = infos->find(data.node->dataId);
 		if(it != infos->end()) {
 			NodeInfo * ni = it->second;
-			if(ni->dirty) {
-				++loadedChunks;
-				if(ni->loadable) {
-					delete ni->loadable;
-					ni->loadable = NULL;
-				}
-				InstanceGeometry * loadable = builder->build(data);
-				if(loadable) {
-					ni->loadable = loadable;
-					ni->dirty = false;
-					return true;
-				}
-				else {
-					infos->erase(it);
-					delete ni;
-				}				
+			++loadedChunks;
+			if(ni->loadable) {
+				delete ni->loadable;
+				ni->loadable = NULL;
 			}
+			InstanceGeometry * loadable = builder->build(data);
+			if(loadable) {
+				ni->loadable = loadable;
+				return true;
+			}
+			else {
+				infos->erase(it);
+				delete ni;
+			}			
 		}
-
 	}
-
-	
 	return false;
 }
 

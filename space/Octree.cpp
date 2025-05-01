@@ -324,7 +324,7 @@ void Octree::add(const ContainmentHandler &handler, const OctreeNodeDirtyHandler
         node->mask |= buildMask(handler, frame.cube);
         node->setSolid(check == ContainmentType::Contains);
         if(node->dataId) {
-            dirtyHandler.handle(node->dataId);
+            dirtyHandler.handle(node);
         }
         bool isLeaf = frame.cube.getLengthX() <= frame.minSize;
         if (check == ContainmentType::Contains) {
@@ -385,7 +385,7 @@ void Octree::del(const ContainmentHandler &handler, const OctreeNodeDirtyHandler
             node->mask &= buildMask(handler, frame.cube) ^ 0xff;
             node->setSolid(check == ContainmentType::Contains);
             if(node->dataId) {
-                dirtyHandler.handle(node->dataId);
+                dirtyHandler.handle(node);
             }
             if (!isLeaf) {
                 for (int i = 7; i >= 0; --i) { 
