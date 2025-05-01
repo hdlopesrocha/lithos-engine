@@ -169,14 +169,10 @@ class InstanceBuilderHandler {
 };
 
 class InstanceBuilder : public IteratorHandler{
-	Octree * tree;
-    uint mode;
 	InstanceBuilderHandler * handler;
 	InstanceGeometry * geometry;
-	std::vector<InstanceData> * instances;
 	public: 
-		int instanceCount = 0;
-		InstanceBuilder(Octree * tree, std::vector<InstanceData> * instances, InstanceBuilderHandler * handler, InstanceGeometry * geometry);
+		InstanceBuilder(InstanceBuilderHandler * handler, InstanceGeometry * geometry);
 		void before(OctreeNodeData &params) override;
 		void after(OctreeNodeData &params) override;
 		bool test(OctreeNodeData &params) override;

@@ -1,11 +1,8 @@
 #include "space.hpp"
 
 
-InstanceBuilder::InstanceBuilder(Octree * tree, std::vector<InstanceData> * instances, InstanceBuilderHandler * handler, InstanceGeometry * geometry) {
-	this->tree = tree;
-	this->instanceCount = 0;
+InstanceBuilder::InstanceBuilder(InstanceBuilderHandler * handler, InstanceGeometry * geometry) {
 	this->geometry = geometry;
-	this->instances = instances;
 	this->handler = handler;
 }
 

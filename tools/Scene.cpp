@@ -245,11 +245,6 @@ void Scene::generate(Camera &camera) {
 
 	//solidSpace->del(SphereContainmentHandler(BoundingSphere(glm::vec3(0,768,0),1024), SimpleBrush(14)), DirtyHandler(*this), minSize);
 
-	//liquidSpace->add(SphereContainmentHandler(BoundingSphere(glm::vec3(11,61,-11),4), SimpleBrush(0)));
-	BoundingBox waterBox = mapBox;
-	waterBox.setMaxY(0);
-	liquidSpace->add(OctreeContainmentHandler(solidSpace, waterBox, WaterBrush(0)), DirtyHandler(*this), minSize);
-
 	solidSpace->add(BoxContainmentHandler(BoundingBox(glm::vec3(1500,0,500),glm::vec3(1500+256,256,500+256)),
 		SimpleBrush(4)), DirtyHandler(*this), 2.0);
 
@@ -269,6 +264,10 @@ void Scene::generate(Camera &camera) {
 	//solidSpace->del(SphereContainmentHandler(BoundingSphere(glm::vec3(4,54,-4),8), SimpleBrush(1)), 1.0);
 
 
+	//liquidSpace->add(SphereContainmentHandler(BoundingSphere(glm::vec3(11,61,-11),4), SimpleBrush(0)));
+	BoundingBox waterBox = mapBox;
+	waterBox.setMaxY(0);
+	liquidSpace->add(OctreeContainmentHandler(solidSpace, waterBox, WaterBrush(0)), DirtyHandler(*this), minSize);
 
 }
 

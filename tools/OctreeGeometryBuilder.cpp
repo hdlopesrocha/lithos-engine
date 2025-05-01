@@ -13,18 +13,17 @@ OctreeGeometryBuilder::OctreeGeometryBuilder(long * instancesCount, Octree * tre
 
 InstanceGeometry * OctreeGeometryBuilder::build(OctreeNodeData &params){
     InstanceGeometry * instanceGeometry = new InstanceGeometry(geometry);
-    InstanceBuilder instanceBuilder(tree, &instanceGeometry->instances, handler, instanceGeometry);
+    InstanceBuilder instanceBuilder(handler, instanceGeometry);
     instanceBuilder.iterateFlatIn(params);
 	
     glm::mat4 mat(1.0);
 	mat = glm::translate(mat, params.cube.getMin());
 	mat = glm::scale(mat, params.cube.getLength());
 	
-    
     InstanceData instance(0u, mat , 0.0f);
 	instanceGeometry->instances.push_back(instance);
     
-    *instancesCount += instanceBuilder.instanceCount;
+    *instancesCount += instanceGeometry->instances.size();
     return instanceGeometry;
 }
 
