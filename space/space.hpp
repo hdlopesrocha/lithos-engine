@@ -31,6 +31,7 @@ class OctreeNode {
 		void setChildNode(int i, OctreeNode * node, OctreeAllocator * allocator);
 		OctreeNode * getChildNode(int i, OctreeAllocator * allocator);
 		bool isLeaf();
+		void setLeaf(bool value);
 		bool isSolid();
 		void setSolid(bool value);
 		bool isSimplified();

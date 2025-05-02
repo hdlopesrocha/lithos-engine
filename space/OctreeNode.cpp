@@ -88,6 +88,11 @@ void OctreeNode::setDirty(bool value){
 	this->bits = (this->bits & ~mask ) | (value ? mask : 0x0);
 }
 
+void OctreeNode::setLeaf(bool value){
+	uint16_t mask = 0x0800;
+	this->bits = (this->bits & (mask ^ 0xffff)) | (value ? mask : 0x0);
+}
+
 void OctreeNode::setMask(uint8_t value){
 	uint16_t mask = 0x00ff;
 	this->bits = (this->bits & ~mask) | (value & mask);
