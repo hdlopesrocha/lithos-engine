@@ -152,6 +152,15 @@ struct NodeInfo {
 		this->drawable = NULL;
 		this->loadable = loadable;
 	}
+
+	~NodeInfo() {
+		if(drawable != NULL) {
+			delete drawable;
+		}
+		if(loadable != NULL) {
+			delete loadable;
+		}
+	}
 };
 
 

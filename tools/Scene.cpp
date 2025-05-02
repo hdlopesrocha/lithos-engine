@@ -34,15 +34,14 @@ bool Scene::loadSpace(Octree* tree, OctreeNodeData& data, std::unordered_map<lon
 	}
 
 	InstanceGeometry* loadable = builder->build(data);
-
-	if (!loadable) {
+	if (loadable == NULL) {
 		// No geometry to load — erase entry if it exists
 		infos->erase(data.node->dataId);
 		return false;
 	}
 
 	// Try to insert a new NodeInfo with loadable
-	auto [it, inserted] = infos->try_emplace(data.node->dataId, NodeInfo(loadable));
+	auto [it, inserted] = infos->try_emplace(data.node->dataId, loadable);
 	if (!inserted) {
 		// Already existed — replace existing loadable
 		if (it->second.loadable) {
@@ -146,7 +145,7 @@ void Scene::setVisibleNodes(Octree * tree, glm::mat4 viewProjection, glm::vec3 s
 DrawableInstanceGeometry* Scene::loadIfNeeded(std::unordered_map<long, NodeInfo>* infos, long index) {
 	auto it = infos->find(index);
 	if (it == infos->end()) {
-		return nullptr;
+		return NULL;
 	}
 	NodeInfo& ni = it->second;
 	if (ni.loadable) {
@@ -155,7 +154,7 @@ DrawableInstanceGeometry* Scene::loadIfNeeded(std::unordered_map<long, NodeInfo>
 		}
 		ni.drawable = new DrawableInstanceGeometry(ni.loadable->geometry, &ni.loadable->instances);
 		delete ni.loadable;
-		ni.loadable = nullptr;
+		ni.loadable = NULL;
 	}
 	return ni.drawable;
 }
