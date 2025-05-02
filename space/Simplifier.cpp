@@ -68,11 +68,11 @@ void Simplifier::after(OctreeNodeData &params) {
 					return;
 				}
 				
-				if(mask != 0xff && mask != node->mask) {
+				if(mask != 0xff && mask != node->getMask()) {
 					return;
 				}
 				
-				mask = node->mask;
+				mask = node->getMask();
 				sumP += node->vertex.position;
 				sumN += node->vertex.normal;
 				
@@ -85,7 +85,7 @@ void Simplifier::after(OctreeNodeData &params) {
 			parent->setSimplified(true);
 			parentVertex->position = sumP / (float)nodeCount;
 			parentVertex->normal = sumN / (float)nodeCount;
-			parent->mask = mask;
+			parent->setMask(mask);
 			parent->setSolid(false);
 		}
 	}

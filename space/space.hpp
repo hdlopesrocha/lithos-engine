@@ -21,8 +21,7 @@ class OctreeNode {
 
 	public: 
 		Vertex vertex;
-		uint8_t mask;
-		uint8_t bits;
+		uint16_t bits;
 		long dataId;
 
 		OctreeNode(Vertex vertex);
@@ -38,7 +37,8 @@ class OctreeNode {
 		void setSimplified(bool value);
 		bool isDirty();
 		void setDirty(bool value);
-
+		uint8_t getMask();
+		void setMask(uint8_t value);
 };
 
 class OctreeNodeTriangleHandler {

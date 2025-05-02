@@ -944,8 +944,8 @@ public:
 			ImGui::Text("%ld/%ld vegetation instances", mainScene->vegetationInstancesVisible, mainScene->vegetationInfo.size());
 			ImGui::Text("%ld solid triangles", mainScene->solidTrianglesCount);
 			ImGui::Text("%ld liquid triangles", mainScene->liquidTrianglesCount);
-			ImGui::Text("%ld solid infos", mainScene->solidSpace->dataId);
-			ImGui::Text("%ld liquid infos", mainScene->liquidSpace->dataId);
+			ImGui::Text("%ld solid datas", mainScene->solidSpace->dataId);
+			ImGui::Text("%ld liquid datas", mainScene->liquidSpace->dataId);
 
 			size_t allocatedBlocks = mainScene->solidSpace->allocator.nodeAllocator.getAllocatedBlocksCount();
 			size_t blockSize = mainScene->solidSpace->allocator.nodeAllocator.getBlockSize();

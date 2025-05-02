@@ -26,9 +26,11 @@ void Tesselator::virtualize(OctreeNodeData &params, int levels) {
 }
 
 void Tesselator::before(OctreeNodeData &params) {		
-    if(params.node->isSimplified()) {
-        int levels = tree->getMaxLevel(params.node, 0);
-		virtualize(params, levels);
+    if(params.node->isLeaf()) {
+       // int levels = tree->getMaxLevel(params.node, 0);
+	//	virtualize(params, levels);
+    		tree->handleQuadNodes(params , this, true);
+
 	}
 }
 
@@ -37,7 +39,7 @@ void Tesselator::after(OctreeNodeData &params) {
 }
 
 bool Tesselator::test(OctreeNodeData &params) {			
-	return !params.node->isSolid() && !params.node->isSimplified();
+	return !params.node->isSolid() && !params.node->isLeaf();
 }
 
 void Tesselator::getOrder(OctreeNodeData &params, uint8_t * order){

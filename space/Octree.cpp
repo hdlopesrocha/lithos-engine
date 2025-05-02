@@ -208,7 +208,7 @@ void Octree::handleQuadNodes(OctreeNodeData &data, OctreeNodeTriangleHandler * h
 	
     for(size_t k =0 ; k < tessOrder.size(); ++k) {
 		glm::ivec2 edge = tessEdge[k];
-		uint mask = data.node->mask;
+		uint mask = data.node->getMask();
 		bool sign0 = (mask & (1 << edge[0])) != 0;
 		bool sign1 = (mask & (1 << edge[1])) != 0;
 
@@ -258,7 +258,7 @@ void split(Octree * tree, OctreeNode * node, BoundingCube &cube, bool reverse) {
             if(plane.test(subCube) != (reverse ? ContainmentType::Contains : ContainmentType::Disjoint) ) {
                 child = tree->allocator.nodeAllocator.allocate()->init(Vertex(subCube.getCenter(), vertex.normal, vertex.texCoord, vertex.brushIndex));
                 child->setSolid(node->isSolid());
-                child->mask = node->mask;
+                child->setMask(node->getMask());
                 node->setChildNode(i, child, &tree->allocator);
             }
         }
@@ -321,7 +321,7 @@ void Octree::add(const ContainmentHandler &handler, const OctreeNodeDirtyHandler
             vertex.normal = glm::normalize(previousNormal + vertex.normal);
             node->vertex = vertex;
         }
-        node->mask |= buildMask(handler, frame.cube);
+        node->setMask(node->getMask() | (buildMask(handler, frame.cube)));
         node->setSolid(check == ContainmentType::Contains);
         if(node->dataId) {
             dirtyHandler.handle(node);
@@ -382,7 +382,7 @@ void Octree::del(const ContainmentHandler &handler, const OctreeNodeDirtyHandler
                 node->vertex = vertex;
             }
 
-            node->mask &= buildMask(handler, frame.cube) ^ 0xff;
+            node->setMask(node->getMask() & (buildMask(handler, frame.cube) ^ 0xff));
             node->setSolid(check == ContainmentType::Contains);
             if(node->dataId) {
                 dirtyHandler.handle(node);
