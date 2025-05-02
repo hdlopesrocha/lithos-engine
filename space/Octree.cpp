@@ -255,12 +255,12 @@ void split(Octree * tree, OctreeNode * node, BoundingCube &cube, bool reverse) {
         OctreeNode * child = node->getChildNode(i, &tree->allocator);
         if(child == NULL) {
             BoundingCube subCube = cube.getChild(i);
-            if(plane.test(subCube) != (reverse ? ContainmentType::Contains : ContainmentType::Disjoint) ) {
+            //if(plane.test(subCube) != (reverse ? ContainmentType::Contains : ContainmentType::Disjoint) ) {
                 child = tree->allocator.nodeAllocator.allocate()->init(Vertex(subCube.getCenter(), vertex.normal, vertex.texCoord, vertex.brushIndex));
                 child->setSolid(node->isSolid());
                 child->setMask(node->getMask());
                 node->setChildNode(i, child, &tree->allocator);
-            }
+            //}
         }
 	}
 }
