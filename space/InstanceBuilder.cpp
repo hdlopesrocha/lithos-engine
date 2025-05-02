@@ -1,14 +1,14 @@
 #include "space.hpp"
 
 
-InstanceBuilder::InstanceBuilder(InstanceBuilderHandler * handler, InstanceGeometry * geometry) {
-	this->geometry = geometry;
+InstanceBuilder::InstanceBuilder(InstanceBuilderHandler * handler, std::vector<InstanceData> * instances) {
+	this->instances = instances;
 	this->handler = handler;
 }
 
 void InstanceBuilder::before(OctreeNodeData &params) {		
 	if(params.node->isLeaf()){
-		handler->handle(params, geometry);
+		handler->handle(params, instances);
 	}
 }
 

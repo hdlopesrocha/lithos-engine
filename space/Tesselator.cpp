@@ -1,8 +1,9 @@
 #include "space.hpp"
 
 
-Tesselator::Tesselator(Octree * tree, Geometry * chunk, long * count): OctreeNodeTriangleHandler(chunk, count) {
+Tesselator::Tesselator(Octree * tree, Geometry * chunk, long * count): OctreeNodeTriangleHandler(count) {
 	this->tree = tree;
+    this->chunk = chunk;
 }
 
 void Tesselator::virtualize(OctreeNodeData &params, int levels) {

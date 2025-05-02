@@ -1,6 +1,5 @@
 #include "space.hpp"
 
-OctreeNodeTriangleHandler::OctreeNodeTriangleHandler(Geometry * chunk, long * count){
-    this->chunk = chunk;
+OctreeNodeTriangleHandler::OctreeNodeTriangleHandler(long * count){
     this->count = count;
 }

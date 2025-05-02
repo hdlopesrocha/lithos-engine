@@ -44,9 +44,8 @@ class OctreeNode {
 class OctreeNodeTriangleHandler {
 
 	public: 
-	Geometry * chunk;
 	long * count;
-	OctreeNodeTriangleHandler(Geometry * chunk, long * count);
+	OctreeNodeTriangleHandler(long * count);
 	virtual void handle(OctreeNode* c0,OctreeNode* c1,OctreeNode* c2, bool sign) = 0;
 };
 
@@ -163,14 +162,14 @@ class IteratorHandler {
 class InstanceBuilderHandler {
 	public:
 		InstanceBuilderHandler();
-		virtual void handle(OctreeNodeData &data, InstanceGeometry * pre) = 0;
+		virtual void handle(OctreeNodeData &data, std::vector<InstanceData> * instances) = 0;
 };
 
 class InstanceBuilder : public IteratorHandler{
 	InstanceBuilderHandler * handler;
-	InstanceGeometry * geometry;
+	std::vector<InstanceData> * instances;
 	public: 
-		InstanceBuilder(InstanceBuilderHandler * handler, InstanceGeometry * geometry);
+		InstanceBuilder(InstanceBuilderHandler * handler, std::vector<InstanceData> * instances);
 		void before(OctreeNodeData &params) override;
 		void after(OctreeNodeData &params) override;
 		bool test(OctreeNodeData &params) override;
@@ -180,6 +179,7 @@ class InstanceBuilder : public IteratorHandler{
 
 class Tesselator : public IteratorHandler, OctreeNodeTriangleHandler{
 	Octree * tree;
+	Geometry * chunk;
 	public:
 		Tesselator(Octree * tree, Geometry * chunk, long * count);
 		void before(OctreeNodeData &params) override;

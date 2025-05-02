@@ -379,8 +379,8 @@ struct InstanceGeometry {
     public:
     Geometry * geometry;
     std::vector<InstanceData> instances;
-
     InstanceGeometry(Geometry * geometry);
+    InstanceGeometry(Geometry * geometry, std::vector<InstanceData> &instances);
 
 	~InstanceGeometry();
 };
