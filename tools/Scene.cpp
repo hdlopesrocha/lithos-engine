@@ -59,6 +59,34 @@ bool Scene::loadSpace(Octree * tree, OctreeNodeData &data, std::unordered_map<lo
 	return false;
 }
 
+bool Scene::processLiquid(OctreeNodeData &data) {
+	bool result = false;
+	if(data.node->isDirty()) {
+		data.node->setDirty(false);
+		if(loadSpace(liquidSpace, data, &debugInfo, debugBuilder)) {
+			result = true;			
+		}
+		if(loadSpace(liquidSpace, data, &liquidInfo, liquidBuilder)) {
+			result = true;			
+		}
+	}
+	return result;
+}
+
+bool Scene::processSolid(OctreeNodeData &data) {
+	bool result = false;
+	if(data.node->isDirty()) {
+		data.node->setDirty(false);
+		if(loadSpace(solidSpace, data, &solidInfo, solidBuilder)) {
+			result = true;			
+		}
+		if(loadSpace(solidSpace, data, &vegetationInfo, vegetationBuilder)) {
+			result = true;			
+		}
+	}
+	return result;
+}
+
 void Scene::processSpace() {
 	// Set load counts per Processor
 	solidInstancesVisible = 0;
@@ -69,14 +97,8 @@ void Scene::processSpace() {
 
 	for(OctreeNodeData &data : visibleSolidNodes){
 		if(loadCountSolid > 0) {
-			if(data.node->isDirty()) {
-				data.node->setDirty(false);
-				if(loadSpace(solidSpace, data, &solidInfo, solidBuilder)) {
-					--loadCountSolid;
-				}
-				if(loadSpace(solidSpace, data, &vegetationInfo, vegetationBuilder)) {
-					--loadCountSolid;
-				}
+			if(processSolid(data)) {
+				--loadCountSolid;
 			}
 		} else {
 			break;
@@ -85,14 +107,8 @@ void Scene::processSpace() {
 
 	for(OctreeNodeData &data : visibleLiquidNodes){
 		if(loadCountLiquid > 0) {
-			if(data.node->isDirty()) {
-				data.node->setDirty(false);
-				if(loadSpace(liquidSpace, data, &debugInfo, debugBuilder)) {
-					--loadCountLiquid;			
-				}
-				if(loadSpace(liquidSpace, data, &liquidInfo, liquidBuilder)) {
-					--loadCountLiquid;
-				}
+			if(processLiquid(data)) {
+				--loadCountLiquid;
 			}
 		} else {
 			break;
@@ -103,17 +119,10 @@ void Scene::processSpace() {
 		std::vector<OctreeNodeData> &vec = visibleShadowNodes[i];
 		for(OctreeNodeData &data : vec) {
 			if(loadCountSolid > 0) {
-				if(data.node->isDirty()) {
-					data.node->setDirty(false);
-					if(loadSpace(solidSpace, data, &solidInfo, solidBuilder)){
-						--loadCountSolid;
-					}
-					if(loadSpace(solidSpace, data, &vegetationInfo, vegetationBuilder)) {
-						--loadCountSolid;
-					}
+				if(processSolid(data)) {
+					--loadCountSolid;
 				}
-			}
-			else {
+			} else {
 				break;
 			}
 		}
