@@ -245,7 +245,7 @@ void Scene::generate(Camera &camera) {
 		), LandBrush()
 	), DirtyHandler(*this), minSize);
 
-	//solidSpace->del(SphereContainmentHandler(BoundingSphere(glm::vec3(0,768,0),1024), SimpleBrush(14)), DirtyHandler(*this), minSize);
+	solidSpace->del(SphereContainmentHandler(BoundingSphere(glm::vec3(0,768,0),1024), SimpleBrush(14)), DirtyHandler(*this), minSize);
 
 	solidSpace->add(BoxContainmentHandler(BoundingBox(glm::vec3(1500,0,500),glm::vec3(1500+256,256,500+256)),
 		SimpleBrush(4)), DirtyHandler(*this), 2.0);
@@ -260,7 +260,12 @@ void Scene::generate(Camera &camera) {
 	//solidSpace->del(BoxContainmentHandler(BoundingBox(glm::vec3(-17,-4,-17),glm::vec3(17,12,17)),SimpleBrush(6)), 1.0);
 	//liquidSpace->del(BoxContainmentHandler(BoundingBox(glm::vec3(-18,-5,-18),glm::vec3(18,12,18)),SimpleBrush(0)), 1.0);
 
-	//solidSpace->add(SphereContainmentHandler(BoundingSphere(glm::vec3(0,50,0),20), SimpleBrush(4)), 1.0);
+	
+	for(int x= -128; x < 128; ++x) {
+		solidSpace->add(SphereContainmentHandler(BoundingSphere(glm::vec3(x,512,0),32), SimpleBrush(3)), DirtyHandler(*this), 2.0);
+	}
+	solidSpace->del(SphereContainmentHandler(BoundingSphere(glm::vec3(0,512,0),64), SimpleBrush(4)), DirtyHandler(*this), 2.0);
+
 	//solidSpace->add(SphereContainmentHandler(BoundingSphere(glm::vec3(-11,61,11),10), SimpleBrush(5)), 1.0);
 	//solidSpace->del(SphereContainmentHandler(BoundingSphere(glm::vec3(11,61,-11),10), SimpleBrush(4)), 1.0);
 	//solidSpace->del(SphereContainmentHandler(BoundingSphere(glm::vec3(4,54,-4),8), SimpleBrush(1)), 1.0);
