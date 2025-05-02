@@ -28,36 +28,33 @@ Scene::Scene(Settings * settings) {
 
 }
 
-bool Scene::loadSpace(Octree * tree, OctreeNodeData &data, std::unordered_map<long, NodeInfo*> *infos, GeometryBuilder * builder) {	
-	if(data.node->dataId == 0) {
+bool Scene::loadSpace(Octree* tree, OctreeNodeData& data, std::unordered_map<long, NodeInfo>* infos, GeometryBuilder* builder) {
+	if (data.node->dataId == 0) {
 		data.node->dataId = ++tree->dataId;
 	}
 
-	auto it = infos->find(data.node->dataId);
-	if(it == infos->end()) {
-		InstanceGeometry * loadable = builder->build(data);
-		if(loadable) {
-			infos->try_emplace(data.node->dataId, new NodeInfo(loadable));
-			return true;
-		}
-	} else {
-		NodeInfo * ni = it->second;
-		if(ni->loadable) {
-			delete ni->loadable;
-			ni->loadable = NULL;
-		}
-		InstanceGeometry * loadable = builder->build(data);
-		if(loadable) {
-			ni->loadable = loadable;
-			return true;
-		}
-		else {
-			infos->erase(it);
-			delete ni;
-		}			
+	InstanceGeometry* loadable = builder->build(data);
+
+	if (!loadable) {
+		// No geometry to load — erase entry if it exists
+		infos->erase(data.node->dataId);
+		return false;
 	}
-	return false;
+
+	// Try to insert a new NodeInfo with loadable
+	auto [it, inserted] = infos->try_emplace(data.node->dataId, NodeInfo(loadable));
+	if (!inserted) {
+		// Already existed — replace existing loadable
+		if (it->second.loadable) {
+			delete it->second.loadable;
+		}
+		it->second.loadable = loadable;
+	}
+
+	return true;
 }
+
+
 
 bool Scene::processLiquid(OctreeNodeData &data) {
 	bool result = false;
@@ -146,23 +143,23 @@ void Scene::setVisibleNodes(Octree * tree, glm::mat4 viewProjection, glm::vec3 s
 	tree->iterateFlat(checker, chunkSize);	//here we get the visible nodes for that LOD + geometryLEvel
 }
 
-DrawableInstanceGeometry * Scene::loadIfNeeded(std::unordered_map<long, NodeInfo*> * infos, long index){
-    auto i = infos->find(index);
-    
-	NodeInfo * ni = i != infos->end() ? i->second : NULL;
-	if (ni != NULL) {
-		if(ni->loadable) {
-			if(ni->drawable) {
-				delete ni->drawable;
-			}
-    	    ni->drawable = new DrawableInstanceGeometry(ni->loadable->geometry, &ni->loadable->instances);
-			delete ni->loadable;
-			ni->loadable = NULL;
-		}
-		return ni->drawable;
+DrawableInstanceGeometry* Scene::loadIfNeeded(std::unordered_map<long, NodeInfo>* infos, long index) {
+	auto it = infos->find(index);
+	if (it == infos->end()) {
+		return nullptr;
 	}
-    return NULL;
+	NodeInfo& ni = it->second;
+	if (ni.loadable) {
+		if (ni.drawable) {
+			delete ni.drawable;
+		}
+		ni.drawable = new DrawableInstanceGeometry(ni.loadable->geometry, &ni.loadable->instances);
+		delete ni.loadable;
+		ni.loadable = nullptr;
+	}
+	return ni.drawable;
 }
+
 
 void Scene::draw (uint drawableType, int mode, glm::vec3 cameraPosition, const std::vector<OctreeNodeData> &list) {
 	for(const OctreeNodeData &data : list) {

@@ -180,10 +180,10 @@ MeshGeometryBuilder * liquidBuilder;
 VegetationGeometryBuilder * vegetationBuilder;
 OctreeGeometryBuilder * debugBuilder;
 
-std::unordered_map<long, NodeInfo*> solidInfo;
-std::unordered_map<long, NodeInfo*> liquidInfo;
-std::unordered_map<long, NodeInfo*> debugInfo;
-std::unordered_map<long, NodeInfo*> vegetationInfo;
+std::unordered_map<long, NodeInfo> solidInfo;
+std::unordered_map<long, NodeInfo> liquidInfo;
+std::unordered_map<long, NodeInfo> debugInfo;
+std::unordered_map<long, NodeInfo> vegetationInfo;
 
 
 		OctreeVisibilityChecker * solidRenderer;
@@ -191,7 +191,7 @@ std::unordered_map<long, NodeInfo*> vegetationInfo;
 		OctreeVisibilityChecker * shadowRenderer[SHADOW_MATRIX_COUNT];
 
 	Scene(Settings * settings);
-	DrawableInstanceGeometry * loadIfNeeded(std::unordered_map<long, NodeInfo*> * infos, long index);
+	DrawableInstanceGeometry * loadIfNeeded(std::unordered_map<long, NodeInfo> * infos, long index);
 
 
 
@@ -212,7 +212,7 @@ std::unordered_map<long, NodeInfo*> vegetationInfo;
 	void draw3dOctree(glm::vec3 cameraPosition, const std::vector<OctreeNodeData> &list);
 	void import(const std::string &filename, Camera &camera) ;
 	void generate(Camera &camera) ;
-	bool loadSpace(Octree * tree, OctreeNodeData &data, std::unordered_map<long, NodeInfo*> *infos, GeometryBuilder * builder);
+	bool loadSpace(Octree * tree, OctreeNodeData &data, std::unordered_map<long, NodeInfo> *infos, GeometryBuilder * builder);
 	void save(std::string folderPath, Camera &camera);
 	void load(std::string folderPath, Camera &camera);
 };
