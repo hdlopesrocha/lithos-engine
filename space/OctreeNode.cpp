@@ -7,7 +7,7 @@ OctreeNode::OctreeNode(Vertex vertex) {
 OctreeNode * OctreeNode::init(Vertex vertex) {
 	this->setSolid(false);
 	this->setSimplified(false);
-	this->setDirty(false);
+	this->setDirty(true);
 	this->vertex = vertex;
 	this->mask = 0x0;
 	this->dataId = 0;

@@ -139,7 +139,7 @@ class VegetationInstanceBuilder : public OctreeNodeTriangleHandler {
 	float scale;
 	
 	using OctreeNodeTriangleHandler::OctreeNodeTriangleHandler;
-	VegetationInstanceBuilder(Geometry * chunk,std::vector<InstanceData> * instances, int pointsPerTriangle, float scale);
+	VegetationInstanceBuilder(Geometry * chunk, long * count,std::vector<InstanceData> * instances, int pointsPerTriangle, float scale);
 	void handle(OctreeNode* c0,OctreeNode* c1,OctreeNode* c2, bool sign) override;
 
 };

@@ -347,7 +347,6 @@ public:
 		{
 			loadTexture(&atlasLayers, {"textures/vegetation/foliage_color.jpg", "textures/vegetation/foliage_normal.jpg", "textures/vegetation/foliage_opacity.jpg"}, billboardLayers.count, false);
 			AtlasTexture at = AtlasTexture();
-			
 			at.tiles.push_back(Tile(glm::vec2(1.0),glm::vec2(0.0)));
 			at.tiles.push_back(Tile(glm::vec2(0.15, 1.0),glm::vec2(0.0, 0.0)));
 			at.tiles.push_back(Tile(glm::vec2(0.15, 0.5),glm::vec2(0.15, 0.0)));
@@ -361,7 +360,7 @@ public:
 
 			//brushes.push_back(new Brush(at, glm::vec2(0.2), 0.02, 8, 32, 16,4, 10.0, 0.5 , 1.33));
 
-			AtlasParams ap(atlasTextures.size() ,atlasParams.size(), &at);
+			AtlasParams ap(atlasTextures.size() ,atlasParams.size());
 			ap.draws.push_back(TileDraw(0,glm::vec2(1), glm::vec2(0.5), glm::vec2(0.5), 0.5));
 			atlasParams.push_back(ap);
 
@@ -377,7 +376,7 @@ public:
 			AtlasTexture at = AtlasTexture();
 			at.tiles.push_back(Tile(glm::vec2(1.0),glm::vec2(0.0)));
 			
-			AtlasParams ap(atlasTextures.size() ,atlasParams.size(), &at);
+			AtlasParams ap(atlasTextures.size() ,atlasParams.size());
 			ap.draws.push_back(TileDraw(0,glm::vec2(1), glm::vec2(0.5), glm::vec2(0.5), 0.0));
 			atlasParams.push_back(ap);
 
@@ -436,13 +435,12 @@ public:
 		glUseProgram(programDeferred);
 		UniformBlockBrush::uniform(programDeferred, &billboardBrushes, "brushes", "brushTextures");
 
-
 		for(MixerParams &params : mixers) {
 			textureMixer->mix(params);
 		}
 
 		for(AtlasParams &params : atlasParams) {
-			atlasDrawer->draw(params);
+			atlasDrawer->draw(params, &atlasTextures);
 		}
 
 		for(ImpostorParams &params : impostors) {
@@ -700,7 +698,6 @@ public:
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		} 
 
-
 		if(settings->billboardEnabled) {
 			glUseProgram(programBillboard);
 			uniformBlock.set(BILLBOARD_FLAG, settings->billboardEnabled); 
@@ -947,6 +944,8 @@ public:
 			ImGui::Text("%ld/%ld vegetation instances", mainScene->vegetationInstancesVisible, mainScene->vegetationInfo.size());
 			ImGui::Text("%ld solid triangles", mainScene->solidTrianglesCount);
 			ImGui::Text("%ld liquid triangles", mainScene->liquidTrianglesCount);
+			ImGui::Text("%ld solid infos", mainScene->solidSpace->dataId);
+			ImGui::Text("%ld liquid infos", mainScene->liquidSpace->dataId);
 
 			size_t allocatedBlocks = mainScene->solidSpace->allocator.nodeAllocator.getAllocatedBlocksCount();
 			size_t blockSize = mainScene->solidSpace->allocator.nodeAllocator.getBlockSize();

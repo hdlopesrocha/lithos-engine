@@ -33,10 +33,10 @@ void AtlasViewer::draw2d(float time){
     int targetTexture = 0; //targetLayers has only one layer where the drawer is drawing the preview
     // TODO: change TexturePreviewer in order to draw without extra overhead TextureArray
 
-    AtlasParams params(selectedTexture, targetTexture, atlasTexture);
+    AtlasParams params(selectedTexture, targetTexture);
     params.draws.push_back(TileDraw(selectedTile, tile->size, tile->offset, glm::vec2(0), 0));
     
-    drawer->draw(params);
+    drawer->draw(params, atlasTextures);
     previewer->draw2d(params.targetTexture);
 
     ImGui::Text("Selected texture: %d/%ld ", selectedTexture, atlasTextures->size());
@@ -49,7 +49,7 @@ void AtlasViewer::draw2d(float time){
         ++selectedTexture;
     }
 
-    ImGui::Text("Selected tile: %d/%ld ", selectedTile, params.atlasTexture->tiles.size());
+    ImGui::Text("Selected tile: %d/%ld ", selectedTile, atlasTexture->tiles.size());
     ImGui::SameLine();
     if (ImGui::ArrowButton("##selectedTile_left", ImGuiDir_Left)) {
         --selectedTile;

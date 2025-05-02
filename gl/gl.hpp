@@ -364,12 +364,11 @@ class AtlasTexture {
 
 struct AtlasParams {
     public:
-    AtlasTexture * atlasTexture;
     int targetTexture = 0;
     int sourceTexture = 0;
     std::vector<TileDraw> draws;
     AtlasParams();
-    AtlasParams(int sourceTexture, int targetTexture, AtlasTexture * atlasTexture);
+    AtlasParams(int sourceTexture, int targetTexture);
 
 };
 
@@ -390,7 +389,7 @@ class AtlasDrawer {
     public:
     bool filterEnabled = true;
     AtlasDrawer(GLuint program, int width, int height, TextureLayers * sourceLayers, TextureLayers * targetLayers, TextureBlitter * blitter);
-    void draw(AtlasParams &params);
+    void draw(AtlasParams &params, std::vector<AtlasTexture> *textures);
 };
 
 class ImpostorParams {

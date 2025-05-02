@@ -31,30 +31,30 @@ Scene::Scene(Settings * settings) {
 bool Scene::loadSpace(Octree * tree, OctreeNodeData &data, std::unordered_map<long, NodeInfo*> *infos, GeometryBuilder * builder) {	
 	if(data.node->dataId == 0) {
 		data.node->dataId = ++tree->dataId;
+	}
+
+	auto it = infos->find(data.node->dataId);
+	if(it == infos->end()) {
 		InstanceGeometry * loadable = builder->build(data);
 		if(loadable) {
 			infos->try_emplace(data.node->dataId, new NodeInfo(loadable));
 			return true;
 		}
-	} else if(data.node->isDirty()) {
-		data.node->setDirty(false);
-		auto it = infos->find(data.node->dataId);
-		if(it != infos->end()) {
-			NodeInfo * ni = it->second;
-			if(ni->loadable) {
-				delete ni->loadable;
-				ni->loadable = NULL;
-			}
-			InstanceGeometry * loadable = builder->build(data);
-			if(loadable) {
-				ni->loadable = loadable;
-				return true;
-			}
-			else {
-				infos->erase(it);
-				delete ni;
-			}			
+	} else {
+		NodeInfo * ni = it->second;
+		if(ni->loadable) {
+			delete ni->loadable;
+			ni->loadable = NULL;
 		}
+		InstanceGeometry * loadable = builder->build(data);
+		if(loadable) {
+			ni->loadable = loadable;
+			return true;
+		}
+		else {
+			infos->erase(it);
+			delete ni;
+		}			
 	}
 	return false;
 }
@@ -69,11 +69,14 @@ void Scene::processSpace() {
 
 	for(OctreeNodeData &data : visibleSolidNodes){
 		if(loadCountSolid > 0) {
-			if(loadSpace(solidSpace, data, &solidInfo, solidBuilder)) {
-				--loadCountSolid;
-			}
-			if(loadSpace(solidSpace, data, &vegetationInfo, vegetationBuilder)) {
-				--loadCountSolid;
+			if(data.node->isDirty()) {
+				data.node->setDirty(false);
+				if(loadSpace(solidSpace, data, &solidInfo, solidBuilder)) {
+					--loadCountSolid;
+				}
+				if(loadSpace(solidSpace, data, &vegetationInfo, vegetationBuilder)) {
+					--loadCountSolid;
+				}
 			}
 		} else {
 			break;
@@ -82,11 +85,14 @@ void Scene::processSpace() {
 
 	for(OctreeNodeData &data : visibleLiquidNodes){
 		if(loadCountLiquid > 0) {
-			if(loadSpace(liquidSpace, data, &debugInfo, debugBuilder)) {
-				--loadCountLiquid;			
-			}
-			if(loadSpace(liquidSpace, data, &liquidInfo, liquidBuilder)) {
-				--loadCountLiquid;
+			if(data.node->isDirty()) {
+				data.node->setDirty(false);
+				if(loadSpace(liquidSpace, data, &debugInfo, debugBuilder)) {
+					--loadCountLiquid;			
+				}
+				if(loadSpace(liquidSpace, data, &liquidInfo, liquidBuilder)) {
+					--loadCountLiquid;
+				}
 			}
 		} else {
 			break;
@@ -97,11 +103,14 @@ void Scene::processSpace() {
 		std::vector<OctreeNodeData> &vec = visibleShadowNodes[i];
 		for(OctreeNodeData &data : vec) {
 			if(loadCountSolid > 0) {
-				if(loadSpace(solidSpace, data, &solidInfo, solidBuilder)){
-					--loadCountSolid;
-				}
-				if(loadSpace(solidSpace, data, &vegetationInfo, vegetationBuilder)) {
-					--loadCountSolid;
+				if(data.node->isDirty()) {
+					data.node->setDirty(false);
+					if(loadSpace(solidSpace, data, &solidInfo, solidBuilder)){
+						--loadCountSolid;
+					}
+					if(loadSpace(solidSpace, data, &vegetationInfo, vegetationBuilder)) {
+						--loadCountSolid;
+					}
 				}
 			}
 			else {
@@ -158,7 +167,7 @@ void Scene::draw (uint drawableType, int mode, glm::vec3 cameraPosition, const s
 					if(amount > 0.8){
 						amount = 1.0;
 					}
-					std::cout << "Scene.draw() " << std::to_string(drawableType) << "|" << std::to_string(amount) << std::endl;
+					//std::cout << "Scene.draw() " << std::to_string(drawableType) << "|" << std::to_string(amount) << std::endl;
 					drawable->draw(mode, amount, &vegetationInstancesVisible);
 				}
 			}else if(drawableType == TYPE_INSTANCE_SOLID_DRAWABLE) {

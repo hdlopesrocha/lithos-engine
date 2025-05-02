@@ -21,13 +21,12 @@ AtlasParams::AtlasParams(){
 
 };
 
- AtlasParams::AtlasParams(int sourceTexture, int targetTexture, AtlasTexture * atlasTexture){
+ AtlasParams::AtlasParams(int sourceTexture, int targetTexture){
     this->targetTexture = targetTexture;
     this->sourceTexture = sourceTexture;
-    this->atlasTexture = atlasTexture;
  }
 
-void AtlasDrawer::draw(AtlasParams &params){
+void AtlasDrawer::draw(AtlasParams &params, std::vector<AtlasTexture> *textures){
 
     glUseProgram(program);
 
@@ -49,7 +48,7 @@ void AtlasDrawer::draw(AtlasParams &params){
     glBindVertexArray(viewVao);
     
     for(TileDraw &tileDraw : params.draws) {
-        AtlasTexture * atlas = params.atlasTexture;
+        AtlasTexture * atlas = &(*textures)[params.sourceTexture];
         uint tileIndex = Math::mod(tileDraw.index, atlas->tiles.size());
 
 

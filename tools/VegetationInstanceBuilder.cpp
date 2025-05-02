@@ -40,7 +40,7 @@ glm::vec3 randomPointInTriangle(const glm::vec3& A, const glm::vec3& B, const gl
 }
 
 
-VegetationInstanceBuilder::VegetationInstanceBuilder(Geometry * chunk, std::vector<InstanceData> * instances, int pointsPerTriangle, float scale) : OctreeNodeTriangleHandler(chunk, count){
+VegetationInstanceBuilder::VegetationInstanceBuilder(Geometry * chunk, long * count,std::vector<InstanceData> * instances, int pointsPerTriangle, float scale) : OctreeNodeTriangleHandler(chunk, count){
     this->instances = instances;
     this->pointsPerTriangle = pointsPerTriangle;
     this->scale = scale;

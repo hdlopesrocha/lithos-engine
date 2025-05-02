@@ -29,13 +29,13 @@ void AtlasPainter::draw2d(float time){
     AtlasParams * params = &(*atlasParams)[selectedDrawer];
 
     params->sourceTexture = Math::mod(params->sourceTexture, atlasParams->size());
-    AtlasTexture * atlas = params->atlasTexture;
+    AtlasTexture * atlas = &(*atlasTextures)[params->sourceTexture];
 
     selectedDraw = Math::mod(selectedDraw, params->draws.size());
     TileDraw * tileDraw = &params->draws[selectedDraw];
 
     
-    atlasDrawer->draw(*params);
+    atlasDrawer->draw(*params, atlasTextures);
     previewer->draw2d(params->targetTexture);
 
     ImGui::Text("Selected texture: %d/%ld ", params->sourceTexture, atlasParams->size());
