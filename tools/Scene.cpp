@@ -18,7 +18,7 @@ Scene::Scene(Settings * settings) {
 	solidBuilder = new MeshGeometryBuilder(&solidTrianglesCount, solidSpace, 0.99, 0.1, true);
 	liquidBuilder = new MeshGeometryBuilder(&liquidTrianglesCount, liquidSpace, 0.99, 0.1, true);
 	vegetationBuilder = new VegetationGeometryBuilder(solidSpace, new VegetationInstanceBuilderHandler(solidSpace, 32, 4));
-	debugBuilder = new OctreeGeometryBuilder(liquidSpace, new OctreeInstanceBuilderHandler());
+	debugBuilder = new OctreeGeometryBuilder(solidSpace, new OctreeInstanceBuilderHandler());
 
 	solidRenderer = new OctreeVisibilityChecker(&visibleSolidNodes);
 	liquidRenderer = new OctreeVisibilityChecker(&visibleLiquidNodes);
@@ -59,9 +59,6 @@ bool Scene::processLiquid(OctreeNodeData &data) {
 	bool result = false;
 	if(data.node->isDirty()) {
 		data.node->setDirty(false);
-		if(loadSpace(liquidSpace, data, &debugInfo, debugBuilder)) {
-			result = true;			
-		}
 		if(loadSpace(liquidSpace, data, &liquidInfo, liquidBuilder)) {
 			result = true;			
 		}
@@ -77,6 +74,9 @@ bool Scene::processSolid(OctreeNodeData &data) {
 			result = true;			
 		}
 		if(loadSpace(solidSpace, data, &vegetationInfo, vegetationBuilder)) {
+			result = true;			
+		}
+		if(loadSpace(solidSpace, data, &debugInfo, debugBuilder)) {
 			result = true;			
 		}
 	}

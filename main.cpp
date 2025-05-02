@@ -663,11 +663,11 @@ public:
 		glDepthMask(GL_TRUE);  // Enable depth writing
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		glUseProgram(program3d);
-		uniformBlock.set(BILLBOARD_FLAG, false); 
-		uniformBlock.set(OPACITY_FLAG, false);
-		UniformBlock::uniform(0, &uniformBlock, sizeof(UniformBlock), uniformBlockData);
 		if(settings->solidEnabled) {
+			glUseProgram(program3d);
+			uniformBlock.set(BILLBOARD_FLAG, false); 
+			uniformBlock.set(OPACITY_FLAG, false);
+			UniformBlock::uniform(0, &uniformBlock, sizeof(UniformBlock), uniformBlockData);
 			mainScene->draw3dSolid(camera.position, mainScene->visibleSolidNodes);
 		}
 
@@ -706,19 +706,19 @@ public:
 			mainScene->drawVegetation(camera.position, mainScene->visibleSolidNodes);
 		}
 
-		glUseProgram(program3d);
-		uniformBlock.set(BILLBOARD_FLAG, false); 
-		uniformBlock.set(TESSELATION_FLAG, settings->tesselationEnabled);
-		uniformBlock.set(OPACITY_FLAG, false);
-		UniformBlock::uniform(0, &uniformBlock, sizeof(UniformBlock), uniformBlockData);
 		if(settings->solidEnabled) {
+			glUseProgram(program3d);
+			uniformBlock.set(BILLBOARD_FLAG, false); 
+			uniformBlock.set(TESSELATION_FLAG, settings->tesselationEnabled);
+			uniformBlock.set(OPACITY_FLAG, false);
+			UniformBlock::uniform(0, &uniformBlock, sizeof(UniformBlock), uniformBlockData);
 			mainScene->draw3dSolid(camera.position, mainScene->visibleSolidNodes);
 		}
 
-		glUseProgram(programDebug);
-		UniformBlock::uniform(0, &uniformBlock, sizeof(UniformBlock), uniformBlockData);
 		if(settings->octreeWireframe) {
-			mainScene->draw3dOctree(camera.position, mainScene->visibleLiquidNodes);
+			glUseProgram(programDebug);
+			UniformBlock::uniform(0, &uniformBlock, sizeof(UniformBlock), uniformBlockData);
+			mainScene->draw3dOctree(camera.position, mainScene->visibleSolidNodes);
 		}
 
 		if(settings->wireFrameEnabled) {
@@ -744,8 +744,8 @@ public:
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		} 
 
-		UniformBlock::uniform(0, &uniformBlock, sizeof(UniformBlock), uniformBlockData);
 		if(settings->liquidEnabled) {
+			UniformBlock::uniform(0, &uniformBlock, sizeof(UniformBlock), uniformBlockData);
 			mainScene->draw3dLiquid(camera.position, mainScene->visibleLiquidNodes);
 		}
 
