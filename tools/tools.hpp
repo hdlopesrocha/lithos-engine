@@ -122,9 +122,8 @@ class VegetationGeometryBuilder : public GeometryBuilder {
 class OctreeGeometryBuilder : public GeometryBuilder {
     public:
     Geometry * geometry;
-    Octree * tree;
     InstanceBuilderHandler * handler;
-    OctreeGeometryBuilder(Octree * tree, InstanceBuilderHandler * handler);
+    OctreeGeometryBuilder(InstanceBuilderHandler * handler);
     ~OctreeGeometryBuilder();
 
     InstanceGeometry * build(OctreeNodeData &params) override;
@@ -206,8 +205,8 @@ std::unordered_map<long, NodeInfo> vegetationInfo;
 
 
 	void processSpace();
-	bool processLiquid(OctreeNodeData &data);
-	bool processSolid(OctreeNodeData &data);
+	bool processLiquid(OctreeNodeData &data, Octree * tree);
+	bool processSolid(OctreeNodeData &data, Octree * tree);
 
 
 	void setVisibility(glm::mat4 viewProjection, std::vector<std::pair<glm::mat4, glm::vec3>> lightProjection ,Camera &camera);

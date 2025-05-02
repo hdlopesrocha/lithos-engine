@@ -10,7 +10,6 @@ void OctreeInstanceBuilderHandler::handle(OctreeNodeData &data, std::vector<Inst
 		glm::mat4 mat(1.0);
 		mat = glm::translate(mat, data.cube.getMin());
 		mat = glm::scale(mat, data.cube.getLength());
-		InstanceData instance(0u, mat , 0.0f);
-		instances->push_back(instance);
+		instances->push_back(InstanceData(0u, mat , 0.0f));
 	}
 }
