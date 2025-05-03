@@ -7,9 +7,7 @@ InstanceBuilder::InstanceBuilder(InstanceBuilderHandler * handler, std::vector<I
 }
 
 void InstanceBuilder::before(OctreeNodeData &params) {		
-	if(params.node->isLeaf()){
-		handler->handle(params, instances);
-	}
+	handler->handle(params, instances);
 }
 
 void InstanceBuilder::after(OctreeNodeData &params) {			

@@ -264,20 +264,17 @@ void Scene::generate(Camera &camera) {
 	for(int x= -128; x < 128; ++x) {
 		solidSpace->add(SphereContainmentHandler(BoundingSphere(glm::vec3(x,512,0),32), SimpleBrush(3)), DirtyHandler(*this), 2.0);
 	}
-	solidSpace->del(SphereContainmentHandler(BoundingSphere(glm::vec3(0,512,0),64), SimpleBrush(4)), DirtyHandler(*this), 2.0);
+	solidSpace->del(SphereContainmentHandler(BoundingSphere(glm::vec3(0,512,0),128), SimpleBrush(4)), DirtyHandler(*this), 2.0);
 
 	//solidSpace->add(SphereContainmentHandler(BoundingSphere(glm::vec3(-11,61,11),10), SimpleBrush(5)), 1.0);
 	//solidSpace->del(SphereContainmentHandler(BoundingSphere(glm::vec3(11,61,-11),10), SimpleBrush(4)), 1.0);
 	//solidSpace->del(SphereContainmentHandler(BoundingSphere(glm::vec3(4,54,-4),8), SimpleBrush(1)), 1.0);
 
-
 	//liquidSpace->add(SphereContainmentHandler(BoundingSphere(glm::vec3(11,61,-11),4), SimpleBrush(0)));
 	BoundingBox waterBox = mapBox;
 	waterBox.setMaxY(0);
 	liquidSpace->add(OctreeContainmentHandler(solidSpace, waterBox, WaterBrush(0)), DirtyHandler(*this), minSize);
-
 }
-
 
 void Scene::import(const std::string &filename, Camera &camera) {
 	int sizePerTile = 30;
@@ -304,9 +301,7 @@ void Scene::import(const std::string &filename, Camera &camera) {
 	waterBox.setMaxY(0);
 	
 	liquidSpace->add(OctreeContainmentHandler(solidSpace, waterBox, WaterBrush(0)), DirtyHandler(*this), minSize);
-
 }
-
 
 void Scene::save(std::string folderPath, Camera &camera) {
 	OctreeFile saver1(solidSpace, "solid", 9);

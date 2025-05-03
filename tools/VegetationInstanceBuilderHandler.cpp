@@ -9,7 +9,7 @@ VegetationInstanceBuilderHandler::VegetationInstanceBuilderHandler(Octree * tree
 
 void VegetationInstanceBuilderHandler::handle(OctreeNodeData &data, std::vector<InstanceData> * instances){
 	Vertex * vertex = &data.node->vertex;
-	if(vertex->brushIndex == 2) { 
+	if(data.node->isLeaf() && vertex->brushIndex == 2) { 
 		long count = 0;
 		VegetationInstanceBuilder handler(&count , instances, pointsPerTriangle, scale);
 		tree->handleQuadNodes(data, &handler, false);

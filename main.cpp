@@ -105,7 +105,8 @@ public:
 		glDepthFunc(GL_LEQUAL);
 		glClearDepth(1.0f);
 		glEnable(GL_DEPTH_CLAMP);
-		
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glEnable(GL_BLEND);
 		std::cout << "sizeof(Vertex) = " << sizeof(Vertex) << std::endl; 
 		std::cout << "sizeof(OctreeNode) = " << sizeof(OctreeNode) << std::endl; 
 		std::cout << "sizeof(ChildBlock) = " << sizeof(ChildBlock) << std::endl; 

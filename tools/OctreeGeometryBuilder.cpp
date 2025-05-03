@@ -15,11 +15,11 @@ InstanceGeometry * OctreeGeometryBuilder::build(OctreeNodeData &params){
     InstanceBuilder instanceBuilder(handler, &instances);
     instanceBuilder.iterateFlatIn(params);
 	
-    glm::mat4 mat(1.0);
-	mat = glm::translate(mat, params.cube.getMin());
-	mat = glm::scale(mat, params.cube.getLength());
+    //glm::mat4 mat(1.0);
+	//mat = glm::translate(mat, params.cube.getMin());
+	//mat = glm::scale(mat, params.cube.getLength());
 	
-	instances.push_back(InstanceData(0u, mat , 0.0f));
+	//instances.push_back(InstanceData(0u, mat , 0.0f));
 
     return new InstanceGeometry(geometry, instances);
 }

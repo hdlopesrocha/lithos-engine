@@ -201,16 +201,11 @@ std::unordered_map<long, NodeInfo> vegetationInfo;
 	Scene(Settings * settings);
 	DrawableInstanceGeometry * loadIfNeeded(std::unordered_map<long, NodeInfo> * infos, long index);
 
-
-
-
 	void processSpace();
 	bool processLiquid(OctreeNodeData &data, Octree * tree);
 	bool processSolid(OctreeNodeData &data, Octree * tree);
 
-
 	void setVisibility(glm::mat4 viewProjection, std::vector<std::pair<glm::mat4, glm::vec3>> lightProjection ,Camera &camera);
-
 	void setVisibleNodes(Octree * tree, glm::mat4 viewProjection, glm::vec3 sortPosition, OctreeVisibilityChecker &checker);
 
 	void draw (uint drawableType, int mode, glm::vec3 cameraPosition, const std::vector<OctreeNodeData> &list);
