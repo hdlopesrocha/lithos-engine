@@ -13,12 +13,6 @@
 #define DEBUG 1
 #define NDEBUG 1
 
-
-#define TYPE_INSTANCE_VEGETATION_DRAWABLE 0x1
-#define TYPE_INSTANCE_SOLID_DRAWABLE 0x2
-#define TYPE_INSTANCE_LIQUID_DRAWABLE 0x4
-#define TYPE_INSTANCE_OCTREE_DRAWABLE 0x8
-
 #include "../math/math.hpp"
 #include "../space/space.hpp"
 

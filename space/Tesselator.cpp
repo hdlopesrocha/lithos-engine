@@ -13,7 +13,7 @@ void Tesselator::virtualize(OctreeNodeData &params, int levels) {
     if(levels > 0) {
         for(int i = 7 ; i >= 0 ; --i) {
             BoundingCube c = params.cube.getChild(i);
-            //if(p.test(c) == ContainmentType::Disjoint) {
+            //if(p.test(c) != ContainmentType::Disjoint) {
                 OctreeNodeData p(params);
                 p.cube = c;
                 p.level = params.level + 1;
@@ -26,12 +26,14 @@ void Tesselator::virtualize(OctreeNodeData &params, int levels) {
 }
 
 void Tesselator::before(OctreeNodeData &params) {		
+    /*if(params.node->isSimplified()) {
+        int levels = tree->getMaxLevel(params.node, 0);
+		virtualize(params, levels);
+    	//tree->handleQuadNodes(params , this, true);
+	}*/
     if(params.node->isLeaf()) {
-       // int levels = tree->getMaxLevel(params.node, 0);
-	//	virtualize(params, levels);
-    		tree->handleQuadNodes(params , this, true);
-
-	}
+       	tree->handleQuadNodes(params , this, true);
+    }
 }
 
 void Tesselator::after(OctreeNodeData &params) {
@@ -72,8 +74,6 @@ glm::vec2 triplanarMapping(glm::vec3 position, int plane) {
 }
 
 int addTriangle(OctreeNode* c0, OctreeNode* c1, OctreeNode* c2, Geometry * chunk, bool reverse, bool triplanar, float triplanarScale) {
-   
-
     int count = 0;
     if(c0 != NULL && c1 != NULL && c2!=NULL) {
         Vertex v0 = c0->vertex;

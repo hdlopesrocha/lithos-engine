@@ -474,11 +474,14 @@ public:
 		ImGui_ImplGlfw_InitForOpenGL(getWindow(), true);
 		ImGui_ImplOpenGL3_Init("#version 460");
 
+
+		mainScene->generate(camera);
 	}
+
+
 
 	virtual void update(float deltaTime){
 		time += deltaTime;
-
 		gamepadControllerStrategy->handleInput(deltaTime);
 		keyboardControllerStrategy->handleInput(deltaTime);
 	//    camera.projection[1][1] *= -1;
@@ -551,6 +554,9 @@ public:
 		}
 	}
 
+	float processTime = 0;
+
+
     virtual void draw3d() {
 		// Convert quaternion to rotation matrix
 		glm::mat4 rotate = glm::mat4_cast(glm::normalize(camera.quaternion)); 
@@ -584,7 +590,12 @@ public:
 		glm::mat4 viewProjection = camera.getViewProjection();
 
 		mainScene->setVisibility(viewProjection, shadowMatrices, camera);
-		mainScene->processSpace();
+
+        double startTime = glfwGetTime(); // Get elapsed time in seconds
+		if(mainScene->processSpace()) {
+	        double endTime = glfwGetTime(); // Get elapsed time in seconds
+			processTime += endTime - startTime;
+		}
 		glPolygonMode(GL_FRONT, GL_FILL);
 		glPatchParameteri(GL_PATCH_VERTICES, 3); // Define the number of control points per patch
 		glEnable(GL_CULL_FACE);
@@ -947,6 +958,7 @@ public:
 			ImGui::Text("%ld liquid triangles", mainScene->liquidTrianglesCount);
 			ImGui::Text("%ld solid datas", mainScene->solidSpace->dataId);
 			ImGui::Text("%ld liquid datas", mainScene->liquidSpace->dataId);
+			ImGui::Text("%f process time", processTime);
 
 			size_t allocatedBlocks = mainScene->solidSpace->allocator.nodeAllocator.getAllocatedBlocksCount();
 			size_t blockSize = mainScene->solidSpace->allocator.nodeAllocator.getBlockSize();

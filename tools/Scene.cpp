@@ -83,7 +83,7 @@ bool Scene::processSolid(OctreeNodeData &data, Octree * tree) {
 	return result;
 }
 
-void Scene::processSpace() {
+bool Scene::processSpace() {
 	// Set load counts per Processor
 	solidInstancesVisible = 0;
 	liquidInstancesVisible = 0;
@@ -123,6 +123,8 @@ void Scene::processSpace() {
 			}
 		}
 	}
+
+	return loadCountSolid <=0 || loadCountLiquid <=0;
 }
 
 void Scene::setVisibility(glm::mat4 viewProjection, std::vector<std::pair<glm::mat4, glm::vec3>> lightProjection ,Camera &camera) {

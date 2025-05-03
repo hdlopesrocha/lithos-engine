@@ -1,5 +1,11 @@
 #ifndef TOOLS_HPP
 #define TOOLS_HPP
+
+#define TYPE_INSTANCE_VEGETATION_DRAWABLE 0x1
+#define TYPE_INSTANCE_SOLID_DRAWABLE 0x2
+#define TYPE_INSTANCE_LIQUID_DRAWABLE 0x4
+#define TYPE_INSTANCE_OCTREE_DRAWABLE 0x8
+
 #include "../gl/gl.hpp"
 #include "../space/space.hpp"
 #include <algorithm>
@@ -9,7 +15,6 @@ class WaveSurface : public HeightFunction {
     float amplitude;// = 10;
     float offset;// = -36;
     float frequency;// = 1.0/10.0;
-
 
 	WaveSurface(float amplitude, float offset , float frequency);
 
@@ -61,8 +66,6 @@ class SimpleBrush : public TexturePainter {
 	void paint(Vertex &vertex) const override;
 };
 
-
-
 class WaterBrush : public TexturePainter {
 	int water;
 
@@ -70,7 +73,6 @@ class WaterBrush : public TexturePainter {
 	WaterBrush(int water);
 	void paint(Vertex &vertex) const override;
 };
-
 
 class OctreeContainmentHandler : public ContainmentHandler {
 	public:
@@ -97,7 +99,6 @@ class VegetationInstanceBuilderHandler : public InstanceBuilderHandler {
 	void handle(OctreeNodeData &data, std::vector<InstanceData> * instances) override;
 };
 
-
 class OctreeInstanceBuilderHandler : public InstanceBuilderHandler {
 	public:
 
@@ -105,7 +106,6 @@ class OctreeInstanceBuilderHandler : public InstanceBuilderHandler {
 
 	void handle(OctreeNodeData &data, std::vector<InstanceData> * instances) override;
 };
-
 
 class VegetationGeometryBuilder : public GeometryBuilder {
     public:
@@ -131,7 +131,6 @@ class OctreeGeometryBuilder : public GeometryBuilder {
 };
 
 class VegetationInstanceBuilder : public OctreeNodeTriangleHandler {
-
 	public: 
 	std::vector<InstanceData> * instances;
     int pointsPerTriangle;
@@ -140,7 +139,6 @@ class VegetationInstanceBuilder : public OctreeNodeTriangleHandler {
 	using OctreeNodeTriangleHandler::OctreeNodeTriangleHandler;
 	VegetationInstanceBuilder(long * count,std::vector<InstanceData> * instances, int pointsPerTriangle, float scale);
 	void handle(OctreeNode* c0,OctreeNode* c1,OctreeNode* c2, bool sign) override;
-
 };
 
 struct NodeInfo {
@@ -162,46 +160,41 @@ struct NodeInfo {
 	}
 };
 
-
 class Scene {
-
     public: 
+	Octree * solidSpace;
+	Octree * liquidSpace;
 
-    	Octree * solidSpace;
-	    Octree * liquidSpace;
+	long solidTrianglesCount;
+	long liquidTrianglesCount;
+	long solidInstancesVisible;
+	long liquidInstancesVisible;
+	long vegetationInstancesVisible;
 
-		long solidTrianglesCount;
-		long liquidTrianglesCount;
-		long solidInstancesVisible;
-		long liquidInstancesVisible;
-		long vegetationInstancesVisible;
+	std::vector<OctreeNodeData> visibleSolidNodes;
+	std::vector<OctreeNodeData> visibleLiquidNodes;
+	std::vector<OctreeNodeData> visibleShadowNodes[SHADOW_MATRIX_COUNT];
+	Settings * settings;
+	float chunkSize;
 
-		std::vector<OctreeNodeData> visibleSolidNodes;
-		std::vector<OctreeNodeData> visibleLiquidNodes;
-		std::vector<OctreeNodeData> visibleShadowNodes[SHADOW_MATRIX_COUNT];
-		Settings * settings;
-		float chunkSize;
+	MeshGeometryBuilder * solidBuilder;
+	MeshGeometryBuilder * liquidBuilder;
+	VegetationGeometryBuilder * vegetationBuilder;
+	OctreeGeometryBuilder * debugBuilder;
 
+	std::unordered_map<long, NodeInfo> solidInfo;
+	std::unordered_map<long, NodeInfo> liquidInfo;
+	std::unordered_map<long, NodeInfo> debugInfo;
+	std::unordered_map<long, NodeInfo> vegetationInfo;
 
-MeshGeometryBuilder * solidBuilder;
-MeshGeometryBuilder * liquidBuilder;
-VegetationGeometryBuilder * vegetationBuilder;
-OctreeGeometryBuilder * debugBuilder;
-
-std::unordered_map<long, NodeInfo> solidInfo;
-std::unordered_map<long, NodeInfo> liquidInfo;
-std::unordered_map<long, NodeInfo> debugInfo;
-std::unordered_map<long, NodeInfo> vegetationInfo;
-
-
-		OctreeVisibilityChecker * solidRenderer;
-		OctreeVisibilityChecker * liquidRenderer;
-		OctreeVisibilityChecker * shadowRenderer[SHADOW_MATRIX_COUNT];
+	OctreeVisibilityChecker * solidRenderer;
+	OctreeVisibilityChecker * liquidRenderer;
+	OctreeVisibilityChecker * shadowRenderer[SHADOW_MATRIX_COUNT];
 
 	Scene(Settings * settings);
 	DrawableInstanceGeometry * loadIfNeeded(std::unordered_map<long, NodeInfo> * infos, long index);
 
-	void processSpace();
+	bool processSpace();
 	bool processLiquid(OctreeNodeData &data, Octree * tree);
 	bool processSolid(OctreeNodeData &data, Octree * tree);
 
@@ -221,72 +214,60 @@ std::unordered_map<long, NodeInfo> vegetationInfo;
 };
 
 class DirtyHandler : public OctreeNodeDirtyHandler {
-
 	Scene &scene;
-
 	public:
 	DirtyHandler(Scene &scene) : scene(scene){
 
 	}
 
-
-
-
 	void handle(OctreeNode * node) const {
 		node->setDirty(true);
 	};
-
 };
 
 template <typename T> class Seriallizer {
 	public:
 
-		static void serialize(std::string filename, std::vector<T> &list){
-			std::ofstream file = std::ofstream(filename, std::ios::binary);
-			if (!file) {
-				std::cerr << "Error opening file for writing: " << filename << std::endl;
-				return;
-			}
-		
-			size_t size = list.size();
-			//std::cout << std::to_string(sizeof(OctreeNodeSerialized)) << " bytes/node" << std::endl;
-			std::ostringstream decompressed;
-			decompressed.write(reinterpret_cast<const char*>(&size), sizeof(size_t) );
-			for(size_t i =0 ; i < size ; ++i) {
-				decompressed.write(reinterpret_cast<const char*>(&list.data()[i]), sizeof(T) );
-			}	
-			std::istringstream inputStream(decompressed.str());
-			 gzipCompressToOfstream(inputStream, file);
-			file.close();
-			std::cout << "T::serialize('" << filename <<"'," << std::to_string(size) <<") Ok!" << std::endl;
+	static void serialize(std::string filename, std::vector<T> &list){
+		std::ofstream file = std::ofstream(filename, std::ios::binary);
+		if (!file) {
+			std::cerr << "Error opening file for writing: " << filename << std::endl;
+			return;
 		}
-		
-		static void deserialize(std::string filename, std::vector<T> &list){
-			std::ifstream file = std::ifstream(filename, std::ios::binary);
-			if (!file) {
-				std::cerr << "Error opening file for reading: " << filename << std::endl;
-				return;
-			}
-		
-			std::stringstream decompressed = gzipDecompressFromIfstream(file);
-		
-			size_t size;
-			decompressed.read(reinterpret_cast<char*>(&size), sizeof(size_t) );
-			list.resize(size);
-			for(size_t i =0 ; i < size ; ++i) {
-				decompressed.read(reinterpret_cast<char*>(&list.data()[i]), sizeof(T));
-			}
-		
-			file.close();
-			std::cout << "T::deserialize('" << filename <<"'," << std::to_string(size) <<") Ok!" << std::endl;
+	
+		size_t size = list.size();
+		//std::cout << std::to_string(sizeof(OctreeNodeSerialized)) << " bytes/node" << std::endl;
+		std::ostringstream decompressed;
+		decompressed.write(reinterpret_cast<const char*>(&size), sizeof(size_t) );
+		for(size_t i =0 ; i < size ; ++i) {
+			decompressed.write(reinterpret_cast<const char*>(&list.data()[i]), sizeof(T) );
+		}	
+		std::istringstream inputStream(decompressed.str());
+			gzipCompressToOfstream(inputStream, file);
+		file.close();
+		std::cout << "T::serialize('" << filename <<"'," << std::to_string(size) <<") Ok!" << std::endl;
+	}
+	
+	static void deserialize(std::string filename, std::vector<T> &list){
+		std::ifstream file = std::ifstream(filename, std::ios::binary);
+		if (!file) {
+			std::cerr << "Error opening file for reading: " << filename << std::endl;
+			return;
 		}
-		
-
-
-
-
+	
+		std::stringstream decompressed = gzipDecompressFromIfstream(file);
+	
+		size_t size;
+		decompressed.read(reinterpret_cast<char*>(&size), sizeof(size_t) );
+		list.resize(size);
+		for(size_t i =0 ; i < size ; ++i) {
+			decompressed.read(reinterpret_cast<char*>(&list.data()[i]), sizeof(T));
+		}
+	
+		file.close();
+		std::cout << "T::deserialize('" << filename <<"'," << std::to_string(size) <<") Ok!" << std::endl;
+	}
 };
-
 
 class EnvironmentFile {
 	public:
