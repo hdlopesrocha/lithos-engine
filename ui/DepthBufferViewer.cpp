@@ -24,7 +24,6 @@ void DepthBufferViewer::draw2d(float time){
     glUniform1f(glGetUniformLocation(program, "near"), camera->near); 
     glUniform1f(glGetUniformLocation(program, "far"), camera->far); 
     glBindVertexArray(previewVao);
-    glDisable(GL_CULL_FACE);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
 

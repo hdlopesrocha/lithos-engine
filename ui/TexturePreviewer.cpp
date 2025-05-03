@@ -20,7 +20,6 @@ void TexturePreviewer::draw2d(int index){
     glViewport(0, 0, previewBuffer.width, previewBuffer.height); 
 	glClearColor (0.0,0.0,0.0,0.0);    
     glClear(GL_COLOR_BUFFER_BIT);
-    glDisable(GL_CULL_FACE);
     
     for(size_t i = 0; i < layerNames.size() ; ++i) {
         glActiveTexture(GL_TEXTURE0+ i); 

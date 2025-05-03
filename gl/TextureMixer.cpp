@@ -20,7 +20,6 @@ void TextureMixer::mix(MixerParams &params){
     glBindFramebuffer(GL_FRAMEBUFFER, textureMixerBuffer.frameBuffer);
     glViewport(0, 0, textureMixerBuffer.width, textureMixerBuffer.height);
     glClear(GL_COLOR_BUFFER_BIT);
-    glDisable(GL_CULL_FACE);
     
 
     for(int i = 0; i < TEXTURE_TYPE_COUNT ; ++i) {

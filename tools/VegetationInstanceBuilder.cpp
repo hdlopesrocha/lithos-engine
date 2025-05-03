@@ -40,9 +40,10 @@ glm::vec3 randomPointInTriangle(const glm::vec3& A, const glm::vec3& B, const gl
 }
 
 
-VegetationInstanceBuilder::VegetationInstanceBuilder(long * count,std::vector<InstanceData> * instances, int pointsPerTriangle, float scale) : OctreeNodeTriangleHandler(count){
+VegetationInstanceBuilder::VegetationInstanceBuilder(long * count,std::vector<InstanceData> * instances, float pointsPerArea, float scale) : OctreeNodeTriangleHandler(count){
     this->instances = instances;
-    this->pointsPerTriangle = pointsPerTriangle;
+    // TODO: change to points per area
+    this->pointsPerArea = pointsPerArea;
     this->scale = scale;
 }
 
@@ -51,6 +52,7 @@ void VegetationInstanceBuilder::handle(OctreeNode* c0,OctreeNode* c1,OctreeNode*
         Vertex v0 = c0->vertex;
         Vertex v1 = c1->vertex;
         Vertex v2 = c2->vertex;
+        float area = Math::triangleArea(v0.position, v1.position, v2.position);
 
         if(c0!= c1 && c1 != c2 && c0!=c2) {
             glm::vec3 d1 = v1.position-v0.position;
@@ -60,7 +62,7 @@ void VegetationInstanceBuilder::handle(OctreeNode* c0,OctreeNode* c1,OctreeNode*
             float p = glm::dot(up, n);
 
 
-            for (int i = 0; i < pointsPerTriangle; i++) {
+            for (int i = 0; i < pointsPerArea*area; i++) {
                 glm::vec3 point = randomPointInTriangle(v0.position, v1.position, v2.position);
                 
                 float force = 2.0;

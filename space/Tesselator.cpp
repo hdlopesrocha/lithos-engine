@@ -26,9 +26,9 @@ void Tesselator::virtualize(OctreeNodeData &params, int levels) {
 }
 
 void Tesselator::before(OctreeNodeData &params) {		
-    /*if(params.node->isSimplified()) {
-        int levels = tree->getMaxLevel(params.node, 0);
-		virtualize(params, levels);
+/*    if(params.node->isSimplified()) {
+        int levels = tree->getMaxLevel(params.cube);
+		virtualize(params, levels- params.level);
     	//tree->handleQuadNodes(params , this, true);
 	}*/
     if(params.node->isLeaf()) {

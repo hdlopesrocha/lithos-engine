@@ -239,6 +239,14 @@ float Math::randomFloat() {
     return dis(gen);
 }
 
+float Math::triangleArea(const glm::vec3& A, const glm::vec3& B, const glm::vec3& C) {
+    glm::vec3 AB = B - A;
+    glm::vec3 AC = C - A;
+    float area = 0.5f * glm::length(glm::cross(AB, AC));
+    return area;
+}
+
+
 const char* toString(BrushMode v)
 {
     switch (v)

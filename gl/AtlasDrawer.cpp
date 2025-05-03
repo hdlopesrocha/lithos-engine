@@ -34,9 +34,7 @@ void AtlasDrawer::draw(AtlasParams &params, std::vector<AtlasTexture> *textures)
     glViewport(0, 0, renderBuffer.width, renderBuffer.height); 
     glClearColor (0.0,0.0,0.0,1.0);    
     glClear(GL_COLOR_BUFFER_BIT);
-    glDisable(GL_CULL_FACE);
         
-
     for(int i = 0; i < TEXTURE_TYPE_COUNT ; ++i) {
         glActiveTexture(GL_TEXTURE0+ i); 
         glBindTexture(GL_TEXTURE_2D_ARRAY, sourceLayers->textures[i].index);

@@ -91,10 +91,10 @@ class OctreeContainmentHandler : public ContainmentHandler {
 
 class VegetationInstanceBuilderHandler : public InstanceBuilderHandler {
 	public:
-	int pointsPerTriangle;
+	float pointsPerArea;
 	float scale;
 	Octree * tree;
-	VegetationInstanceBuilderHandler(Octree * tree, int pointsPerTriangle, float scale);
+	VegetationInstanceBuilderHandler(Octree * tree, float pointsPerArea, float scale);
 
 	void handle(OctreeNodeData &data, std::vector<InstanceData> * instances) override;
 };
@@ -133,11 +133,11 @@ class OctreeGeometryBuilder : public GeometryBuilder {
 class VegetationInstanceBuilder : public OctreeNodeTriangleHandler {
 	public: 
 	std::vector<InstanceData> * instances;
-    int pointsPerTriangle;
+    float pointsPerArea;
 	float scale;
 	
 	using OctreeNodeTriangleHandler::OctreeNodeTriangleHandler;
-	VegetationInstanceBuilder(long * count,std::vector<InstanceData> * instances, int pointsPerTriangle, float scale);
+	VegetationInstanceBuilder(long * count,std::vector<InstanceData> * instances, float pointsPerArea, float scale);
 	void handle(OctreeNode* c0,OctreeNode* c1,OctreeNode* c2, bool sign) override;
 };
 

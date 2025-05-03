@@ -17,7 +17,7 @@ Scene::Scene(Settings * settings) {
 
 	solidBuilder = new MeshGeometryBuilder(&solidTrianglesCount, solidSpace, 0.99, 0.1, true);
 	liquidBuilder = new MeshGeometryBuilder(&liquidTrianglesCount, liquidSpace, 0.99, 0.1, true);
-	vegetationBuilder = new VegetationGeometryBuilder(solidSpace, new VegetationInstanceBuilderHandler(solidSpace, 32, 4));
+	vegetationBuilder = new VegetationGeometryBuilder(solidSpace, new VegetationInstanceBuilderHandler(solidSpace, 0.1, 4));
 	debugBuilder = new OctreeGeometryBuilder(new OctreeInstanceBuilderHandler());
 
 	solidRenderer = new OctreeVisibilityChecker(&visibleSolidNodes);
@@ -52,8 +52,6 @@ bool Scene::loadSpace(Octree* tree, OctreeNodeData& data, std::unordered_map<lon
 
 	return true;
 }
-
-
 
 bool Scene::processLiquid(OctreeNodeData &data, Octree * tree) {
 	bool result = false;
@@ -161,7 +159,6 @@ DrawableInstanceGeometry* Scene::loadIfNeeded(std::unordered_map<long, NodeInfo>
 	return ni.drawable;
 }
 
-
 void Scene::draw (uint drawableType, int mode, glm::vec3 cameraPosition, const std::vector<OctreeNodeData> &list) {
 	for(const OctreeNodeData &data : list) {
 		OctreeNode * node = data.node;
@@ -177,12 +174,13 @@ void Scene::draw (uint drawableType, int mode, glm::vec3 cameraPosition, const s
 					//std::cout << "Scene.draw() " << std::to_string(drawableType) << "|" << std::to_string(amount) << std::endl;
 					drawable->draw(mode, amount, &vegetationInstancesVisible);
 				}
-			}else if(drawableType == TYPE_INSTANCE_SOLID_DRAWABLE) {
+			}
+			else if(drawableType == TYPE_INSTANCE_SOLID_DRAWABLE) {
 				DrawableInstanceGeometry * drawable	= loadIfNeeded(&solidInfo, node->dataId);
 				if(drawable != NULL) {
 					drawable->draw(mode, 1.0, &solidInstancesVisible);
 				}
-			}
+			} 
 			else if(drawableType == TYPE_INSTANCE_LIQUID_DRAWABLE) {
 				DrawableInstanceGeometry * drawable	= loadIfNeeded(&liquidInfo, node->dataId);
 				if(drawable != NULL) {
@@ -216,7 +214,6 @@ void Scene::draw3dLiquid(glm::vec3 cameraPosition, const std::vector<OctreeNodeD
 void Scene::draw3dOctree(glm::vec3 cameraPosition, const std::vector<OctreeNodeData> &list) {
 	draw(TYPE_INSTANCE_OCTREE_DRAWABLE, GL_LINES, cameraPosition, list);
 }
-
 
 void Scene::generate(Camera &camera) {
 	int sizePerTile = 30;
@@ -261,7 +258,6 @@ void Scene::generate(Camera &camera) {
 	//solidSpace->add(BoxContainmentHandler(BoundingBox(glm::vec3(-20,-5,-20),glm::vec3(20,10,20)),SimpleBrush(8)), 1.0);
 	//solidSpace->del(BoxContainmentHandler(BoundingBox(glm::vec3(-17,-4,-17),glm::vec3(17,12,17)),SimpleBrush(6)), 1.0);
 	//liquidSpace->del(BoxContainmentHandler(BoundingBox(glm::vec3(-18,-5,-18),glm::vec3(18,12,18)),SimpleBrush(0)), 1.0);
-
 	
 	for(int x= -128; x < 128; ++x) {
 		solidSpace->add(SphereContainmentHandler(BoundingSphere(glm::vec3(x,512,0),32), SimpleBrush(3)), DirtyHandler(*this), 2.0);

@@ -573,7 +573,7 @@ public:
 	static glm::vec3 surfaceNormal(const glm::vec3 point, const BoundingBox &box);
 	static glm::mat4 getCanonicalMVP(glm::mat4 m);
 	static glm::mat4 getRotationMatrixFromNormal(glm::vec3 normal, glm::vec3 target);
-
+	static float triangleArea(const glm::vec3& A, const glm::vec3& B, const glm::vec3& C);
 	static double degToRad(double degrees);
 	static void wgs84ToEcef(double lat, double lon, double height, double &X, double &Y, double &Z);
 	static glm::quat createQuaternion(float yaw, float pitch, float roll);

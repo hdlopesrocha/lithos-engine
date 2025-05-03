@@ -107,6 +107,9 @@ class Octree: public BoundingCube {
 		int getNeighborLevel(OctreeNodeData &data, bool simplification, int direction);
 		OctreeNode * fetch(OctreeNodeData &data, OctreeNode ** out, int i);
 		int getMaxLevel(OctreeNode * node, int level);
+
+		int getMaxLevel(BoundingCube &cube);
+		int getMaxLevel(OctreeNode *node, BoundingCube &cube, BoundingCube &c, int level);
 };
 
 struct StackFrame : public OctreeNodeData {

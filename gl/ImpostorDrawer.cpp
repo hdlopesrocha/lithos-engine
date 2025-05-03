@@ -37,22 +37,20 @@ void ImpostorDrawer::draw(ImpostorParams &params, float time) {
     glUniformMatrix4fv(glGetUniformLocation(program, "world"), 1, GL_FALSE, glm::value_ptr(world));
     glUniformMatrix4fv(glGetUniformLocation(program, "viewProjection"), 1, GL_FALSE, glm::value_ptr(viewProjection));
    
-
     for (int i = 0; i < 3; i++) {
         //std::cout << "Texture Unit " << std::to_string(sourceLayers->textures[i].index) << std::endl;
     }
 
-
     long count = 0;
     glDisable(GL_DEPTH_TEST);
-
     glDisable(GL_CULL_FACE);
+
     params.mesh->draw(GL_TRIANGLES, &count);
     //std::cout << "Drawing " << count << " instances." << std::endl;
 
-
     glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
+
     glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     

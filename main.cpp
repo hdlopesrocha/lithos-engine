@@ -107,10 +107,24 @@ public:
 		glEnable(GL_DEPTH_CLAMP);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glEnable(GL_BLEND);
+		glEnable(GL_CULL_FACE);
+		glCullFace(GL_BACK); // Or GL_FRONT
+		glFrontFace(GL_CCW); // Ensure this matches your vertex data
+		glDepthMask(GL_TRUE);  // Allow writing to depth buffer
+		glLineWidth(2.0);
+		glPointSize(4.0);	
+
 		std::cout << "sizeof(Vertex) = " << sizeof(Vertex) << std::endl; 
 		std::cout << "sizeof(OctreeNode) = " << sizeof(OctreeNode) << std::endl; 
 		std::cout << "sizeof(ChildBlock) = " << sizeof(ChildBlock) << std::endl; 
 		std::cout << "sizeof(OctreeNodeSerialized) = " << sizeof(OctreeNodeSerialized) << std::endl; 
+
+		BoundingCube box(glm::vec3(0), 1);
+		BoundingCube c0 = box.getChild(0);
+		BoundingCube c1 = box.getChild(1);
+		if(c0.intersects(c1)) {
+			std::cout << "Neighbors Intersect" << std::endl;
+		}
 
 		// Register all GDAL drivers
 		GDALAllRegister();
@@ -475,7 +489,7 @@ public:
 		ImGui_ImplOpenGL3_Init("#version 460");
 
 
-		mainScene->generate(camera);
+	//	mainScene->generate(camera);
 	}
 
 
@@ -596,16 +610,13 @@ public:
 	        double endTime = glfwGetTime(); // Get elapsed time in seconds
 			processTime += endTime - startTime;
 		}
+		else {
+		//	this->close();
+		}
 		glPolygonMode(GL_FRONT, GL_FILL);
 		glPatchParameteri(GL_PATCH_VERTICES, 3); // Define the number of control points per patch
-		glEnable(GL_CULL_FACE);
-		glCullFace(GL_BACK); // Or GL_FRONT
-		glFrontFace(GL_CCW); // Ensure this matches your vertex data
 		glEnable(GL_DEPTH_TEST);
 		//glDepthFunc(GL_LESS);        // Default: Pass if fragment depth is less than stored depth
-		glDepthMask(GL_TRUE);  // Allow writing to depth buffer
-		glLineWidth(2.0);
-		glPointSize(4.0);	
 
         uniformBlock.uintData = glm::uvec4(0u, 0u, settings->debugMode, settings->overrideBrush);
 		uniformBlock.floatData[0] = glm::vec4( time, settings->blendSharpness, settings->parallaxDistance ,settings->parallaxPower);
