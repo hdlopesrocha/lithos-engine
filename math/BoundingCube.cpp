@@ -52,3 +52,17 @@ BoundingCube BoundingCube::getChild(int i) const {
 BoundingCube BoundingCube::getChild3(int i) const {
     return BoundingCube(getMin() + getLengthX() * AbstractBoundingBox::getShift3(i), getLengthX());
 }
+
+bool BoundingCube::operator<(const BoundingCube& other) const {
+    if (getMinX() != other.getMinX()) return getMinX() < other.getMinX();
+    if (getMinY() != other.getMinY()) return getMinY() < other.getMinY();
+    if (getMinZ() != other.getMinZ()) return getMinZ() < other.getMinZ();
+    return length < other.length;
+}
+
+bool BoundingCube::operator==(const BoundingCube& other) const {
+    return getMinX() == other.getMinX() 
+        && getMinY() == other.getMinY()
+        && getMinZ() == other.getMinZ() 
+        && length == other.length;
+}

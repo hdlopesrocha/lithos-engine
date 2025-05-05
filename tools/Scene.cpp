@@ -25,7 +25,6 @@ Scene::Scene(Settings * settings) {
 	for(int i = 0 ; i < SHADOW_MATRIX_COUNT ; ++i) {
 		shadowRenderer[i]= new OctreeVisibilityChecker(&visibleShadowNodes[i]);
 	}
-
 }
 
 bool Scene::loadSpace(Octree* tree, OctreeNodeData& data, std::unordered_map<long, NodeInfo>* infos, GeometryBuilder* builder) {
@@ -89,7 +88,7 @@ bool Scene::processSpace() {
 	int loadCountSolid = 1;
 	int loadCountLiquid = 1;
 
-	for(OctreeNodeData &data : visibleSolidNodes){
+	for(OctreeNodeData &data : visibleSolidNodes) {
 		if(loadCountSolid > 0) {
 			if(processSolid(data, solidSpace)) {
 				--loadCountSolid;
@@ -99,7 +98,7 @@ bool Scene::processSpace() {
 		}
 	}
 
-	for(OctreeNodeData &data : visibleLiquidNodes){
+	for(OctreeNodeData &data : visibleLiquidNodes) {
 		if(loadCountLiquid > 0) {
 			if(processLiquid(data, liquidSpace)) {
 				--loadCountLiquid;
@@ -109,7 +108,7 @@ bool Scene::processSpace() {
 		}
 	}
 
-	for(int i =0 ; i < SHADOW_MATRIX_COUNT ; ++i){
+	for(int i =0 ; i < SHADOW_MATRIX_COUNT ; ++i) {
 		std::vector<OctreeNodeData> &vec = visibleShadowNodes[i];
 		for(OctreeNodeData &data : vec) {
 			if(loadCountSolid > 0) {
@@ -180,7 +179,7 @@ void Scene::draw (uint drawableType, int mode, glm::vec3 cameraPosition, const s
 				if(drawable != NULL) {
 					drawable->draw(mode, 1.0, &solidInstancesVisible);
 				}
-			} 
+			}
 			else if(drawableType == TYPE_INSTANCE_LIQUID_DRAWABLE) {
 				DrawableInstanceGeometry * drawable	= loadIfNeeded(&liquidInfo, node->dataId);
 				if(drawable != NULL) {
@@ -190,9 +189,9 @@ void Scene::draw (uint drawableType, int mode, glm::vec3 cameraPosition, const s
 			else if(drawableType == TYPE_INSTANCE_OCTREE_DRAWABLE) {
 				DrawableInstanceGeometry * drawable	= loadIfNeeded(&debugInfo, node->dataId);
 				if(drawable != NULL) {
-					drawable->draw(mode, 1.0, &liquidInstancesVisible);
+					drawable->draw(mode, 1.0, &solidInstancesVisible);
 				}
-			}	
+			}
 		}
 	}
 }

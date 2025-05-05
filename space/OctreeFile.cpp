@@ -17,7 +17,7 @@ OctreeNode * loadRecursive(OctreeAllocator * allocator, int i, std::vector<Octre
 	OctreeNodeSerialized serialized = nodes->at(i);
 	Vertex vertex(serialized.position, serialized.normal, glm::vec2(0), serialized.brushIndex);
 
-	OctreeNode * node = allocator->nodeAllocator.allocate()->init(vertex);
+	OctreeNode * node = allocator->allocateOctreeNode(cube)->init(vertex);
 	node->setMask(serialized.mask);
 	node->setSolid(serialized.isSolid);
 
@@ -34,7 +34,7 @@ OctreeNode * loadRecursive(OctreeAllocator * allocator, int i, std::vector<Octre
 		OctreeNodeFile * file = new OctreeNodeFile(node, baseFolder + "/" + filename+ "_" + chunkName + ".bin");
 		//NodeInfo info(INFO_TYPE_FILE, file, NULL, true);
 		//node->info.push_back(info);
-		file->load(allocator, baseFolder);
+		file->load(allocator, baseFolder, cube);
 		delete file;
 	}
 	return node;

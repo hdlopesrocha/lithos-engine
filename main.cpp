@@ -971,8 +971,8 @@ public:
 			ImGui::Text("%ld liquid datas", mainScene->liquidSpace->dataId);
 			ImGui::Text("%f process time", processTime);
 
-			size_t allocatedBlocks = mainScene->solidSpace->allocator.nodeAllocator.getAllocatedBlocksCount();
-			size_t blockSize = mainScene->solidSpace->allocator.nodeAllocator.getBlockSize();
+			size_t allocatedBlocks = mainScene->solidSpace->allocator.getAllocatedBlocksCount();
+			size_t blockSize = mainScene->solidSpace->allocator.getBlockSize();
 
 			size_t allocatedChildren = mainScene->solidSpace->allocator.childAllocator.getAllocatedBlocksCount();
 			size_t childrenSize = mainScene->solidSpace->allocator.childAllocator.getBlockSize();

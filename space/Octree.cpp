@@ -12,7 +12,7 @@ static std::vector<glm::ivec2> tessEdge;
 static bool initialized = false;
 
 Octree::Octree(BoundingCube minCube) : BoundingCube(minCube){
-	this->root = allocator.nodeAllocator.allocate()->init(glm::vec3(minCube.getCenter()));
+	this->root = allocator.allocateOctreeNode(minCube)->init(glm::vec3(minCube.getCenter()));
     this->dataId = 0;
 	if(!initialized) {
 		tessOrder.push_back(glm::ivec4(0,1,3,2));tessEdge.push_back(glm::ivec2(3,7));
@@ -265,7 +265,8 @@ void split(Octree * tree, OctreeNode * node, BoundingCube &cube, bool reverse) {
         if(child == NULL) {
             BoundingCube subCube = cube.getChild(i);
             //if(plane.test(subCube) != (reverse ? ContainmentType::Contains : ContainmentType::Disjoint) ) {
-                child = tree->allocator.nodeAllocator.allocate()->init(Vertex(subCube.getCenter(), vertex.normal, vertex.texCoord, vertex.brushIndex));
+                child = tree->allocator.allocateOctreeNode(subCube)->init(Vertex(subCube.getCenter(), vertex.normal, vertex.texCoord, vertex.brushIndex));
+
                 child->setSolid(node->isSolid());
                 child->setMask(node->getMask());
                 node->setChildNode(i, child, &tree->allocator);
@@ -287,10 +288,10 @@ void Octree::expand(const ContainmentHandler &handler) {
 	    setLength(getLengthX()*2);
 
 	    if(root != NULL && root->isLeaf()) {
-	    	allocator.nodeAllocator.deallocate(root);
+	    	allocator.deallocateOctreeNode(root, *this);
 			root = NULL;
 	    }
-	    OctreeNode * newNode = allocator.nodeAllocator.allocate()->init(getCenter());
+	    OctreeNode * newNode = allocator.allocateOctreeNode(*this)->init(getCenter());
 		newNode->setChildNode(i, root, &allocator);
 	    root = newNode;
 	}
@@ -316,7 +317,7 @@ void Octree::add(const ContainmentHandler &handler, const OctreeNodeDirtyHandler
         }
 
         if (node == NULL) {
-            node = allocator.nodeAllocator.allocate()->init(Vertex(frame.cube.getCenter()));
+            node = allocator.allocateOctreeNode(frame.cube)->init(Vertex(frame.cube.getCenter()));
             if(frame.childIndex >= 0) {
                 frame.parent->setChildNode(frame.childIndex, node, &allocator);
             }
@@ -337,7 +338,7 @@ void Octree::add(const ContainmentHandler &handler, const OctreeNodeDirtyHandler
         }
         bool isLeaf = frame.cube.getLengthX() <= frame.minSize;
         if (check == ContainmentType::Contains) {
-            node->clear(&allocator);
+            node->clear(&allocator, frame.cube);
         } else if (!node->isLeaf() || !isLeaf) {
             for (int i = 7; i >= 0; --i) {  
                 BoundingCube subCube = frame.cube.getChild(i);
@@ -369,8 +370,8 @@ void Octree::del(const ContainmentHandler &handler, const OctreeNodeDirtyHandler
 
         if (isContained) {
             if (node != NULL) {
-                node->clear(&allocator);
-                allocator.nodeAllocator.deallocate(node);
+                node->clear(&allocator, frame.cube);
+                allocator.deallocateOctreeNode(node, frame.cube);
                 if(frame.childIndex >= 0) {
                     frame.parent->setChildNode(frame.childIndex, NULL, &allocator);
                 }

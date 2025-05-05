@@ -208,8 +208,20 @@ class BoundingCube : public AbstractBoundingBox {
 		BoundingCube getChild(int i) const;
 		BoundingCube getChild3(int i) const;
 	
+	    bool operator<(const BoundingCube& other) const;
+		bool operator==(const BoundingCube& other) const;
 };
 
+// Custom hash function for unordered_map.
+struct BoundingCubeKeyHash {
+    size_t operator()(const BoundingCube& key) const {
+        size_t h1 = std::hash<int>{}(key.getMinX());
+        size_t h2 = std::hash<int>{}(key.getMinY());
+        size_t h3 = std::hash<int>{}(key.getMinZ());
+        size_t h4 = std::hash<int>{}(key.getLengthX());
+        return h1 ^ h2 ^ h3 ^ h4; // Combine hashes.
+    }
+};
 
 class BoundingSphere {
 	public: 

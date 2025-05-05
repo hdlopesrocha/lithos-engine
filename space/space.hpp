@@ -13,7 +13,7 @@ struct ChildBlock {
 	public:
 	ChildBlock();
 	ChildBlock * init();
-	void clear(OctreeAllocator * allocator);
+	void clear(OctreeAllocator * allocator, BoundingCube &cube);
 };
 
 class OctreeNode {
@@ -27,7 +27,7 @@ class OctreeNode {
 		OctreeNode(Vertex vertex);
 		~OctreeNode();
 		OctreeNode * init(Vertex vertex);
-		void clear(OctreeAllocator * allocator);
+		void clear(OctreeAllocator * allocator, BoundingCube &cube);
 		void setChildNode(int i, OctreeNode * node, OctreeAllocator * allocator);
 		OctreeNode * getChildNode(int i, OctreeAllocator * allocator);
 		bool isLeaf();
@@ -76,9 +76,17 @@ class OctreeNodeDirtyHandler {
 };
 
 class OctreeAllocator {
-	public: 
 	Allocator<OctreeNode> nodeAllocator;
+	std::unordered_map<BoundingCube, OctreeNode*, BoundingCubeKeyHash> compactMap;
+
+	public: 
 	Allocator<ChildBlock> childAllocator;
+	OctreeNode * allocateOctreeNode(BoundingCube &cube);
+	OctreeNode * getOctreeNode(uint index);
+	void deallocateOctreeNode(OctreeNode * node, BoundingCube &cube);
+	uint getIndex(OctreeNode * node);
+    size_t getBlockSize() const;
+    size_t getAllocatedBlocksCount() const ;
 
 };
 
@@ -244,7 +252,7 @@ class OctreeNodeFile {
     public: 
 		OctreeNodeFile(OctreeNode * node, std::string filename);
         void save(OctreeAllocator * allocator, std::string baseFolder);
-        void load(OctreeAllocator * allocator, std::string baseFolder);
+        void load(OctreeAllocator * allocator, std::string baseFolder, BoundingCube &cube);
 };
 
 

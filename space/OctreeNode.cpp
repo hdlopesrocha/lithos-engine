@@ -22,23 +22,23 @@ void OctreeNode::setChildNode(int i, OctreeNode * node, OctreeAllocator * alloca
 	if(this->block == NULL) {
 		this->block = allocator->childAllocator.allocate()->init();
 	}
-	this->block->children[i] = allocator->nodeAllocator.getIndex(node);
+	this->block->children[i] = allocator->getIndex(node);
 }
 
 OctreeNode * OctreeNode::getChildNode(int i, OctreeAllocator * allocator){
 	if(this->block == NULL) {
 		return NULL;
 	}
-	return allocator->nodeAllocator.getFromIndex(this->block->children[i]);
+	return allocator->getOctreeNode(this->block->children[i]);
 }
 
 OctreeNode::~OctreeNode() {
 
 }
 
-void OctreeNode::clear(OctreeAllocator * allocator) {
+void OctreeNode::clear(OctreeAllocator * allocator, BoundingCube &cube) {
 	if(this->block != NULL) {
-		this->block->clear(allocator);
+		this->block->clear(allocator, cube);
 		allocator->childAllocator.deallocate(this->block);
 		this->block = NULL;
 	}
