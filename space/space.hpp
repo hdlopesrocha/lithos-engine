@@ -83,6 +83,7 @@ class OctreeAllocator {
 	Allocator<ChildBlock> childAllocator;
 	OctreeNode * allocateOctreeNode(BoundingCube &cube);
 	OctreeNode * getOctreeNode(uint index);
+	OctreeNode * getOctreeNode(BoundingCube &cube);
 	void deallocateOctreeNode(OctreeNode * node, BoundingCube &cube);
 	uint getIndex(OctreeNode * node);
     size_t getBlockSize() const;

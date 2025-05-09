@@ -7,6 +7,14 @@ OctreeNode * OctreeAllocator::allocateOctreeNode(BoundingCube &cube){
     return node;
 }
 
+OctreeNode * OctreeAllocator::getOctreeNode(BoundingCube &cube) {
+    auto it = compactMap.find(cube);
+    if (it != compactMap.end()) {
+        return it->second;
+    }
+    return NULL;
+}
+
 OctreeNode * OctreeAllocator::getOctreeNode(uint index){
     return nodeAllocator.getFromIndex(index);
 }
