@@ -3,8 +3,8 @@
 
 Scene::Scene(Settings * settings) {
 	this->settings = settings;
-	solidSpace = new Octree(BoundingCube(glm::vec3(0,0,0), 30.0));
-	liquidSpace = new Octree(BoundingCube(glm::vec3(0,7,0), 30.0));
+	solidSpace = new Octree(BoundingCube(glm::vec3(0,0,0), 30.0), glm::pow(2, 9));
+	liquidSpace = new Octree(BoundingCube(glm::vec3(0,7,0), 30.0), glm::pow(2, 9));
 
 	solidTrianglesCount = 0;
 	liquidTrianglesCount = 0;
@@ -13,7 +13,6 @@ Scene::Scene(Settings * settings) {
 	liquidInstancesVisible = 0;
 	vegetationInstancesVisible = 0;
 
-	chunkSize = glm::pow(2, 9);
 
 	solidBuilder = new MeshGeometryBuilder(&solidTrianglesCount, solidSpace, 0.99, 0.1, true);
 	liquidBuilder = new MeshGeometryBuilder(&liquidTrianglesCount, liquidSpace, 0.99, 0.1, true);
@@ -138,7 +137,7 @@ void Scene::setVisibleNodes(Octree * tree, glm::mat4 viewProjection, glm::vec3 s
 	checker.visibleNodes->clear();
 	checker.sortPosition = sortPosition;
 	checker.update(viewProjection);
-	tree->iterateFlat(checker, chunkSize);	//here we get the visible nodes for that LOD + geometryLEvel
+	tree->iterateFlat(checker);	//here we get the visible nodes for that LOD + geometryLEvel
 }
 
 DrawableInstanceGeometry* Scene::loadIfNeeded(std::unordered_map<long, NodeInfo>* infos, long index) {

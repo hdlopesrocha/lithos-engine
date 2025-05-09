@@ -91,19 +91,27 @@ class OctreeAllocator {
 
 };
 
+struct OctreeNodeFrame {
+    OctreeNode* parent;
+    int childIndex;
+    BoundingCube cube;
+    float minSize;
+};
+
 class Octree: public BoundingCube {
 	using BoundingCube::BoundingCube;
 	public: 
+		float chunkSize;
 		long dataId;
 		OctreeNode * root;
 		OctreeAllocator allocator;
 
-		Octree(BoundingCube minCube);
+		Octree(BoundingCube minCube, float chunkSize);
 		void expand(const ContainmentHandler &handler);
 		void add(const ContainmentHandler &handler, const OctreeNodeDirtyHandler &dirtyHandler, float minSize);
 		void del(const ContainmentHandler &handler, const OctreeNodeDirtyHandler &dirtyHandler, float minSize);
-		void iterate(IteratorHandler &handler, float chunkSize);
-		void iterateFlat(IteratorHandler &handler, float chunkSize);
+		void iterate(IteratorHandler &handler);
+		void iterateFlat(IteratorHandler &handler);
 
 		OctreeNode* getNodeAt(const glm::vec3 &pos, int level, bool simplification);
 		OctreeNode* getNodeAt(const glm::vec3 &pos, bool simplification);
@@ -119,6 +127,11 @@ class Octree: public BoundingCube {
 
 		int getMaxLevel(BoundingCube &cube);
 		int getMaxLevel(OctreeNode *node, BoundingCube &cube, BoundingCube &c, int level);
+
+		private:
+		void delAux(const ContainmentHandler &handler, const OctreeNodeDirtyHandler &dirtyHandler, float minSize, OctreeNodeFrame frame, BoundingCube * chunk);
+		void addAux(const ContainmentHandler &handler, const OctreeNodeDirtyHandler &dirtyHandler, float minSize, OctreeNodeFrame frame, BoundingCube * chunk);
+
 };
 
 struct StackFrame : public OctreeNodeData {

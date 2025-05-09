@@ -11,7 +11,8 @@ static std::vector<glm::ivec4> tessOrder;
 static std::vector<glm::ivec2> tessEdge;
 static bool initialized = false;
 
-Octree::Octree(BoundingCube minCube) : BoundingCube(minCube){
+Octree::Octree(BoundingCube minCube, float chunkSize) : BoundingCube(minCube){
+    this->chunkSize = chunkSize;
 	this->root = allocator.allocateOctreeNode(minCube)->init(glm::vec3(minCube.getCenter()));
     this->dataId = 0;
 	if(!initialized) {
@@ -238,13 +239,6 @@ void Octree::handleQuadNodes(OctreeNodeData &data, OctreeNodeTriangleHandler * h
 	}
 }
 
-struct OctreeNodeFrame {
-    OctreeNode* parent;
-    int childIndex;
-    BoundingCube cube;
-    float minSize;
-};
-
 uint buildMask(const ContainmentHandler &handler, BoundingCube &cube) {
     const glm::vec3 min = cube.getMin();
     const float lengthX = cube.getLengthX();
@@ -297,18 +291,21 @@ void Octree::expand(const ContainmentHandler &handler) {
 	}
 }
 
-void addAux(const ContainmentHandler &handler, const OctreeNodeDirtyHandler &dirtyHandler, float minSize, OctreeNodeFrame frame, OctreeAllocator * allocator) {
-    OctreeNode* node = frame.childIndex < 0 ? frame.parent : frame.parent->getChildNode(frame.childIndex, allocator);
+void Octree::addAux(const ContainmentHandler &handler, const OctreeNodeDirtyHandler &dirtyHandler, float minSize, OctreeNodeFrame frame, BoundingCube * chunk) {
+    OctreeNode* node = frame.childIndex < 0 ? frame.parent : frame.parent->getChildNode(frame.childIndex, &allocator);
     ContainmentType check = handler.check(frame.cube);
+    if(chunk == NULL && frame.cube.getLengthX() < chunkSize){
+        chunk = &frame.cube;
+    }
 
     if (check == ContainmentType::Disjoint) {
         return;  // Skip this node
     }
 
     if (node == NULL) {
-        node = allocator->allocateOctreeNode(frame.cube)->init(Vertex(frame.cube.getCenter()));
+        node = allocator.allocateOctreeNode(frame.cube)->init(Vertex(frame.cube.getCenter()));
         if(frame.childIndex >= 0) {
-            frame.parent->setChildNode(frame.childIndex, node, allocator);
+            frame.parent->setChildNode(frame.childIndex, node, &allocator);
         }
     } else if (node->isSolid()) {
         return;  // No need to process further
@@ -327,22 +324,25 @@ void addAux(const ContainmentHandler &handler, const OctreeNodeDirtyHandler &dir
     }
     bool isLeaf = frame.cube.getLengthX() <= frame.minSize;
     if (check == ContainmentType::Contains) {
-        node->clear(allocator, frame.cube);
+        node->clear(&allocator, frame.cube);
     } else if (!node->isLeaf() || !isLeaf) {
         for (int i = 7; i >= 0; --i) {  
             BoundingCube subCube = frame.cube.getChild(i);
-            addAux(handler, dirtyHandler, minSize, { node, i, subCube, frame.minSize }, allocator);
+            addAux(handler, dirtyHandler, minSize, { node, i, subCube, frame.minSize }, chunk);
         }
     }
 }
 
 void Octree::add(const ContainmentHandler &handler, const OctreeNodeDirtyHandler &dirtyHandler, float minSize) {
 	expand(handler);	
-    addAux(handler, dirtyHandler,minSize, { root, -1, *this, minSize}, &allocator);
+    addAux(handler, dirtyHandler,minSize, { root, -1, *this, minSize}, NULL);
 }
 
-void delAux(const ContainmentHandler &handler, const OctreeNodeDirtyHandler &dirtyHandler, float minSize, OctreeNodeFrame frame, OctreeAllocator * allocator) {
-    OctreeNode* node = frame.childIndex < 0 ? frame.parent : frame.parent->getChildNode(frame.childIndex, allocator);
+void Octree::delAux(const ContainmentHandler &handler, const OctreeNodeDirtyHandler &dirtyHandler, float minSize, OctreeNodeFrame frame, BoundingCube * chunk) {
+    OctreeNode* node = frame.childIndex < 0 ? frame.parent : frame.parent->getChildNode(frame.childIndex, &allocator);
+    if(chunk == NULL && frame.cube.getLengthX() < chunkSize){
+        chunk = &frame.cube;
+    }
 
     ContainmentType check = handler.check(frame.cube);
     if (check == ContainmentType::Disjoint) {
@@ -354,10 +354,10 @@ void delAux(const ContainmentHandler &handler, const OctreeNodeDirtyHandler &dir
 
     if (isContained) {
         if (node != NULL) {
-            node->clear(allocator, frame.cube);
-            allocator->deallocateOctreeNode(node, frame.cube);
+            node->clear(&allocator, frame.cube);
+            allocator.deallocateOctreeNode(node, frame.cube);
             if(frame.childIndex >= 0) {
-                frame.parent->setChildNode(frame.childIndex, NULL, allocator);
+                frame.parent->setChildNode(frame.childIndex, NULL, &allocator);
             }
         }
         return;
@@ -366,7 +366,7 @@ void delAux(const ContainmentHandler &handler, const OctreeNodeDirtyHandler &dir
     if (node != NULL) {
         bool isLeaf = frame.cube.getLengthX() <= frame.minSize;
         if (node->isSolid() && isIntersecting && !isLeaf) {
-            split(allocator, node, frame.cube, true);
+            split(&allocator, node, frame.cube, true);
         }
 
         if (isIntersecting) {
@@ -384,22 +384,22 @@ void delAux(const ContainmentHandler &handler, const OctreeNodeDirtyHandler &dir
         if (!isLeaf) {
             for (int i = 7; i >= 0; --i) { 
                 BoundingCube subCube = frame.cube.getChild(i);
-                delAux(handler, dirtyHandler, minSize, { node, i, subCube, frame.minSize }, allocator);
+                delAux(handler, dirtyHandler, minSize, { node, i, subCube, frame.minSize }, chunk);
             }
         }
     }
 }
 
 void Octree::del(const ContainmentHandler &handler, const OctreeNodeDirtyHandler &dirtyHandler, float minSize) {
-    delAux(handler, dirtyHandler,minSize, { root, -1, *this, minSize}, &allocator);
+    delAux(handler, dirtyHandler,minSize, { root, -1, *this, minSize}, NULL);
 }
 
-void Octree::iterate(IteratorHandler &handler, float chunkSize) {
+void Octree::iterate(IteratorHandler &handler) {
 	BoundingCube cube(glm::vec3(getMinX(),getMinY(),getMinZ()),getLengthX());
 	handler.iterate(OctreeNodeData(0, chunkSize, root, cube, NULL, &this->allocator));
 }
 
-void Octree::iterateFlat(IteratorHandler &handler, float chunkSize) {
+void Octree::iterateFlat(IteratorHandler &handler) {
 	BoundingCube cube(glm::vec3(getMinX(),getMinY(),getMinZ()),getLengthX());
     handler.iterateFlatIn(OctreeNodeData(0, chunkSize,root, cube, NULL, &this->allocator));
 }
