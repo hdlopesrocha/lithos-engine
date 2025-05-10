@@ -176,6 +176,7 @@ class Scene {
 	std::vector<OctreeNodeData> visibleShadowNodes[SHADOW_MATRIX_COUNT];
 	Settings * settings;
 
+	Simplifier simplifier;
 	MeshGeometryBuilder * solidBuilder;
 	MeshGeometryBuilder * liquidBuilder;
 	VegetationGeometryBuilder * vegetationBuilder;

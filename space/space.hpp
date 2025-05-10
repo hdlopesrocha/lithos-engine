@@ -6,6 +6,7 @@
 
 class Octree;
 class OctreeAllocator;
+class Simplifier;
 
 struct ChildBlock {
 	uint children[8]; 
@@ -96,6 +97,7 @@ struct OctreeNodeFrame {
     int childIndex;
     BoundingCube cube;
     float minSize;
+	uint level;
 };
 
 class Octree: public BoundingCube {
@@ -108,8 +110,8 @@ class Octree: public BoundingCube {
 
 		Octree(BoundingCube minCube, float chunkSize);
 		void expand(const ContainmentHandler &handler);
-		void add(const ContainmentHandler &handler, const OctreeNodeDirtyHandler &dirtyHandler, float minSize);
-		void del(const ContainmentHandler &handler, const OctreeNodeDirtyHandler &dirtyHandler, float minSize);
+		void add(const ContainmentHandler &handler, const OctreeNodeDirtyHandler &dirtyHandler, float minSize, Simplifier &simplifier);
+		void del(const ContainmentHandler &handler, const OctreeNodeDirtyHandler &dirtyHandler, float minSize, Simplifier &simplifier);
 		void iterate(IteratorHandler &handler);
 		void iterateFlat(IteratorHandler &handler);
 
@@ -129,8 +131,18 @@ class Octree: public BoundingCube {
 		int getMaxLevel(OctreeNode *node, BoundingCube &cube, BoundingCube &c, int level);
 
 		private:
-		void delAux(const ContainmentHandler &handler, const OctreeNodeDirtyHandler &dirtyHandler, float minSize, OctreeNodeFrame frame, BoundingCube * chunk);
-		void addAux(const ContainmentHandler &handler, const OctreeNodeDirtyHandler &dirtyHandler, float minSize, OctreeNodeFrame frame, BoundingCube * chunk);
+		void delAux(const ContainmentHandler &handler, const OctreeNodeDirtyHandler &dirtyHandler, float minSize, OctreeNodeFrame frame, BoundingCube * chunk, Simplifier &simplifier);
+		void addAux(const ContainmentHandler &handler, const OctreeNodeDirtyHandler &dirtyHandler, float minSize, OctreeNodeFrame frame, BoundingCube * chunk, Simplifier &simplifier);
+
+};
+
+class Simplifier {
+	float angle;
+	float distance;
+	bool texturing;
+	public:
+		Simplifier(float angle, float distance, bool texturing);
+		void simplify(Octree * tree, BoundingCube chunkCube, const OctreeNodeData &params);
 
 };
 
@@ -217,20 +229,6 @@ class Tesselator : public IteratorHandler, OctreeNodeTriangleHandler{
 
 };
 
-class Simplifier : public IteratorHandler{
-	Octree * tree;
-	float angle;
-	float distance;
-	bool texturing;
-	BoundingCube chunkCube;
-	public:
-		Simplifier(Octree * tree, BoundingCube chunkCube, float angle, float distance, bool texturing);
-		void before(OctreeNodeData &params) override;
-		void after(OctreeNodeData &params) override;
-		bool test(OctreeNodeData &params) override;
-		void getOrder(OctreeNodeData &params, uint8_t * order) override;
-
-};
 
 struct OctreeNodeSerialized {
     public:

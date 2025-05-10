@@ -39,6 +39,7 @@ class PaintBrushCommand : public ICommand<float>{
     Brush3d &brush3d;
     Octree &octree;
     DirtyHandler dirtyHandler;
+    Simplifier simplifier;
     public:
     PaintBrushCommand(Brush3d &brush3d, Scene &scene);
     void execute(const float &value) override ;

@@ -1,19 +1,14 @@
 #include "space.hpp"
 
 
-Simplifier::Simplifier(Octree * tree, BoundingCube chunkCube, float angle, float distance, bool texturing) {
-	this->tree = tree;
-	this->chunkCube = chunkCube;
+Simplifier::Simplifier(float angle, float distance, bool texturing) {
 	this->angle = angle;
 	this->distance = distance;
 	this->texturing = texturing;
 }	
 
-void Simplifier::before(OctreeNodeData &params) {		
-	
-}
 
-void Simplifier::after(OctreeNodeData &params) {
+void Simplifier::simplify(Octree * tree, BoundingCube chunkCube, const OctreeNodeData &params){
 
 	if(params.node->isLeaf()) {
 		params.node->setSimplified(true);
@@ -40,7 +35,6 @@ void Simplifier::after(OctreeNodeData &params) {
 		if(!chunkCube.contains(cube)){
 			return;
 		}
-		
 
 		glm::vec3 sumP = glm::vec3(0);
 		glm::vec3 sumN = glm::vec3(0);
@@ -90,14 +84,4 @@ void Simplifier::after(OctreeNodeData &params) {
 		}
 	}
 	return;
-}
-
-bool Simplifier::test(OctreeNodeData &params) {			
-	return !params.node->isSolid();
-}
-
-void Simplifier::getOrder(OctreeNodeData &params, uint8_t * order){
-	for(int i = 7 ; i >= 0 ; --i) {
-		order[i] = i;
-	}
 }

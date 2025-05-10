@@ -291,7 +291,7 @@ void Octree::expand(const ContainmentHandler &handler) {
 	}
 }
 
-void Octree::addAux(const ContainmentHandler &handler, const OctreeNodeDirtyHandler &dirtyHandler, float minSize, OctreeNodeFrame frame, BoundingCube * chunk) {
+void Octree::addAux(const ContainmentHandler &handler, const OctreeNodeDirtyHandler &dirtyHandler, float minSize, OctreeNodeFrame frame, BoundingCube * chunk, Simplifier &simplifier) {
     OctreeNode* node = frame.childIndex < 0 ? frame.parent : frame.parent->getChildNode(frame.childIndex, &allocator);
     ContainmentType check = handler.check(frame.cube);
     if(chunk == NULL && frame.cube.getLengthX() < chunkSize){
@@ -328,17 +328,21 @@ void Octree::addAux(const ContainmentHandler &handler, const OctreeNodeDirtyHand
     } else if (!node->isLeaf() || !isLeaf) {
         for (int i = 7; i >= 0; --i) {  
             BoundingCube subCube = frame.cube.getChild(i);
-            addAux(handler, dirtyHandler, minSize, { node, i, subCube, frame.minSize }, chunk);
+            addAux(handler, dirtyHandler, minSize, { node, i, subCube, frame.minSize, frame.level + 1 }, chunk, simplifier);
         }
+    }
+    if(chunk != NULL) {
+        simplifier.simplify(this, *chunk, OctreeNodeData(frame.level, chunkSize, node, frame.cube, NULL, &allocator));  
     }
 }
 
-void Octree::add(const ContainmentHandler &handler, const OctreeNodeDirtyHandler &dirtyHandler, float minSize) {
+
+void Octree::add(const ContainmentHandler &handler, const OctreeNodeDirtyHandler &dirtyHandler, float minSize, Simplifier &simplifier) {
 	expand(handler);	
-    addAux(handler, dirtyHandler,minSize, { root, -1, *this, minSize}, NULL);
+    addAux(handler, dirtyHandler,minSize, { root, -1, *this, minSize, 0}, NULL, simplifier);
 }
 
-void Octree::delAux(const ContainmentHandler &handler, const OctreeNodeDirtyHandler &dirtyHandler, float minSize, OctreeNodeFrame frame, BoundingCube * chunk) {
+void Octree::delAux(const ContainmentHandler &handler, const OctreeNodeDirtyHandler &dirtyHandler, float minSize, OctreeNodeFrame frame, BoundingCube * chunk, Simplifier &simplifier) {
     OctreeNode* node = frame.childIndex < 0 ? frame.parent : frame.parent->getChildNode(frame.childIndex, &allocator);
     if(chunk == NULL && frame.cube.getLengthX() < chunkSize){
         chunk = &frame.cube;
@@ -384,14 +388,17 @@ void Octree::delAux(const ContainmentHandler &handler, const OctreeNodeDirtyHand
         if (!isLeaf) {
             for (int i = 7; i >= 0; --i) { 
                 BoundingCube subCube = frame.cube.getChild(i);
-                delAux(handler, dirtyHandler, minSize, { node, i, subCube, frame.minSize }, chunk);
+                delAux(handler, dirtyHandler, minSize, { node, i, subCube, frame.minSize, frame.level + 1 }, chunk, simplifier);
             }
+        }
+        if(chunk != NULL) {
+            simplifier.simplify(this, *chunk, OctreeNodeData(frame.level, chunkSize, node, frame.cube, NULL, &allocator));
         }
     }
 }
 
-void Octree::del(const ContainmentHandler &handler, const OctreeNodeDirtyHandler &dirtyHandler, float minSize) {
-    delAux(handler, dirtyHandler,minSize, { root, -1, *this, minSize}, NULL);
+void Octree::del(const ContainmentHandler &handler, const OctreeNodeDirtyHandler &dirtyHandler, float minSize, Simplifier &simplifier) {
+    delAux(handler, dirtyHandler,minSize, { root, -1, *this, minSize, 0}, NULL, simplifier);
 }
 
 void Octree::iterate(IteratorHandler &handler) {

@@ -14,10 +14,6 @@ MeshGeometryBuilder::MeshGeometryBuilder(long * trianglesCount, Octree * tree, f
 }
 
 InstanceGeometry * MeshGeometryBuilder::build(OctreeNodeData &params){
-    //std::cout << "MeshGeometryBuilder::build" <<std::endl;
-    // Simplify
-    Simplifier simplifier(tree, params.cube, simplificationAngle, simplificationDistance, simplificationTexturing); 
-    simplifier.iterateFlatOut(params);
 
     // Tesselate
     Geometry * geometry = new Geometry(false);

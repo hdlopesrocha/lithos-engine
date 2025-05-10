@@ -1,7 +1,11 @@
 #include "command.hpp"
 
-PaintBrushCommand::PaintBrushCommand(Brush3d &brush3d, Scene &scene) : brush3d(brush3d), octree(*scene.solidSpace), dirtyHandler(scene) {
-
+PaintBrushCommand::PaintBrushCommand(Brush3d &brush3d, Scene &scene) : 
+    brush3d(brush3d), 
+    octree(*scene.solidSpace), 
+    dirtyHandler(scene),
+    simplifier(0.99, 0.1, true)
+     {
 }
 
 void PaintBrushCommand::execute(const float &value) {
@@ -20,9 +24,9 @@ void PaintBrushCommand::execute(const float &value) {
     }
 
     if(brush3d.mode == BrushMode::ADD) {
-        octree.add(*handler, dirtyHandler, brush3d.detail);
+        octree.add(*handler, dirtyHandler, brush3d.detail, simplifier);
     } else if(brush3d.mode == BrushMode::REMOVE) {
-        octree.del(*handler, dirtyHandler, brush3d.detail);
+        octree.del(*handler, dirtyHandler, brush3d.detail, simplifier);
     }
 
 }

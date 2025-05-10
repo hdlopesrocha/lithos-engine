@@ -1,7 +1,10 @@
 
 #include "tools.hpp"
 
-Scene::Scene(Settings * settings) {
+Scene::Scene(Settings * settings):
+    simplifier(0.99, 0.1, true)
+
+ {
 	this->settings = settings;
 	solidSpace = new Octree(BoundingCube(glm::vec3(0,0,0), 30.0), glm::pow(2, 9));
 	liquidSpace = new Octree(BoundingCube(glm::vec3(0,7,0), 30.0), glm::pow(2, 9));
@@ -220,13 +223,13 @@ void Scene::generate(Camera &camera) {
 	float minSize = 30;
 
 	solidSpace->add(BoxContainmentHandler(BoundingBox(glm::vec3(1500,0,0),glm::vec3(1500+256,256,256)),
-		SimpleBrush(4)), DirtyHandler(*this), 2.0);
+		SimpleBrush(4)), DirtyHandler(*this), 2.0, simplifier);
 
 	solidSpace->add(BoxContainmentHandler(BoundingBox(glm::vec3(2000,0,0),glm::vec3(2000+256,256,256)),
-		SimpleBrush(4)), DirtyHandler(*this), minSize);
+		SimpleBrush(4)), DirtyHandler(*this), minSize, simplifier);
 
 	solidSpace->add(BoxContainmentHandler(BoundingBox(glm::vec3(2500,0,0),glm::vec3(2500+256,256,256)),
-		SimpleBrush(4)), DirtyHandler(*this), minSize*2);
+		SimpleBrush(4)), DirtyHandler(*this), minSize*2, simplifier);
 
 	BoundingBox mapBox = BoundingBox(glm::vec3(-sizePerTile*tiles*0.5,-height*0.5,-sizePerTile*tiles*0.5), glm::vec3(sizePerTile*tiles*0.5,height*0.5,sizePerTile*tiles*0.5));
 	camera.position.x = mapBox.getCenter().x;
@@ -240,27 +243,27 @@ void Scene::generate(Camera &camera) {
 				mapBox, sizePerTile
 			), mapBox, sizePerTile
 		), LandBrush()
-	), DirtyHandler(*this), minSize);
+	), DirtyHandler(*this), minSize, simplifier);
 
-	solidSpace->del(SphereContainmentHandler(BoundingSphere(glm::vec3(0,768,0),1024), SimpleBrush(14)), DirtyHandler(*this), minSize);
+	solidSpace->del(SphereContainmentHandler(BoundingSphere(glm::vec3(0,768,0),1024), SimpleBrush(14)), DirtyHandler(*this), minSize, simplifier);
 
 	solidSpace->add(BoxContainmentHandler(BoundingBox(glm::vec3(1500,0,500),glm::vec3(1500+256,256,500+256)),
-		SimpleBrush(4)), DirtyHandler(*this), 2.0);
+		SimpleBrush(4)), DirtyHandler(*this), 2.0, simplifier);
 
 	solidSpace->add(BoxContainmentHandler(BoundingBox(glm::vec3(2000,0,500),glm::vec3(2000+256,256,500+256)),
-		SimpleBrush(4)), DirtyHandler(*this), minSize);
+		SimpleBrush(4)), DirtyHandler(*this), minSize, simplifier);
 	
 	solidSpace->add(BoxContainmentHandler(BoundingBox(glm::vec3(2500,0,500),glm::vec3(2500+256,256,500+256)),
-		SimpleBrush(4)), DirtyHandler(*this), minSize*2);
+		SimpleBrush(4)), DirtyHandler(*this), minSize*2, simplifier);
 
 	//solidSpace->add(BoxContainmentHandler(BoundingBox(glm::vec3(-20,-5,-20),glm::vec3(20,10,20)),SimpleBrush(8)), 1.0);
 	//solidSpace->del(BoxContainmentHandler(BoundingBox(glm::vec3(-17,-4,-17),glm::vec3(17,12,17)),SimpleBrush(6)), 1.0);
 	//liquidSpace->del(BoxContainmentHandler(BoundingBox(glm::vec3(-18,-5,-18),glm::vec3(18,12,18)),SimpleBrush(0)), 1.0);
 	
 	for(int x= -128; x < 128; ++x) {
-		solidSpace->add(SphereContainmentHandler(BoundingSphere(glm::vec3(x,512,0),32), SimpleBrush(3)), DirtyHandler(*this), 2.0);
+		solidSpace->add(SphereContainmentHandler(BoundingSphere(glm::vec3(x,512,0),32), SimpleBrush(3)), DirtyHandler(*this), 2.0, simplifier);
 	}
-	solidSpace->del(SphereContainmentHandler(BoundingSphere(glm::vec3(0,512,0),128), SimpleBrush(4)), DirtyHandler(*this), 2.0);
+	solidSpace->del(SphereContainmentHandler(BoundingSphere(glm::vec3(0,512,0),128), SimpleBrush(4)), DirtyHandler(*this), 2.0, simplifier);
 
 	//solidSpace->add(SphereContainmentHandler(BoundingSphere(glm::vec3(-11,61,11),10), SimpleBrush(5)), 1.0);
 	//solidSpace->del(SphereContainmentHandler(BoundingSphere(glm::vec3(11,61,-11),10), SimpleBrush(4)), 1.0);
@@ -269,7 +272,7 @@ void Scene::generate(Camera &camera) {
 	//liquidSpace->add(SphereContainmentHandler(BoundingSphere(glm::vec3(11,61,-11),4), SimpleBrush(0)));
 	BoundingBox waterBox = mapBox;
 	waterBox.setMaxY(0);
-	liquidSpace->add(OctreeContainmentHandler(solidSpace, waterBox, WaterBrush(0)), DirtyHandler(*this), minSize);
+	liquidSpace->add(OctreeContainmentHandler(solidSpace, waterBox, WaterBrush(0)), DirtyHandler(*this), minSize, simplifier);
 }
 
 void Scene::import(const std::string &filename, Camera &camera) {
@@ -291,12 +294,12 @@ void Scene::import(const std::string &filename, Camera &camera) {
 			mapBox,sizePerTile
 		), 
 		DerivativeLandBrush()
-	), DirtyHandler(*this), minSize);
+	), DirtyHandler(*this), minSize, simplifier);
 
 	BoundingBox waterBox = mapBox;
 	waterBox.setMaxY(0);
 	
-	liquidSpace->add(OctreeContainmentHandler(solidSpace, waterBox, WaterBrush(0)), DirtyHandler(*this), minSize);
+	liquidSpace->add(OctreeContainmentHandler(solidSpace, waterBox, WaterBrush(0)), DirtyHandler(*this), minSize, simplifier);
 }
 
 void Scene::save(std::string folderPath, Camera &camera) {
