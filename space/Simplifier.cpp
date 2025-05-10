@@ -8,7 +8,7 @@ Simplifier::Simplifier(float angle, float distance, bool texturing) {
 }	
 
 
-void Simplifier::simplify(Octree * tree, BoundingCube chunkCube, const OctreeNodeData &params){
+void Simplifier::simplify(BoundingCube chunkCube, const OctreeNodeData &params){
 
 	if(params.node->isLeaf()) {
 		params.node->setSimplified(true);
@@ -19,7 +19,7 @@ void Simplifier::simplify(Octree * tree, BoundingCube chunkCube, const OctreeNod
 
 	bool hasSimplifiedChildren = false;
 	for(int i=0; i < 8 ; ++i) {
-		OctreeNode * c = params.node->getChildNode(i, &tree->allocator);
+		OctreeNode * c = params.node->getChildNode(i, params.allocator);
 		if(c != NULL && c->isSimplified()) {
 			hasSimplifiedChildren = true;
 			break;
@@ -43,7 +43,7 @@ void Simplifier::simplify(Octree * tree, BoundingCube chunkCube, const OctreeNod
 
 		// for leaf nodes shouldn't loop
 		for(int i=0; i < 8 ; ++i) {
-			OctreeNode * node = params.node->getChildNode(i, &tree->allocator);
+			OctreeNode * node = params.node->getChildNode(i, params.allocator);
 			if(node!=NULL && !node->isSolid()) {
 				if(!node->isSimplified()) {
 					return;	

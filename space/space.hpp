@@ -32,7 +32,8 @@ class OctreeNode {
 		void setChildNode(int i, OctreeNode * node, OctreeAllocator * allocator);
 		OctreeNode * getChildNode(int i, OctreeAllocator * allocator);
 		bool isLeaf();
-		void setLeaf(bool value);
+		void setSimplification(uint8_t value);
+		uint8_t getSimplification();
 		bool isSolid();
 		void setSolid(bool value);
 		bool isSimplified();
@@ -118,7 +119,6 @@ class Octree: public BoundingCube {
 		OctreeNode* getNodeAt(const glm::vec3 &pos, int level, bool simplification);
 		OctreeNode* getNodeAt(const glm::vec3 &pos, bool simplification);
 		void handleQuadNodes(OctreeNodeData &data, OctreeNodeTriangleHandler * handler, bool simplification);
-		void getNodeNeighbors(OctreeNodeData &data, bool simplification, OctreeNode ** out, int direction,int initialIndex, int finalIndex);
 		ContainmentType contains(const glm::vec3 &pos);
 		ContainmentType contains(const AbstractBoundingBox&cube);
 		bool hasFinerNode(const OctreeNode *node);
@@ -142,7 +142,7 @@ class Simplifier {
 	bool texturing;
 	public:
 		Simplifier(float angle, float distance, bool texturing);
-		void simplify(Octree * tree, BoundingCube chunkCube, const OctreeNodeData &params);
+		void simplify(BoundingCube chunkCube, const OctreeNodeData &params);
 
 };
 

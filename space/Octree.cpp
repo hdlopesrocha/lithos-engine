@@ -145,15 +145,6 @@ OctreeNode* Octree::getNodeAt(const glm::vec3 &pos, bool simplification) {
     return node;
 }
 
-
-
-void Octree::getNodeNeighbors(OctreeNodeData &data, bool simplification, OctreeNode ** out, int direction, int initialIndex, int finalIndex) {
-	for(int i = initialIndex; i < finalIndex; ++i) {
-		glm::vec3 pos = data.cube.getCenter() + direction* data.cube.getLengthX() * Octree::getShift(i);
-        out[i] = getNodeAt(pos, data.level, simplification);
-	}
-}
-
 int Octree::getLevelAt(const glm::vec3 &pos, bool simplification) {
     OctreeNode* node = root;
     BoundingCube cube = *this;
@@ -207,7 +198,7 @@ OctreeNode * Octree::fetch(OctreeNodeData &data, OctreeNode ** out, int i) {
     int direction = 1;
     bool simplification = true;
     if(out[i] == NULL) {
-        glm::vec3 pos = data.cube.getCenter() + direction* data.cube.getLengthX() * Octree::getShift(i);
+        glm::vec3 pos = data.cube.getCenter() + direction * data.cube.getLengthX() * Octree::getShift(i);
         out[i] = getNodeAt(pos, data.level, simplification);
     }
     return out[i];
@@ -332,7 +323,7 @@ void Octree::addAux(const ContainmentHandler &handler, const OctreeNodeDirtyHand
         }
     }
     if(chunk != NULL) {
-        simplifier.simplify(this, *chunk, OctreeNodeData(frame.level, chunkSize, node, frame.cube, NULL, &allocator));  
+        simplifier.simplify(*chunk, OctreeNodeData(frame.level, chunkSize, node, frame.cube, NULL, &allocator));  
     }
 }
 
@@ -392,7 +383,7 @@ void Octree::delAux(const ContainmentHandler &handler, const OctreeNodeDirtyHand
             }
         }
         if(chunk != NULL) {
-            simplifier.simplify(this, *chunk, OctreeNodeData(frame.level, chunkSize, node, frame.cube, NULL, &allocator));
+            simplifier.simplify(*chunk, OctreeNodeData(frame.level, chunkSize, node, frame.cube, NULL, &allocator));
         }
     }
 }
