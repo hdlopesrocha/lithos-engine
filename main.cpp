@@ -489,7 +489,7 @@ public:
 		ImGui_ImplOpenGL3_Init("#version 460");
 
 
-	//	mainScene->generate(camera);
+		mainScene->generate(camera);
 	}
 
 
@@ -611,7 +611,7 @@ public:
 			processTime += endTime - startTime;
 		}
 		else {
-		//	this->close();
+			this->close();
 		}
 		glPolygonMode(GL_FRONT, GL_FILL);
 		glPatchParameteri(GL_PATCH_VERTICES, 3); // Define the number of control points per patch

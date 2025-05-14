@@ -7,18 +7,10 @@
 class Octree;
 class OctreeAllocator;
 class Simplifier;
-
-struct ChildBlock {
-	uint children[8]; 
-
-	public:
-	ChildBlock();
-	ChildBlock * init();
-	void clear(OctreeAllocator * allocator, BoundingCube &cube);
-};
+struct ChildBlock;
 
 class OctreeNode {
-	ChildBlock * block;
+	uint block;
 
 	public: 
 		Vertex vertex;
@@ -30,7 +22,8 @@ class OctreeNode {
 		OctreeNode * init(Vertex vertex);
 		void clear(OctreeAllocator * allocator, BoundingCube &cube);
 		void setChildNode(int i, OctreeNode * node, OctreeAllocator * allocator);
-		OctreeNode * getChildNode(int i, OctreeAllocator * allocator);
+		ChildBlock * getBlock(OctreeAllocator * allocator);
+		OctreeNode * getChildNode(int i, OctreeAllocator * allocator, ChildBlock * block);
 		bool isLeaf();
 		void setSimplification(uint8_t value);
 		uint8_t getSimplification();
@@ -42,6 +35,18 @@ class OctreeNode {
 		void setDirty(bool value);
 		uint8_t getMask();
 		void setMask(uint8_t value);
+};
+
+struct ChildBlock {
+	uint children[8]; 
+
+	public:
+	ChildBlock();
+	ChildBlock * init();
+	void clear(OctreeAllocator * allocator, BoundingCube &cube);
+
+	void set(int i, OctreeNode * node, OctreeAllocator * allocator);
+	OctreeNode * get(int i, OctreeAllocator * allocator);
 };
 
 class OctreeNodeTriangleHandler {
@@ -171,13 +176,10 @@ class GeometryBuilder {
 };
 
 class MeshGeometryBuilder  : public GeometryBuilder {
-    float simplificationAngle;
-    float simplificationDistance;
-    bool simplificationTexturing;
 	long * trianglesCount;
     Octree * tree;
 	public:
-		MeshGeometryBuilder(long * trianglesCount,Octree * tree, float simplificationAngle, float simplificationDistance, bool simplificationTexturing);
+		MeshGeometryBuilder(long * trianglesCount,Octree * tree);
 		~MeshGeometryBuilder();
 		InstanceGeometry * build(OctreeNodeData &params) override;
 };

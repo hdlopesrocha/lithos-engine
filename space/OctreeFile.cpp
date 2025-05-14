@@ -88,9 +88,10 @@ uint saveRecursive(OctreeAllocator * allocator, OctreeNode * node, std::vector<O
 		nodes->push_back(n);
 
 		if(cube.getLengthX() > chunkSize) {
+			ChildBlock * block = node->getBlock(allocator);
 			for(int i=0; i < 8; ++i) {
 				BoundingCube c = cube.getChild(i);
-				n->children[i] = saveRecursive(allocator, node->getChildNode(i, allocator), nodes, chunkSize, filename, c, baseFolder);
+				n->children[i] = saveRecursive(allocator, node->getChildNode(i, allocator, block), nodes, chunkSize, filename, c, baseFolder);
 			}
 		} else {
 			std::string chunkName = getChunkName(cube);

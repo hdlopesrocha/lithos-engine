@@ -24,3 +24,11 @@ void ChildBlock::clear(OctreeAllocator * allocator, BoundingCube &cube) {
         }
     }
 }
+
+void ChildBlock::set(int i, OctreeNode * node, OctreeAllocator * allocator) {
+    children[i] = allocator->getIndex(node);
+}
+
+OctreeNode * ChildBlock::get(int i, OctreeAllocator * allocator){
+    return allocator->getOctreeNode(children[i]);
+}

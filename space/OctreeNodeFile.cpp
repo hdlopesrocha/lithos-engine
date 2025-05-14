@@ -60,9 +60,9 @@ uint saveRecursive2(OctreeAllocator * allocator, OctreeNode * node, std::vector<
 		n->isSolid = node->isSolid();
 		uint index = nodes->size(); 
 		nodes->push_back(n);
-
+		ChildBlock * block = node->getBlock(allocator);
 		for(int i=0; i < 8; ++i) {
-            n->children[i] = saveRecursive2(allocator, node->getChildNode(i, allocator), nodes);
+            n->children[i] = saveRecursive2(allocator, node->getChildNode(i, allocator, block), nodes);
 		}
 		return index;
 	}

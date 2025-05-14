@@ -17,9 +17,11 @@ void Simplifier::simplify(BoundingCube chunkCube, const OctreeNodeData &params){
 		params.node->setSimplified(false);
 	}
 
+	ChildBlock * block = params.node->getBlock(params.allocator);
+
 	bool hasSimplifiedChildren = false;
 	for(int i=0; i < 8 ; ++i) {
-		OctreeNode * c = params.node->getChildNode(i, params.allocator);
+		OctreeNode * c = params.node->getChildNode(i, params.allocator, block);
 		if(c != NULL && c->isSimplified()) {
 			hasSimplifiedChildren = true;
 			break;
@@ -41,9 +43,10 @@ void Simplifier::simplify(BoundingCube chunkCube, const OctreeNodeData &params){
 		uint mask = 0xff;
 		int nodeCount=0;
 
+
 		// for leaf nodes shouldn't loop
 		for(int i=0; i < 8 ; ++i) {
-			OctreeNode * node = params.node->getChildNode(i, params.allocator);
+			OctreeNode * node = params.node->getChildNode(i, params.allocator, block);
 			if(node!=NULL && !node->isSolid()) {
 				if(!node->isSimplified()) {
 					return;	

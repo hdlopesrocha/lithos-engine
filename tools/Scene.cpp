@@ -17,8 +17,8 @@ Scene::Scene(Settings * settings):
 	vegetationInstancesVisible = 0;
 
 
-	solidBuilder = new MeshGeometryBuilder(&solidTrianglesCount, solidSpace, 0.99, 0.1, true);
-	liquidBuilder = new MeshGeometryBuilder(&liquidTrianglesCount, liquidSpace, 0.99, 0.1, true);
+	solidBuilder = new MeshGeometryBuilder(&solidTrianglesCount, solidSpace);
+	liquidBuilder = new MeshGeometryBuilder(&liquidTrianglesCount, liquidSpace);
 	vegetationBuilder = new VegetationGeometryBuilder(solidSpace, new VegetationInstanceBuilderHandler(solidSpace, 0.1, 4));
 	debugBuilder = new OctreeGeometryBuilder(new OctreeInstanceBuilderHandler());
 

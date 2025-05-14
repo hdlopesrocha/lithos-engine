@@ -11,25 +11,37 @@ OctreeNode * OctreeNode::init(Vertex vertex) {
 	this->setDirty(true);
 	this->vertex = vertex;
 	this->dataId = 0;
-	this->block = NULL;
+	this->block = UINT_MAX;
 	return this;
 }
 
-void OctreeNode::setChildNode(int i, OctreeNode * node, OctreeAllocator * allocator) {
-	if(node==NULL && this->block == NULL) {
-		return;
-	}
-	if(this->block == NULL) {
-		this->block = allocator->childAllocator.allocate()->init();
-	}
-	this->block->children[i] = allocator->getIndex(node);
+ChildBlock * OctreeNode::getBlock(OctreeAllocator * allocator) {
+	return allocator->childAllocator.getFromIndex(this->block);
 }
 
-OctreeNode * OctreeNode::getChildNode(int i, OctreeAllocator * allocator){
-	if(this->block == NULL) {
+void OctreeNode::setChildNode(int i, OctreeNode * node, OctreeAllocator * allocator) {
+	if(node==NULL && this->block == UINT_MAX) {
+		return;
+	}
+	ChildBlock * block = NULL;
+
+	if(this->block == UINT_MAX) {
+		block = allocator->childAllocator.allocate()->init();
+		this->block = allocator->childAllocator.getIndex(block);
+	}
+
+	if(block == NULL) {
+		block = allocator->childAllocator.getFromIndex(this->block);
+	}
+
+	block->children[i] = allocator->getIndex(node);
+}
+
+OctreeNode * OctreeNode::getChildNode(int i, OctreeAllocator * allocator, ChildBlock * block) {
+	if(block == NULL) {
 		return NULL;
 	}
-	return allocator->getOctreeNode(this->block->children[i]);
+	return allocator->getOctreeNode(block->children[i]);
 }
 
 OctreeNode::~OctreeNode() {
@@ -37,23 +49,16 @@ OctreeNode::~OctreeNode() {
 }
 
 void OctreeNode::clear(OctreeAllocator * allocator, BoundingCube &cube) {
-	if(this->block != NULL) {
-		this->block->clear(allocator, cube);
-		allocator->childAllocator.deallocate(this->block);
-		this->block = NULL;
+	if(this->block != UINT_MAX) {
+		ChildBlock * block = allocator->childAllocator.getFromIndex(this->block);
+		block->clear(allocator, cube);
+		allocator->childAllocator.deallocate(block);
+		this->block = UINT_MAX;
 	}
 }
 
 bool OctreeNode::isLeaf() {
-	if(this->block == NULL) {
-		return true;
-	}
-    for(int i=0 ; i < 8 ; ++i) {
-        if(this->block->children[i] != UINT_MAX) {
-            return false;
-        }
-    }
-    return true;
+	return this->block == UINT_MAX;
 }
 
 uint8_t OctreeNode::getMask(){

@@ -6,9 +6,11 @@ void IteratorHandler::iterate(OctreeNodeData params) {
         if(test(params)) {
             uint8_t internalOrder[8];
             getOrder(params, internalOrder);
+
+            ChildBlock * block = params.node->getBlock(params.allocator);
             for(int i=0; i <8 ; ++i) {
                 uint8_t j = internalOrder[i];
-                OctreeNode * child = params.node->getChildNode(j, params.allocator);
+                OctreeNode * child = params.node->getChildNode(j, params.allocator, block);
                 if(child != NULL) {
                     this->iterate(OctreeNodeData( params.level+1, params.chunkSize, child, params.cube.getChild(j) , params.context, params.allocator));
                 }
@@ -30,9 +32,11 @@ void IteratorHandler::iterateFlatIn(OctreeNodeData params) {
         before(data);
         if(test(data)) {
             getOrder(data, internalOrder);
+            OctreeNode * node = data.node;
+            ChildBlock * block = node->getBlock(params.allocator);
             for(int i=7; i >= 0 ; --i) {
                 uint8_t j = internalOrder[i];
-                OctreeNode * child = data.node->getChildNode(j, params.allocator);
+                OctreeNode * child = node->getChildNode(j, params.allocator, block);
                 if(child != NULL) {
                     flatData.push(OctreeNodeData(data.level + 1, data.chunkSize,child, data.cube.getChild(j), data.context, data.allocator));
                 }
@@ -68,7 +72,9 @@ void IteratorHandler::iterateFlat(OctreeNodeData params) {
         // Process children in order
         if (frame.childIndex < 8) {
             uint8_t j = frame.internalOrder[frame.childIndex++];
-            OctreeNode* child = frame.node->getChildNode(j, params.allocator);
+            OctreeNode * node = frame.node;
+            ChildBlock * block = node->getBlock(params.allocator);
+            OctreeNode* child = node->getChildNode(j, params.allocator, block);
 
             if (child) {
                 OctreeNodeData data(frame.level+1, frame.chunkSize, child, frame.cube.getChild(j), frame.context, frame.allocator);
@@ -113,7 +119,9 @@ void IteratorHandler::iterateFlatOut(OctreeNodeData params) {
             // in the original (correct) order when popped.
             for (int i = 7; i >= 0; --i) {
                 uint8_t j = internalOrder[i];
-                OctreeNode* child = frame.node->getChildNode(j, params.allocator);
+                OctreeNode * node = frame.node;
+                ChildBlock * block = node->getBlock(params.allocator);
+                OctreeNode* child = node->getChildNode(j, params.allocator, block);
                 if (child) {
                     stackOut.push(StackFrameOut(OctreeNodeData(frame.level + 1, frame.chunkSize, child, frame.cube.getChild(j), frame.context, params.allocator), false));
                 }
