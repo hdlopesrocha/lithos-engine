@@ -10,12 +10,11 @@ class Simplifier;
 struct ChildBlock;
 
 class OctreeNode {
-	uint block;
 
 	public: 
 		Vertex vertex;
 		uint16_t bits;
-		long dataId;
+		uint id;
 
 		OctreeNode(Vertex vertex);
 		~OctreeNode();
@@ -35,6 +34,7 @@ class OctreeNode {
 		void setDirty(bool value);
 		uint8_t getMask();
 		void setMask(uint8_t value);
+
 };
 
 struct ChildBlock {
@@ -110,7 +110,6 @@ class Octree: public BoundingCube {
 	using BoundingCube::BoundingCube;
 	public: 
 		float chunkSize;
-		long dataId;
 		OctreeNode * root;
 		OctreeAllocator allocator;
 
@@ -282,14 +281,6 @@ class OctreeVisibilityChecker : public IteratorHandler{
 		bool test(OctreeNodeData &params) override;
 		void getOrder(OctreeNodeData &params, uint8_t * order) override;
 
-};
-
-
-class OctreeProcessor {
-	Octree * tree;
-    public: 
-		OctreeProcessor(Octree * tree);
-		bool process(OctreeNodeData &params);
 };
 
 #endif

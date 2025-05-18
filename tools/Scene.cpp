@@ -30,19 +30,15 @@ Scene::Scene(Settings * settings):
 }
 
 bool Scene::loadSpace(Octree* tree, OctreeNodeData& data, std::unordered_map<long, NodeInfo>* infos, GeometryBuilder* builder) {
-	if (data.node->dataId == 0) {
-		data.node->dataId = ++tree->dataId;
-	}
-
 	InstanceGeometry* loadable = builder->build(data);
 	if (loadable == NULL) {
 		// No geometry to load — erase entry if it exists
-		infos->erase(data.node->dataId);
+		infos->erase(data.node->id);
 		return false;
 	}
 
 	// Try to insert a new NodeInfo with loadable
-	auto [it, inserted] = infos->try_emplace(data.node->dataId, loadable);
+	auto [it, inserted] = infos->try_emplace(data.node->id, loadable);
 	if (!inserted) {
 		// Already existed — replace existing loadable
 		if (it->second.loadable) {
@@ -164,37 +160,36 @@ void Scene::draw (uint drawableType, int mode, glm::vec3 cameraPosition, const s
 	for(const OctreeNodeData &data : list) {
 		OctreeNode * node = data.node;
 		
-		if(node->dataId){
-			if(drawableType == TYPE_INSTANCE_VEGETATION_DRAWABLE) {
-				DrawableInstanceGeometry * drawable	= loadIfNeeded(&vegetationInfo, node->dataId);
-				if(drawable != NULL) {
-					float amount = glm::clamp( 1.0 - glm::length(cameraPosition -  drawable->center)/(float(settings->billboardRange)), 0.0, 1.0);
-					if(amount > 0.8){
-						amount = 1.0;
-					}
-					//std::cout << "Scene.draw() " << std::to_string(drawableType) << "|" << std::to_string(amount) << std::endl;
-					drawable->draw(mode, amount, &vegetationInstancesVisible);
+		if(drawableType == TYPE_INSTANCE_VEGETATION_DRAWABLE) {
+			DrawableInstanceGeometry * drawable	= loadIfNeeded(&vegetationInfo, node->id);
+			if(drawable != NULL) {
+				float amount = glm::clamp( 1.0 - glm::length(cameraPosition -  drawable->center)/(float(settings->billboardRange)), 0.0, 1.0);
+				if(amount > 0.8){
+					amount = 1.0;
 				}
-			}
-			else if(drawableType == TYPE_INSTANCE_SOLID_DRAWABLE) {
-				DrawableInstanceGeometry * drawable	= loadIfNeeded(&solidInfo, node->dataId);
-				if(drawable != NULL) {
-					drawable->draw(mode, 1.0, &solidInstancesVisible);
-				}
-			}
-			else if(drawableType == TYPE_INSTANCE_LIQUID_DRAWABLE) {
-				DrawableInstanceGeometry * drawable	= loadIfNeeded(&liquidInfo, node->dataId);
-				if(drawable != NULL) {
-					drawable->draw(mode, 1.0, &liquidInstancesVisible);
-				}
-			}
-			else if(drawableType == TYPE_INSTANCE_OCTREE_DRAWABLE) {
-				DrawableInstanceGeometry * drawable	= loadIfNeeded(&debugInfo, node->dataId);
-				if(drawable != NULL) {
-					drawable->draw(mode, 1.0, &solidInstancesVisible);
-				}
+				//std::cout << "Scene.draw() " << std::to_string(drawableType) << "|" << std::to_string(amount) << std::endl;
+				drawable->draw(mode, amount, &vegetationInstancesVisible);
 			}
 		}
+		else if(drawableType == TYPE_INSTANCE_SOLID_DRAWABLE) {
+			DrawableInstanceGeometry * drawable	= loadIfNeeded(&solidInfo, node->id);
+			if(drawable != NULL) {
+				drawable->draw(mode, 1.0, &solidInstancesVisible);
+			}
+		}
+		else if(drawableType == TYPE_INSTANCE_LIQUID_DRAWABLE) {
+			DrawableInstanceGeometry * drawable	= loadIfNeeded(&liquidInfo, node->id);
+			if(drawable != NULL) {
+				drawable->draw(mode, 1.0, &liquidInstancesVisible);
+			}
+		}
+		else if(drawableType == TYPE_INSTANCE_OCTREE_DRAWABLE) {
+			DrawableInstanceGeometry * drawable	= loadIfNeeded(&debugInfo, node->id);
+			if(drawable != NULL) {
+				drawable->draw(mode, 1.0, &solidInstancesVisible);
+			}
+		}
+		
 	}
 }
 

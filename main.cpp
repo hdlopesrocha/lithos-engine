@@ -611,7 +611,7 @@ public:
 			processTime += endTime - startTime;
 		}
 		else {
-			this->close();
+			//this->close();
 		}
 		glPolygonMode(GL_FRONT, GL_FILL);
 		glPatchParameteri(GL_PATCH_VERTICES, 3); // Define the number of control points per patch
@@ -967,8 +967,8 @@ public:
 			ImGui::Text("%ld/%ld vegetation instances", mainScene->vegetationInstancesVisible, mainScene->vegetationInfo.size());
 			ImGui::Text("%ld solid triangles", mainScene->solidTrianglesCount);
 			ImGui::Text("%ld liquid triangles", mainScene->liquidTrianglesCount);
-			ImGui::Text("%ld solid datas", mainScene->solidSpace->dataId);
-			ImGui::Text("%ld liquid datas", mainScene->liquidSpace->dataId);
+			ImGui::Text("%ld solid datas", mainScene->solidSpace->allocator.getAllocatedBlocksCount());
+			ImGui::Text("%ld liquid datas", mainScene->liquidSpace->allocator.getAllocatedBlocksCount());
 			ImGui::Text("%f process time", processTime);
 
 			size_t allocatedBlocks = mainScene->solidSpace->allocator.getAllocatedBlocksCount();

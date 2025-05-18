@@ -14,7 +14,6 @@ static bool initialized = false;
 Octree::Octree(BoundingCube minCube, float chunkSize) : BoundingCube(minCube){
     this->chunkSize = chunkSize;
 	this->root = allocator.allocateOctreeNode(minCube)->init(glm::vec3(minCube.getCenter()));
-    this->dataId = 0;
 	if(!initialized) {
 		tessOrder.push_back(glm::ivec4(0,1,3,2));tessEdge.push_back(glm::ivec2(3,7));
 		tessOrder.push_back(glm::ivec4(0,2,6,4));tessEdge.push_back(glm::ivec2(6,7));
@@ -321,7 +320,7 @@ void Octree::addAux(const ContainmentHandler &handler, const OctreeNodeDirtyHand
     }
     node->setMask(node->getMask() | (buildMask(handler, frame.cube)));
     node->setSolid(check == ContainmentType::Contains);
-    if(node->dataId) {
+    if(node->id) {
         dirtyHandler.handle(node);
     }
     bool isLeaf = frame.cube.getLengthX() <= frame.minSize;
@@ -387,7 +386,7 @@ void Octree::delAux(const ContainmentHandler &handler, const OctreeNodeDirtyHand
 
         node->setMask(node->getMask() & (buildMask(handler, frame.cube) ^ 0xff));
         node->setSolid(check == ContainmentType::Contains);
-        if(node->dataId) {
+        if(node->id) {
             dirtyHandler.handle(node);
         }
         if (!isLeaf) {

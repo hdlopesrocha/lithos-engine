@@ -10,30 +10,26 @@ OctreeNode * OctreeNode::init(Vertex vertex) {
 	this->setSimplified(false);
 	this->setDirty(true);
 	this->vertex = vertex;
-	this->dataId = 0;
-	this->block = UINT_MAX;
+	this->id = UINT_MAX;
 	return this;
 }
 
 ChildBlock * OctreeNode::getBlock(OctreeAllocator * allocator) {
-	return allocator->childAllocator.getFromIndex(this->block);
+	return allocator->childAllocator.getFromIndex(this->id);
 }
 
 void OctreeNode::setChildNode(int i, OctreeNode * node, OctreeAllocator * allocator) {
-	if(node==NULL && this->block == UINT_MAX) {
+	if(node == NULL && this->id == UINT_MAX) {
 		return;
 	}
 	ChildBlock * block = NULL;
-
-	if(this->block == UINT_MAX) {
+	if(this->id == UINT_MAX) {
 		block = allocator->childAllocator.allocate()->init();
-		this->block = allocator->childAllocator.getIndex(block);
+		this->id = allocator->childAllocator.getIndex(block);
 	}
-
 	if(block == NULL) {
-		block = allocator->childAllocator.getFromIndex(this->block);
+		block = allocator->childAllocator.getFromIndex(this->id);
 	}
-
 	block->children[i] = allocator->getIndex(node);
 }
 
@@ -49,16 +45,16 @@ OctreeNode::~OctreeNode() {
 }
 
 void OctreeNode::clear(OctreeAllocator * allocator, BoundingCube &cube) {
-	if(this->block != UINT_MAX) {
-		ChildBlock * block = allocator->childAllocator.getFromIndex(this->block);
+	if(this->id != UINT_MAX) {
+		ChildBlock * block = allocator->childAllocator.getFromIndex(this->id);
 		block->clear(allocator, cube);
 		allocator->childAllocator.deallocate(block);
-		this->block = UINT_MAX;
+		this->id = UINT_MAX;
 	}
 }
 
 bool OctreeNode::isLeaf() {
-	return this->block == UINT_MAX;
+	return this->id == UINT_MAX;
 }
 
 uint8_t OctreeNode::getMask(){
@@ -92,6 +88,7 @@ void OctreeNode::setDirty(bool value){
 	uint16_t mask = 0x0400;
 	this->bits = (this->bits & ~mask ) | (value ? mask : 0x0);
 }
+
 
 void OctreeNode::setSimplification(uint8_t value){
 	uint16_t mask = 0xf000;
