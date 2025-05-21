@@ -272,6 +272,7 @@ void Octree::expand(const ContainmentHandler &handler) {
 	    if (handler.isContained(*this)) {
 	        break;
 	    }
+        // TODO expand using hermite function
 		glm::vec3 point = handler.getCenter();
 	    unsigned int i = 7 - getNodeIndex(point, *this);
 

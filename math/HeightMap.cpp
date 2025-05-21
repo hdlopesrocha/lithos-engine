@@ -54,6 +54,18 @@ bool HeightMap::contains(const glm::vec3 &point) const {
     return BoundingBox::contains(point) && Math::isBetween(point.y, getMinY(), h);
 }
 
+float HeightMap::distance(const glm::vec3 p) const {
+    glm::vec3 min = this->getMin();
+    glm::vec3 max = this->getMax();
+    float sdf1= Math::distancePointAABB(p, min, max);
+
+
+    float sdf2 = p.y - func.getHeightAt(p.x,p.z);
+
+    return glm::max(sdf1, sdf2);
+}
+
+
 bool HeightMap::isContained(const BoundingCube &p) const {
     return p.contains(*this);
 }
@@ -109,6 +121,10 @@ glm::vec3 HeightMapContainmentHandler::getCenter() const {
 
 bool HeightMapContainmentHandler::contains(const glm::vec3 p) const {
     return map.contains(p);
+}
+
+float HeightMapContainmentHandler::distance(const glm::vec3 p) const {
+    return map.distance(p);
 }
 
 bool HeightMapContainmentHandler::isContained(const BoundingCube &p) const {

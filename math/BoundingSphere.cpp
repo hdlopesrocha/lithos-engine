@@ -91,6 +91,10 @@ bool SphereContainmentHandler::contains(const glm::vec3 p) const {
     return sphere.contains(p);
 }
 
+float SphereContainmentHandler::distance(const glm::vec3 p) const {
+    return glm::length(p - sphere.center) - sphere.radius;
+}
+
 bool SphereContainmentHandler::isContained(const BoundingCube &cube) const {
     return cube.contains(sphere);
 }

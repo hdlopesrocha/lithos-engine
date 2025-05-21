@@ -320,14 +320,13 @@ class HeightMap: public BoundingBox  {
 		
    		glm::vec3 getNormalAt(float x, float z) const ;
 		void getPoint(const BoundingCube& cube, glm::vec3 &p) const ;
-
 		glm::ivec2 getIndexes(float x, float z) const ;
 		glm::vec2 getHeightRangeBetween(const BoundingCube &cube) const ;
 		bool hitsBoundary(const BoundingCube &cube) const ;
 		bool isContained(const BoundingCube &p) const ;
 		bool contains(const glm::vec3 &point) const ;
+		float distance(const glm::vec3 p) const;
 		ContainmentType test(const BoundingCube &cube) const ;
-
 };
 
 
@@ -351,6 +350,7 @@ class ContainmentHandler {
 		virtual Vertex getVertex(const BoundingCube &cube, ContainmentType solid, glm::vec3 previousPoint) const = 0;
 		virtual glm::vec3 getCenter() const = 0;
 		virtual bool contains(const glm::vec3 p) const = 0;
+		virtual float distance(const glm::vec3 p) const = 0;
 		virtual bool isContained(const BoundingCube &cube) const = 0;
 };
 
@@ -475,6 +475,7 @@ class SphereContainmentHandler : public ContainmentHandler {
 	SphereContainmentHandler(BoundingSphere s, const TexturePainter &b);
 	glm::vec3 getCenter() const override;
 	bool contains(const glm::vec3 p) const override;
+	float distance(const glm::vec3 p) const override;
 	glm::vec3 getNormal(const glm::vec3 pos) const ;
 	bool isContained(const BoundingCube &cube) const override;
 	ContainmentType check(const BoundingCube &cube) const override;
@@ -489,6 +490,7 @@ class BoxContainmentHandler : public ContainmentHandler {
 	BoxContainmentHandler(BoundingBox box, const TexturePainter &b);
 	glm::vec3 getCenter() const;
 	bool contains(const glm::vec3 p) const ;
+	float distance(const glm::vec3 p) const override;
 	bool isContained(const BoundingCube &cube) const override;
 	ContainmentType check(const BoundingCube &cube) const override;
 	Vertex getVertex(const BoundingCube &cube, ContainmentType solid, glm::vec3 previousPoint) const override;
@@ -502,6 +504,7 @@ class HeightMapContainmentHandler : public ContainmentHandler {
 	HeightMapContainmentHandler(const HeightMap &map, const TexturePainter &b);
 	glm::vec3 getCenter() const;
 	bool contains(const glm::vec3 p) const ;
+	float distance(const glm::vec3 p) const override;
 	float intersection(const glm::vec3 a, const glm::vec3 b) const ;
 	glm::vec3 getNormal(const glm::vec3 pos) const ;
 	bool isContained(const BoundingCube &cube) const override;
@@ -590,6 +593,8 @@ public:
 	static void wgs84ToEcef(double lat, double lon, double height, double &X, double &Y, double &Z);
 	static glm::quat createQuaternion(float yaw, float pitch, float roll);
 	static glm::quat eulerToQuat(float yaw, float pitch, float roll);
+	static float distancePointAABB(glm::vec3 p, glm::vec3 min, glm::vec3 max);
+	static float check(float p, float min, float max);
 	static float randomFloat();
 };
 void ensureFolderExists(const std::string& folder);
