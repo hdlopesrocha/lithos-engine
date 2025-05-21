@@ -57,7 +57,7 @@ bool HeightMap::contains(const glm::vec3 &point) const {
 float HeightMap::distance(const glm::vec3 p) const {
     glm::vec3 min = this->getMin();
     glm::vec3 max = this->getMax();
-    float sdf1= Math::distancePointAABB(p, min, max);
+    float sdf1= sqrt(Math::squaredDistPointAABB(p, min, max));
 
 
     float sdf2 = p.y - func.getHeightAt(p.x,p.z);

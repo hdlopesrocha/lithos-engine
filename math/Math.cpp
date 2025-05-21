@@ -239,14 +239,14 @@ float Math::randomFloat() {
     return dis(gen);
 }
 
-float Math::distancePointAABB(glm::vec3 p, glm::vec3 min, glm::vec3 max){
+float Math::squaredDistPointAABB(glm::vec3 p, glm::vec3 min, glm::vec3 max){
     float sq = 0.0f;
 
     sq += Math::check(p[0], min[0], max[0]);
     sq += Math::check(p[1], min[1], max[1]);
     sq += Math::check(p[2], min[2], max[2]);
 
-    return sqrt(sq);
+    return sq;
 }
 
 float Math::check(float p, float min, float max){ 
@@ -266,14 +266,12 @@ float Math::check(float p, float min, float max){
     return out;
 }
 
-
 float Math::triangleArea(const glm::vec3& A, const glm::vec3& B, const glm::vec3& C) {
     glm::vec3 AB = B - A;
     glm::vec3 AC = C - A;
     float area = 0.5f * glm::length(glm::cross(AB, AC));
     return area;
 }
-
 
 const char* toString(BrushMode v)
 {

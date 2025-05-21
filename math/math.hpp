@@ -593,7 +593,7 @@ public:
 	static void wgs84ToEcef(double lat, double lon, double height, double &X, double &Y, double &Z);
 	static glm::quat createQuaternion(float yaw, float pitch, float roll);
 	static glm::quat eulerToQuat(float yaw, float pitch, float roll);
-	static float distancePointAABB(glm::vec3 p, glm::vec3 min, glm::vec3 max);
+	static float squaredDistPointAABB(glm::vec3 p, glm::vec3 min, glm::vec3 max);
 	static float check(float p, float min, float max);
 	static float randomFloat();
 };

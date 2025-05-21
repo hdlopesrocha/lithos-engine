@@ -15,45 +15,9 @@ bool BoundingSphere::contains(const glm::vec3 point) const {
 	return glm::dot(temp, temp) < radius*radius;
 }
 
-   float check(float pn, float bmin,
-         float bmax ) 
-    {
-        float out = 0;
-        float v = pn;
- 
-        if ( v < bmin ) 
-        {             
-            float val = (bmin - v);             
-            out += val * val;         
-        }         
-         
-        if ( v > bmax )
-        {
-            float val = (v - bmax);
-            out += val * val;
-        }
- 
-        return out;
-    };
- 
-
-
-float squaredDistPointAABB( const glm::vec3 p, const AbstractBoundingBox& aabb )
-{
- 
-    // Squared distance
-    float sq = 0.0;
- 
-    sq += check( p[0], aabb.getMin()[0], aabb.getMax()[0] );
-    sq += check( p[1], aabb.getMin()[1], aabb.getMax()[1] );
-    sq += check( p[2], aabb.getMin()[2], aabb.getMax()[2] );
- 
-    return sq;
-}
-
 
 bool BoundingSphere::intersects(const AbstractBoundingBox& cube) const {
-    float squaredDistance = squaredDistPointAABB( center, cube );
+    float squaredDistance = Math::squaredDistPointAABB( center, cube.getMin(), cube.getMax() );
     return squaredDistance <= (radius * radius);
 }
 
