@@ -241,6 +241,7 @@ uint buildMask(const ContainmentHandler &handler, BoundingCube &cube) {
 
     for (int i = 0; i < 8; ++i) {
         mask |= (uint)handler.contains(min + lengthX * Octree::getShift(i)) << i;
+        //mask |= (uint)handler.distance(min + lengthX * Octree::getShift(i)) <=0 ? 0x1: 0x0 << i;
     }
 
     return mask;

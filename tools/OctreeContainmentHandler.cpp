@@ -14,6 +14,10 @@ bool OctreeContainmentHandler::contains(const glm::vec3 p) const {
     return box.contains(p) && tc != ContainmentType::Contains;
 }
 
+float OctreeContainmentHandler::distance(const glm::vec3 p) const {
+    return 1;
+}
+
 bool OctreeContainmentHandler::isContained(const BoundingCube &p) const {
     return p.contains(box);
 }
