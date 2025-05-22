@@ -489,7 +489,7 @@ public:
 		ImGui_ImplOpenGL3_Init("#version 460");
 
 
-		mainScene->generate(camera);
+		//mainScene->generate(camera);
 	}
 
 

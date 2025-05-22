@@ -1,10 +1,11 @@
 #include "space.hpp"
 
 OctreeNode::OctreeNode(Vertex vertex) {
-	init(vertex);
+	init(vertex, 0);
 }
 
-OctreeNode * OctreeNode::init(Vertex vertex) {
+OctreeNode * OctreeNode::init(Vertex vertex, float sdf) {
+	this->sdf = sdf;
 	this->bits = 0x0;
 	this->setSolid(false);
 	this->setSimplified(false);

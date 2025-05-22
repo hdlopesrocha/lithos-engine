@@ -11,7 +11,7 @@ OctreeNode * loadRecursive2(OctreeAllocator * allocator, OctreeNode * node, int 
 	OctreeNodeSerialized serialized = nodes->at(i);
 	if(node == NULL) {
 		Vertex vertex(serialized.position, serialized.normal, glm::vec2(0), serialized.brushIndex);
-		node = allocator->allocateOctreeNode(cube)->init(vertex);
+		node = allocator->allocateOctreeNode(cube)->init(vertex, serialized.sdf);
 		node->setMask(serialized.mask);
 		node->setSolid(serialized.isSolid);
 	}
@@ -58,6 +58,7 @@ uint saveRecursive2(OctreeAllocator * allocator, OctreeNode * node, std::vector<
 		n->brushIndex = node->vertex.brushIndex;
 		n->mask = node->getMask();
 		n->isSolid = node->isSolid();
+		n->sdf = node->sdf;
 		uint index = nodes->size(); 
 		nodes->push_back(n);
 		ChildBlock * block = node->getBlock(allocator);

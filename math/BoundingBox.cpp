@@ -70,9 +70,7 @@ bool BoxContainmentHandler::contains(const glm::vec3 p) const {
 }
 
 float BoxContainmentHandler::distance(const glm::vec3 p) const {
-    glm::vec3 min = this->box.getMin();
-    glm::vec3 max = this->box.getMax();
-    return sqrt(Math::squaredDistPointAABB(p, min, max));
+    return Math::boxSDF(p, box);
 }
 
 bool BoxContainmentHandler::isContained(const BoundingCube &cube) const {

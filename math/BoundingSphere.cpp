@@ -15,7 +15,6 @@ bool BoundingSphere::contains(const glm::vec3 point) const {
 	return glm::dot(temp, temp) < radius*radius;
 }
 
-
 bool BoundingSphere::intersects(const AbstractBoundingBox& cube) const {
     float squaredDistance = Math::squaredDistPointAABB( center, cube.getMin(), cube.getMax() );
     return squaredDistance <= (radius * radius);
@@ -42,7 +41,6 @@ ContainmentType BoundingSphere::test(const AbstractBoundingBox& cube) const {
     return ContainmentType::Disjoint;
 }
 
-
 SphereContainmentHandler::SphereContainmentHandler(BoundingSphere s, const TexturePainter &b) : ContainmentHandler(), sphere(s), brush(b){
 
 }
@@ -56,7 +54,7 @@ bool SphereContainmentHandler::contains(const glm::vec3 p) const {
 }
 
 float SphereContainmentHandler::distance(const glm::vec3 p) const {
-    return glm::length(p - sphere.center) - sphere.radius;
+    return Math::sphereSDF(p, sphere);
 }
 
 bool SphereContainmentHandler::isContained(const BoundingCube &cube) const {

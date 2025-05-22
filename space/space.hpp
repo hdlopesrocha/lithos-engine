@@ -15,10 +15,11 @@ class OctreeNode {
 		Vertex vertex;
 		uint16_t bits;
 		uint id;
+		float sdf;
 
 		OctreeNode(Vertex vertex);
 		~OctreeNode();
-		OctreeNode * init(Vertex vertex);
+		OctreeNode * init(Vertex vertex, float sdf);
 		void clear(OctreeAllocator * allocator, BoundingCube &cube);
 		void setChildNode(int i, OctreeNode * node, OctreeAllocator * allocator);
 		ChildBlock * getBlock(OctreeAllocator * allocator);
@@ -238,6 +239,7 @@ struct OctreeNodeSerialized {
     uint brushIndex;
     uint mask;
     bool isSolid;
+	float sdf;
     uint children[8] = {0,0,0,0,0,0,0,0};
 };
 
