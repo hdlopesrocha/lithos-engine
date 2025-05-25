@@ -1,5 +1,5 @@
 #include "math.hpp"
-
+#include "SDF.hpp"
 
 BoundingBox::BoundingBox(glm::vec3 min, glm::vec3 max) : AbstractBoundingBox(min) {
 	this->max = max;
@@ -70,7 +70,9 @@ bool BoxContainmentHandler::contains(const glm::vec3 p) const {
 }
 
 float BoxContainmentHandler::distance(const glm::vec3 p) const {
-    return Math::boxSDF(p, box);
+    glm::vec3 len = box.getLength()*0.5f;
+    glm::vec3 pos = p - box.getCenter();
+    return SDF::box(pos, len);
 }
 
 bool BoxContainmentHandler::isContained(const BoundingCube &cube) const {

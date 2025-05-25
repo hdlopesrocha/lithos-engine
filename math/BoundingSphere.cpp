@@ -1,4 +1,5 @@
 #include "math.hpp"
+#include "SDF.hpp"
 
 BoundingSphere::BoundingSphere(glm::vec3 center, float radius) {
 	this->center = center;
@@ -54,7 +55,8 @@ bool SphereContainmentHandler::contains(const glm::vec3 p) const {
 }
 
 float SphereContainmentHandler::distance(const glm::vec3 p) const {
-    return Math::sphereSDF(p, sphere);
+    glm::vec3 pos = p - sphere.center;
+    return SDF::sphere(pos, sphere.radius);
 }
 
 bool SphereContainmentHandler::isContained(const BoundingCube &cube) const {

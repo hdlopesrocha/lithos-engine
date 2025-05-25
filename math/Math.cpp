@@ -239,26 +239,6 @@ float Math::randomFloat() {
     return dis(gen);
 }
 
-float Math::boxSDF(glm::vec3 p, const BoundingBox &box) {
-    glm::vec3 min = box.getMin();
-    glm::vec3 max = box.getMax();
-
-    // Compute the squared distance
-    float squaredDistance = Math::squaredDistPointAABB(p, min, max);
-
-    // Check if the point is inside the bounding box
-    bool inside = (p.x >= min.x && p.x <= max.x) &&
-                  (p.y >= min.y && p.y <= max.y) &&
-                  (p.z >= min.z && p.z <= max.z);
-
-    // Return negative distance if inside, positive otherwise
-    return inside ? -sqrt(squaredDistance) : sqrt(squaredDistance);
-}
-
-float Math::sphereSDF(glm::vec3 p, const BoundingSphere &sphere) {
-    return glm::length(p - sphere.center) - sphere.radius;
-}
-
 float Math::squaredDistPointAABB(glm::vec3 p, glm::vec3 min, glm::vec3 max){
     float sq = 0.0f;
 

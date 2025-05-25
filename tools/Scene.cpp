@@ -267,7 +267,7 @@ void Scene::generate(Camera &camera) {
 	//liquidSpace->add(SphereContainmentHandler(BoundingSphere(glm::vec3(11,61,-11),4), SimpleBrush(0)));
 	BoundingBox waterBox = mapBox;
 	waterBox.setMaxY(0);
-	liquidSpace->add(OctreeContainmentHandler(solidSpace, waterBox, WaterBrush(0)), DirtyHandler(*this), minSize, simplifier);
+//	liquidSpace->add(OctreeContainmentHandler(solidSpace, waterBox, WaterBrush(0)), DirtyHandler(*this), minSize, simplifier);
 }
 
 void Scene::import(const std::string &filename, Camera &camera) {

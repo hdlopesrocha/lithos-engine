@@ -596,8 +596,6 @@ public:
 	static float squaredDistPointAABB(glm::vec3 p, glm::vec3 min, glm::vec3 max);
 	static float check(float p, float min, float max);
 	static float randomFloat();
-	static float boxSDF(glm::vec3 p, const BoundingBox &box);
-	static float sphereSDF(glm::vec3 p, const BoundingSphere &sphere);
 
 };
 void ensureFolderExists(const std::string& folder);

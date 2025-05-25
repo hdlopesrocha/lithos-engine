@@ -267,15 +267,21 @@ void split(OctreeAllocator * allocator, OctreeNode * node, BoundingCube &cube, b
 }
 
 void Octree::expand(const ContainmentHandler &handler) {
-	while (true) {
+	while (!handler.isContained(*this)) {
 		Vertex vertex(getCenter());
-	    if (handler.isContained(*this)) {
-	        break;
-	    }
-        // TODO expand using hermite function
-		glm::vec3 point = handler.getCenter();
-	    unsigned int i = 7 - getNodeIndex(point, *this);
-
+	   
+        float minSDF = handler.distance(getMin());
+        int minIndex = 0;
+        for(int i=1; i < 8 ; ++i) {
+            glm::vec3 corner = getMin() + Octree::getShift(i) * getLengthX();
+            float sdf = handler.distance(corner);
+            if(sdf < minSDF) {
+                minSDF = sdf;
+                minIndex = i;
+            }
+        }
+	    unsigned int i = minIndex ^ 0xf;
+std::cout << "expand " << std::to_string(getLengthX()) << " | " << std::to_string(minSDF)  << " | " << std::to_string(minIndex)  << std::endl;
 	    setMin(getMin() -  Octree::getShift(i) * getLengthX());
 	    setLength(getLengthX()*2);
 

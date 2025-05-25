@@ -1,5 +1,5 @@
 #include "math.hpp"
-
+#include "SDF.hpp"
 
 HeightMap::HeightMap(const HeightFunction &func, BoundingBox box, float step)  : BoundingBox(box), func(func), step(step){
 
@@ -55,24 +55,13 @@ bool HeightMap::contains(const glm::vec3 &point) const {
 }
 
 float HeightMap::distance(const glm::vec3 p) const {
-    glm::vec3 min = this->getMin();
-    glm::vec3 max = this->getMax();
-
-    // Check if the point is inside the bounding box
-    bool insideBoundingBox = (p.x >= min.x && p.x <= max.x) &&
-                             (p.z >= min.z && p.z <= max.z);
-
-    // Vertical distance to the heightmap surface
+    glm::vec3 len = getLength()*0.5f;
+    glm::vec3 pos = p - getCenter();
+  
     float sdf2 = p.y - func.getHeightAt(p.x, p.z);
-
-    if (insideBoundingBox) {
-        // If inside the bounding box, return the vertical SDF
-        return sdf2;
-    } else {
-        // If outside the bounding box, calculate the Euclidean distance to the nearest point on the bounding box
-        float sdf1 = sqrt(Math::squaredDistPointAABB(p, min, max));
-        return glm::max(sdf1, sdf2); // Combine the two distances
-    }
+    float sdf1 = SDF::box(pos, len);
+    return SDF::opIntersection(sdf1, sdf2); 
+    
 }
 
 
