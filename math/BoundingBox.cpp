@@ -61,10 +61,6 @@ BoxContainmentHandler::BoxContainmentHandler(BoundingBox box, const TexturePaint
 
 }
 
-glm::vec3 BoxContainmentHandler::getCenter() const {
-    return box.getCenter();
-}
-
 bool BoxContainmentHandler::contains(const glm::vec3 p) const {
     return box.contains(p);
 }

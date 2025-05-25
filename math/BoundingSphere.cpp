@@ -46,10 +46,6 @@ SphereContainmentHandler::SphereContainmentHandler(BoundingSphere s, const Textu
 
 }
 
-glm::vec3 SphereContainmentHandler::getCenter() const {
-    return sphere.center;
-}
-
 bool SphereContainmentHandler::contains(const glm::vec3 p) const {
     return sphere.contains(p);
 }
