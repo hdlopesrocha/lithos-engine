@@ -3,6 +3,7 @@
 
 #include "../math/math.hpp"
 #include "Allocator.hpp"
+#define SQRT_3_OVER_2 0.866025404f
 
 class Octree;
 class OctreeAllocator;

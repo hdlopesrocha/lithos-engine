@@ -61,7 +61,6 @@ float HeightMap::distance(const glm::vec3 p) const {
     float sdf2 = p.y - func.getHeightAt(p.x, p.z);
     float sdf1 = SDF::box(pos, len);
     return SDF::opIntersection(sdf1, sdf2); 
-    
 }
 
 

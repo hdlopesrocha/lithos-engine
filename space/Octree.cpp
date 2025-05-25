@@ -281,7 +281,7 @@ void Octree::expand(const ContainmentHandler &handler) {
             }
         }
 	    unsigned int i = minIndex ^ 0xf;
-std::cout << "expand " << std::to_string(getLengthX()) << " | " << std::to_string(minSDF)  << " | " << std::to_string(minIndex)  << std::endl;
+
 	    setMin(getMin() -  Octree::getShift(i) * getLengthX());
 	    setLength(getLengthX()*2);
 
@@ -295,15 +295,12 @@ std::cout << "expand " << std::to_string(getLengthX()) << " | " << std::to_strin
 	}
 }
 
-float sqrt3over2 = sqrt(3)/2.0f;
-
-
 
 void Octree::addAux(const ContainmentHandler &handler, const OctreeNodeDirtyHandler &dirtyHandler, float minSize, OctreeNodeFrame frame, BoundingCube * chunk, Simplifier &simplifier) {
     OctreeNode * parent  = frame.parent;
     ChildBlock * parentBlock = parent->getBlock(&allocator);
     float centerSDF = handler.distance(frame.cube.getCenter());
-    float r = frame.cube.getLengthX() * sqrt3over2;
+    float r = frame.cube.getLengthX() * SQRT_3_OVER_2;
 
     OctreeNode* node = frame.childIndex < 0 ? parent : parent->getChildNode(frame.childIndex, &allocator, parentBlock);
     ContainmentType check = handler.check(frame.cube);
