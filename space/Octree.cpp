@@ -271,8 +271,8 @@ void Octree::expand(const ContainmentHandler &handler) {
 		Vertex vertex(getCenter());
 	   
         float minSDF = handler.distance(getMin());
-        int minIndex = 0;
-        for(int i=1; i < 8 ; ++i) {
+        unsigned int minIndex = 0;
+        for(unsigned int i=1; i < 8 ; ++i) {
             glm::vec3 corner = getMin() + Octree::getShift(i) * getLengthX();
             float sdf = handler.distance(corner);
             if(sdf < minSDF) {
@@ -280,7 +280,7 @@ void Octree::expand(const ContainmentHandler &handler) {
                 minIndex = i;
             }
         }
-	    unsigned int i = minIndex ^ 0xf;
+	    unsigned int i = minIndex ^ 0x7;
 
 	    setMin(getMin() -  Octree::getShift(i) * getLengthX());
 	    setLength(getLengthX()*2);
