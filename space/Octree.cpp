@@ -323,7 +323,7 @@ void Octree::addAux(const ContainmentHandler &handler, const OctreeNodeDirtyHand
 
     if (check == ContainmentType::Intersects) {
         glm::vec3 previousNormal = node->vertex.normal;
-        Vertex vertex = handler.getVertex(frame.cube, check, node->vertex.position);
+        Vertex vertex = handler.getVertex(frame.cube, node->vertex.position);
         vertex.normal = glm::normalize(previousNormal + vertex.normal);
         node->vertex = vertex;
     }
@@ -389,7 +389,7 @@ void Octree::delAux(const ContainmentHandler &handler, const OctreeNodeDirtyHand
 
         if (isIntersecting) {
             glm::vec3 previousNormal = node->vertex.normal;
-            Vertex vertex = handler.getVertex(frame.cube, check, node->vertex.position);
+            Vertex vertex = handler.getVertex(frame.cube, node->vertex.position);
             vertex.normal = glm::normalize(previousNormal - vertex.normal);
             node->vertex = vertex;
         }

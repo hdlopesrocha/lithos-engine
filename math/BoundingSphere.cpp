@@ -63,7 +63,7 @@ ContainmentType SphereContainmentHandler::check(const BoundingCube &cube) const 
     return sphere.test(cube); 
 }
 
-Vertex SphereContainmentHandler::getVertex(const BoundingCube &cube, ContainmentType solid, glm::vec3 previousPoint) const {
+Vertex SphereContainmentHandler::getVertex(const BoundingCube &cube, glm::vec3 previousPoint) const {
     glm::vec3 c = this->sphere.center;
     float r = this->sphere.radius;
     glm::vec3 a = previousPoint;

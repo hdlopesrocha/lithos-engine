@@ -85,7 +85,7 @@ class OctreeContainmentHandler : public ContainmentHandler {
 	float distance(const glm::vec3 p) const override;
 	bool isContained(const BoundingCube &p) const override;
 	ContainmentType check(const BoundingCube &cube) const override;
-	Vertex getVertex(const BoundingCube &cube, ContainmentType solid, glm::vec3 previousPoint) const override;
+	Vertex getVertex(const BoundingCube &cube, glm::vec3 previousPoint) const override;
 };
 
 class VegetationInstanceBuilderHandler : public InstanceBuilderHandler {

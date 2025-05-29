@@ -75,7 +75,7 @@ ContainmentType BoxContainmentHandler::check(const BoundingCube &cube) const {
     return box.test(cube); 
 }
 
-Vertex BoxContainmentHandler::getVertex(const BoundingCube &cube, ContainmentType solid, glm::vec3 previousPoint) const {
+Vertex BoxContainmentHandler::getVertex(const BoundingCube &cube, glm::vec3 previousPoint) const {
     glm::vec3 min = this->box.getMin();
     glm::vec3 max = this->box.getMax();
     Vertex vertex(glm::clamp(previousPoint, min, max));

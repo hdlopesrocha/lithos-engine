@@ -56,7 +56,7 @@ ContainmentType OctreeContainmentHandler::check(const BoundingCube &cube) const 
     return ContainmentType::Disjoint;
 }
 
-Vertex OctreeContainmentHandler::getVertex(const BoundingCube &cube, ContainmentType solid, glm::vec3 previousPoint) const {
+Vertex OctreeContainmentHandler::getVertex(const BoundingCube &cube, glm::vec3 previousPoint) const {
     Vertex vtx;
     vtx.position = cube.getCenter();
     vtx.normal = getNormal(vtx.position);
