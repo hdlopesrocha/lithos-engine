@@ -82,7 +82,6 @@ class OctreeContainmentHandler : public ContainmentHandler {
 
 	OctreeContainmentHandler(Octree * octree, BoundingBox box, const TexturePainter &b);
 	glm::vec3 getNormal(const glm::vec3 pos) const;
-	bool contains(const glm::vec3 p) const override;
 	float distance(const glm::vec3 p) const override;
 	bool isContained(const BoundingCube &p) const override;
 	ContainmentType check(const BoundingCube &cube) const override;

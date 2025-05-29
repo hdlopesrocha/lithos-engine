@@ -61,10 +61,6 @@ BoxContainmentHandler::BoxContainmentHandler(BoundingBox box, const TexturePaint
 
 }
 
-bool BoxContainmentHandler::contains(const glm::vec3 p) const {
-    return box.contains(p);
-}
-
 float BoxContainmentHandler::distance(const glm::vec3 p) const {
     glm::vec3 len = box.getLength()*0.5f;
     glm::vec3 pos = p - box.getCenter();

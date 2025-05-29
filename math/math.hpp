@@ -348,7 +348,6 @@ class ContainmentHandler {
 	public: 
 		virtual ContainmentType check(const BoundingCube &cube) const = 0;
 		virtual Vertex getVertex(const BoundingCube &cube, ContainmentType solid, glm::vec3 previousPoint) const = 0;
-		virtual bool contains(const glm::vec3 p) const = 0;
 		virtual float distance(const glm::vec3 p) const = 0;
 		virtual bool isContained(const BoundingCube &cube) const = 0;
 };
@@ -472,7 +471,6 @@ class SphereContainmentHandler : public ContainmentHandler {
     const TexturePainter &brush;
 
 	SphereContainmentHandler(BoundingSphere s, const TexturePainter &b);
-	bool contains(const glm::vec3 p) const override;
 	float distance(const glm::vec3 p) const override;
 	glm::vec3 getNormal(const glm::vec3 pos) const ;
 	bool isContained(const BoundingCube &cube) const override;
@@ -486,7 +484,6 @@ class BoxContainmentHandler : public ContainmentHandler {
     const TexturePainter &brush;
 
 	BoxContainmentHandler(BoundingBox box, const TexturePainter &b);
-	bool contains(const glm::vec3 p) const ;
 	float distance(const glm::vec3 p) const override;
 	bool isContained(const BoundingCube &cube) const override;
 	ContainmentType check(const BoundingCube &cube) const override;
@@ -500,7 +497,6 @@ class HeightMapContainmentHandler : public ContainmentHandler {
 
 	HeightMapContainmentHandler(const HeightMap &map, const TexturePainter &b);
 	glm::vec3 getCenter() const;
-	bool contains(const glm::vec3 p) const ;
 	float distance(const glm::vec3 p) const override;
 	float intersection(const glm::vec3 a, const glm::vec3 b) const ;
 	glm::vec3 getNormal(const glm::vec3 pos) const ;

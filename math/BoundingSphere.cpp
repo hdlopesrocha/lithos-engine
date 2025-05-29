@@ -46,10 +46,6 @@ SphereContainmentHandler::SphereContainmentHandler(BoundingSphere s, const Textu
 
 }
 
-bool SphereContainmentHandler::contains(const glm::vec3 p) const {
-    return sphere.contains(p);
-}
-
 float SphereContainmentHandler::distance(const glm::vec3 p) const {
     glm::vec3 pos = p - sphere.center;
     return SDF::sphere(pos, sphere.radius);

@@ -117,10 +117,6 @@ glm::vec3 HeightMapContainmentHandler::getCenter() const {
     return map.getCenter();
 }
 
-bool HeightMapContainmentHandler::contains(const glm::vec3 p) const {
-    return map.contains(p);
-}
-
 float HeightMapContainmentHandler::distance(const glm::vec3 p) const {
     return map.distance(p);
 }
