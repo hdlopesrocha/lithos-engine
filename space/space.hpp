@@ -137,8 +137,8 @@ class Octree: public BoundingCube {
 		int getMaxLevel(OctreeNode *node, BoundingCube &cube, BoundingCube &c, int level);
 
 		private:
-		void delAux(const ContainmentHandler &handler, const OctreeNodeDirtyHandler &dirtyHandler, float minSize, OctreeNodeFrame frame, BoundingCube * chunk, Simplifier &simplifier);
-		void addAux(const ContainmentHandler &handler, const OctreeNodeDirtyHandler &dirtyHandler, float minSize, OctreeNodeFrame frame, BoundingCube * chunk, Simplifier &simplifier);
+		void delAux(const ContainmentHandler &handler, const OctreeNodeDirtyHandler &dirtyHandler, OctreeNodeFrame frame, BoundingCube * chunk, Simplifier &simplifier);
+		void addAux(const ContainmentHandler &handler, const OctreeNodeDirtyHandler &dirtyHandler, OctreeNodeFrame frame, BoundingCube * chunk, Simplifier &simplifier);
 
 };
 
