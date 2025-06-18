@@ -85,29 +85,8 @@ bool HeightMap::hitsBoundary(const BoundingCube &cube) const {
 }
 
 ContainmentType HeightMap::test(const BoundingCube &cube) const {
-    ContainmentType result = BoundingBox::test(cube);
-
-    if(result != ContainmentType::Disjoint) {
-        glm::vec2 range = getHeightRangeBetween(cube);
-     //   std::cout << range[0] << " ! " << range[1] << std::endl;
-        BoundingBox minBox(getMin(), glm::vec3(getMax().x, range[0], getMax().z ));
-        BoundingBox maxBox(getMin(), glm::vec3(getMax().x, range[1], getMax().z ));
-        
-        ContainmentType minResult = minBox.test(cube);
-        ContainmentType maxResult = maxBox.test(cube);
-       
-        if(minResult == ContainmentType::Contains){       
-            result = ContainmentType::Contains;
-        } else if(maxResult == ContainmentType::Disjoint){
-            result = ContainmentType::Disjoint;
-        } else {
-            result = ContainmentType::Intersects;
-        }
-   }
-
-    return result;
+    return BoundingBox::test(cube);
 }
-
 
 HeightMapContainmentHandler::HeightMapContainmentHandler(const HeightMap &m, const TexturePainter &b) : ContainmentHandler(), map(m), brush(b){
 
