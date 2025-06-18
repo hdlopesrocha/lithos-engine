@@ -101,12 +101,26 @@ class OctreeAllocator {
 };
 
 struct OctreeNodeFrame {
-    OctreeNode* parent;
+    OctreeNode* node;
     int childIndex;
     BoundingCube cube;
     float minSize;
 	uint level;
 };
+
+struct NodeOperationResult {
+    OctreeNode * node;
+    uint mask;
+    bool hasSurface;
+
+	NodeOperationResult() : node(NULL), mask(0), hasSurface(false) {
+	};
+
+    NodeOperationResult(OctreeNode * node, uint mask, bool hasSurface) 
+        : node(node), mask(mask), hasSurface(hasSurface) {
+    };
+};
+
 
 class Octree: public BoundingCube {
 	using BoundingCube::BoundingCube;
@@ -138,7 +152,7 @@ class Octree: public BoundingCube {
 
 		private:
 		void delAux(const ContainmentHandler &handler, const OctreeNodeDirtyHandler &dirtyHandler, OctreeNodeFrame frame, BoundingCube * chunk, Simplifier &simplifier);
-		void addAux(const ContainmentHandler &handler, const OctreeNodeDirtyHandler &dirtyHandler, OctreeNodeFrame frame, BoundingCube * chunk, Simplifier &simplifier);
+		NodeOperationResult addAux(const ContainmentHandler &handler, const OctreeNodeDirtyHandler &dirtyHandler, OctreeNodeFrame frame, BoundingCube * chunk, Simplifier &simplifier);
 
 };
 

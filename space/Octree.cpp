@@ -303,54 +303,58 @@ bool isNodeOutside(const ContainmentHandler &handler, BoundingCube &cube) {
     return handler.distance(c) > r * 1.2f;
 }
 
-void Octree::addAux(const ContainmentHandler &handler, const OctreeNodeDirtyHandler &dirtyHandler, OctreeNodeFrame frame, BoundingCube * chunk, Simplifier &simplifier) {
-    ContainmentType check = handler.check(frame.cube);
-    if (check == ContainmentType::Disjoint) {
-        return;  // Skip this node
-    }
-    if(chunk == NULL && frame.cube.getLengthX() < chunkSize){
-        chunk = &frame.cube;
-    }
+NodeOperationResult Octree::addAux(const ContainmentHandler &handler, const OctreeNodeDirtyHandler &dirtyHandler, OctreeNodeFrame frame, BoundingCube * chunk, Simplifier &simplifier) {
+    OctreeNode * node  = frame.node;
 
-    OctreeNode * parent  = frame.parent;
-    ChildBlock * parentBlock = parent->getBlock(&allocator);
-    OctreeNode* node = frame.childIndex < 0 ? parent : parent->getChildNode(frame.childIndex, &allocator, parentBlock);
-
-    bool isContained = check == ContainmentType::Contains;
-    bool isIntersecting = check == ContainmentType::Intersects;
-
-    if (node == NULL) {
-        node = allocator.allocateOctreeNode(frame.cube)->init(Vertex(frame.cube.getCenter()),0);
-        if(frame.childIndex >= 0) {
-            parent->setChildNode(frame.childIndex, node, &allocator);
-        }
-    } else if (node->isSolid()) {
-        return;  // No need to process further
-    }
-
-    if (isIntersecting) {
-        glm::vec3 previousNormal = node->vertex.normal;
-        Vertex vertex = handler.getVertex(frame.cube, node->vertex.position);
-        vertex.normal = glm::normalize(previousNormal + vertex.normal);
-        node->vertex = vertex;
-    }
-    node->setMask(node->getMask() | (buildMask(handler, frame.cube)));
-    node->setSolid(isContained);
-    if(node->id) {
-        dirtyHandler.handle(node);
-    }
     bool isLeaf = frame.cube.getLengthX() <= frame.minSize;
-    if (isContained) {
-        node->clear(&allocator, frame.cube);
-    } else if (!node->isLeaf() || !isLeaf) {
+    uint mask = buildMask(handler, frame.cube);
+    NodeOperationResult children[8];
+    uint outsideAmount = 0;
+    uint insideAmount = 0;
+    bool hasSurface = mask != 0xff && mask != 0x00;
+
+    if(handler.check(frame.cube) == ContainmentType::Disjoint) {
+        return NodeOperationResult();  // Skip this node
+    }
+
+    if (!isLeaf) {
         for (int i = 7; i >= 0; --i) {  
             BoundingCube subCube = frame.cube.getChild(i);
-            addAux(handler, dirtyHandler, { node, i, subCube, frame.minSize, frame.level + 1 }, chunk, simplifier);
+            OctreeNode * childNode = node ? node->getChildNode(i, &allocator, node->getBlock(&allocator)) : NULL;
+            NodeOperationResult child = addAux(handler, dirtyHandler, { childNode, i, subCube, frame.minSize, frame.level + 1 }, chunk, simplifier);
+            children[i] = child;
+            if(child.mask == 0xff) {
+                ++insideAmount;
+            }
+            else if(child.mask == 0x00) {
+                ++outsideAmount;
+            }
+            hasSurface |= child.hasSurface;
         }
     }
-    if(chunk != NULL) {
-        simplifier.simplify(*chunk, OctreeNodeData(frame.level, chunkSize, node, frame.cube, NULL, &allocator));  
+
+    if(hasSurface) {
+        if(node == NULL) {
+            node = allocator.allocateOctreeNode(frame.cube)->init(handler.getVertex(frame.cube, frame.cube.getCenter()), 0);   
+        } 
+
+        node->setMask(node->getMask() | mask);
+        node->setSolid(mask == 0xff);
+        node->setSimplification(0);
+        node->setDirty(true);
+        for(int i =0 ; i < 8 ; ++i) {
+            OctreeNode * childNode = children[i].node;
+            if(childNode != NULL) {
+                node->setChildNode(i, childNode, &allocator);
+            }
+        }
     }
+    else if(insideAmount == 8 || outsideAmount == 8) {
+        if(node!= NULL) {
+            node->clear(&allocator, frame.cube);
+        }
+    } 
+    return NodeOperationResult(node, mask, hasSurface);
 }
 
 
@@ -368,19 +372,19 @@ void Octree::delAux(const ContainmentHandler &handler, const OctreeNodeDirtyHand
         chunk = &frame.cube;
     }
 
-    OctreeNode * parent  = frame.parent;
-    ChildBlock * parentBlock = parent->getBlock(&allocator);
-    OctreeNode* node = frame.childIndex < 0 ? parent : parent->getChildNode(frame.childIndex, &allocator, parentBlock);
-
     bool isContained = check == ContainmentType::Contains;
     bool isIntersecting = check == ContainmentType::Intersects;
+
+    OctreeNode * parent  = frame.node;
+    ChildBlock * parentBlock = parent->getBlock(&allocator);
+    OctreeNode* node = frame.childIndex < 0 ? parent : parent->getChildNode(frame.childIndex, &allocator, parentBlock);
 
     if (isContained) {
         if (node != NULL) {
             node->clear(&allocator, frame.cube);
             allocator.deallocateOctreeNode(node, frame.cube);
             if(frame.childIndex >= 0) {
-                frame.parent->setChildNode(frame.childIndex, NULL, &allocator);
+                frame.node->setChildNode(frame.childIndex, NULL, &allocator);
             }
         }
         return;
