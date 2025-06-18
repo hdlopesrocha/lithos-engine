@@ -307,7 +307,9 @@ NodeOperationResult Octree::addAux(const ContainmentHandler &handler, const Octr
     OctreeNode * node  = frame.node;
 
     bool isLeaf = frame.cube.getLengthX() <= frame.minSize;
-    uint mask = buildMask(handler, frame.cube);
+
+    uint existingMask = node ? node->getMask() : 0x0;
+    uint mask = buildMask(handler, frame.cube) | existingMask;
     NodeOperationResult children[8];
     uint outsideAmount = 0;
     uint insideAmount = 0;
@@ -337,8 +339,7 @@ NodeOperationResult Octree::addAux(const ContainmentHandler &handler, const Octr
         if(node == NULL) {
             node = allocator.allocateOctreeNode(frame.cube)->init(handler.getVertex(frame.cube, frame.cube.getCenter()), 0);   
         } 
-
-        node->setMask(node->getMask() | mask);
+        node->setMask(mask);
         node->setSolid(mask == 0xff);
         node->setSimplification(0);
         node->setDirty(true);
@@ -353,7 +354,7 @@ NodeOperationResult Octree::addAux(const ContainmentHandler &handler, const Octr
         if(node!= NULL) {
             node->clear(&allocator, frame.cube);
         }
-    } 
+    }
     return NodeOperationResult(node, mask, hasSurface);
 }
 
