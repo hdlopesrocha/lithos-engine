@@ -336,13 +336,21 @@ NodeOperationResult Octree::addAux(const ContainmentHandler &handler, const Octr
     }
 
     if(hasSurface) {
+        Vertex vertex = handler.getVertex(frame.cube, frame.cube.getCenter());
         if(node == NULL) {
-            node = allocator.allocateOctreeNode(frame.cube)->init(handler.getVertex(frame.cube, frame.cube.getCenter()), 0);   
+            node = allocator.allocateOctreeNode(frame.cube)->init(vertex, 0);   
         } 
+        
+        glm::vec3 previousNormal = node->vertex.normal;
+        vertex.normal = glm::normalize(previousNormal + vertex.normal);
+        node->vertex = vertex;
         node->setMask(mask);
         node->setSolid(mask == 0xff);
         node->setSimplification(0);
         node->setDirty(true);
+        if(node->id) {
+            dirtyHandler.handle(node);
+        }
         for(int i =0 ; i < 8 ; ++i) {
             OctreeNode * childNode = children[i].node;
             if(childNode != NULL) {
