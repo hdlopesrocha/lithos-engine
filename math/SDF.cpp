@@ -24,3 +24,18 @@ float SDF::box(glm::vec3 p, const glm::vec3 len) {
 float SDF::sphere(glm::vec3 p, const float r) {
     return glm::length(p) - r;
 }
+
+float SDF::opSmoothUnion( float d1, float d2, float k ) {
+    float h = glm::clamp( 0.5 + 0.5*(d2-d1)/k, 0.0, 1.0 );
+    return glm::mix( d2, d1, h ) - k*h*(1.0-h);
+}
+
+float SDF::opSmoothSubtraction( float d1, float d2, float k ) {
+    float h = glm::clamp( 0.5 - 0.5*(d2+d1)/k, 0.0, 1.0 );
+    return glm::mix( d2, -d1, h ) + k*h*(1.0-h);
+}
+
+float SDF::opSmoothIntersection( float d1, float d2, float k ) {
+    float h = glm::clamp( 0.5 - 0.5*(d2-d1)/k, 0.0, 1.0 );
+    return glm::mix( d2, d1, h ) + k*h*(1.0-h);
+}

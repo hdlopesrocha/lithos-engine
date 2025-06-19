@@ -1,11 +1,13 @@
 #include "space.hpp"
 
 OctreeNode::OctreeNode(Vertex vertex) {
-	init(vertex, 0);
+	init(vertex);
 }
 
-OctreeNode * OctreeNode::init(Vertex vertex, float sdf) {
-	this->sdf = sdf;
+OctreeNode * OctreeNode::init(Vertex vertex) {
+	for(int i = 0; i < 8; ++i) {
+		this->sdf[i] = 0.0f;
+	}
 	this->bits = 0x0;
 	this->setSolid(false);
 	this->setSimplified(false);
@@ -54,12 +56,14 @@ void OctreeNode::clear(OctreeAllocator * allocator, BoundingCube &cube) {
 	}
 }
 
-bool OctreeNode::isLeaf() {
-	return this->id == UINT_MAX;
+void OctreeNode::setSdf(float * value) {
+	for(int i = 0; i < 8; ++i) {
+		this->sdf[i] = value[i];
+	}
 }
 
-uint8_t OctreeNode::getMask(){
-	return this->bits & 0xff;
+bool OctreeNode::isLeaf() {
+	return this->id == UINT_MAX;
 }
 
 
@@ -101,7 +105,3 @@ uint8_t OctreeNode::getSimplification(){
 	return (this->bits & mask >> 12) & 0xf;
 }
 
-void OctreeNode::setMask(uint8_t value){
-	uint16_t mask = 0x00ff;
-	this->bits = (this->bits & ~mask) | (value & mask);
-}

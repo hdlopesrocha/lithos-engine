@@ -13,6 +13,11 @@ public:
     static float opSubtraction( float d1, float d2 );
     static float opIntersection( float d1, float d2 );
     static float opXor(float d1, float d2 );
+
+    static float opSmoothUnion( float d1, float d2, float k );
+    static float opSmoothSubtraction( float d1, float d2, float k );
+    static float opSmoothIntersection( float d1, float d2, float k );
+
 	static float box(glm::vec3 p, const glm::vec3 len);
 	static float sphere(glm::vec3 p, const float r);
 

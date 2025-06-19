@@ -16,11 +16,11 @@ class OctreeNode {
 		Vertex vertex;
 		uint16_t bits;
 		uint id;
-		float sdf;
+		float sdf[8];
 
 		OctreeNode(Vertex vertex);
 		~OctreeNode();
-		OctreeNode * init(Vertex vertex, float sdf);
+		OctreeNode * init(Vertex vertex);
 		void clear(OctreeAllocator * allocator, BoundingCube &cube);
 		void setChildNode(int i, OctreeNode * node, OctreeAllocator * allocator);
 		ChildBlock * getBlock(OctreeAllocator * allocator);
@@ -34,8 +34,7 @@ class OctreeNode {
 		void setSimplified(bool value);
 		bool isDirty();
 		void setDirty(bool value);
-		uint8_t getMask();
-		void setMask(uint8_t value);
+		void setSdf(float * value);
 
 };
 
@@ -118,6 +117,7 @@ struct NodeOperationResult {
 	BoundingCube cube;
     bool hasSurface;
 	bool contains;
+    float sdf[8];
 
 	NodeOperationResult() : node(NULL), cube(glm::vec3(0.0f), 0.0f), hasSurface(false), contains(false) {
 	};
@@ -125,8 +125,11 @@ struct NodeOperationResult {
 	NodeOperationResult(BoundingCube cube) : node(NULL), cube(cube), hasSurface(false), contains(false){
 	};
 
-    NodeOperationResult(BoundingCube cube, OctreeNode * node, bool hasSurface, bool contains) 
+    NodeOperationResult(BoundingCube cube, OctreeNode * node, bool hasSurface, bool contains, float * sdf) 
         : node(node), cube(cube), hasSurface(hasSurface), contains(contains) {
+		for(int i = 0; i < 8; ++i) {
+			this->sdf[i] = sdf[i];
+		}						
     };
 };
 
@@ -160,9 +163,7 @@ class Octree: public BoundingCube {
 		int getMaxLevel(OctreeNode *node, BoundingCube &cube, BoundingCube &c, int level);
 
 		private:
-		NodeOperationResult delAux(const ContainmentHandler &handler, const OctreeNodeDirtyHandler &dirtyHandler, OctreeNodeFrame frame, BoundingCube * chunk, Simplifier &simplifier);
-		NodeOperationResult addAux(const ContainmentHandler &handler, const OctreeNodeDirtyHandler &dirtyHandler, OctreeNodeFrame frame, BoundingCube * chunk, Simplifier &simplifier);
-
+		NodeOperationResult shape(const ContainmentHandler &handler, const OctreeNodeDirtyHandler &dirtyHandler, OctreeNodeFrame frame, BoundingCube * chunk, Simplifier &simplifier, bool isAdd);
 };
 
 class Simplifier {
@@ -263,7 +264,7 @@ struct OctreeNodeSerialized {
     uint brushIndex;
     uint mask;
     bool isSolid;
-	float sdf;
+	float sdf[8];
     uint children[8] = {0,0,0,0,0,0,0,0};
 };
 
