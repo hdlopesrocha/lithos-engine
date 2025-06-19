@@ -330,6 +330,10 @@ void Octree::add(const ContainmentHandler &handler, const OctreeNodeDirtyHandler
 }
 
 NodeOperationResult Octree::shape(const ContainmentHandler &handler, const OctreeNodeDirtyHandler &dirtyHandler, OctreeNodeFrame frame, BoundingCube * chunk, Simplifier &simplifier, bool isAdd) {
+    if(handler.check(frame.cube) == ContainmentType::Disjoint) {
+        return NodeOperationResult(frame.cube);  // Skip this node
+    }
+    
     OctreeNode * node  = frame.node;
     bool isLeaf = frame.cube.getLengthX() <= frame.minSize;
     bool isSolid = node ? node->isSolid() : frame.isSolid;
@@ -340,9 +344,7 @@ NodeOperationResult Octree::shape(const ContainmentHandler &handler, const Octre
     glm::vec3 previousNormal = node? node->vertex.normal : glm::vec3(0.0f);
     NodeOperationResult children[8];
 
-    if(handler.check(frame.cube) == ContainmentType::Disjoint) {
-        return NodeOperationResult(frame.cube);  // Skip this node
-    }
+
 
     if (!isLeaf) {
         for (int i = 7; i >= 0; --i) {  
@@ -359,7 +361,7 @@ NodeOperationResult Octree::shape(const ContainmentHandler &handler, const Octre
         if(node != NULL) {
             node->clear(&allocator, frame.cube);
         }
-    } else if(hasSurface && (isAdd ? !isSolid : isSolid)) {
+    } else if(hasSurface && isAdd != isSolid) {
         if(node == NULL) {
             node = allocator.allocateOctreeNode(frame.cube)->init(Vertex(frame.cube.getCenter()));   
         } 
