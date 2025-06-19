@@ -306,8 +306,8 @@ bool isNodeOutside(const ContainmentHandler &handler, BoundingCube &cube) {
 NodeOperationResult Octree::addAux(const ContainmentHandler &handler, const OctreeNodeDirtyHandler &dirtyHandler, OctreeNodeFrame frame, BoundingCube * chunk, Simplifier &simplifier) {
     OctreeNode * node  = frame.node;
     bool isLeaf = frame.cube.getLengthX() <= frame.minSize;
-    bool inside = node ? node->isSolid() : frame.inside;
-    uint existingMask = node ? node->getMask() : 0x0;
+    bool isSolid = node ? node->isSolid() : frame.isSolid;
+    uint existingMask = node ? node->getMask() : (isSolid ? 0xff : 0x0);
     uint currentMask = buildMask(handler, frame.cube);
     uint resultingMask = existingMask | currentMask;
     NodeOperationResult children[8];
@@ -321,7 +321,7 @@ NodeOperationResult Octree::addAux(const ContainmentHandler &handler, const Octr
     if (!isLeaf) {
         for (int i = 7; i >= 0; --i) {  
             OctreeNode * childNode = node ? node->getChildNode(i, &allocator, node->getBlock(&allocator)) : NULL;
-            NodeOperationResult child = addAux(handler, dirtyHandler, OctreeNodeFrame(childNode, i, frame.cube.getChild(i), frame.minSize, frame.level + 1, inside ), chunk, simplifier);
+            NodeOperationResult child = addAux(handler, dirtyHandler, OctreeNodeFrame(childNode, i, frame.cube.getChild(i), frame.minSize, frame.level + 1, isSolid ), chunk, simplifier);
             children[i] = child;
             hasSurface |= child.hasSurface;
             contains &= child.contains;
@@ -332,15 +332,15 @@ NodeOperationResult Octree::addAux(const ContainmentHandler &handler, const Octr
     if(shouldClear) {
         if(node!= NULL) {
             node->clear(&allocator, frame.cube);
+            node->setMask(0xff);
         }
-    } else if(hasSurface) {
+    } else if(hasSurface && !isSolid) {
+        glm::vec3 previousNormal = node? node->vertex.normal : glm::vec3(0.0f);
         Vertex vertex = handler.getVertex(frame.cube, frame.cube.getCenter());
+        vertex.normal = glm::normalize(previousNormal + vertex.normal);
         if(node == NULL) {
             node = allocator.allocateOctreeNode(frame.cube)->init(vertex, 0);   
         } 
-
-        glm::vec3 previousNormal = node->vertex.normal;
-        vertex.normal = glm::normalize(previousNormal + vertex.normal);
         node->vertex = vertex;
         node->setMask(resultingMask);
         node->setSolid(contains);
@@ -379,8 +379,8 @@ void Octree::add(const ContainmentHandler &handler, const OctreeNodeDirtyHandler
 NodeOperationResult Octree::delAux(const ContainmentHandler &handler, const OctreeNodeDirtyHandler &dirtyHandler, OctreeNodeFrame frame, BoundingCube * chunk, Simplifier &simplifier) {
     OctreeNode * node  = frame.node;
     bool isLeaf = frame.cube.getLengthX() <= frame.minSize;
-    bool inside = node ? node->isSolid() : frame.inside;
-    uint existingMask = node ? node->getMask() : 0xff;
+    bool isSolid = node ? node->isSolid() : frame.isSolid;
+    uint existingMask = node ? node->getMask() : (isSolid ? 0xff : 0x0);
     uint currentMask = buildMask(handler, frame.cube);
     uint resultingMask = existingMask & (currentMask ^ 0xff);
     NodeOperationResult children[8];
@@ -394,7 +394,7 @@ NodeOperationResult Octree::delAux(const ContainmentHandler &handler, const Octr
     if (!isLeaf) {
         for (int i = 7; i >= 0; --i) {  
             OctreeNode * childNode = node ? node->getChildNode(i, &allocator, node->getBlock(&allocator)) : NULL;
-            NodeOperationResult child = delAux(handler, dirtyHandler, OctreeNodeFrame(childNode, i, frame.cube.getChild(i), frame.minSize, frame.level + 1, inside), chunk, simplifier);
+            NodeOperationResult child = delAux(handler, dirtyHandler, OctreeNodeFrame(childNode, i, frame.cube.getChild(i), frame.minSize, frame.level + 1, isSolid), chunk, simplifier);
             children[i] = child;
             hasSurface |= child.hasSurface;
             contains &= child.contains;
@@ -406,15 +406,15 @@ NodeOperationResult Octree::delAux(const ContainmentHandler &handler, const Octr
     if(shouldClear) {
         if(node != NULL) {
             node->clear(&allocator, frame.cube);
+            node->setMask(0xff);
         }
-    } else if(hasSurface && inside) {
+    } else if(hasSurface && isSolid) {
+        glm::vec3 previousNormal = node? node->vertex.normal : glm::vec3(0.0f);
         Vertex vertex = handler.getVertex(frame.cube, frame.cube.getCenter());
+        vertex.normal = glm::normalize(previousNormal - vertex.normal);
         if(node == NULL) {
             node = allocator.allocateOctreeNode(frame.cube)->init(vertex, 0);   
         } 
-        
-        glm::vec3 previousNormal = node->vertex.normal;
-        vertex.normal = glm::normalize(previousNormal - vertex.normal);
         node->vertex = vertex;
         node->setMask(resultingMask);
         node->setSolid(contains);
@@ -426,7 +426,7 @@ NodeOperationResult Octree::delAux(const ContainmentHandler &handler, const Octr
         for(int i =0 ; i < 8 ; ++i) {
             NodeOperationResult child = children[i];
             OctreeNode * childNode = child.node;
-/*
+
             if(childNode == NULL && child.contains) {
                 childNode = allocator.allocateOctreeNode(child.cube)->init(Vertex(child.cube.getCenter()), 0);
                 childNode->setSolid(true);
@@ -434,7 +434,7 @@ NodeOperationResult Octree::delAux(const ContainmentHandler &handler, const Octr
                 childNode->setSimplification(0);
                 childNode->setDirty(true);
             }
-*/
+
             if(childNode != NULL) {
                 node->setChildNode(i, childNode, &allocator);
             }

@@ -106,10 +106,10 @@ struct OctreeNodeFrame {
     BoundingCube cube;
     float minSize;
 	uint level;
-	bool inside;
+	bool isSolid;
 
 	OctreeNodeFrame(OctreeNode* node, int childIndex, BoundingCube cube, float minSize, uint level, bool inside) 
-		: node(node), childIndex(childIndex), cube(cube), minSize(minSize), level(level), inside(inside) {
+		: node(node), childIndex(childIndex), cube(cube), minSize(minSize), level(level), isSolid(inside) {
 	}
 };
 
