@@ -106,18 +106,27 @@ struct OctreeNodeFrame {
     BoundingCube cube;
     float minSize;
 	uint level;
+	bool inside;
+
+	OctreeNodeFrame(OctreeNode* node, int childIndex, BoundingCube cube, float minSize, uint level, bool inside) 
+		: node(node), childIndex(childIndex), cube(cube), minSize(minSize), level(level), inside(inside) {
+	}
 };
 
 struct NodeOperationResult {
     OctreeNode * node;
-    uint mask;
+	BoundingCube cube;
     bool hasSurface;
+	bool contains;
 
-	NodeOperationResult() : node(NULL), mask(0), hasSurface(false) {
+	NodeOperationResult() : node(NULL), cube(glm::vec3(0.0f), 0.0f), hasSurface(false), contains(false) {
 	};
 
-    NodeOperationResult(OctreeNode * node, uint mask, bool hasSurface) 
-        : node(node), mask(mask), hasSurface(hasSurface) {
+	NodeOperationResult(BoundingCube cube) : node(NULL), cube(cube), hasSurface(false), contains(false){
+	};
+
+    NodeOperationResult(BoundingCube cube, OctreeNode * node, bool hasSurface, bool contains) 
+        : node(node), cube(cube), hasSurface(hasSurface), contains(contains) {
     };
 };
 
