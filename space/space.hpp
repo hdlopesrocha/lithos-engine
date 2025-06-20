@@ -149,8 +149,8 @@ class Octree: public BoundingCube {
 
 		Octree(BoundingCube minCube, float chunkSize);
 		void expand(const ContainmentHandler &handler);
-		void add(const ContainmentHandler &handler, const SignedDistanceFunction &function, const OctreeNodeDirtyHandler &dirtyHandler, float minSize, Simplifier &simplifier);
-		void del(const ContainmentHandler &handler, const SignedDistanceFunction &function, const OctreeNodeDirtyHandler &dirtyHandler, float minSize, Simplifier &simplifier);
+		void add(const ContainmentHandler &handler, const SignedDistanceFunction &function, const TexturePainter &painter, const OctreeNodeDirtyHandler &dirtyHandler, float minSize, Simplifier &simplifier);
+		void del(const ContainmentHandler &handler, const SignedDistanceFunction &function, const TexturePainter &painter, const OctreeNodeDirtyHandler &dirtyHandler, float minSize, Simplifier &simplifier);
 		void iterate(IteratorHandler &handler);
 		void iterateFlat(IteratorHandler &handler);
 
@@ -169,7 +169,7 @@ class Octree: public BoundingCube {
 		int getMaxLevel(OctreeNode *node, BoundingCube &cube, BoundingCube &c, int level);
 
 		private:
-		NodeOperationResult shape(const ContainmentHandler &handler, const SignedDistanceFunction &function, const OctreeNodeDirtyHandler &dirtyHandler, OctreeNodeFrame frame, BoundingCube * chunk, Simplifier &simplifier, bool isAdd);
+		NodeOperationResult shape(const ContainmentHandler &handler, const SignedDistanceFunction &function, const TexturePainter &painter, const OctreeNodeDirtyHandler &dirtyHandler, OctreeNodeFrame frame, BoundingCube * chunk, Simplifier &simplifier, bool isAdd);
 };
 
 class Simplifier {

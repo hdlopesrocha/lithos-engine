@@ -468,9 +468,8 @@ class TexturePainter {
 class SphereContainmentHandler : public ContainmentHandler {
 	public:
 	BoundingSphere sphere;
-    const TexturePainter &brush;
 
-	SphereContainmentHandler(BoundingSphere s, const TexturePainter &b);
+	SphereContainmentHandler(BoundingSphere s);
 	glm::vec3 getCenter() const override;
 	bool isContained(const BoundingCube &cube) const override;
 	ContainmentType check(const BoundingCube &cube) const override;
@@ -480,9 +479,8 @@ class SphereContainmentHandler : public ContainmentHandler {
 class BoxContainmentHandler : public ContainmentHandler {
 	public: 
 	BoundingBox box;
-    const TexturePainter &brush;
 
-	BoxContainmentHandler(BoundingBox box, const TexturePainter &b);
+	BoxContainmentHandler(BoundingBox box);
 	bool isContained(const BoundingCube &cube) const override;
 	ContainmentType check(const BoundingCube &cube) const override;
 	glm::vec3 getCenter() const override;
@@ -492,9 +490,8 @@ class BoxContainmentHandler : public ContainmentHandler {
 class HeightMapContainmentHandler : public ContainmentHandler {
 	public: 
 	const HeightMap &map;
-    const TexturePainter &brush;
 
-	HeightMapContainmentHandler(const HeightMap &map, const TexturePainter &b);
+	HeightMapContainmentHandler(const HeightMap &map);
 	glm::vec3 getCenter() const;
 	float intersection(const glm::vec3 a, const glm::vec3 b) const ;
 	glm::vec3 getNormal(const glm::vec3 pos) const ;

@@ -42,7 +42,7 @@ ContainmentType BoundingSphere::test(const AbstractBoundingBox& cube) const {
     return ContainmentType::Disjoint;
 }
 
-SphereContainmentHandler::SphereContainmentHandler(BoundingSphere s, const TexturePainter &b) : ContainmentHandler(), sphere(s), brush(b){
+SphereContainmentHandler::SphereContainmentHandler(BoundingSphere s) : ContainmentHandler(), sphere(s) {
 
 }
 
@@ -68,6 +68,5 @@ Vertex SphereContainmentHandler::getVertex(const BoundingCube &cube, glm::vec3 p
     Vertex vertex(p);
     vertex.normal = Math::surfaceNormal(vertex.position, this->sphere);
 
-    brush.paint(vertex);
     return vertex;
 }

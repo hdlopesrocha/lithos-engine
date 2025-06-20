@@ -88,7 +88,7 @@ ContainmentType HeightMap::test(const BoundingCube &cube) const {
     return BoundingBox::test(cube);
 }
 
-HeightMapContainmentHandler::HeightMapContainmentHandler(const HeightMap &m, const TexturePainter &b) : ContainmentHandler(), map(m), brush(b){
+HeightMapContainmentHandler::HeightMapContainmentHandler(const HeightMap &m) : ContainmentHandler(), map(m) {
 
 }
 
@@ -130,7 +130,6 @@ Vertex HeightMapContainmentHandler::getVertex(const BoundingCube &cube, glm::vec
         vertex.normal = getNormal(vertex.position);
     }
 
-    brush.paint(vertex);
     return vertex;
 }
 

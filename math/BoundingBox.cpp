@@ -57,7 +57,7 @@ void BoundingBox::setMaxZ(float v){
     this->max.z = v;
 }
 
-BoxContainmentHandler::BoxContainmentHandler(BoundingBox box, const TexturePainter &b) : ContainmentHandler(), box(box), brush(b){
+BoxContainmentHandler::BoxContainmentHandler(BoundingBox box) : ContainmentHandler(), box(box) {
 
 }
 
@@ -78,6 +78,5 @@ Vertex BoxContainmentHandler::getVertex(const BoundingCube &cube, glm::vec3 prev
     glm::vec3 max = this->box.getMax();
     Vertex vertex(glm::clamp(previousPoint, min, max));
     vertex.normal = Math::surfaceNormal(vertex.position, box);
-    brush.paint(vertex);	
     return vertex;
 }
