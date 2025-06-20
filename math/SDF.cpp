@@ -30,9 +30,10 @@ glm::vec3 SDF::getPosition(float *sdf, const BoundingCube &cube) {
         }
     }
 
-    if (positions.empty())
+    if (positions.empty()){
+        std::cout << "Invalid point!" << std::endl;
         return cube.getCenter();  // fallback or invalid
-
+    }
     glm::vec3 sum(0.0f);
     for (const glm::vec3 &p : positions) {
         sum += p;

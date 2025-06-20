@@ -231,7 +231,7 @@ void Octree::handleQuadNodes(OctreeNodeData &data, OctreeNodeTriangleHandler * h
                 if(n == NULL) {
                     break;
                 }
-			} 
+			}
 
 			handler->handle(quads[0],quads[2],quads[1],sign1);
 			handler->handle(quads[0],quads[3],quads[2],sign1);
@@ -344,7 +344,6 @@ NodeOperationResult Octree::shape(
     float currentSDF[8];
     buildSDF(function, frame.cube, currentSDF);
     bool hasSurface = isSdfSurface(currentSDF);
-    glm::vec3 previousNormal = node? node->vertex.normal : glm::vec3(0.0f);
     NodeOperationResult children[8];
     bool childDeletable = true;
     bool childContains = true;
