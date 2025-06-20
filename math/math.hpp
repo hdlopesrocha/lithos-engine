@@ -347,7 +347,6 @@ class HeightMapTif : public HeightFunction {
 class ContainmentHandler {
 	public: 
 		virtual ContainmentType check(const BoundingCube &cube) const = 0;
-		virtual Vertex getVertex(const BoundingCube &cube, glm::vec3 previousPoint) const = 0;
 		virtual bool isContained(const BoundingCube &cube) const = 0;
 		virtual glm::vec3 getCenter() const = 0;
 };
@@ -473,7 +472,6 @@ class SphereContainmentHandler : public ContainmentHandler {
 	glm::vec3 getCenter() const override;
 	bool isContained(const BoundingCube &cube) const override;
 	ContainmentType check(const BoundingCube &cube) const override;
-	Vertex getVertex(const BoundingCube &cube, glm::vec3 previousPoint) const override;
 };
 
 class BoxContainmentHandler : public ContainmentHandler {
@@ -484,7 +482,6 @@ class BoxContainmentHandler : public ContainmentHandler {
 	bool isContained(const BoundingCube &cube) const override;
 	ContainmentType check(const BoundingCube &cube) const override;
 	glm::vec3 getCenter() const override;
-	Vertex getVertex(const BoundingCube &cube, glm::vec3 previousPoint) const override;
 };
 
 class HeightMapContainmentHandler : public ContainmentHandler {
@@ -497,7 +494,6 @@ class HeightMapContainmentHandler : public ContainmentHandler {
 	glm::vec3 getNormal(const glm::vec3 pos) const ;
 	bool isContained(const BoundingCube &cube) const override;
 	ContainmentType check(const BoundingCube &cube) const override;
-	Vertex getVertex(const BoundingCube &cube, glm::vec3 previousPoint) const override;
 };
 
 

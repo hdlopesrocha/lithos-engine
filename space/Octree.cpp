@@ -365,9 +365,6 @@ NodeOperationResult Octree::shape(
         if(node == NULL) {
             node = allocator.allocateOctreeNode(frame.cube)->init(Vertex(frame.cube.getCenter()));   
         } 
-        Vertex vertex = handler.getVertex(frame.cube, frame.cube.getCenter());
-        vertex.normal = glm::normalize(previousNormal + (isAdd ? vertex.normal : (-vertex.normal)));
-        node->vertex = vertex;
 
         for(int i =0 ; i < 8 ; ++i) {
             NodeOperationResult child = children[i];

@@ -77,14 +77,11 @@ class WaterBrush : public TexturePainter {
 class OctreeContainmentHandler : public ContainmentHandler {
 	public:
 	Octree * octree;
-    const TexturePainter &brush;
 	BoundingBox box;
 
-	OctreeContainmentHandler(Octree * octree, BoundingBox box, const TexturePainter &b);
-	glm::vec3 getNormal(const glm::vec3 pos) const;
+	OctreeContainmentHandler(Octree * octree, BoundingBox box);
 	bool isContained(const BoundingCube &p) const override;
 	ContainmentType check(const BoundingCube &cube) const override;
-	Vertex getVertex(const BoundingCube &cube, glm::vec3 previousPoint) const override;
 };
 
 class VegetationInstanceBuilderHandler : public InstanceBuilderHandler {

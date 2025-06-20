@@ -72,11 +72,3 @@ ContainmentType BoxContainmentHandler::check(const BoundingCube &cube) const {
 glm::vec3 BoxContainmentHandler::getCenter() const {
     return box.getCenter();
 }
-
-Vertex BoxContainmentHandler::getVertex(const BoundingCube &cube, glm::vec3 previousPoint) const {
-    glm::vec3 min = this->box.getMin();
-    glm::vec3 max = this->box.getMax();
-    Vertex vertex(glm::clamp(previousPoint, min, max));
-    vertex.normal = Math::surfaceNormal(vertex.position, box);
-    return vertex;
-}

@@ -112,24 +112,3 @@ ContainmentType HeightMapContainmentHandler::check(const BoundingCube &cube) con
     return map.test(cube); 
 }
 
-Vertex HeightMapContainmentHandler::getVertex(const BoundingCube &cube, glm::vec3 previousPoint) const {
-    Vertex vertex(cube.getCenter());
-
-    if(map.hitsBoundary(cube)) {
-        vertex.normal = Math::surfaceNormal(cube.getCenter(), map);
-        glm::vec3 c = cube.getCenter()+vertex.normal*cube.getLengthX();
-        c = glm::clamp(c, map.getMin(), map.getMax() );
-        c = glm::clamp(c,cube.getMin(), cube.getMax() );
-        vertex.position = c;
-    } else {
-        glm::vec3 p;
-        map.getPoint(cube, p);
-
-        glm::vec3 c = glm::clamp(p, map.getMin(), map.getMax());
-        vertex.position = c;
-        vertex.normal = getNormal(vertex.position);
-    }
-
-    return vertex;
-}
-
