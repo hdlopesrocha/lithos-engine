@@ -61,18 +61,16 @@ BoxContainmentHandler::BoxContainmentHandler(BoundingBox box, const TexturePaint
 
 }
 
-float BoxContainmentHandler::distance(const glm::vec3 p) const {
-    glm::vec3 len = box.getLength()*0.5f;
-    glm::vec3 pos = p - box.getCenter();
-    return SDF::box(pos, len);
-}
-
 bool BoxContainmentHandler::isContained(const BoundingCube &cube) const {
     return cube.contains(box);
 }
 
 ContainmentType BoxContainmentHandler::check(const BoundingCube &cube) const {
     return box.test(cube); 
+}
+
+glm::vec3 BoxContainmentHandler::getCenter() const {
+    return box.getCenter();
 }
 
 Vertex BoxContainmentHandler::getVertex(const BoundingCube &cube, glm::vec3 previousPoint) const {

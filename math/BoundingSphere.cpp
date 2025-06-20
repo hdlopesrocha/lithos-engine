@@ -46,17 +46,12 @@ SphereContainmentHandler::SphereContainmentHandler(BoundingSphere s, const Textu
 
 }
 
-float SphereContainmentHandler::distance(const glm::vec3 p) const {
-    glm::vec3 pos = p - sphere.center;
-    return SDF::sphere(pos, sphere.radius);
+glm::vec3 SphereContainmentHandler::getCenter() const {
+    return sphere.center;
 }
 
 bool SphereContainmentHandler::isContained(const BoundingCube &cube) const {
     return cube.contains(sphere);
-}
-
-glm::vec3 SphereContainmentHandler::getNormal(const glm::vec3 pos) const  {
-    return glm::normalize( pos - sphere.center);
 }
 
 ContainmentType SphereContainmentHandler::check(const BoundingCube &cube) const {
@@ -71,7 +66,7 @@ Vertex SphereContainmentHandler::getVertex(const BoundingCube &cube, glm::vec3 p
     glm::vec3 p = c + n*r;
 
     Vertex vertex(p);
-    vertex.normal = getNormal(vertex.position);
+    vertex.normal = Math::surfaceNormal(vertex.position, this->sphere);
 
     brush.paint(vertex);
     return vertex;

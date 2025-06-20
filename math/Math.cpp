@@ -40,6 +40,9 @@ glm::vec2 Math::triplanarMapping(glm::vec3 position, int plane) {
     }
 }
 
+glm::vec3 Math::surfaceNormal(const glm::vec3 point, const BoundingSphere &sphere) {
+    return glm::normalize( point - sphere.center);
+}
 
 glm::vec3 Math::surfaceNormal(const glm::vec3 point, const BoundingBox &box) {
 

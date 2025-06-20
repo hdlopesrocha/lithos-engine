@@ -60,3 +60,27 @@ float SDF::opSmoothIntersection( float d1, float d2, float k ) {
     float h = glm::clamp( 0.5 - 0.5*(d2-d1)/k, 0.0, 1.0 );
     return glm::mix( d2, d1, h ) + k*h*(1.0-h);
 }
+
+BoxDistanceFunction::BoxDistanceFunction(const BoundingBox box): box(box) {
+}
+
+float BoxDistanceFunction::distance(const glm::vec3 p) const {
+    glm::vec3 len = box.getLength()*0.5f;
+    glm::vec3 pos = p - box.getCenter();
+    return SDF::box(pos, len);
+}
+
+SphereDistanceFunction::SphereDistanceFunction(const BoundingSphere sphere): sphere(sphere) {
+}
+
+float SphereDistanceFunction::distance(const glm::vec3 p) const {
+    glm::vec3 pos = p - sphere.center;
+    return SDF::sphere(pos, sphere.radius);
+}
+
+HeightMapDistanceFunction::HeightMapDistanceFunction(const HeightMap &map):map(map) {
+}
+
+float HeightMapDistanceFunction::distance(const glm::vec3 p) const {
+    return map.distance(p);
+}

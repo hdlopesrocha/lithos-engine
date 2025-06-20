@@ -45,4 +45,31 @@ public:
     static glm::vec3 getPosition(float *sdf, const BoundingCube &cube);
 };
 
+
+class SignedDistanceFunction {
+    public:
+	virtual float distance(const glm::vec3 p) const = 0;
+};
+
+class SphereDistanceFunction : public SignedDistanceFunction {
+	BoundingSphere sphere;
+	public:	
+	SphereDistanceFunction(BoundingSphere sphere);
+	float distance(const glm::vec3 p) const override;
+};
+
+class BoxDistanceFunction : public SignedDistanceFunction {
+	BoundingBox box;
+	public:
+	BoxDistanceFunction(BoundingBox box);
+	float distance(const glm::vec3 p) const override;
+};
+
+class HeightMapDistanceFunction : public SignedDistanceFunction {
+	const HeightMap &map;
+	public:
+	HeightMapDistanceFunction(const HeightMap &map);
+	float distance(const glm::vec3 p) const override;
+};
+
 #endif

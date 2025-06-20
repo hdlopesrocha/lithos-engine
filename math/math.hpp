@@ -344,13 +344,12 @@ class HeightMapTif : public HeightFunction {
 
 };
 
-
 class ContainmentHandler {
 	public: 
 		virtual ContainmentType check(const BoundingCube &cube) const = 0;
 		virtual Vertex getVertex(const BoundingCube &cube, glm::vec3 previousPoint) const = 0;
-		virtual float distance(const glm::vec3 p) const = 0;
 		virtual bool isContained(const BoundingCube &cube) const = 0;
+		virtual glm::vec3 getCenter() const = 0;
 };
 
 class Geometry
@@ -472,8 +471,7 @@ class SphereContainmentHandler : public ContainmentHandler {
     const TexturePainter &brush;
 
 	SphereContainmentHandler(BoundingSphere s, const TexturePainter &b);
-	float distance(const glm::vec3 p) const override;
-	glm::vec3 getNormal(const glm::vec3 pos) const ;
+	glm::vec3 getCenter() const override;
 	bool isContained(const BoundingCube &cube) const override;
 	ContainmentType check(const BoundingCube &cube) const override;
 	Vertex getVertex(const BoundingCube &cube, glm::vec3 previousPoint) const override;
@@ -485,9 +483,9 @@ class BoxContainmentHandler : public ContainmentHandler {
     const TexturePainter &brush;
 
 	BoxContainmentHandler(BoundingBox box, const TexturePainter &b);
-	float distance(const glm::vec3 p) const override;
 	bool isContained(const BoundingCube &cube) const override;
 	ContainmentType check(const BoundingCube &cube) const override;
+	glm::vec3 getCenter() const override;
 	Vertex getVertex(const BoundingCube &cube, glm::vec3 previousPoint) const override;
 };
 
@@ -498,7 +496,6 @@ class HeightMapContainmentHandler : public ContainmentHandler {
 
 	HeightMapContainmentHandler(const HeightMap &map, const TexturePainter &b);
 	glm::vec3 getCenter() const;
-	float distance(const glm::vec3 p) const override;
 	float intersection(const glm::vec3 a, const glm::vec3 b) const ;
 	glm::vec3 getNormal(const glm::vec3 pos) const ;
 	bool isContained(const BoundingCube &cube) const override;
@@ -580,6 +577,7 @@ public:
 	static int mod(int a, int b);
 	static glm::vec2 triplanarMapping(glm::vec3 position, int plane);
 	static glm::vec3 surfaceNormal(const glm::vec3 point, const BoundingBox &box);
+	static glm::vec3 surfaceNormal(const glm::vec3 point, const BoundingSphere &sphere);
 	static glm::mat4 getCanonicalMVP(glm::mat4 m);
 	static glm::mat4 getRotationMatrixFromNormal(glm::vec3 normal, glm::vec3 target);
 	static float triangleArea(const glm::vec3& A, const glm::vec3& B, const glm::vec3& C);

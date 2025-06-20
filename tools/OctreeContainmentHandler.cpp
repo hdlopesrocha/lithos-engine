@@ -5,10 +5,6 @@ OctreeContainmentHandler::OctreeContainmentHandler(Octree * octree, BoundingBox 
     this->box = box;
 }
 
-float OctreeContainmentHandler::distance(const glm::vec3 p) const {
-    return 1;
-}
-
 bool OctreeContainmentHandler::isContained(const BoundingCube &p) const {
     return p.contains(box);
 }

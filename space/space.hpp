@@ -2,6 +2,7 @@
 #define SPACE_HPP
 
 #include "../math/math.hpp"
+#include "../math/SDF.hpp"
 #include "Allocator.hpp"
 #define SQRT_3_OVER_2 0.866025404f
 
@@ -148,8 +149,8 @@ class Octree: public BoundingCube {
 
 		Octree(BoundingCube minCube, float chunkSize);
 		void expand(const ContainmentHandler &handler);
-		void add(const ContainmentHandler &handler, const OctreeNodeDirtyHandler &dirtyHandler, float minSize, Simplifier &simplifier);
-		void del(const ContainmentHandler &handler, const OctreeNodeDirtyHandler &dirtyHandler, float minSize, Simplifier &simplifier);
+		void add(const ContainmentHandler &handler, const SignedDistanceFunction &function, const OctreeNodeDirtyHandler &dirtyHandler, float minSize, Simplifier &simplifier);
+		void del(const ContainmentHandler &handler, const SignedDistanceFunction &function, const OctreeNodeDirtyHandler &dirtyHandler, float minSize, Simplifier &simplifier);
 		void iterate(IteratorHandler &handler);
 		void iterateFlat(IteratorHandler &handler);
 
@@ -168,7 +169,7 @@ class Octree: public BoundingCube {
 		int getMaxLevel(OctreeNode *node, BoundingCube &cube, BoundingCube &c, int level);
 
 		private:
-		NodeOperationResult shape(const ContainmentHandler &handler, const OctreeNodeDirtyHandler &dirtyHandler, OctreeNodeFrame frame, BoundingCube * chunk, Simplifier &simplifier, bool isAdd);
+		NodeOperationResult shape(const ContainmentHandler &handler, const SignedDistanceFunction &function, const OctreeNodeDirtyHandler &dirtyHandler, OctreeNodeFrame frame, BoundingCube * chunk, Simplifier &simplifier, bool isAdd);
 };
 
 class Simplifier {
