@@ -128,3 +128,6 @@ glm::vec3 AbstractBoundingBox::getShift3(int i) {
     return glm::vec3((i / 9) - 1, (i / 3) % 3 - 1, i % 3 - 1);
 }
 
+glm::vec3 AbstractBoundingBox::getCorner(int i) const {
+    return getMin() + AbstractBoundingBox::getShift(i) * getLength();
+}

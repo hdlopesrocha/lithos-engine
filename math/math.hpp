@@ -174,6 +174,7 @@ class AbstractBoundingBox {
 
 	static glm::vec3 getShift(int i);
 	static glm::vec3 getShift3(int i);
+	glm::vec3 getCorner(int i) const;
 
 };
 
@@ -207,7 +208,7 @@ class BoundingCube : public AbstractBoundingBox {
 
 		BoundingCube getChild(int i) const;
 		BoundingCube getChild3(int i) const;
-	
+
 	    bool operator<(const BoundingCube& other) const;
 		bool operator==(const BoundingCube& other) const;
 };

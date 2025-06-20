@@ -395,6 +395,8 @@ NodeOperationResult Octree::shape(const ContainmentHandler &handler, const Octre
         for(int i = 0; i < 8; ++i) {           
             node->sdf[i] = resultSDF[i];
         }
+        //TODO: fix getPosition
+        //node->vertex.position = SDF::getPosition(node->sdf, frame.cube);
         node->setSolid(contains);
         node->setSimplification(0);
         node->setDirty(true);

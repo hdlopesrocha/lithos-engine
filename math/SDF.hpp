@@ -2,13 +2,34 @@
 #define SDF_HPP
 
 #include <glm/glm.hpp>
+#include "math.hpp"
+//      6-----7
+//     /|    /|
+//    4z+---5 |
+//    | 2y--+-3
+//    |/    |/
+//    0-----1x
+static const glm::ivec2 SDF_EDGES[12] = {
+    {0, 1}, 
+    {1, 3}, 
+    {3, 2}, 
+    {2, 0},
+    {4, 5},
+    {5, 7}, 
+    {7, 6}, 
+    {6, 4},
+    {0, 4}, 
+    {1, 5}, 
+    {2, 6}, 
+    {3, 7}
+}; 
 
 class SDF
 {
 public:
 	SDF();
 	~SDF();
-	 
+
     static float opUnion( float d1, float d2 );
     static float opSubtraction( float d1, float d2 );
     static float opIntersection( float d1, float d2 );
@@ -21,6 +42,7 @@ public:
 	static float box(glm::vec3 p, const glm::vec3 len);
 	static float sphere(glm::vec3 p, const float r);
 
+    static glm::vec3 getPosition(float *sdf, const BoundingCube &cube);
 };
 
 #endif

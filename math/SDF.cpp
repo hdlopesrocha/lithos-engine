@@ -1,5 +1,26 @@
 #include "SDF.hpp"
 
+glm::vec3 SDF::getPosition(float *sdf, const BoundingCube &cube) {
+    std::vector<glm::vec3> positions;
+    for(int i =0 ; i < 12 ; ++i) {
+        glm::ivec2 edge = SDF_EDGES[i];
+        float d0 = sdf[edge[0]];
+        float d1 = sdf[edge[1]];
+        if(d0 != d1) {
+            glm::vec3 p0 = cube.getCorner(edge[0]);
+            glm::vec3 p1 = cube.getCorner(edge[1]);
+            float t = d0 / (d0 - d1);
+            positions.push_back(p0 + t * (p1 - p0));
+        }
+    }
+    
+    glm::vec3 sum(0.0f);
+    for(glm::vec3 position : positions) {
+        sum += position;
+    }
+    return positions.size() > 0 ? sum / static_cast<float>(positions.size()) : cube.getCenter();
+}
+
 float SDF::opUnion( float d1, float d2 ) {
     return glm::min(d1,d2);
 }
