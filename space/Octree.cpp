@@ -401,6 +401,8 @@ NodeOperationResult Octree::shape(
         }
         //TODO: fix getPosition
         node->vertex.position = SDF::getPosition(node->sdf, frame.cube);
+        node->vertex.normal = SDF::getNormal(node->sdf, frame.cube);
+        //node->vertex.normal = SDF::getNormalFromPosition(node->sdf, frame.cube, node->vertex.position);
         painter.paint(node->vertex);
         node->setSolid(contains);
         node->setSimplification(0);

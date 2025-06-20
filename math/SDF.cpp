@@ -41,6 +41,48 @@ glm::vec3 SDF::getPosition(float *sdf, const BoundingCube &cube) {
     return sum / static_cast<float>(positions.size());
 }
 
+glm::vec3 SDF::getNormal(float* sdf, const BoundingCube& cube) {
+    const float dx = cube.getLengthX(); // or half size if your sdf spacing is half
+    const float inv2dx = 1.0f / (2.0f * dx);
+
+    // Gradient approximation via central differences:
+    float gx = (sdf[1] + sdf[5] + sdf[3] + sdf[7] - sdf[0] - sdf[4] - sdf[2] - sdf[6]) * 0.25f;
+    float gy = (sdf[2] + sdf[3] + sdf[6] + sdf[7] - sdf[0] - sdf[1] - sdf[4] - sdf[5]) * 0.25f;
+    float gz = (sdf[4] + sdf[5] + sdf[6] + sdf[7] - sdf[0] - sdf[1] - sdf[2] - sdf[3]) * 0.25f;
+
+    glm::vec3 normal(gx, gy, gz);
+    return glm::normalize(normal * inv2dx);
+}
+
+glm::vec3 SDF::getNormalFromPosition(float* sdf, const BoundingCube& cube, const glm::vec3& position) {
+    glm::vec3 local = (position - cube.getMin()) / cube.getLength(); // Convert to [0,1]^3 within cube
+
+    // Trilinear interpolation gradient
+    float dx = (
+        (1 - local.y) * (1 - local.z) * (sdf[1] - sdf[0]) +
+        local.y * (1 - local.z) * (sdf[3] - sdf[2]) +
+        (1 - local.y) * local.z * (sdf[5] - sdf[4]) +
+        local.y * local.z * (sdf[7] - sdf[6])
+    );
+
+    float dy = (
+        (1 - local.x) * (1 - local.z) * (sdf[2] - sdf[0]) +
+        local.x * (1 - local.z) * (sdf[3] - sdf[1]) +
+        (1 - local.x) * local.z * (sdf[6] - sdf[4]) +
+        local.x * local.z * (sdf[7] - sdf[5])
+    );
+
+    float dz = (
+        (1 - local.x) * (1 - local.y) * (sdf[4] - sdf[0]) +
+        local.x * (1 - local.y) * (sdf[5] - sdf[1]) +
+        (1 - local.x) * local.y * (sdf[6] - sdf[2]) +
+        local.x * local.y * (sdf[7] - sdf[3])
+    );
+
+    return glm::normalize(glm::vec3(dx, dy, dz) / cube.getLength());
+}
+
+
 float SDF::opUnion( float d1, float d2 ) {
     return glm::min(d1,d2);
 }

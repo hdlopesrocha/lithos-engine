@@ -43,6 +43,10 @@ public:
 	static float sphere(glm::vec3 p, const float r);
 
     static glm::vec3 getPosition(float *sdf, const BoundingCube &cube);
+    static glm::vec3 getNormal(float* sdf, const BoundingCube& cube);
+    static glm::vec3 getNormalFromPosition(float* sdf, const BoundingCube& cube, const glm::vec3& position);
+
+
 };
 
 
