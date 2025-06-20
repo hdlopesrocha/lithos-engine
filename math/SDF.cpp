@@ -1,24 +1,44 @@
 #include "SDF.hpp"
 
 glm::vec3 SDF::getPosition(float *sdf, const BoundingCube &cube) {
+    // Early exit if there's no surface inside this cube
+    bool allPositive = true;
+    bool allNegative = true;
+    for (int i = 0; i < 8; ++i) {
+        bool positive = sdf[i] >= 0.0f;
+        allPositive &= positive;
+        allNegative &= !positive;
+    }
+    if (allPositive || allNegative) {
+        return cube.getCenter();  // or return {} if invalid
+    }
+
     std::vector<glm::vec3> positions;
-    for(int i =0 ; i < 12 ; ++i) {
+    for (int i = 0; i < 12; ++i) {
         glm::ivec2 edge = SDF_EDGES[i];
         float d0 = sdf[edge[0]];
         float d1 = sdf[edge[1]];
-        if(d0 != d1) {
+
+		bool sign0 = d0 < 0.0f;
+		bool sign1 = d1 < 0.0f;
+
+        if (sign0 != sign1) {
             glm::vec3 p0 = cube.getCorner(edge[0]);
             glm::vec3 p1 = cube.getCorner(edge[1]);
-            float t = d0 / (d0 - d1);
+            float t = d0 / (d0 - d1);  // Safe due to sign change
             positions.push_back(p0 + t * (p1 - p0));
         }
     }
-    
+
+    if (positions.empty())
+        return cube.getCenter();  // fallback or invalid
+
     glm::vec3 sum(0.0f);
-    for(glm::vec3 position : positions) {
-        sum += position;
+    for (const glm::vec3 &p : positions) {
+        sum += p;
     }
-    return positions.size() > 0 ? sum / static_cast<float>(positions.size()) : cube.getCenter();
+
+    return sum / static_cast<float>(positions.size());
 }
 
 float SDF::opUnion( float d1, float d2 ) {

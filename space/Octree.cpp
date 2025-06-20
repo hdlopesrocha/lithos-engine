@@ -215,8 +215,12 @@ void Octree::handleQuadNodes(OctreeNodeData &data, OctreeNodeTriangleHandler * h
     for(size_t k =0 ; k < tessOrder.size(); ++k) {
 		glm::ivec2 edge = tessEdge[k];
         float * sdf = data.node->sdf;
-		bool sign0 = (sdf[edge[0]]) < 0.0f;
-		bool sign1 = (sdf[edge[1]]) < 0.0f;
+
+        float d0 = sdf[edge[0]];
+        float d1 = sdf[edge[1]];
+
+		bool sign0 = d0 < 0.0f;
+		bool sign1 = d1 < 0.0f;
 
 		if(sign0 != sign1) {
 			glm::ivec4 quad = tessOrder[k];
@@ -396,7 +400,7 @@ NodeOperationResult Octree::shape(
             node->sdf[i] = resultSDF[i];
         }
         //TODO: fix getPosition
-        //node->vertex.position = SDF::getPosition(node->sdf, frame.cube);
+        node->vertex.position = SDF::getPosition(node->sdf, frame.cube);
         painter.paint(node->vertex);
         node->setSolid(contains);
         node->setSimplification(0);
