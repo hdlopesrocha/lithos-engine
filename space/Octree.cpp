@@ -315,7 +315,7 @@ void Octree::add(
     const TexturePainter &painter,
     const OctreeNodeDirtyHandler &dirtyHandler, float minSize, Simplifier &simplifier) {
 	expand(handler);	
-    shape(handler, function, painter, dirtyHandler, OctreeNodeFrame(root, -1, *this, minSize, 0, root->isSolid(), root->sdf), NULL, simplifier, true);
+    shape(SDF::opUnion, handler, function, painter, dirtyHandler, OctreeNodeFrame(root, -1, *this, minSize, 0, root->isSolid(), root->sdf), NULL, simplifier);
 }
 
 void Octree::del(
@@ -323,15 +323,16 @@ void Octree::del(
     const SignedDistanceFunction &function, 
     const TexturePainter &painter,
     const OctreeNodeDirtyHandler &dirtyHandler, float minSize, Simplifier &simplifier) {
-    shape(handler, function, painter, dirtyHandler, OctreeNodeFrame(root, -1, *this, minSize, 0, root->isSolid(), root->sdf), NULL, simplifier, false);
+    shape(SDF::opSubtraction, handler, function, painter, dirtyHandler, OctreeNodeFrame(root, -1, *this, minSize, 0, root->isSolid(), root->sdf), NULL, simplifier);
 }
 
 NodeOperationResult Octree::shape(
+    float (*operation)(float, float),
     const ContainmentHandler &handler, 
     const SignedDistanceFunction &function, 
     const TexturePainter &painter,
     const OctreeNodeDirtyHandler &dirtyHandler, 
-    OctreeNodeFrame frame, BoundingCube * chunk, Simplifier &simplifier, bool isAdd) {
+    OctreeNodeFrame frame, BoundingCube * chunk, Simplifier &simplifier) {
     
     ContainmentType check = handler.check(frame.cube);
     if(check == ContainmentType::Disjoint) {
@@ -350,10 +351,12 @@ NodeOperationResult Octree::shape(
     if (!isLeaf) {
         for (int i = 7; i >= 0; --i) {  
             OctreeNode * childNode = node ? node->getChildNode(i, &allocator, node->getBlock(&allocator)) : NULL;
-            float resultSDF[8];
-            SDF::getChildSDF(frame.sdf, i, resultSDF);
-            float * childSDF = childNode ? childNode->sdf : resultSDF;
-            NodeOperationResult child = shape(handler, function, painter, dirtyHandler, OctreeNodeFrame(childNode, i, frame.cube.getChild(i), frame.minSize, frame.level + 1, isSolid, childSDF), chunk, simplifier, isAdd);
+            float interpolatedSDF[8];
+            if(childNode == NULL) {
+                SDF::getChildSDF(frame.sdf, i, interpolatedSDF);
+            }
+            float * childSDF = childNode ? childNode->sdf : interpolatedSDF;
+            NodeOperationResult child = shape(operation, handler, function, painter, dirtyHandler, OctreeNodeFrame(childNode, i, frame.cube.getChild(i), frame.minSize, frame.level + 1, isSolid, childSDF), chunk, simplifier);
             children[i] = child;
             childHasSurface |= child.hasSurface;
             childContains &= child.contains;
@@ -363,7 +366,7 @@ NodeOperationResult Octree::shape(
 
     float resultSDF[8];
     for(int i = 0; i < 8; ++i) {           
-        resultSDF[i] = isAdd ? SDF::opUnion(currentSDF[i], frame.sdf[i]) : SDF::opSubtraction(currentSDF[i], frame.sdf[i]);
+        resultSDF[i] = operation(currentSDF[i], frame.sdf[i]);
     }
 
     bool hasSurface = isSdfSurface(resultSDF);

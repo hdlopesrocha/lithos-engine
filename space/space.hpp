@@ -169,7 +169,7 @@ class Octree: public BoundingCube {
 		int getMaxLevel(OctreeNode *node, BoundingCube &cube, BoundingCube &c, int level);
 
 		private:
-		NodeOperationResult shape(const ContainmentHandler &handler, const SignedDistanceFunction &function, const TexturePainter &painter, const OctreeNodeDirtyHandler &dirtyHandler, OctreeNodeFrame frame, BoundingCube * chunk, Simplifier &simplifier, bool isAdd);
+		NodeOperationResult shape(float (*operation)(float, float), const ContainmentHandler &handler, const SignedDistanceFunction &function, const TexturePainter &painter, const OctreeNodeDirtyHandler &dirtyHandler, OctreeNodeFrame frame, BoundingCube * chunk, Simplifier &simplifier);
 };
 
 class Simplifier {
