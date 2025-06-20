@@ -326,7 +326,6 @@ void Octree::del(
     shape(handler, function, painter, dirtyHandler, OctreeNodeFrame(root, -1, *this, minSize, 0, root->isSolid(), root->sdf), NULL, simplifier, false);
 }
 
-
 NodeOperationResult Octree::shape(
     const ContainmentHandler &handler, 
     const SignedDistanceFunction &function, 
@@ -343,24 +342,32 @@ NodeOperationResult Octree::shape(
     bool isSolid = node ? node->isSolid() : frame.isSolid;
     float currentSDF[8];
     buildSDF(function, frame.cube, currentSDF);
-    bool hasSurface = isSdfSurface(currentSDF);
     NodeOperationResult children[8];
     bool childDeletable = true;
     bool childContains = true;
+    bool childHasSurface = false;
 
     if (!isLeaf) {
         for (int i = 7; i >= 0; --i) {  
             OctreeNode * childNode = node ? node->getChildNode(i, &allocator, node->getBlock(&allocator)) : NULL;
-            float * childSDF = childNode ? childNode->sdf : frame.sdf;
+            float resultSDF[8];
+            SDF::getChildSDF(frame.sdf, i, resultSDF);
+            float * childSDF = childNode ? childNode->sdf : resultSDF;
             NodeOperationResult child = shape(handler, function, painter, dirtyHandler, OctreeNodeFrame(childNode, i, frame.cube.getChild(i), frame.minSize, frame.level + 1, isSolid, childSDF), chunk, simplifier, isAdd);
             children[i] = child;
-            hasSurface |= child.hasSurface;
+            childHasSurface |= child.hasSurface;
             childContains &= child.contains;
             childDeletable &= child.deletable;
         }
     }
 
-    if(hasSurface && isAdd != isSolid) {
+    float resultSDF[8];
+    for(int i = 0; i < 8; ++i) {           
+        resultSDF[i] = isAdd ? SDF::opUnion(currentSDF[i], frame.sdf[i]) : SDF::opSubtraction(currentSDF[i], frame.sdf[i]);
+    }
+
+    bool hasSurface = isSdfSurface(resultSDF);
+    if(hasSurface) {
         if(node == NULL) {
             node = allocator.allocateOctreeNode(frame.cube)->init(Vertex(frame.cube.getCenter()));   
         } 
@@ -383,11 +390,6 @@ NodeOperationResult Octree::shape(
         }
     }
 
-    float resultSDF[8];
-    for(int i = 0; i < 8; ++i) {           
-        resultSDF[i] = isAdd ? SDF::opUnion(currentSDF[i], frame.sdf[i]) : SDF::opSubtraction(currentSDF[i], frame.sdf[i]);
-    }
-
     bool deletable = childDeletable && (isSdfSolid(resultSDF) || isSdfEmpty(resultSDF));
     bool contains = childContains && isSdfSolid(resultSDF);
 
@@ -395,7 +397,6 @@ NodeOperationResult Octree::shape(
         for(int i = 0; i < 8; ++i) {           
             node->sdf[i] = resultSDF[i];
         }
-        //TODO: fix getPosition
         node->vertex.position = SDF::getPosition(node->sdf, frame.cube);
         node->vertex.normal = SDF::getNormal(node->sdf, frame.cube);
         //node->vertex.normal = SDF::getNormalFromPosition(node->sdf, frame.cube, node->vertex.position);

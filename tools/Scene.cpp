@@ -267,7 +267,7 @@ void Scene::generate(Camera &camera) {
 	
 	{
 		BoundingSphere sphere = BoundingSphere(glm::vec3(0,512,0),128);
-		solidSpace->add(SphereContainmentHandler(sphere), SphereDistanceFunction(sphere), SimpleBrush(4), DirtyHandler(*this), 2.0, simplifier);
+		solidSpace->add(SphereContainmentHandler(sphere), SphereDistanceFunction(sphere), SimpleBrush(4), DirtyHandler(*this), 8.0, simplifier);
 	}
 	//solidSpace->add(SphereContainmentHandler(BoundingSphere(glm::vec3(-11,61,11),10), SimpleBrush(5)), 1.0);
 	//solidSpace->del(SphereContainmentHandler(BoundingSphere(glm::vec3(11,61,-11),10), SimpleBrush(4)), 1.0);
