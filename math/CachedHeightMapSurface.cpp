@@ -23,12 +23,10 @@ CachedHeightMapSurface::CachedHeightMapSurface(const HeightFunction &function, B
 float CachedHeightMapSurface::getData(int x, int z) const {
     return this->data[Math::clamp(x, 0, this->width-1)][Math::clamp(z, 0, this->height-1)];
 }
-long callsToGetHeightAtCached = 0;
+
 float CachedHeightMapSurface::getHeightAt(float x, float z) const  {
     // bilinear interpolation
     glm::vec3 len = box.getLength();
-
-
     
     float px = Math::clamp((x-box.getMinX())/len.x, 0.0, 1.0);
     float pz = Math::clamp((z-box.getMinZ())/len.z, 0.0, 1.0);
@@ -48,9 +46,6 @@ float CachedHeightMapSurface::getHeightAt(float x, float z) const  {
 
     float y = (1.0 - qz)*y1 + (qz)*y2;
 
-    if(++callsToGetHeightAtCached%10000 == 0 ){
-      //  std::cout << "ch[" + std::to_string(callsToGetHeightAtCached) << "] = " << std::to_string(y) << std::endl;
-    }
     return Math::clamp( y, box.getMinY(), box.getMaxY());
 }
 

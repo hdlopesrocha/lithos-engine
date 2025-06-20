@@ -57,10 +57,7 @@ bool HeightMap::contains(const glm::vec3 &point) const {
 float HeightMap::distance(const glm::vec3 p) const {
     glm::vec3 len = getLength()*0.5f;
     glm::vec3 pos = p - getCenter();
-  
-    float sdf2 = p.y - func.getHeightAt(p.x, p.z);
-    float sdf1 = SDF::box(pos, len);
-    return SDF::opIntersection(sdf1, sdf2); 
+    return p.y - func.getHeightAt(p.x, p.z); 
 }
 
 
