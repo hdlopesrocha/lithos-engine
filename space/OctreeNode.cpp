@@ -6,7 +6,7 @@ OctreeNode::OctreeNode(Vertex vertex) {
 
 OctreeNode * OctreeNode::init(Vertex vertex) {
 	for(int i = 0; i < 8; ++i) {
-		this->sdf[i] = 0.0f;
+		this->sdf[i] = MAXFLOAT;
 	}
 	this->bits = 0x0;
 	this->setSolid(false);
@@ -21,10 +21,7 @@ ChildBlock * OctreeNode::getBlock(OctreeAllocator * allocator) {
 	return allocator->childAllocator.getFromIndex(this->id);
 }
 
-void OctreeNode::setChildNode(int i, OctreeNode * node, OctreeAllocator * allocator) {
-	if(node == NULL && this->id == UINT_MAX) {
-		return;
-	}
+ChildBlock * OctreeNode::createBlock(OctreeAllocator * allocator) {
 	ChildBlock * block = NULL;
 	if(this->id == UINT_MAX) {
 		block = allocator->childAllocator.allocate()->init();
@@ -32,6 +29,13 @@ void OctreeNode::setChildNode(int i, OctreeNode * node, OctreeAllocator * alloca
 	}
 	if(block == NULL) {
 		block = allocator->childAllocator.getFromIndex(this->id);
+	}
+	return block;
+}
+
+void OctreeNode::setChildNode(int i, OctreeNode * node, OctreeAllocator * allocator, ChildBlock * block) {
+	if(node == NULL && this->id == UINT_MAX) {
+		return;
 	}
 	block->children[i] = allocator->getIndex(node);
 }
@@ -63,6 +67,7 @@ void OctreeNode::setSdf(float * value) {
 }
 
 bool OctreeNode::isLeaf() {
+	// TODO: might be empty if not cleared properly
 	return this->id == UINT_MAX;
 }
 

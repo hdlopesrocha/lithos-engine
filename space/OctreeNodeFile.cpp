@@ -15,12 +15,13 @@ OctreeNode * loadRecursive2(OctreeAllocator * allocator, OctreeNode * node, int 
 		node->setSdf(serialized.sdf);
 		node->setSolid(serialized.isSolid);
 	}
+	ChildBlock * block = node->createBlock(allocator);
 
 	for(int j=0 ; j <8 ; ++j){
 		int index = serialized.children[j];
 		if(index != 0) {
 			BoundingCube c = cube.getChild(j);
-			node->setChildNode(j , loadRecursive2(allocator, NULL, index, c, nodes), allocator);
+			node->setChildNode(j , loadRecursive2(allocator, NULL, index, c, nodes), allocator, block);
 		}
 	}
 

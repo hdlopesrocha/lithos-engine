@@ -20,13 +20,13 @@ OctreeNode * loadRecursive(OctreeAllocator * allocator, int i, std::vector<Octre
 	OctreeNode * node = allocator->allocateOctreeNode(cube)->init(vertex);
 	node->setSdf(serialized.sdf);
 	node->setSolid(serialized.isSolid);
-
+	ChildBlock * block = node->createBlock(allocator);
 	if(cube.getLengthX() > chunkSize) {
 		for(int j=0 ; j <8 ; ++j){
 			int index = serialized.children[j];
 			if(index != 0) {
 				BoundingCube c = cube.getChild(j);
-				node->setChildNode(j , loadRecursive(allocator, index, nodes, chunkSize, filename, c,baseFolder), allocator);
+				node->setChildNode(j , loadRecursive(allocator, index, nodes, chunkSize, filename, c,baseFolder), allocator, block);
 			}
 		}
 	} else {

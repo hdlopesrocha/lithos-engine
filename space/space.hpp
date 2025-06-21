@@ -23,8 +23,9 @@ class OctreeNode {
 		~OctreeNode();
 		OctreeNode * init(Vertex vertex);
 		void clear(OctreeAllocator * allocator, BoundingCube &cube);
-		void setChildNode(int i, OctreeNode * node, OctreeAllocator * allocator);
+		void setChildNode(int i, OctreeNode * node, OctreeAllocator * allocator, ChildBlock * block);
 		ChildBlock * getBlock(OctreeAllocator * allocator);
+		ChildBlock * createBlock(OctreeAllocator * allocator);
 		OctreeNode * getChildNode(int i, OctreeAllocator * allocator, ChildBlock * block);
 		bool isLeaf();
 		void setSimplification(uint8_t value);

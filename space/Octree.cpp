@@ -299,7 +299,8 @@ void Octree::expand(const ContainmentHandler &handler) {
 			root = NULL;
 	    }
 	    OctreeNode * newNode = allocator.allocateOctreeNode(*this)->init(getCenter());
-		newNode->setChildNode(i, root, &allocator);
+        ChildBlock * block = newNode->createBlock(&allocator);
+		newNode->setChildNode(i, root, &allocator, block);
 	    root = newNode;
 	}
 }
@@ -393,7 +394,12 @@ NodeOperationResult Octree::shape(
         }
         if(solid || empty) {
             node->clear(&allocator, frame.cube);
-        } else {
+        } else if(!isLeaf) {
+            ChildBlock * block = node->getBlock(&allocator);
+            if(block == NULL) {
+                block = node->createBlock(&allocator);
+            }
+
             for(int i =0 ; i < 8 ; ++i) {
                 NodeOperationResult child = children[i];
                 OctreeNode * childNode = child.node;
@@ -407,7 +413,7 @@ NodeOperationResult Octree::shape(
                 }
 
                 if(childNode != NULL) {
-                    node->setChildNode(i, childNode, &allocator);
+                    node->setChildNode(i, childNode, &allocator, block);
                 }
             }
         }
