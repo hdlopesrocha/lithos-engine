@@ -106,11 +106,10 @@ struct OctreeNodeFrame {
     BoundingCube cube;
     float minSize;
 	uint level;
-	bool isSolid;
 	float sdf[8];
 
-	OctreeNodeFrame(OctreeNode* node, int childIndex, BoundingCube cube, float minSize, uint level, bool inside, float * sdf) 
-		: node(node), childIndex(childIndex), cube(cube), minSize(minSize), level(level), isSolid(inside) {
+	OctreeNodeFrame(OctreeNode* node, int childIndex, BoundingCube cube, float minSize, uint level, float * sdf) 
+		: node(node), childIndex(childIndex), cube(cube), minSize(minSize), level(level) {
 			for(int i = 0; i < 8; ++i) {
 				this->sdf[i] = sdf!=NULL ? sdf[i] : 0.0f;
 			}	
@@ -120,17 +119,17 @@ struct OctreeNodeFrame {
 struct NodeOperationResult {
     OctreeNode * node;
 	BoundingCube cube;
-    bool hasSurface;
-	bool contains;
+    bool surface;
+	bool solid;
+	bool empty;
     float sdf[8];
-	bool deletable;
 
 
-	NodeOperationResult() : node(NULL), cube(glm::vec3(0.0f), 0.0f), hasSurface(false), contains(false) {
+	NodeOperationResult() : node(NULL), cube(glm::vec3(0.0f), 0.0f), surface(false), solid(false) {
 	};
 
     NodeOperationResult(BoundingCube cube, OctreeNode * node, bool hasSurface, bool contains, bool deletable, float * sdf) 
-        : node(node), cube(cube), hasSurface(hasSurface), contains(contains), deletable(deletable) {
+        : node(node), cube(cube), surface(hasSurface), solid(contains), empty(deletable) {
 		if(sdf != NULL) {
 			for(int i = 0; i < 8; ++i) {
 				this->sdf[i] = sdf[i];

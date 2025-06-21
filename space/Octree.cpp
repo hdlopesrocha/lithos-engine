@@ -315,7 +315,7 @@ void Octree::add(
     const TexturePainter &painter,
     const OctreeNodeDirtyHandler &dirtyHandler, float minSize, Simplifier &simplifier) {
 	expand(handler);	
-    shape(SDF::opUnion, handler, function, painter, dirtyHandler, OctreeNodeFrame(root, -1, *this, minSize, 0, root->isSolid(), root->sdf), NULL, simplifier);
+    shape(SDF::opUnion, handler, function, painter, dirtyHandler, OctreeNodeFrame(root, -1, *this, minSize, 0, root->sdf), NULL, simplifier);
 }
 
 void Octree::del(
@@ -323,7 +323,7 @@ void Octree::del(
     const SignedDistanceFunction &function, 
     const TexturePainter &painter,
     const OctreeNodeDirtyHandler &dirtyHandler, float minSize, Simplifier &simplifier) {
-    shape(SDF::opSubtraction, handler, function, painter, dirtyHandler, OctreeNodeFrame(root, -1, *this, minSize, 0, root->isSolid(), root->sdf), NULL, simplifier);
+    shape(SDF::opSubtraction, handler, function, painter, dirtyHandler, OctreeNodeFrame(root, -1, *this, minSize, 0, root->sdf), NULL, simplifier);
 }
 
 NodeOperationResult Octree::shape(
@@ -338,14 +338,13 @@ NodeOperationResult Octree::shape(
     if(check == ContainmentType::Disjoint) {
         return NodeOperationResult(frame.cube, NULL, false, false, false, NULL);  // Skip this node
     }
+    
     OctreeNode * node  = frame.node;
     bool isLeaf = frame.cube.getLengthX() <= frame.minSize;
-    bool isSolid = node ? node->isSolid() : frame.isSolid;
-    float currentSDF[8];
-    buildSDF(function, frame.cube, currentSDF);
+
     NodeOperationResult children[8];
-    bool childDeletable = true;
-    bool childContains = true;
+    bool childEmpty = true;
+    bool childSolid = true;
     bool childHasSurface = false;
 
     if (!isLeaf) {
@@ -356,32 +355,53 @@ NodeOperationResult Octree::shape(
                 SDF::getChildSDF(frame.sdf, i, interpolatedSDF);
             }
             float * childSDF = childNode ? childNode->sdf : interpolatedSDF;
-            NodeOperationResult child = shape(operation, handler, function, painter, dirtyHandler, OctreeNodeFrame(childNode, i, frame.cube.getChild(i), frame.minSize, frame.level + 1, isSolid, childSDF), chunk, simplifier);
+            NodeOperationResult child = shape(operation, handler, function, painter, dirtyHandler, OctreeNodeFrame(childNode, i, frame.cube.getChild(i), frame.minSize, frame.level + 1, childSDF), chunk, simplifier);
             children[i] = child;
-            childHasSurface |= child.hasSurface;
-            childContains &= child.contains;
-            childDeletable &= child.deletable;
+            childHasSurface |= child.surface;
+            childSolid &= child.solid;
+            childEmpty &= child.empty;
         }
     }
 
+    float currentSDF[8];
     float resultSDF[8];
+
+    buildSDF(function, frame.cube, currentSDF);
     for(int i = 0; i < 8; ++i) {           
-        resultSDF[i] = operation(currentSDF[i], frame.sdf[i]);
+        resultSDF[i] = operation(frame.sdf[i], currentSDF[i]);
     }
 
+    bool empty = childEmpty && isSdfEmpty(resultSDF);
+    bool solid = childSolid && isSdfSolid(resultSDF);
     bool hasSurface = isSdfSurface(resultSDF);
-    if(hasSurface) {
-        if(node == NULL) {
-            node = allocator.allocateOctreeNode(frame.cube)->init(Vertex(frame.cube.getCenter()));   
-        } 
+    
+    if(hasSurface && node == NULL) {
+        node = allocator.allocateOctreeNode(frame.cube)->init(Vertex(frame.cube.getCenter()));   
+    }
 
+    if(node!=NULL) {
         for(int i =0 ; i < 8 ; ++i) {
+            node->sdf[i] = resultSDF[i];
+        }
+        node->vertex.position = SDF::getPosition(node->sdf, frame.cube);
+        node->vertex.normal = SDF::getNormal(node->sdf, frame.cube);
+        //node->vertex.normal = SDF::getNormalFromPosition(node->sdf, frame.cube, node->vertex.position);
+        painter.paint(node->vertex);
+        node->setSolid(solid);
+        node->setSimplification(0);
+        node->setDirty(true);
+        if(node->id) {
+            dirtyHandler.handle(node);
+        }
+        if(solid || empty) {
+            node->clear(&allocator, frame.cube);
+        } else for(int i =0 ; i < 8 ; ++i) {
             NodeOperationResult child = children[i];
             OctreeNode * childNode = child.node;
 
-            if(childNode == NULL && child.contains) {
+            if(childNode == NULL && child.solid) {
                 childNode = allocator.allocateOctreeNode(child.cube)->init(Vertex(child.cube.getCenter()));
-                childNode->setSolid(true);
+                childNode->setSolid(child.solid);
                 childNode->setSdf(child.sdf);
                 childNode->setSimplification(0);
                 childNode->setDirty(true);
@@ -393,29 +413,7 @@ NodeOperationResult Octree::shape(
         }
     }
 
-    bool deletable = childDeletable && (isSdfSolid(resultSDF) || isSdfEmpty(resultSDF));
-    bool contains = childContains && isSdfSolid(resultSDF);
-
-    if(node!=NULL) {
-        for(int i = 0; i < 8; ++i) {           
-            node->sdf[i] = resultSDF[i];
-        }
-        node->vertex.position = SDF::getPosition(node->sdf, frame.cube);
-        node->vertex.normal = SDF::getNormal(node->sdf, frame.cube);
-        //node->vertex.normal = SDF::getNormalFromPosition(node->sdf, frame.cube, node->vertex.position);
-        painter.paint(node->vertex);
-        node->setSolid(contains);
-        node->setSimplification(0);
-        node->setDirty(true);
-        if(node->id) {
-            dirtyHandler.handle(node);
-        }
-        if(deletable) {
-            node->clear(&allocator, frame.cube);
-        }  
-    }
-
-    return NodeOperationResult(frame.cube, node, hasSurface, contains, deletable, resultSDF);
+    return NodeOperationResult(frame.cube, node, hasSurface, solid, empty, resultSDF);
 }
 
 void Octree::iterate(IteratorHandler &handler) {
