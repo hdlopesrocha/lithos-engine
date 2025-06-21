@@ -380,35 +380,35 @@ NodeOperationResult Octree::shape(
     }
 
     if(node!=NULL) {
-        for(int i =0 ; i < 8 ; ++i) {
-            node->sdf[i] = resultSDF[i];
-        }
-        node->vertex.position = SDF::getPosition(node->sdf, frame.cube);
-        node->vertex.normal = SDF::getNormal(node->sdf, frame.cube);
-        //node->vertex.normal = SDF::getNormalFromPosition(node->sdf, frame.cube, node->vertex.position);
-        painter.paint(node->vertex);
+        node->setSdf(resultSDF);
         node->setSolid(solid);
         node->setSimplification(0);
         node->setDirty(true);
+        //node->vertex.normal = SDF::getNormalFromPosition(node->sdf, frame.cube, node->vertex.position);
+        node->vertex.position = SDF::getPosition(node->sdf, frame.cube);
+        node->vertex.normal = SDF::getNormal(node->sdf, frame.cube);
+        painter.paint(node->vertex);
         if(node->id) {
             dirtyHandler.handle(node);
         }
         if(solid || empty) {
             node->clear(&allocator, frame.cube);
-        } else for(int i =0 ; i < 8 ; ++i) {
-            NodeOperationResult child = children[i];
-            OctreeNode * childNode = child.node;
+        } else {
+            for(int i =0 ; i < 8 ; ++i) {
+                NodeOperationResult child = children[i];
+                OctreeNode * childNode = child.node;
 
-            if(childNode == NULL && child.solid) {
-                childNode = allocator.allocateOctreeNode(child.cube)->init(Vertex(child.cube.getCenter()));
-                childNode->setSolid(child.solid);
-                childNode->setSdf(child.sdf);
-                childNode->setSimplification(0);
-                childNode->setDirty(true);
-            }
+                if(childNode == NULL && child.solid) {
+                    childNode = allocator.allocateOctreeNode(child.cube)->init(Vertex(child.cube.getCenter()));
+                    childNode->setSolid(child.solid);
+                    childNode->setSdf(child.sdf);
+                    childNode->setSimplification(0);
+                    childNode->setDirty(true);
+                }
 
-            if(childNode != NULL) {
-                node->setChildNode(i, childNode, &allocator);
+                if(childNode != NULL) {
+                    node->setChildNode(i, childNode, &allocator);
+                }
             }
         }
     }
