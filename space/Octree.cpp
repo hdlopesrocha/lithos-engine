@@ -322,8 +322,8 @@ void Octree::del(
     shape(SDF::opSubtraction, handler, function, painter, dirtyHandler, OctreeNodeFrame(root, -1, *this, minSize, 0, root->sdf, ContainmentType::Intersects), NULL, simplifier);
 }
 
-float SOLID_SDF[8] = {-INFINITY, -INFINITY, -INFINITY, -INFINITY, -INFINITY, -INFINITY, -INFINITY, -INFINITY};
-float EMPTY_SDF[8] = {INFINITY, INFINITY, INFINITY, INFINITY, INFINITY, INFINITY, INFINITY, INFINITY};
+float SOLID_SDF = -INFINITY;
+float EMPTY_SDF = INFINITY;
 
 
 NodeOperationResult Octree::shape(
@@ -371,8 +371,9 @@ NodeOperationResult Octree::shape(
     float resultSDF[8];
 
     buildSDF(function, frame.cube, currentSDF);
-    for(int i = 0; i < 8; ++i) {           
-        resultSDF[i] = operation(frame.sdf[i], currentSDF[i]);
+    for(int i = 0; i < 8; ++i) {       
+        float selectedSDF = frame.type == ContainmentType::Disjoint ? EMPTY_SDF :  (frame.type == ContainmentType::Contains ? SOLID_SDF: frame.sdf[i] );
+        resultSDF[i] = operation(selectedSDF, currentSDF[i]);
     }
 
     bool solid = childSolid && isSdfSolid(resultSDF);
