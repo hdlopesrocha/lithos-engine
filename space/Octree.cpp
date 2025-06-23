@@ -337,7 +337,7 @@ NodeOperationResult Octree::shape(
     
     ContainmentType check = handler.check(frame.cube);
     if(check == ContainmentType::Disjoint) {
-        return NodeOperationResult(frame.cube, NULL, false, false, false, NULL);  // Skip this node
+        return NodeOperationResult(frame.cube, NULL, false, false, false, NULL, false);  // Skip this node
     }
     
     OctreeNode * node  = frame.node;
@@ -357,10 +357,13 @@ NodeOperationResult Octree::shape(
             }
             float * childSDF = childNode ? childNode->sdf : interpolatedSDF;
             NodeOperationResult child = shape(operation, handler, function, painter, dirtyHandler, OctreeNodeFrame(childNode, i, frame.cube.getChild(i), frame.minSize, frame.level + 1, childSDF), chunk, simplifier);
+        
             children[i] = child;
-            childHasSurface |= child.surface;
-            childSolid &= child.solid;
-            childEmpty &= child.empty;
+            if(child.process) {
+                childHasSurface |= child.surface;
+                childSolid &= child.solid;
+                childEmpty &= child.empty;
+            }
         }
     }
 
@@ -394,6 +397,10 @@ NodeOperationResult Octree::shape(
         }
         if(solid || empty) {
             node->clear(&allocator, frame.cube);
+            if(empty) {
+            //    allocator.deallocateOctreeNode(node, frame.cube);
+            //    node = NULL;
+            }
         } else if(!isLeaf) {
             ChildBlock * block = node->getBlock(&allocator);
             if(block == NULL) {
@@ -402,24 +409,22 @@ NodeOperationResult Octree::shape(
 
             for(int i =0 ; i < 8 ; ++i) {
                 NodeOperationResult child = children[i];
-                OctreeNode * childNode = child.node;
-
-                if(childNode == NULL && child.solid) {
-                    childNode = allocator.allocateOctreeNode(child.cube)->init(Vertex(child.cube.getCenter()));
-                    childNode->setSolid(child.solid);
-                    childNode->setSdf(child.sdf);
-                    childNode->setSimplification(0);
-                    childNode->setDirty(true);
-                }
-
-                if(childNode != NULL) {
+                if(child.process) {
+                    OctreeNode * childNode = child.node;
+                    if(childNode == NULL && child.solid) {
+                        childNode = allocator.allocateOctreeNode(child.cube)->init(Vertex(child.cube.getCenter()));
+                        childNode->setSolid(child.solid);
+                        childNode->setSdf(child.sdf);
+                        childNode->setSimplification(0);
+                        childNode->setDirty(true);
+                    }
                     node->setChildNode(i, childNode, &allocator, block);
                 }
             }
         }
     }
 
-    return NodeOperationResult(frame.cube, node, hasSurface, solid, empty, resultSDF);
+    return NodeOperationResult(frame.cube, node, hasSurface, solid, empty, resultSDF, true);
 }
 
 void Octree::iterate(IteratorHandler &handler) {

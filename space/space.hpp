@@ -123,14 +123,15 @@ struct NodeOperationResult {
     bool surface;
 	bool solid;
 	bool empty;
+	bool process;
     float sdf[8];
 
 
-	NodeOperationResult() : node(NULL), cube(glm::vec3(0.0f), 0.0f), surface(false), solid(false) {
+	NodeOperationResult() : node(NULL), cube(glm::vec3(0.0f), 0.0f), surface(false), solid(false), process(false) {
 	};
 
-    NodeOperationResult(BoundingCube cube, OctreeNode * node, bool hasSurface, bool contains, bool deletable, float * sdf) 
-        : node(node), cube(cube), surface(hasSurface), solid(contains), empty(deletable) {
+    NodeOperationResult(BoundingCube cube, OctreeNode * node, bool surface, bool solid, bool empty, float * sdf, bool process) 
+        : node(node), cube(cube), surface(surface), solid(solid), empty(empty), process(process){
 		if(sdf != NULL) {
 			for(int i = 0; i < 8; ++i) {
 				this->sdf[i] = sdf[i];
