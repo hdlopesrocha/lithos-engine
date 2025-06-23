@@ -108,9 +108,11 @@ struct OctreeNodeFrame {
     float minSize;
 	uint level;
 	float sdf[8];
+	bool solid;
+	bool empty;
 
-	OctreeNodeFrame(OctreeNode* node, int childIndex, BoundingCube cube, float minSize, uint level, float * sdf) 
-		: node(node), childIndex(childIndex), cube(cube), minSize(minSize), level(level) {
+	OctreeNodeFrame(OctreeNode* node, int childIndex, BoundingCube cube, float minSize, uint level, float * sdf, bool solid, bool empty) 
+		: node(node), childIndex(childIndex), cube(cube), minSize(minSize), level(level), solid(solid), empty(empty) {
 			for(int i = 0; i < 8; ++i) {
 				this->sdf[i] = sdf!=NULL ? sdf[i] : 0.0f;
 			}	
@@ -120,18 +122,16 @@ struct OctreeNodeFrame {
 struct NodeOperationResult {
     OctreeNode * node;
 	BoundingCube cube;
-    bool surface;
-	bool solid;
-	bool empty;
+	ContainmentType type;
 	bool process;
     float sdf[8];
 
 
-	NodeOperationResult() : node(NULL), cube(glm::vec3(0.0f), 0.0f), surface(false), solid(false), process(false) {
+	NodeOperationResult() : node(NULL), cube(glm::vec3(0.0f), 0.0f), type(ContainmentType::Disjoint), process(false) {
 	};
 
-    NodeOperationResult(BoundingCube cube, OctreeNode * node, bool surface, bool solid, bool empty, float * sdf, bool process) 
-        : node(node), cube(cube), surface(surface), solid(solid), empty(empty), process(process){
+    NodeOperationResult(BoundingCube cube, OctreeNode * node, ContainmentType type, float * sdf, bool process) 
+        : node(node), cube(cube), type(type), process(process){
 		if(sdf != NULL) {
 			for(int i = 0; i < 8; ++i) {
 				this->sdf[i] = sdf[i];
