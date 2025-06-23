@@ -247,44 +247,7 @@ void buildSDF(const SignedDistanceFunction &function, BoundingCube &cube, float 
     }
 }
 
-bool isSdfSurface(float * sdf) {
-    bool hasPositive = false;
-    bool hasNegative = false;
-    for (int i = 0; i < 8; ++i) {  
-        if (sdf[i] >= 0.0f) {
-            hasPositive = true;
-        } else {
-            hasNegative = true;
-        }
-    }
-    return hasNegative && hasPositive;
-}
 
-bool isSdfSolid(float * sdf) {
-    bool hasPositive = false;
-    bool hasNegative = false;
-    for (int i = 0; i < 8; ++i) {  
-        if (sdf[i] >= 0.0f) {
-            hasPositive = true;
-        } else {
-            hasNegative = true;
-        }
-    }
-    return hasNegative && !hasPositive;
-}
-
-bool isSdfEmpty(float * sdf) {
-    bool hasPositive = false;
-    bool hasNegative = false;
-    for (int i = 0; i < 8; ++i) {  
-        if (sdf[i] >= 0.0f) {
-            hasPositive = true;
-        } else {
-            hasNegative = true;
-        }
-    }
-    return !hasNegative && hasPositive;
-}
 
 void Octree::expand(const ContainmentHandler &handler) {
 	while (!handler.isContained(*this)) {
@@ -360,10 +323,8 @@ NodeOperationResult Octree::shape(
                 chunk, simplifier);
         
             children[i] = child;
-            if(child.process) {
-                childHasSurface |= child.type == ContainmentType::Intersects;
-                childSolid &= child.type == ContainmentType::Contains;
-            }
+            childHasSurface |= child.type == ContainmentType::Intersects;
+            childSolid &= child.type == ContainmentType::Contains;
         }
     }
 
@@ -372,13 +333,15 @@ NodeOperationResult Octree::shape(
 
     buildSDF(function, frame.cube, currentSDF);
     for(int i = 0; i < 8; ++i) {       
-        float selectedSDF = frame.type == ContainmentType::Disjoint ? EMPTY_SDF :  (frame.type == ContainmentType::Contains ? SOLID_SDF: frame.sdf[i] );
+        float selectedSDF = frame.type == ContainmentType::Disjoint ? EMPTY_SDF : 
+            (frame.type == ContainmentType::Contains ? SOLID_SDF: frame.sdf[i] );
         resultSDF[i] = operation(selectedSDF, currentSDF[i]);
     }
 
-    bool solid = childSolid && isSdfSolid(resultSDF);
-    bool hasSurface = childHasSurface || isSdfSurface(resultSDF);
-    ContainmentType type = hasSurface ? ContainmentType::Intersects : (solid ? ContainmentType::Contains : ContainmentType::Disjoint);
+    bool solid = childSolid && SDF::isSolid(resultSDF);
+    bool hasSurface = childHasSurface || SDF::isSurface(resultSDF);
+    ContainmentType type = hasSurface ? ContainmentType::Intersects : 
+        (solid ? ContainmentType::Contains : ContainmentType::Disjoint);
 
     if(hasSurface && node == NULL) {
         node = allocator.allocateOctreeNode(frame.cube)->init(Vertex(frame.cube.getCenter()));   
@@ -389,10 +352,13 @@ NodeOperationResult Octree::shape(
         node->setSolid(type == ContainmentType::Contains);
         node->setSimplification(0);
         node->setDirty(true);
-        //node->vertex.normal = SDF::getNormalFromPosition(node->sdf, frame.cube, node->vertex.position);
-        node->vertex.position = SDF::getPosition(node->sdf, frame.cube);
-        node->vertex.normal = SDF::getNormal(node->sdf, frame.cube);
-        painter.paint(node->vertex);
+        if(type == ContainmentType::Intersects) {
+            //node->vertex.normal = SDF::getNormalFromPosition(node->sdf, frame.cube, node->vertex.position);
+            node->vertex.position = SDF::getPosition(node->sdf, frame.cube);
+            node->vertex.normal = SDF::getNormal(node->sdf, frame.cube);
+            painter.paint(node->vertex);
+        }
+        
         if(node->id) {
             dirtyHandler.handle(node);
         }

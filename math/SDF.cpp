@@ -165,3 +165,43 @@ HeightMapDistanceFunction::HeightMapDistanceFunction(const HeightMap &map):map(m
 float HeightMapDistanceFunction::distance(const glm::vec3 p) const {
     return map.distance(p);
 }
+
+
+bool SDF::isSurface(float * sdf) {
+    bool hasPositive = false;
+    bool hasNegative = false;
+    for (int i = 0; i < 8; ++i) {  
+        if (sdf[i] >= 0.0f) {
+            hasPositive = true;
+        } else {
+            hasNegative = true;
+        }
+    }
+    return hasNegative && hasPositive;
+}
+
+bool SDF::isSolid(float * sdf) {
+    bool hasPositive = false;
+    bool hasNegative = false;
+    for (int i = 0; i < 8; ++i) {  
+        if (sdf[i] >= 0.0f) {
+            hasPositive = true;
+        } else {
+            hasNegative = true;
+        }
+    }
+    return hasNegative && !hasPositive;
+}
+
+bool SDF::isEmpty(float * sdf) {
+    bool hasPositive = false;
+    bool hasNegative = false;
+    for (int i = 0; i < 8; ++i) {  
+        if (sdf[i] >= 0.0f) {
+            hasPositive = true;
+        } else {
+            hasNegative = true;
+        }
+    }
+    return !hasNegative && hasPositive;
+}
