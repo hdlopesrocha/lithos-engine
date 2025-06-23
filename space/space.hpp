@@ -108,11 +108,10 @@ struct OctreeNodeFrame {
     float minSize;
 	uint level;
 	float sdf[8];
-	bool solid;
-	bool empty;
+	ContainmentType type;
 
-	OctreeNodeFrame(OctreeNode* node, int childIndex, BoundingCube cube, float minSize, uint level, float * sdf, bool solid, bool empty) 
-		: node(node), childIndex(childIndex), cube(cube), minSize(minSize), level(level), solid(solid), empty(empty) {
+	OctreeNodeFrame(OctreeNode* node, int childIndex, BoundingCube cube, float minSize, uint level, float * sdf, ContainmentType type) 
+		: node(node), childIndex(childIndex), cube(cube), minSize(minSize), level(level), type(type) {
 			for(int i = 0; i < 8; ++i) {
 				this->sdf[i] = sdf!=NULL ? sdf[i] : 0.0f;
 			}	
