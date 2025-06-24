@@ -214,10 +214,19 @@ class DrawableGeometry {
 
 };
 
+template <typename T> class InstanceHandler {
+    public:
+    virtual glm::vec3 getCenter(T instance) = 0;
+    virtual void bindInstance(GLuint instanceBuffer, std::vector<T> * instances) = 0;
+};
 
+class InstanceDataHandler : public InstanceHandler<InstanceData> {
+    public:
+    glm::vec3 getCenter(InstanceData instance) override ;
+    void bindInstance(GLuint instanceBuffer, std::vector<InstanceData> * instances) override ;
+};
 
-
-class DrawableInstanceGeometry {
+template <typename T> class DrawableInstanceGeometry {
 	public:
 	GLuint vertexArrayObject = 0u;
 	GLuint vertexBuffer = 0u;
@@ -228,14 +237,13 @@ class DrawableInstanceGeometry {
 	int indicesCount;
     int instancesCount;
 
-	DrawableInstanceGeometry(Geometry * t, std::vector<InstanceData> * instances);
+	DrawableInstanceGeometry(Geometry * t, std::vector<T> * instances, InstanceHandler<T> * handler);
     ~DrawableInstanceGeometry();
     void draw(uint mode, long * count);
     void draw(uint mode, float amount, long * count);
 };
 
-
-
+template class DrawableInstanceGeometry<InstanceData>;
 
 class Texture {
 	public:
@@ -389,8 +397,8 @@ class AtlasDrawer {
 class ImpostorParams {
     public:
     int targetTexture = 0;
-    DrawableInstanceGeometry * mesh;
-    ImpostorParams(int targetTexture, DrawableInstanceGeometry * mesh);
+    DrawableInstanceGeometry<InstanceData> * mesh;
+    ImpostorParams(int targetTexture, DrawableInstanceGeometry<InstanceData> * mesh);
 
 };
 

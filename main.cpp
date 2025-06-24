@@ -45,8 +45,8 @@ class MainApplication : public LithosApplication {
 	ProgramData * uniformBlockData;
 	ProgramData * uniformBrushData;
 	Brush3d * brush3d;
-	DrawableInstanceGeometry * brushSphere;
-	DrawableInstanceGeometry * brushBox;
+	DrawableInstanceGeometry<InstanceData> * brushSphere;
+	DrawableInstanceGeometry<InstanceData> * brushBox;
 
 	UniformBlock viewerBlock;
 	UniformBlock uniformBlock;
@@ -256,11 +256,11 @@ public:
 		{
 			SphereGeometry sphereGeometry(40,80);
 			BoxGeometry boxGeometry(BoundingBox(glm::vec3(-0.5), glm::vec3(0.5)));
-
+			InstanceDataHandler handler;
 			std::vector<InstanceData> instances;
 			instances.push_back(InstanceData(0,glm::mat4(1.0),0));
-			brushSphere = new DrawableInstanceGeometry(&sphereGeometry, &instances);
-			brushBox = new DrawableInstanceGeometry(&boxGeometry, &instances);
+			brushSphere = new DrawableInstanceGeometry<InstanceData>(&sphereGeometry, &instances, &handler);
+			brushBox = new DrawableInstanceGeometry<InstanceData>(&boxGeometry, &instances, &handler);
 		}
 
 		{
@@ -403,9 +403,10 @@ public:
 			++billboardLayers.count;
 		}
 		{
+			InstanceDataHandler instanceHandler;
 			std::vector<InstanceData> vegetationInstances;
 			vegetationInstances.push_back(InstanceData(0, glm::mat4(1.0), 0));
-			DrawableInstanceGeometry * vegetationMesh = new DrawableInstanceGeometry(new Vegetation3d(1), &vegetationInstances);
+			DrawableInstanceGeometry<InstanceData> * vegetationMesh = new DrawableInstanceGeometry<InstanceData>(new Vegetation3d(1), &vegetationInstances, &instanceHandler);
 			impostors.push_back(ImpostorParams(impostorLayers.count++, vegetationMesh));
 		}
 		

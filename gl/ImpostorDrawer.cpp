@@ -1,7 +1,7 @@
 #include "gl.hpp"
 
 
-ImpostorParams::ImpostorParams(int targetTexture, DrawableInstanceGeometry * mesh){
+ImpostorParams::ImpostorParams(int targetTexture, DrawableInstanceGeometry<InstanceData> * mesh){
     this->targetTexture = targetTexture;
     this->mesh = mesh;
 }

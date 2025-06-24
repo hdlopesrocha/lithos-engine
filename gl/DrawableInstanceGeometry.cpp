@@ -1,15 +1,15 @@
 #include "gl.hpp"
 
-DrawableInstanceGeometry::DrawableInstanceGeometry(Geometry * t, std::vector<InstanceData> * instances){
+template <typename T> DrawableInstanceGeometry<T>::DrawableInstanceGeometry(Geometry * t, std::vector<T> * instances, InstanceHandler<T> * handler){
 
-	glm::vec3 geometryCenter = t->vertices.size() ? t->getCenter() : glm::vec3(0);
 
 	this->center = glm::vec3(0);
 	int count = instances->size();
+	glm::vec3 geometryCenter = t->vertices.size() ? t->getCenter() : glm::vec3(0);
 	if(instances->size()) {
 		float invCount = 1.0f/float(count);
-		for(InstanceData &data : *instances){
-			this->center += (glm::vec3(data.matrix[3])+geometryCenter)*invCount;
+		for(T &data : *instances){
+			this->center += (handler->getCenter(data)+geometryCenter)*invCount;
 		}
 	}
 
@@ -49,23 +49,7 @@ DrawableInstanceGeometry::DrawableInstanceGeometry(Geometry * t, std::vector<Ins
 
 		
 		// Instance data (matrices for instancing)
-		glBindBuffer(GL_ARRAY_BUFFER, instanceBuffer);
-		glBufferData(GL_ARRAY_BUFFER, instancesCount * sizeof(InstanceData), instances->data(), GL_STATIC_DRAW);
-
-		glVertexAttribPointer(4, 1, GL_FLOAT, GL_FALSE, sizeof(InstanceData), (void*) offsetof(InstanceData, shift));
-		glEnableVertexAttribArray(4);
-		glVertexAttribDivisor(4, 1); // Enable instancing
-
-		glVertexAttribPointer(5, 1, GL_FLOAT, GL_FALSE, sizeof(InstanceData), (void*) offsetof(InstanceData, animation));
-		glEnableVertexAttribArray(5);
-		glVertexAttribDivisor(5, 1); // Enable instancing
-
-		for (int i = 0; i < 4; i++) {
-			glVertexAttribPointer(6 + i, 4, GL_FLOAT, GL_FALSE, sizeof(InstanceData), 
-				(void*)(offsetof(InstanceData, matrix) + i * sizeof(glm::vec4)));
-			glEnableVertexAttribArray(6 + i);
-			glVertexAttribDivisor(6 + i, 1); // Enable instancing
-		}
+		handler->bindInstance(instanceBuffer, instances);
 
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 
@@ -74,7 +58,7 @@ DrawableInstanceGeometry::DrawableInstanceGeometry(Geometry * t, std::vector<Ins
 	}
 }
 
-DrawableInstanceGeometry::~DrawableInstanceGeometry() {
+template <typename T> DrawableInstanceGeometry<T>::~DrawableInstanceGeometry() {
 	glDeleteBuffers(1, &vertexBuffer);
 	glDeleteBuffers(1, &instanceBuffer);
 	glDeleteBuffers(1, &indexBuffer);
@@ -82,7 +66,7 @@ DrawableInstanceGeometry::~DrawableInstanceGeometry() {
 	std::cout << "delete DrawableInstanceGeometry()" << std::endl; 
  }
 
-void DrawableInstanceGeometry::draw(uint mode, float amount, long * count) {
+template <typename T> void DrawableInstanceGeometry<T>::draw(uint mode, float amount, long * count) {
 
 	if(vertexArrayObject) {
 		if (instancesCount <= 0) {
@@ -97,6 +81,6 @@ void DrawableInstanceGeometry::draw(uint mode, float amount, long * count) {
 	    glBindVertexArray(0);
 	}
 }
-void DrawableInstanceGeometry::draw(uint mode, long * count) {
+template <typename T> void DrawableInstanceGeometry<T>::draw(uint mode, long * count) {
 	draw(mode, 1.0, count);
 }

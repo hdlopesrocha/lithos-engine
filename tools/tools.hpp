@@ -138,7 +138,7 @@ class VegetationInstanceBuilder : public OctreeNodeTriangleHandler {
 
 template <typename T> struct NodeInfo {
 	InstanceGeometry<T> * loadable;
-	DrawableInstanceGeometry * drawable;
+	DrawableInstanceGeometry<T> * drawable;
 
 	NodeInfo(InstanceGeometry<T> * loadable){
 		this->drawable = NULL;
@@ -203,7 +203,7 @@ class Scene {
 	void import(const std::string &filename, Camera &camera) ;
 	void generate(Camera &camera) ;
 	template <typename T> bool loadSpace(Octree * tree, OctreeNodeData &data, std::unordered_map<long, NodeInfo<T>> *infos, GeometryBuilder<InstanceData> * builder);
-	template <typename T> DrawableInstanceGeometry * loadIfNeeded(std::unordered_map<long, NodeInfo<T>> * infos, long index);
+	template <typename T> DrawableInstanceGeometry<T> * loadIfNeeded(std::unordered_map<long, NodeInfo<T>> * infos, long index);
 
 	void save(std::string folderPath, Camera &camera);
 	void load(std::string folderPath, Camera &camera);

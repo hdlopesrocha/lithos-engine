@@ -139,7 +139,7 @@ void Scene::setVisibleNodes(Octree * tree, glm::mat4 viewProjection, glm::vec3 s
 	tree->iterateFlat(checker);	//here we get the visible nodes for that LOD + geometryLEvel
 }
 
-template <typename T> DrawableInstanceGeometry* Scene::loadIfNeeded(std::unordered_map<long, NodeInfo<T>>* infos, long index) {
+template <typename T> DrawableInstanceGeometry<T> * Scene::loadIfNeeded(std::unordered_map<long, NodeInfo<T>>* infos, long index) {
 	auto it = infos->find(index);
 	if (it == infos->end()) {
 		return NULL;
@@ -149,7 +149,8 @@ template <typename T> DrawableInstanceGeometry* Scene::loadIfNeeded(std::unorder
 		if (ni.drawable) {
 			delete ni.drawable;
 		}
-		ni.drawable = new DrawableInstanceGeometry(ni.loadable->geometry, &ni.loadable->instances);
+		InstanceDataHandler handler;
+		ni.drawable = new DrawableInstanceGeometry(ni.loadable->geometry, &ni.loadable->instances, &handler);
 		delete ni.loadable;
 		ni.loadable = NULL;
 	}
@@ -161,7 +162,7 @@ void Scene::draw (uint drawableType, int mode, glm::vec3 cameraPosition, const s
 		OctreeNode * node = data.node;
 		
 		if(drawableType == TYPE_INSTANCE_VEGETATION_DRAWABLE) {
-			DrawableInstanceGeometry * drawable	= loadIfNeeded(&vegetationInfo, node->id);
+			DrawableInstanceGeometry<InstanceData> * drawable = loadIfNeeded(&vegetationInfo, node->id);
 			if(drawable != NULL) {
 				float amount = glm::clamp( 1.0 - glm::length(cameraPosition -  drawable->center)/(float(settings->billboardRange)), 0.0, 1.0);
 				if(amount > 0.8){
@@ -172,19 +173,19 @@ void Scene::draw (uint drawableType, int mode, glm::vec3 cameraPosition, const s
 			}
 		}
 		else if(drawableType == TYPE_INSTANCE_SOLID_DRAWABLE) {
-			DrawableInstanceGeometry * drawable	= loadIfNeeded(&solidInfo, node->id);
+			DrawableInstanceGeometry<InstanceData> * drawable = loadIfNeeded(&solidInfo, node->id);
 			if(drawable != NULL) {
 				drawable->draw(mode, 1.0, &solidInstancesVisible);
 			}
 		}
 		else if(drawableType == TYPE_INSTANCE_LIQUID_DRAWABLE) {
-			DrawableInstanceGeometry * drawable	= loadIfNeeded(&liquidInfo, node->id);
+			DrawableInstanceGeometry<InstanceData> * drawable = loadIfNeeded(&liquidInfo, node->id);
 			if(drawable != NULL) {
 				drawable->draw(mode, 1.0, &liquidInstancesVisible);
 			}
 		}
 		else if(drawableType == TYPE_INSTANCE_OCTREE_DRAWABLE) {
-			DrawableInstanceGeometry * drawable	= loadIfNeeded(&debugInfo, node->id);
+			DrawableInstanceGeometry<InstanceData> * drawable = loadIfNeeded(&debugInfo, node->id);
 			if(drawable != NULL) {
 				drawable->draw(mode, 1.0, &solidInstancesVisible);
 			}
