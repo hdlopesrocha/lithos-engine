@@ -111,7 +111,7 @@ class VegetationGeometryBuilder : public GeometryBuilder {
     VegetationGeometryBuilder(Octree * tree, InstanceBuilderHandler<InstanceData>  * handler);
     ~VegetationGeometryBuilder();
 
-	InstanceGeometry * build(OctreeNodeData &params) override;
+	InstanceGeometry<InstanceData> * build(OctreeNodeData &params) override;
 };
 
 class OctreeGeometryBuilder : public GeometryBuilder {
@@ -121,7 +121,7 @@ class OctreeGeometryBuilder : public GeometryBuilder {
     OctreeGeometryBuilder(InstanceBuilderHandler<InstanceData>  * handler);
     ~OctreeGeometryBuilder();
 
-    InstanceGeometry * build(OctreeNodeData &params) override;
+    InstanceGeometry<InstanceData> * build(OctreeNodeData &params) override;
 
 };
 
@@ -137,10 +137,10 @@ class VegetationInstanceBuilder : public OctreeNodeTriangleHandler {
 };
 
 struct NodeInfo {
-	InstanceGeometry * loadable;
+	InstanceGeometry<InstanceData> * loadable;
 	DrawableInstanceGeometry * drawable;
 
-	NodeInfo(InstanceGeometry * loadable){
+	NodeInfo(InstanceGeometry<InstanceData> * loadable){
 		this->drawable = NULL;
 		this->loadable = loadable;
 	}

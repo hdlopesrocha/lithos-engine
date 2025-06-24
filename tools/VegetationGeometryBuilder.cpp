@@ -16,7 +16,7 @@ VegetationGeometryBuilder::VegetationGeometryBuilder(Octree * tree, InstanceBuil
     this->handler = handler;
 }
 
-InstanceGeometry * VegetationGeometryBuilder::build(OctreeNodeData &params){
+InstanceGeometry<InstanceData> * VegetationGeometryBuilder::build(OctreeNodeData &params){
     //std::cout << "VegetationGeometryBuilder::build" <<std::endl;
     
     std::vector<InstanceData> instances;
@@ -27,7 +27,7 @@ InstanceGeometry * VegetationGeometryBuilder::build(OctreeNodeData &params){
     // Shuffle the vector
     if(instances.size()) {
         std::shuffle(instances.begin(), instances.end(), g);
-        return new InstanceGeometry(geometry, instances);
+        return new InstanceGeometry<InstanceData>(geometry, instances);
     }
     else {
         return NULL;

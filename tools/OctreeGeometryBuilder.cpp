@@ -9,10 +9,10 @@ OctreeGeometryBuilder::OctreeGeometryBuilder(InstanceBuilderHandler<InstanceData
     this->handler = handler;
 }
 
-InstanceGeometry * OctreeGeometryBuilder::build(OctreeNodeData &params){
+InstanceGeometry<InstanceData> * OctreeGeometryBuilder::build(OctreeNodeData &params){
     std::vector<InstanceData> instances;
 
-    InstanceBuilder instanceBuilder(handler, &instances);
+    InstanceBuilder<InstanceData> instanceBuilder(handler, &instances);
     instanceBuilder.iterateFlatIn(params);
 	
     //glm::mat4 mat(1.0);
@@ -21,6 +21,7 @@ InstanceGeometry * OctreeGeometryBuilder::build(OctreeNodeData &params){
 	
 	//instances.push_back(InstanceData(0u, mat , 0.0f));
 
-    return new InstanceGeometry(geometry, instances);
+    //TODO: make instance class customizable
+    return new InstanceGeometry<InstanceData>(geometry, instances);
 }
 

@@ -30,7 +30,7 @@ Scene::Scene(Settings * settings):
 }
 
 bool Scene::loadSpace(Octree* tree, OctreeNodeData& data, std::unordered_map<long, NodeInfo>* infos, GeometryBuilder* builder) {
-	InstanceGeometry* loadable = builder->build(data);
+	InstanceGeometry<InstanceData>* loadable = builder->build(data);
 	if (loadable == NULL) {
 		// No geometry to load — erase entry if it exists
 		infos->erase(data.node->id);

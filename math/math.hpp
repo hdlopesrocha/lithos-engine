@@ -384,17 +384,28 @@ struct InstanceData {
     }
 };
 
-struct InstanceGeometry {
+template <typename T> struct InstanceGeometry {
     public:
     Geometry * geometry;
-    std::vector<InstanceData> instances;
-    InstanceGeometry(Geometry * geometry);
-    InstanceGeometry(Geometry * geometry, std::vector<InstanceData> &instances);
-
-	~InstanceGeometry();
+    std::vector<T> instances;
+	
+	InstanceGeometry(Geometry * geometry) {
+		this->geometry = geometry;
+		geometry->setCenter();
+	}
+	
+	InstanceGeometry(Geometry * geometry, std::vector<T> &instances) {
+		this->geometry = geometry;
+		this->instances = instances;
+		geometry->setCenter();
+	}
+	
+	~InstanceGeometry() {
+		if(!geometry->reusable){
+			delete geometry;
+		}
+	}
 };
-
-
 
 
 class SphereGeometry : public Geometry {

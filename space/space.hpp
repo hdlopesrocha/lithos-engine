@@ -203,7 +203,7 @@ struct StackFrameOut : public OctreeNodeData  {
 
 class GeometryBuilder {
     public:
-    virtual InstanceGeometry* build(OctreeNodeData &params) = 0;
+    virtual InstanceGeometry<InstanceData> * build(OctreeNodeData &params) = 0;
 };
 
 class MeshGeometryBuilder  : public GeometryBuilder {
@@ -212,7 +212,7 @@ class MeshGeometryBuilder  : public GeometryBuilder {
 	public:
 		MeshGeometryBuilder(long * trianglesCount,Octree * tree);
 		~MeshGeometryBuilder();
-		InstanceGeometry * build(OctreeNodeData &params) override;
+		InstanceGeometry<InstanceData> * build(OctreeNodeData &params) override;
 };
 
 class IteratorHandler {
