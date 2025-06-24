@@ -56,10 +56,7 @@ bool HeightMap::contains(const glm::vec3 &point) const {
 
 float HeightMap::distance(const glm::vec3 p) const {
     float surfaceY = func.getHeightAt(p.x, p.z);
-    glm::vec3 surface(p.x, surfaceY, p.z);
-    float dy = p.y - surfaceY;
-    float dist = glm::length(p - surface);
-    return dy >= 0.0f ? dist : -dist;
+    return p.y - surfaceY;
 }
 
 

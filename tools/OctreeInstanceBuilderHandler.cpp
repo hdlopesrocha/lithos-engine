@@ -1,7 +1,7 @@
 #include "tools.hpp"
 
 
-OctreeInstanceBuilderHandler::OctreeInstanceBuilderHandler() : InstanceBuilderHandler(){
+OctreeInstanceBuilderHandler::OctreeInstanceBuilderHandler() {
 
 }
 

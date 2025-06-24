@@ -1,7 +1,7 @@
 #include "tools.hpp"
 
 
-VegetationInstanceBuilderHandler::VegetationInstanceBuilderHandler(Octree * tree, float pointsPerArea, float scale) : InstanceBuilderHandler(){
+VegetationInstanceBuilderHandler::VegetationInstanceBuilderHandler(Octree * tree, float pointsPerArea, float scale) {
 	this->pointsPerArea = pointsPerArea;
 	this->scale = scale;
 	this->tree = tree;

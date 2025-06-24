@@ -305,7 +305,7 @@ NodeOperationResult Octree::shape(
     bool childSolid = true;
     bool childHasSurface = false;
     if (!isLeaf) {
-        for (int i = 7; i >= 0; --i) {  
+        for (int i = 7; i >= 0; --i) {
             OctreeNode * childNode = node ? node->getChildNode(i, &allocator, node->getBlock(&allocator)) : NULL;
             float interpolatedSDF[8];
             if(childNode == NULL) {

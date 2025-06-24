@@ -84,7 +84,7 @@ class OctreeContainmentHandler : public ContainmentHandler {
 	ContainmentType check(const BoundingCube &cube) const override;
 };
 
-class VegetationInstanceBuilderHandler : public InstanceBuilderHandler {
+class VegetationInstanceBuilderHandler : public InstanceBuilderHandler<InstanceData> {
 	public:
 	float pointsPerArea;
 	float scale;
@@ -94,7 +94,7 @@ class VegetationInstanceBuilderHandler : public InstanceBuilderHandler {
 	void handle(OctreeNodeData &data, std::vector<InstanceData> * instances) override;
 };
 
-class OctreeInstanceBuilderHandler : public InstanceBuilderHandler {
+class OctreeInstanceBuilderHandler : public InstanceBuilderHandler<InstanceData>  {
 	public:
 
 	OctreeInstanceBuilderHandler();
@@ -106,9 +106,9 @@ class VegetationGeometryBuilder : public GeometryBuilder {
     public:
     Geometry * geometry;
     Octree * tree;
-    InstanceBuilderHandler * handler;
+    InstanceBuilderHandler<InstanceData>  * handler;
 	long * instancesCount;
-    VegetationGeometryBuilder(Octree * tree, InstanceBuilderHandler * handler);
+    VegetationGeometryBuilder(Octree * tree, InstanceBuilderHandler<InstanceData>  * handler);
     ~VegetationGeometryBuilder();
 
 	InstanceGeometry * build(OctreeNodeData &params) override;
@@ -117,8 +117,8 @@ class VegetationGeometryBuilder : public GeometryBuilder {
 class OctreeGeometryBuilder : public GeometryBuilder {
     public:
     Geometry * geometry;
-    InstanceBuilderHandler * handler;
-    OctreeGeometryBuilder(InstanceBuilderHandler * handler);
+    InstanceBuilderHandler<InstanceData>  * handler;
+    OctreeGeometryBuilder(InstanceBuilderHandler<InstanceData>  * handler);
     ~OctreeGeometryBuilder();
 
     InstanceGeometry * build(OctreeNodeData &params) override;
