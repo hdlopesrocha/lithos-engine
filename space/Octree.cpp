@@ -330,9 +330,17 @@ NodeOperationResult Octree::shape(
             (frame.type == SpaceType::Solid ? SOLID_SDF: frame.sdf[i] );
         resultSDF[i] = operation(selectedSDF, currentSDF[i]);
     }
+    SpaceType eval = SDF::eval(resultSDF);
 
-    bool isSolid = childSolid && SDF::isSolid(resultSDF);
-    bool hasSurface = childHasSurface || SDF::isSurface(resultSDF);
+    
+    bool isSolid = childSolid && eval == SpaceType::Solid;
+    bool hasSurface = childHasSurface || eval == SpaceType::Surface;
+    if (isLeaf && !hasSurface && eval == SpaceType::Empty) {
+        if(node != NULL) {
+            allocator.deallocateOctreeNode(node, frame.cube);
+        }
+        return NodeOperationResult(frame.cube, NULL, SpaceType::Empty, resultSDF, false);  // Skip this node
+    }
     SpaceType type = hasSurface ? SpaceType::Surface : 
         (isSolid ? SpaceType::Solid : SpaceType::Empty);
 

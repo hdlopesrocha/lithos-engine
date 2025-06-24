@@ -47,9 +47,7 @@ public:
     static glm::vec3 getNormalFromPosition(float* sdf, const BoundingCube& cube, const glm::vec3& position);
     static void getChildSDF(float * sdf, int i , float * result);
 
-    static bool isSurface(float * sdf);
-    static bool isSolid(float * sdf);
-    static bool isEmpty(float * sdf);
+    static SpaceType eval(float * sdf);
 };
 
 

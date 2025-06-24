@@ -167,7 +167,7 @@ float HeightMapDistanceFunction::distance(const glm::vec3 p) const {
 }
 
 
-bool SDF::isSurface(float * sdf) {
+SpaceType SDF::eval(float * sdf) {
     bool hasPositive = false;
     bool hasNegative = false;
     for (int i = 0; i < 8; ++i) {  
@@ -177,31 +177,6 @@ bool SDF::isSurface(float * sdf) {
             hasNegative = true;
         }
     }
-    return hasNegative && hasPositive;
+    return hasNegative && hasPositive ? SpaceType::Surface : (hasPositive ? SpaceType::Empty : SpaceType::Solid);
 }
 
-bool SDF::isSolid(float * sdf) {
-    bool hasPositive = false;
-    bool hasNegative = false;
-    for (int i = 0; i < 8; ++i) {  
-        if (sdf[i] >= 0.0f) {
-            hasPositive = true;
-        } else {
-            hasNegative = true;
-        }
-    }
-    return hasNegative && !hasPositive;
-}
-
-bool SDF::isEmpty(float * sdf) {
-    bool hasPositive = false;
-    bool hasNegative = false;
-    for (int i = 0; i < 8; ++i) {  
-        if (sdf[i] >= 0.0f) {
-            hasPositive = true;
-        } else {
-            hasNegative = true;
-        }
-    }
-    return !hasNegative && hasPositive;
-}
