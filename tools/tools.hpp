@@ -136,11 +136,11 @@ class VegetationInstanceBuilder : public OctreeNodeTriangleHandler {
 	void handle(OctreeNode* c0,OctreeNode* c1,OctreeNode* c2, bool sign) override;
 };
 
-struct NodeInfo {
-	InstanceGeometry<InstanceData> * loadable;
+template <typename T> struct NodeInfo {
+	InstanceGeometry<T> * loadable;
 	DrawableInstanceGeometry * drawable;
 
-	NodeInfo(InstanceGeometry<InstanceData> * loadable){
+	NodeInfo(InstanceGeometry<T> * loadable){
 		this->drawable = NULL;
 		this->loadable = loadable;
 	}
@@ -177,17 +177,16 @@ class Scene {
 	VegetationGeometryBuilder * vegetationBuilder;
 	OctreeGeometryBuilder * debugBuilder;
 
-	std::unordered_map<long, NodeInfo> solidInfo;
-	std::unordered_map<long, NodeInfo> liquidInfo;
-	std::unordered_map<long, NodeInfo> debugInfo;
-	std::unordered_map<long, NodeInfo> vegetationInfo;
+	std::unordered_map<long, NodeInfo<InstanceData>> solidInfo;
+	std::unordered_map<long, NodeInfo<InstanceData>> liquidInfo;
+	std::unordered_map<long, NodeInfo<InstanceData>> debugInfo;
+	std::unordered_map<long, NodeInfo<InstanceData>> vegetationInfo;
 
 	OctreeVisibilityChecker * solidRenderer;
 	OctreeVisibilityChecker * liquidRenderer;
 	OctreeVisibilityChecker * shadowRenderer[SHADOW_MATRIX_COUNT];
 
 	Scene(Settings * settings);
-	DrawableInstanceGeometry * loadIfNeeded(std::unordered_map<long, NodeInfo> * infos, long index);
 
 	bool processSpace();
 	bool processLiquid(OctreeNodeData &data, Octree * tree);
@@ -203,7 +202,9 @@ class Scene {
 	void draw3dOctree(glm::vec3 cameraPosition, const std::vector<OctreeNodeData> &list);
 	void import(const std::string &filename, Camera &camera) ;
 	void generate(Camera &camera) ;
-	bool loadSpace(Octree * tree, OctreeNodeData &data, std::unordered_map<long, NodeInfo> *infos, GeometryBuilder<InstanceData> * builder);
+	template <typename T> bool loadSpace(Octree * tree, OctreeNodeData &data, std::unordered_map<long, NodeInfo<T>> *infos, GeometryBuilder<InstanceData> * builder);
+	template <typename T> DrawableInstanceGeometry * loadIfNeeded(std::unordered_map<long, NodeInfo<T>> * infos, long index);
+
 	void save(std::string folderPath, Camera &camera);
 	void load(std::string folderPath, Camera &camera);
 };

@@ -29,7 +29,7 @@ Scene::Scene(Settings * settings):
 	}
 }
 
-bool Scene::loadSpace(Octree* tree, OctreeNodeData& data, std::unordered_map<long, NodeInfo>* infos, GeometryBuilder<InstanceData>* builder) {
+template <typename T> bool Scene::loadSpace(Octree* tree, OctreeNodeData& data, std::unordered_map<long, NodeInfo<T>>* infos, GeometryBuilder<InstanceData>* builder) {
 	InstanceGeometry<InstanceData>* loadable = builder->build(data);
 	if (loadable == NULL) {
 		// No geometry to load — erase entry if it exists
@@ -139,12 +139,12 @@ void Scene::setVisibleNodes(Octree * tree, glm::mat4 viewProjection, glm::vec3 s
 	tree->iterateFlat(checker);	//here we get the visible nodes for that LOD + geometryLEvel
 }
 
-DrawableInstanceGeometry* Scene::loadIfNeeded(std::unordered_map<long, NodeInfo>* infos, long index) {
+template <typename T> DrawableInstanceGeometry* Scene::loadIfNeeded(std::unordered_map<long, NodeInfo<T>>* infos, long index) {
 	auto it = infos->find(index);
 	if (it == infos->end()) {
 		return NULL;
 	}
-	NodeInfo& ni = it->second;
+	NodeInfo<T>& ni = it->second;
 	if (ni.loadable) {
 		if (ni.drawable) {
 			delete ni.drawable;
