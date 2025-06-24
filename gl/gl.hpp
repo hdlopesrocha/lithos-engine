@@ -226,6 +226,12 @@ class InstanceDataHandler : public InstanceHandler<InstanceData> {
     void bindInstance(GLuint instanceBuffer, std::vector<InstanceData> * instances) override ;
 };
 
+class DebugInstanceDataHandler : public InstanceHandler<DebugInstanceData> {
+    public:
+    glm::vec3 getCenter(DebugInstanceData instance) override ;
+    void bindInstance(GLuint instanceBuffer, std::vector<DebugInstanceData> * instances) override ;
+};
+
 template <typename T> class DrawableInstanceGeometry {
 	public:
 	GLuint vertexArrayObject = 0u;
@@ -244,6 +250,7 @@ template <typename T> class DrawableInstanceGeometry {
 };
 
 template class DrawableInstanceGeometry<InstanceData>;
+template class DrawableInstanceGeometry<DebugInstanceData>;
 
 class Texture {
 	public:

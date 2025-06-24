@@ -214,6 +214,19 @@ struct InstanceData {
     }
 };
 
+struct DebugInstanceData {
+    public:
+	float sdf[8];
+    glm::mat4 matrix;
+
+    DebugInstanceData(glm::mat4 matrix, float * sdf) {
+		for(int i = 0; i < 8; ++i) {
+			this->sdf[i] = sdf[i];
+		}
+        this->matrix = matrix;
+    }
+};
+
 template <typename T> class GeometryBuilder {
     public:
     virtual InstanceGeometry<T> * build(OctreeNodeData &params) = 0;

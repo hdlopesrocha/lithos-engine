@@ -29,8 +29,8 @@ Scene::Scene(Settings * settings):
 	}
 }
 
-template <typename T> bool Scene::loadSpace(Octree* tree, OctreeNodeData& data, std::unordered_map<long, NodeInfo<T>>* infos, GeometryBuilder<InstanceData>* builder) {
-	InstanceGeometry<InstanceData>* loadable = builder->build(data);
+template <typename T> bool Scene::loadSpace(Octree* tree, OctreeNodeData& data, std::unordered_map<long, NodeInfo<T>>* infos, GeometryBuilder<T>* builder) {
+	InstanceGeometry<T>* loadable = builder->build(data);
 	if (loadable == NULL) {
 		// No geometry to load — erase entry if it exists
 		infos->erase(data.node->id);
@@ -139,7 +139,7 @@ void Scene::setVisibleNodes(Octree * tree, glm::mat4 viewProjection, glm::vec3 s
 	tree->iterateFlat(checker);	//here we get the visible nodes for that LOD + geometryLEvel
 }
 
-template <typename T> DrawableInstanceGeometry<T> * Scene::loadIfNeeded(std::unordered_map<long, NodeInfo<T>>* infos, long index) {
+template <typename T> DrawableInstanceGeometry<T> * Scene::loadIfNeeded(std::unordered_map<long, NodeInfo<T>>* infos, long index, InstanceHandler<T> * handler) {
 	auto it = infos->find(index);
 	if (it == infos->end()) {
 		return NULL;
@@ -149,8 +149,7 @@ template <typename T> DrawableInstanceGeometry<T> * Scene::loadIfNeeded(std::uno
 		if (ni.drawable) {
 			delete ni.drawable;
 		}
-		InstanceDataHandler handler;
-		ni.drawable = new DrawableInstanceGeometry(ni.loadable->geometry, &ni.loadable->instances, &handler);
+		ni.drawable = new DrawableInstanceGeometry<T>(ni.loadable->geometry, &ni.loadable->instances, handler);
 		delete ni.loadable;
 		ni.loadable = NULL;
 	}
@@ -162,7 +161,8 @@ void Scene::draw (uint drawableType, int mode, glm::vec3 cameraPosition, const s
 		OctreeNode * node = data.node;
 		
 		if(drawableType == TYPE_INSTANCE_VEGETATION_DRAWABLE) {
-			DrawableInstanceGeometry<InstanceData> * drawable = loadIfNeeded(&vegetationInfo, node->id);
+			InstanceDataHandler handler;
+			DrawableInstanceGeometry<InstanceData> * drawable = loadIfNeeded(&vegetationInfo, node->id, &handler);
 			if(drawable != NULL) {
 				float amount = glm::clamp( 1.0 - glm::length(cameraPosition -  drawable->center)/(float(settings->billboardRange)), 0.0, 1.0);
 				if(amount > 0.8){
@@ -173,19 +173,22 @@ void Scene::draw (uint drawableType, int mode, glm::vec3 cameraPosition, const s
 			}
 		}
 		else if(drawableType == TYPE_INSTANCE_SOLID_DRAWABLE) {
-			DrawableInstanceGeometry<InstanceData> * drawable = loadIfNeeded(&solidInfo, node->id);
+			InstanceDataHandler handler;
+			DrawableInstanceGeometry<InstanceData> * drawable = loadIfNeeded(&solidInfo, node->id, &handler);
 			if(drawable != NULL) {
 				drawable->draw(mode, 1.0, &solidInstancesVisible);
 			}
 		}
 		else if(drawableType == TYPE_INSTANCE_LIQUID_DRAWABLE) {
-			DrawableInstanceGeometry<InstanceData> * drawable = loadIfNeeded(&liquidInfo, node->id);
+			InstanceDataHandler handler;
+			DrawableInstanceGeometry<InstanceData> * drawable = loadIfNeeded(&liquidInfo, node->id, &handler);
 			if(drawable != NULL) {
 				drawable->draw(mode, 1.0, &liquidInstancesVisible);
 			}
 		}
 		else if(drawableType == TYPE_INSTANCE_OCTREE_DRAWABLE) {
-			DrawableInstanceGeometry<InstanceData> * drawable = loadIfNeeded(&debugInfo, node->id);
+			DebugInstanceDataHandler handler;
+			DrawableInstanceGeometry<DebugInstanceData> * drawable = loadIfNeeded(&debugInfo, node->id, &handler);
 			if(drawable != NULL) {
 				drawable->draw(mode, 1.0, &solidInstancesVisible);
 			}

@@ -94,12 +94,11 @@ class VegetationInstanceBuilderHandler : public InstanceBuilderHandler<InstanceD
 	void handle(OctreeNodeData &data, std::vector<InstanceData> * instances) override;
 };
 
-class OctreeInstanceBuilderHandler : public InstanceBuilderHandler<InstanceData>  {
+class OctreeInstanceBuilderHandler : public InstanceBuilderHandler<DebugInstanceData>  {
 	public:
-
 	OctreeInstanceBuilderHandler();
 
-	void handle(OctreeNodeData &data, std::vector<InstanceData> * instances) override;
+	void handle(OctreeNodeData &data, std::vector<DebugInstanceData> * instances) override;
 };
 
 class VegetationGeometryBuilder : public GeometryBuilder<InstanceData> {
@@ -114,15 +113,14 @@ class VegetationGeometryBuilder : public GeometryBuilder<InstanceData> {
 	InstanceGeometry<InstanceData> * build(OctreeNodeData &params) override;
 };
 
-class OctreeGeometryBuilder : public GeometryBuilder<InstanceData> {
+class OctreeGeometryBuilder : public GeometryBuilder<DebugInstanceData> {
     public:
     Geometry * geometry;
-    InstanceBuilderHandler<InstanceData>  * handler;
-    OctreeGeometryBuilder(InstanceBuilderHandler<InstanceData>  * handler);
+    InstanceBuilderHandler<DebugInstanceData>  * handler;
+    OctreeGeometryBuilder(InstanceBuilderHandler<DebugInstanceData>  * handler);
     ~OctreeGeometryBuilder();
 
-    InstanceGeometry<InstanceData> * build(OctreeNodeData &params) override;
-
+    InstanceGeometry<DebugInstanceData> * build(OctreeNodeData &params) override;
 };
 
 class VegetationInstanceBuilder : public OctreeNodeTriangleHandler {
@@ -179,7 +177,7 @@ class Scene {
 
 	std::unordered_map<long, NodeInfo<InstanceData>> solidInfo;
 	std::unordered_map<long, NodeInfo<InstanceData>> liquidInfo;
-	std::unordered_map<long, NodeInfo<InstanceData>> debugInfo;
+	std::unordered_map<long, NodeInfo<DebugInstanceData>> debugInfo;
 	std::unordered_map<long, NodeInfo<InstanceData>> vegetationInfo;
 
 	OctreeVisibilityChecker * solidRenderer;
@@ -202,8 +200,8 @@ class Scene {
 	void draw3dOctree(glm::vec3 cameraPosition, const std::vector<OctreeNodeData> &list);
 	void import(const std::string &filename, Camera &camera) ;
 	void generate(Camera &camera) ;
-	template <typename T> bool loadSpace(Octree * tree, OctreeNodeData &data, std::unordered_map<long, NodeInfo<T>> *infos, GeometryBuilder<InstanceData> * builder);
-	template <typename T> DrawableInstanceGeometry<T> * loadIfNeeded(std::unordered_map<long, NodeInfo<T>> * infos, long index);
+	template <typename T> bool loadSpace(Octree * tree, OctreeNodeData &data, std::unordered_map<long, NodeInfo<T>> *infos, GeometryBuilder<T> * builder);
+	template <typename T> DrawableInstanceGeometry<T> * loadIfNeeded(std::unordered_map<long, NodeInfo<T>> * infos, long index, InstanceHandler<T> * handler);
 
 	void save(std::string folderPath, Camera &camera);
 	void load(std::string folderPath, Camera &camera);
