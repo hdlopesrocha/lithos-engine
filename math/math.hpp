@@ -370,20 +370,6 @@ public:
 
 };
 
-
-struct InstanceData {
-    public:
-    float shift;
-	uint animation;
-    glm::mat4 matrix;
-
-    InstanceData(uint animation, glm::mat4 matrix,  float shift) {
-        this->matrix = matrix;
-        this->shift = shift;
-		this->animation = animation;
-    }
-};
-
 template <typename T> struct InstanceGeometry {
     public:
     Geometry * geometry;

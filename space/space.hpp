@@ -201,16 +201,29 @@ struct StackFrameOut : public OctreeNodeData  {
 	}
 };
 
-class GeometryBuilder {
+struct InstanceData {
     public:
-    virtual InstanceGeometry<InstanceData> * build(OctreeNodeData &params) = 0;
+    float shift;
+	uint animation;
+    glm::mat4 matrix;
+
+    InstanceData(uint animation, glm::mat4 matrix, float shift) {
+        this->matrix = matrix;
+        this->shift = shift;
+		this->animation = animation;
+    }
 };
 
-class MeshGeometryBuilder  : public GeometryBuilder {
+template <typename T> class GeometryBuilder {
+    public:
+    virtual InstanceGeometry<T> * build(OctreeNodeData &params) = 0;
+};
+
+class MeshGeometryBuilder  : public GeometryBuilder<InstanceData> {
 	long * trianglesCount;
     Octree * tree;
 	public:
-		MeshGeometryBuilder(long * trianglesCount,Octree * tree);
+		MeshGeometryBuilder(long * trianglesCount, Octree * tree);
 		~MeshGeometryBuilder();
 		InstanceGeometry<InstanceData> * build(OctreeNodeData &params) override;
 };

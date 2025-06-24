@@ -102,7 +102,7 @@ class OctreeInstanceBuilderHandler : public InstanceBuilderHandler<InstanceData>
 	void handle(OctreeNodeData &data, std::vector<InstanceData> * instances) override;
 };
 
-class VegetationGeometryBuilder : public GeometryBuilder {
+class VegetationGeometryBuilder : public GeometryBuilder<InstanceData> {
     public:
     Geometry * geometry;
     Octree * tree;
@@ -114,7 +114,7 @@ class VegetationGeometryBuilder : public GeometryBuilder {
 	InstanceGeometry<InstanceData> * build(OctreeNodeData &params) override;
 };
 
-class OctreeGeometryBuilder : public GeometryBuilder {
+class OctreeGeometryBuilder : public GeometryBuilder<InstanceData> {
     public:
     Geometry * geometry;
     InstanceBuilderHandler<InstanceData>  * handler;
@@ -203,7 +203,7 @@ class Scene {
 	void draw3dOctree(glm::vec3 cameraPosition, const std::vector<OctreeNodeData> &list);
 	void import(const std::string &filename, Camera &camera) ;
 	void generate(Camera &camera) ;
-	bool loadSpace(Octree * tree, OctreeNodeData &data, std::unordered_map<long, NodeInfo> *infos, GeometryBuilder * builder);
+	bool loadSpace(Octree * tree, OctreeNodeData &data, std::unordered_map<long, NodeInfo> *infos, GeometryBuilder<InstanceData> * builder);
 	void save(std::string folderPath, Camera &camera);
 	void load(std::string folderPath, Camera &camera);
 };
