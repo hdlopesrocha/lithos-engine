@@ -275,4 +275,11 @@ class EnvironmentFile {
 	void save(std::string filename);
 };
 
+class OctreeDifferenceFunction : public SignedDistanceFunction {
+    Octree * tree;
+    BoundingBox box;
+    public:
+    OctreeDifferenceFunction(Octree * tree, BoundingBox box);
+    float distance(const glm::vec3 p) const override;
+};
 #endif

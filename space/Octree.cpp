@@ -147,6 +147,30 @@ OctreeNode* Octree::getNodeAt(const glm::vec3 &pos, bool simplification) {
     return node;
 }
 
+float Octree::getSdfAt(const glm::vec3 &pos) {
+    OctreeNode * candidate = root;
+    OctreeNode* node = candidate;
+
+    BoundingCube cube = *this;
+	if(!contains(pos)) {
+		return INFINITY;
+	}
+    while (candidate) {
+        node = candidate;
+   
+        int i = getNodeIndex(pos, cube);
+        cube = cube.getChild(i);
+        ChildBlock * block = node->getBlock(&allocator);
+        candidate = node->getChildNode(i, &allocator, block);
+    }
+
+    if(node) {
+        return SDF::interpolate(node->sdf, pos, cube);
+    }
+    std::cout << "Infinity" << std::endl;
+    return INFINITY;
+}
+
 int Octree::getLevelAt(const glm::vec3 &pos, bool simplification) {
     OctreeNode* node = root;
     BoundingCube cube = *this;
@@ -283,6 +307,7 @@ void Octree::del(
     shape(SDF::opSubtraction, handler, function, painter, dirtyHandler, OctreeNodeFrame(root, -1, *this, minSize, 0, root->sdf, SpaceType::Surface), NULL, simplifier);
 }
 
+
 float SOLID_SDF = -INFINITY;
 float EMPTY_SDF = INFINITY;
 NodeOperationResult Octree::shape(
@@ -302,6 +327,7 @@ NodeOperationResult Octree::shape(
     NodeOperationResult children[8];
     bool childSolid = true;
     bool childEmpty = true;
+    bool childProcess = true;
     ChildBlock * block = NULL;
     if (!isLeaf) {
         block = node ? node->getBlock(&allocator) : NULL;
@@ -319,8 +345,9 @@ NodeOperationResult Octree::shape(
                 chunk, simplifier);
         
             children[i] = child;
-            childEmpty &= child.type == SpaceType::Empty && child.process;
-            childSolid &= child.type == SpaceType::Solid && child.process;
+            childEmpty &= child.type == SpaceType::Empty;
+            childSolid &= child.type == SpaceType::Solid;
+            childProcess &= child.process;
         }
     }
     float currentSDF[8];
@@ -374,7 +401,7 @@ NodeOperationResult Octree::shape(
             }
         }
 
-        if(type != SpaceType::Surface) {
+        if(type != SpaceType::Surface && childProcess) {
             node->clear(&allocator, frame.cube);
             if(type == SpaceType::Empty) {
                 allocator.deallocateOctreeNode(node, frame.cube);

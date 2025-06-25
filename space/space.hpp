@@ -156,6 +156,7 @@ class Octree: public BoundingCube {
 
 		OctreeNode* getNodeAt(const glm::vec3 &pos, int level, bool simplification);
 		OctreeNode* getNodeAt(const glm::vec3 &pos, bool simplification);
+		float getSdfAt(const glm::vec3 &pos);
 		void handleQuadNodes(OctreeNodeData &data, OctreeNodeTriangleHandler * handler, bool simplification);
 		ContainmentType contains(const glm::vec3 &pos);
 		ContainmentType contains(const AbstractBoundingBox&cube);

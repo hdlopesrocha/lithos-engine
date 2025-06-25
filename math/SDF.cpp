@@ -124,6 +124,21 @@ float SDF::opSmoothIntersection( float d1, float d2, float k ) {
     return glm::mix( d1, d2, h ) + k*h*(1.0-h);
 }
 
+float SDF::interpolate(float * sdf, glm::vec3 position, BoundingCube cube) {
+    glm::vec3 local = (position - cube.getMin()) / cube.getLength(); // Convert to [0,1]^3 within cube
+
+    // Trilinear interpolation
+    float c00 = glm::mix(sdf[0], sdf[1], local.x);
+    float c01 = glm::mix(sdf[4], sdf[5], local.x);
+    float c10 = glm::mix(sdf[2], sdf[3], local.x);
+    float c11 = glm::mix(sdf[6], sdf[7], local.x);
+
+    float c0 = glm::mix(c00, c10, local.y);
+    float c1 = glm::mix(c01, c11, local.y);
+
+    return glm::mix(c0, c1, local.z);
+}
+
 void SDF::getChildSDF(float * sdf, int i , float * result) {
     for (int corner = 0; corner < 8; ++corner) {
         float fx = ((corner & 4) ? 0.5f : 0.0f) + ((i & 4) ? 0.5f : 0.0f);
@@ -171,6 +186,9 @@ HeightMapDistanceFunction::HeightMapDistanceFunction(const HeightMap &map):map(m
 float HeightMapDistanceFunction::distance(const glm::vec3 p) const {
     return map.distance(p);
 }
+
+
+
 
 
 SpaceType SDF::eval(float * sdf) {
