@@ -127,11 +127,11 @@ struct NodeOperationResult {
     float sdf[8];
 
 
-	NodeOperationResult() : node(NULL), cube(glm::vec3(0.0f), 0.0f), shapeType(SpaceType::Empty), resultType(SpaceType::Empty), process(false) {
+	NodeOperationResult() : node(NULL), cube(glm::vec3(0.0f), 0.0f), resultType(SpaceType::Empty), shapeType(SpaceType::Empty), process(false) {
 	};
 
     NodeOperationResult(BoundingCube cube, OctreeNode * node, SpaceType shapeType, SpaceType resultType, float * sdf, bool process) 
-        : node(node), cube(cube), shapeType(shapeType), resultType(resultType), process(process){
+        : node(node), cube(cube), resultType(resultType), shapeType(shapeType), process(process){
 		if(sdf != NULL) {
 			for(int i = 0; i < 8; ++i) {
 				this->sdf[i] = sdf[i];

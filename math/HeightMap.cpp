@@ -1,6 +1,6 @@
 #include "math.hpp"
 
-HeightMap::HeightMap(const HeightFunction &func, BoundingBox box, float step)  : BoundingBox(box), func(func), step(step){
+HeightMap::HeightMap(const HeightFunction &func, BoundingBox box, float step)  : BoundingBox(box), step(step), func(func){
 
 }
 
