@@ -322,7 +322,7 @@ NodeOperationResult Octree::shape(
     ContainmentType check = handler.check(frame.cube);
     OctreeNode * node  = frame.node;
     if(check == ContainmentType::Disjoint) {
-        return NodeOperationResult(frame.cube, node, frame.type, frame.type, frame.sdf, false);  // Skip this node
+        return NodeOperationResult(frame.cube, node, SpaceType::Empty, frame.type, frame.sdf, false);  // Skip this node
     }
     
     bool isLeaf = frame.cube.getLengthX() <= frame.minSize;
@@ -423,7 +423,7 @@ NodeOperationResult Octree::shape(
             } 
         }
     }
-    return NodeOperationResult(frame.cube, node, shapeType, resultType, resultSDF, true);
+    return NodeOperationResult(frame.cube, node, shapeType, resultType, resultSDF, shapeType != SpaceType::Empty);
 }
 
 void Octree::iterate(IteratorHandler &handler) {
