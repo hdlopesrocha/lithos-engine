@@ -46,6 +46,7 @@ public:
     static glm::vec3 getNormal(float* sdf, const BoundingCube& cube);
     static glm::vec3 getNormalFromPosition(float* sdf, const BoundingCube& cube, const glm::vec3& position);
     static void getChildSDF(float * sdf, int i , float * result);
+    static void copySDF(float * src, float * dst);
 
     static SpaceType eval(float * sdf);
 };

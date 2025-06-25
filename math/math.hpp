@@ -319,11 +319,6 @@ class HeightMap: public BoundingBox  {
 	public: 
 		HeightMap(const HeightFunction &func, BoundingBox box, float step);
 		
-   		glm::vec3 getNormalAt(float x, float z) const ;
-		void getPoint(const BoundingCube& cube, glm::vec3 &p) const ;
-		glm::ivec2 getIndexes(float x, float z) const ;
-		glm::vec2 getHeightRangeBetween(const BoundingCube &cube) const ;
-		bool hitsBoundary(const BoundingCube &cube) const ;
 		bool isContained(const BoundingCube &p) const ;
 		bool contains(const glm::vec3 &point) const ;
 		float distance(const glm::vec3 p) const;
@@ -480,19 +475,6 @@ class BoxContainmentHandler : public ContainmentHandler {
 	ContainmentType check(const BoundingCube &cube) const override;
 	glm::vec3 getCenter() const override;
 };
-
-class HeightMapContainmentHandler : public ContainmentHandler {
-	public: 
-	const HeightMap &map;
-
-	HeightMapContainmentHandler(const HeightMap &map);
-	glm::vec3 getCenter() const;
-	float intersection(const glm::vec3 a, const glm::vec3 b) const ;
-	glm::vec3 getNormal(const glm::vec3 pos) const ;
-	bool isContained(const BoundingCube &cube) const override;
-	ContainmentType check(const BoundingCube &cube) const override;
-};
-
 
 class Camera {
     public:

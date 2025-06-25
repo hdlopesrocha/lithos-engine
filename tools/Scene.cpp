@@ -244,7 +244,7 @@ void Scene::generate(Camera &camera) {
 	CachedHeightMapSurface cache = CachedHeightMapSurface(heightFunction, mapBox, sizePerTile);
 	HeightMap heightMap = HeightMap(cache, mapBox, sizePerTile);
 
-	solidSpace->add(HeightMapContainmentHandler(heightMap), HeightMapDistanceFunction(heightMap), LandBrush(), DirtyHandler(*this), minSize, simplifier);
+	solidSpace->add(BoxContainmentHandler(heightMap), HeightMapDistanceFunction(heightMap), LandBrush(), DirtyHandler(*this), minSize, simplifier);
 
 	{
 		BoundingSphere sphere = BoundingSphere(glm::vec3(0,768,0),1024);
@@ -298,7 +298,7 @@ void Scene::import(const std::string &filename, Camera &camera) {
     CachedHeightMapSurface cache = CachedHeightMapSurface(heightFunction, mapBox, sizePerTile);
 	HeightMap heightMap = HeightMap(cache, mapBox, sizePerTile);
 
-	solidSpace->add(HeightMapContainmentHandler(heightMap), HeightMapDistanceFunction(heightMap), DerivativeLandBrush(), DirtyHandler(*this), minSize, simplifier);
+	solidSpace->add(BoxContainmentHandler(heightMap), HeightMapDistanceFunction(heightMap), DerivativeLandBrush(), DirtyHandler(*this), minSize, simplifier);
 
 	BoundingBox waterBox = mapBox;
 	waterBox.setMaxY(0);

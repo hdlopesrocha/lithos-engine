@@ -303,22 +303,23 @@ NodeOperationResult Octree::shape(
     bool isLeaf = frame.cube.getLengthX() <= frame.minSize;
     NodeOperationResult children[8];
     bool childSolid = true;
-    bool childHasSurface = false;
+    bool childEmpty = true;
     if (!isLeaf) {
         for (int i = 7; i >= 0; --i) {
             OctreeNode * childNode = node ? node->getChildNode(i, &allocator, node->getBlock(&allocator)) : NULL;
-            float interpolatedSDF[8];
-            if(childNode == NULL) {
-                SDF::getChildSDF(frame.sdf, i, interpolatedSDF);
+            float childSDF[8];
+            if(childNode) {
+                SDF::copySDF(childNode->sdf, childSDF);
+            } else {
+                SDF::getChildSDF(frame.sdf, i, childSDF);
             }
-            float * childSDF = childNode ? childNode->sdf : interpolatedSDF;
-            SpaceType childType = node ? (node->isSolid() ? SpaceType::Solid : (childNode == NULL ? SpaceType::Empty : SpaceType::Surface)) : frame.type;
+            SpaceType childType = node ? (node->isSolid() ? SpaceType::Solid : SDF::eval(childSDF) ) : frame.type;
             NodeOperationResult child = shape(operation, handler, function, painter, dirtyHandler, 
                 OctreeNodeFrame(childNode, i, frame.cube.getChild(i), frame.minSize, frame.level + 1, childSDF, childType), 
                 chunk, simplifier);
         
             children[i] = child;
-            childHasSurface |= child.type == SpaceType::Surface;
+            childEmpty &= child.type == SpaceType::Empty;
             childSolid &= child.type == SpaceType::Solid;
         }
     }
@@ -326,28 +327,19 @@ NodeOperationResult Octree::shape(
     float resultSDF[8];
     buildSDF(function, frame.cube, currentSDF);
     for(int i = 0; i < 8; ++i) {       
-        float selectedSDF = frame.type == SpaceType::Empty ? EMPTY_SDF : 
-            (frame.type == SpaceType::Solid ? SOLID_SDF: frame.sdf[i] );
-        resultSDF[i] = operation(selectedSDF, currentSDF[i]);
+        resultSDF[i] = operation(frame.sdf[i], currentSDF[i]);
     }
     SpaceType eval = SDF::eval(resultSDF);
 
-    
     bool isSolid = childSolid && eval == SpaceType::Solid;
-    bool hasSurface = childHasSurface || eval == SpaceType::Surface;
-    if (isLeaf && !hasSurface && eval == SpaceType::Empty) {
-        if(node != NULL) {
-            allocator.deallocateOctreeNode(node, frame.cube);
-        }
-        return NodeOperationResult(frame.cube, NULL, SpaceType::Empty, resultSDF, false);  // Skip this node
-    }
-    SpaceType type = hasSurface ? SpaceType::Surface : 
-        (isSolid ? SpaceType::Solid : SpaceType::Empty);
+    bool isEmpty = childEmpty && eval == SpaceType::Empty;
 
+    SpaceType type = isEmpty ? SpaceType::Empty : 
+        (isSolid ? SpaceType::Solid : SpaceType::Surface);
+        
     if(type == SpaceType::Surface && node == NULL) {
         node = allocator.allocateOctreeNode(frame.cube)->init(Vertex(frame.cube.getCenter()));   
     }
-
     if(node!=NULL) {
         node->setSdf(resultSDF);
         node->setSolid(type == SpaceType::Solid);
@@ -359,11 +351,9 @@ NodeOperationResult Octree::shape(
             node->vertex.normal = SDF::getNormal(node->sdf, frame.cube);
             painter.paint(node->vertex);
         }
-        
         if(node->id) {
             dirtyHandler.handle(node);
         }
-
         if(!isLeaf) {
             ChildBlock * block = node->getBlock(&allocator);
             if(block == NULL) {

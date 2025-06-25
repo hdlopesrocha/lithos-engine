@@ -142,6 +142,12 @@ void SDF::getChildSDF(float * sdf, int i , float * result) {
     }
 }
 
+void SDF::copySDF(float * src, float * dst) {
+    for (int corner = 0; corner < 8; ++corner) {
+        dst[corner] = src[corner];
+    }
+}
+
 BoxDistanceFunction::BoxDistanceFunction(const BoundingBox box): box(box) {
 }
 
@@ -171,8 +177,10 @@ SpaceType SDF::eval(float * sdf) {
     bool hasPositive = false;
     bool hasNegative = false;
     for (int i = 0; i < 8; ++i) {  
-        if (sdf[i] >= 0.0f) {
+        if (sdf[i] > 0.0f) {
             hasPositive = true;
+        } else if (sdf[i] == 0.0f) {
+            return SpaceType::Surface; 
         } else {
             hasNegative = true;
         }
