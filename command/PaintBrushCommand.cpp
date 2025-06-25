@@ -14,11 +14,14 @@ void PaintBrushCommand::execute(const float &value) {
 
     if(brush3d.shape == BrushShape::BOX) {
         BoundingBox box = BoundingBox(brush3d.position- brush3d.scale*0.5f, brush3d.position + brush3d.scale*0.5f);
-        handler = std::make_unique<BoxContainmentHandler>(box);
+        glm::vec3 shift = glm::vec3(brush3d.detail*2);
+        BoundingBox box2 = BoundingBox(box.getMin() - shift, box.getMax() + shift);
+        handler = std::make_unique<BoxContainmentHandler>(box2);
         function = std::make_unique<BoxDistanceFunction>(box);
     } else {
         BoundingSphere sphere = BoundingSphere(brush3d.position, brush3d.scale.x);
-        handler = std::make_unique<SphereContainmentHandler>(sphere);
+        BoundingSphere sphere2 = BoundingSphere(sphere.center, sphere.radius + brush3d.detail*2);
+        handler = std::make_unique<SphereContainmentHandler>(sphere2);
         function = std::make_unique<SphereDistanceFunction>(sphere);
     }
 

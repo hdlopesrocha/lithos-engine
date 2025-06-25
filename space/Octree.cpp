@@ -311,6 +311,7 @@ void Octree::del(
 
 float SOLID_SDF = -INFINITY;
 float EMPTY_SDF = INFINITY;
+
 NodeOperationResult Octree::shape(
     float (*operation)(float, float),
     const ContainmentHandler &handler, 
@@ -403,10 +404,10 @@ NodeOperationResult Octree::shape(
         }
 
         if(type != SpaceType::Surface && childProcess) {
-            node->clear(&allocator, frame.cube);
+           // node->clear(&allocator, frame.cube);
             if(type == SpaceType::Empty) {
-                allocator.deallocateOctreeNode(node, frame.cube);
-                node = NULL;
+             //   allocator.deallocateOctreeNode(node, frame.cube);
+               // node = NULL;
             } 
         }
     }

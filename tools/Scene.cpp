@@ -240,6 +240,7 @@ void Scene::generate(Camera &camera) {
 	camera.position.y = mapBox.getMaxY();
 	camera.position.z = mapBox.getCenter().z;
 
+
 	GradientPerlinSurface heightFunction = GradientPerlinSurface(height, 1.0/(256.0f*sizePerTile), -64);
 	CachedHeightMapSurface cache = CachedHeightMapSurface(heightFunction, mapBox, sizePerTile);
 	HeightMap heightMap = HeightMap(cache, mapBox, sizePerTile);
@@ -254,7 +255,8 @@ void Scene::generate(Camera &camera) {
 	{
 		for(int i = 50 ; i < 150 ; ++i) {
 			BoundingSphere sphere = BoundingSphere(glm::vec3(0,500 - i*5,-i*20),200);
-			solidSpace->del(SphereContainmentHandler(sphere), SphereDistanceFunction(sphere), SimpleBrush(4), DirtyHandler(*this), minSize, simplifier);
+			BoundingSphere sphere2 = BoundingSphere(sphere.center,300);
+			solidSpace->del(SphereContainmentHandler(sphere2), SphereDistanceFunction(sphere), SimpleBrush(4), DirtyHandler(*this), minSize, simplifier);
 		}
 	}
 
@@ -288,7 +290,9 @@ void Scene::generate(Camera &camera) {
 	//liquidSpace->add(SphereContainmentHandler(BoundingSphere(glm::vec3(11,61,-11),4), SimpleBrush(0)));
 	BoundingBox waterBox = mapBox;
 	waterBox.setMaxY(0);
-	liquidSpace->add(BoxContainmentHandler(waterBox), OctreeDifferenceFunction(solidSpace, waterBox), WaterBrush(0), DirtyHandler(*this), minSize, simplifier);
+	glm::vec3 shift = glm::vec3(minSize*2);
+	BoundingBox waterBox2 = BoundingBox(waterBox.getMin() - shift, waterBox.getMax() + shift);
+	liquidSpace->add(BoxContainmentHandler(waterBox2), OctreeDifferenceFunction(solidSpace, waterBox), WaterBrush(0), DirtyHandler(*this), minSize, simplifier);
 	//liquidSpace->add(BoxContainmentHandler(waterBox), BoxDistanceFunction(waterBox), WaterBrush(0), DirtyHandler(*this), minSize, simplifier);
 }
 
