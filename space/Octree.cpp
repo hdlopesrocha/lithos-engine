@@ -241,13 +241,11 @@ void Octree::handleQuadNodes(OctreeNodeData &data, OctreeNodeTriangleHandler * h
 
 void buildSDF(const SignedDistanceFunction &function, BoundingCube &cube, float * resultSDF) {
     const glm::vec3 min = cube.getMin();
-    const float lengthX = cube.getLengthX();
+    const glm::vec3 length = cube.getLength();
     for (int i = 0; i < 8; ++i) {
-        resultSDF[i] = function.distance(min + lengthX * Octree::getShift(i));
+        resultSDF[i] = function.distance(min + length * Octree::getShift(i));
     }
 }
-
-
 
 void Octree::expand(const ContainmentHandler &handler) {
 	while (!handler.isContained(*this)) {
@@ -295,18 +293,20 @@ NodeOperationResult Octree::shape(
     const OctreeNodeDirtyHandler &dirtyHandler, 
     OctreeNodeFrame frame, BoundingCube * chunk, Simplifier &simplifier) {
     ContainmentType check = handler.check(frame.cube);
+    OctreeNode * node  = frame.node;
     if(check == ContainmentType::Disjoint) {
-        return NodeOperationResult(frame.cube, NULL, SpaceType::Empty, NULL, false);  // Skip this node
+        return NodeOperationResult(frame.cube, node, frame.type, frame.sdf, false);  // Skip this node
     }
     
-    OctreeNode * node  = frame.node;
     bool isLeaf = frame.cube.getLengthX() <= frame.minSize;
     NodeOperationResult children[8];
     bool childSolid = true;
     bool childEmpty = true;
+    ChildBlock * block = NULL;
     if (!isLeaf) {
+        block = node ? node->getBlock(&allocator) : NULL;
         for (int i = 7; i >= 0; --i) {
-            OctreeNode * childNode = node ? node->getChildNode(i, &allocator, node->getBlock(&allocator)) : NULL;
+            OctreeNode * childNode = node ? node->getChildNode(i, &allocator, block) : NULL;
             float childSDF[8];
             if(childNode) {
                 SDF::copySDF(childNode->sdf, childSDF);
@@ -355,7 +355,6 @@ NodeOperationResult Octree::shape(
             dirtyHandler.handle(node);
         }
         if(!isLeaf) {
-            ChildBlock * block = node->getBlock(&allocator);
             if(block == NULL) {
                 block = node->createBlock(&allocator);
             }
