@@ -319,8 +319,8 @@ NodeOperationResult Octree::shape(
                 chunk, simplifier);
         
             children[i] = child;
-            childEmpty &= child.type == SpaceType::Empty;
-            childSolid &= child.type == SpaceType::Solid;
+            childEmpty &= child.type == SpaceType::Empty && child.process;
+            childSolid &= child.type == SpaceType::Solid && child.process;
         }
     }
     float currentSDF[8];
