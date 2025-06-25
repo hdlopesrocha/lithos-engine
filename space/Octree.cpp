@@ -322,13 +322,15 @@ NodeOperationResult Octree::shape(
     ContainmentType check = handler.check(frame.cube);
     OctreeNode * node  = frame.node;
     if(check == ContainmentType::Disjoint) {
-        return NodeOperationResult(frame.cube, node, frame.type, frame.sdf, false);  // Skip this node
+        return NodeOperationResult(frame.cube, node, frame.type, frame.type, frame.sdf, false);  // Skip this node
     }
     
     bool isLeaf = frame.cube.getLengthX() <= frame.minSize;
     NodeOperationResult children[8];
-    bool childSolid = true;
-    bool childEmpty = true;
+    bool childResultSolid = true;
+    bool childResultEmpty = true;
+    bool childShapeSolid = true;
+    bool childShapeEmpty = true;
     bool childProcess = true;
     ChildBlock * block = NULL;
     if (!isLeaf) {
@@ -347,34 +349,44 @@ NodeOperationResult Octree::shape(
                 chunk, simplifier);
         
             children[i] = child;
-            childEmpty &= child.type == SpaceType::Empty;
-            childSolid &= child.type == SpaceType::Solid;
+            childResultEmpty &= child.resultType == SpaceType::Empty;
+            childResultSolid &= child.resultType == SpaceType::Solid;
+            childShapeEmpty &= child.shapeType == SpaceType::Empty;
+            childShapeSolid &= child.shapeType == SpaceType::Solid;
             childProcess &= child.process;
         }
     }
-    float currentSDF[8];
+
+    // Process Shape
+    float shapeSDF[8];
+    buildSDF(function, frame.cube, shapeSDF);
+    SpaceType shapeEvaluation = SDF::eval(shapeSDF);
+    bool isShapeSolid = childShapeSolid && shapeEvaluation == SpaceType::Solid;
+    bool isShapeEmpty = childShapeEmpty && shapeEvaluation == SpaceType::Empty;
+    SpaceType shapeType = isShapeEmpty ? SpaceType::Empty : 
+        (isShapeSolid ? SpaceType::Solid : SpaceType::Surface);
+
+    // Process Result
     float resultSDF[8];
-    buildSDF(function, frame.cube, currentSDF);
     for(int i = 0; i < 8; ++i) {       
-        resultSDF[i] = operation(frame.sdf[i], currentSDF[i]);
+        resultSDF[i] = operation(frame.sdf[i], shapeSDF[i]);
     }
-    SpaceType eval = SDF::eval(resultSDF);
-
-    bool isSolid = childSolid && eval == SpaceType::Solid;
-    bool isEmpty = childEmpty && eval == SpaceType::Empty;
-
-    SpaceType type = isEmpty ? SpaceType::Empty : 
-        (isSolid ? SpaceType::Solid : SpaceType::Surface);
+    SpaceType resultEvalaluation = SDF::eval(resultSDF);
+    bool isResultSolid = childResultSolid && resultEvalaluation == SpaceType::Solid;
+    bool isResultEmpty = childResultEmpty && resultEvalaluation == SpaceType::Empty;
+    SpaceType resultType = isResultEmpty ? SpaceType::Empty : 
+        (isResultSolid ? SpaceType::Solid : SpaceType::Surface);
         
-    if(type == SpaceType::Surface && node == NULL) {
+    // Take action
+    if(resultType == SpaceType::Surface && node == NULL) {
         node = allocator.allocateOctreeNode(frame.cube)->init(Vertex(frame.cube.getCenter()));   
     }
     if(node!=NULL) {
         node->setSdf(resultSDF);
-        node->setSolid(type == SpaceType::Solid);
+        node->setSolid(resultType == SpaceType::Solid);
         node->setSimplification(0);
         node->setDirty(true);
-        if(type == SpaceType::Surface) {
+        if(shapeType == SpaceType::Surface) {
             //node->vertex.normal = SDF::getNormalFromPosition(node->sdf, frame.cube, node->vertex.position);
             node->vertex.position = SDF::getPosition(node->sdf, frame.cube);
             node->vertex.normal = SDF::getNormal(node->sdf, frame.cube);
@@ -391,7 +403,7 @@ NodeOperationResult Octree::shape(
                 NodeOperationResult child = children[i];
                 if(child.process) {
                     OctreeNode * childNode = child.node;
-                    if(type==SpaceType::Surface && childNode == NULL && child.type == SpaceType::Solid) {
+                    if(resultType==SpaceType::Surface && childNode == NULL && child.resultType == SpaceType::Solid) {
                         childNode = allocator.allocateOctreeNode(child.cube)->init(Vertex(child.cube.getCenter()));
                         childNode->setSolid(true);
                         childNode->setSdf(child.sdf);
@@ -403,15 +415,15 @@ NodeOperationResult Octree::shape(
             }
         }
 
-        if(type != SpaceType::Surface && childProcess) {
-           // node->clear(&allocator, frame.cube);
-            if(type == SpaceType::Empty) {
-             //   allocator.deallocateOctreeNode(node, frame.cube);
-               // node = NULL;
+        if(resultType != SpaceType::Surface && childProcess) {
+            node->clear(&allocator, frame.cube);
+            if(resultType == SpaceType::Empty) {
+                allocator.deallocateOctreeNode(node, frame.cube);
+                node = NULL;
             } 
         }
     }
-    return NodeOperationResult(frame.cube, node, type, resultSDF, true);
+    return NodeOperationResult(frame.cube, node, shapeType, resultType, resultSDF, true);
 }
 
 void Octree::iterate(IteratorHandler &handler) {

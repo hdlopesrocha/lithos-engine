@@ -255,8 +255,8 @@ void Scene::generate(Camera &camera) {
 	{
 		for(int i = 50 ; i < 150 ; ++i) {
 			BoundingSphere sphere = BoundingSphere(glm::vec3(0,500 - i*5,-i*20),200);
-			BoundingSphere sphere2 = BoundingSphere(sphere.center,300);
-			solidSpace->del(SphereContainmentHandler(sphere2), SphereDistanceFunction(sphere), SimpleBrush(4), DirtyHandler(*this), minSize, simplifier);
+			BoundingSphere sphere2 = BoundingSphere(sphere.center,sphere.radius + 2*minSize);
+			solidSpace->add(SphereContainmentHandler(sphere2), SphereDistanceFunction(sphere), SimpleBrush(4), DirtyHandler(*this), minSize, simplifier);
 		}
 	}
 
