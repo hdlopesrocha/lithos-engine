@@ -252,6 +252,14 @@ void Scene::generate(Camera &camera) {
 	}
 
 	{
+		for(int i = 50 ; i < 150 ; ++i) {
+			BoundingSphere sphere = BoundingSphere(glm::vec3(0,500 - i*5,-i*20),200);
+			solidSpace->del(SphereContainmentHandler(sphere), SphereDistanceFunction(sphere), SimpleBrush(4), DirtyHandler(*this), minSize, simplifier);
+		}
+	}
+
+
+	{
 		BoundingBox box = BoundingBox(glm::vec3(1500,0,500),glm::vec3(1500+256,256,500+256));
 		solidSpace->add(BoxContainmentHandler(box), BoxDistanceFunction(box), SimpleBrush(4), DirtyHandler(*this), 2.0, simplifier);
 	}
