@@ -184,12 +184,15 @@ HeightMapDistanceFunction::HeightMapDistanceFunction(const HeightMap &map):map(m
 }
 
 float HeightMapDistanceFunction::distance(const glm::vec3 p) const {
-    return map.distance(p);
+    glm::vec3 len = map.getLength()*0.5f;
+    glm::vec3 pos = p - map.getCenter();
+
+    float heightMapSDF = map.distance(p);
+    return SDF::opIntersection(
+        SDF::box(pos, len),
+        heightMapSDF
+    );
 }
-
-
-
-
 
 SpaceType SDF::eval(float * sdf) {
     bool hasPositive = false;

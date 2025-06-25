@@ -318,11 +318,7 @@ class HeightMap: public BoundingBox  {
 		
 	public: 
 		HeightMap(const HeightFunction &func, BoundingBox box, float step);
-		
-		bool isContained(const BoundingCube &p) const ;
-		bool contains(const glm::vec3 &point) const ;
 		float distance(const glm::vec3 p) const;
-		ContainmentType test(const BoundingCube &cube) const ;
 };
 
 

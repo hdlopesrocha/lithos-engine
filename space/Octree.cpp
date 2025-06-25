@@ -149,25 +149,26 @@ OctreeNode* Octree::getNodeAt(const glm::vec3 &pos, bool simplification) {
 
 float Octree::getSdfAt(const glm::vec3 &pos) {
     OctreeNode * candidate = root;
-    OctreeNode* node = candidate;
+    OctreeNode * node = candidate;
+    BoundingCube candidateCube = *this;
+    BoundingCube nodeCube = candidateCube;
 
-    BoundingCube cube = *this;
 	if(!contains(pos)) {
 		return INFINITY;
 	}
     while (candidate) {
         node = candidate;
-   
-        int i = getNodeIndex(pos, cube);
-        cube = cube.getChild(i);
+        nodeCube = candidateCube;
+        int i = getNodeIndex(pos, candidateCube);
+        candidateCube = nodeCube.getChild(i);
         ChildBlock * block = node->getBlock(&allocator);
         candidate = node->getChildNode(i, &allocator, block);
     }
 
     if(node) {
-        return SDF::interpolate(node->sdf, pos, cube);
+        return SDF::interpolate(node->sdf, pos, nodeCube);
     }
-    std::cout << "Infinity" << std::endl;
+    std::cerr << "Not interpolated" << std::endl;
     return INFINITY;
 }
 

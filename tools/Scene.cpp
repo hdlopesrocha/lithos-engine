@@ -281,6 +281,7 @@ void Scene::generate(Camera &camera) {
 	BoundingBox waterBox = mapBox;
 	waterBox.setMaxY(0);
 	liquidSpace->add(BoxContainmentHandler(waterBox), OctreeDifferenceFunction(solidSpace, waterBox), WaterBrush(0), DirtyHandler(*this), minSize, simplifier);
+	//liquidSpace->add(BoxContainmentHandler(waterBox), BoxDistanceFunction(waterBox), WaterBrush(0), DirtyHandler(*this), minSize, simplifier);
 }
 
 void Scene::import(const std::string &filename, Camera &camera) {

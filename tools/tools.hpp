@@ -12,9 +12,9 @@
 #include <random>
 
 class WaveSurface : public HeightFunction {
-    float amplitude;// = 10;
-    float offset;// = -36;
-    float frequency;// = 1.0/10.0;
+    float amplitude;
+    float offset;
+    float frequency;
 
 	WaveSurface(float amplitude, float offset , float frequency);
 
@@ -72,16 +72,6 @@ class WaterBrush : public TexturePainter {
 	public: 
 	WaterBrush(int water);
 	void paint(Vertex &vertex) const override;
-};
-
-class OctreeContainmentHandler : public ContainmentHandler {
-	public:
-	Octree * octree;
-	BoundingBox box;
-
-	OctreeContainmentHandler(Octree * octree, BoundingBox box);
-	bool isContained(const BoundingCube &p) const override;
-	ContainmentType check(const BoundingCube &cube) const override;
 };
 
 class VegetationInstanceBuilderHandler : public InstanceBuilderHandler<InstanceData> {
