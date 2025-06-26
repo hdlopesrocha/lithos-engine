@@ -32,6 +32,8 @@ class OctreeNode {
 		uint8_t getSimplification();
 		bool isSolid();
 		void setSolid(bool value);
+		bool isEmpty();
+		void setEmpty(bool value);
 		bool isSimplified();
 		void setSimplified(bool value);
 		bool isDirty();
@@ -159,8 +161,6 @@ class Octree: public BoundingCube {
 		OctreeNode* getNodeAt(const glm::vec3 &pos, bool simplification);
 		float getSdfAt(const glm::vec3 &pos);
 		void handleQuadNodes(OctreeNodeData &data, OctreeNodeTriangleHandler * handler, bool simplification);
-		ContainmentType contains(const glm::vec3 &pos);
-		ContainmentType contains(const AbstractBoundingBox&cube);
 		bool hasFinerNode(const OctreeNode *node);
 		int getLevelAt(const glm::vec3 &pos, bool simplification);
 		int getNeighborLevel(OctreeNodeData &data, bool simplification, int direction);

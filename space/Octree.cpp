@@ -28,85 +28,6 @@ int getNodeIndex(const glm::vec3 &vec, const BoundingCube &cube) {
     return (vec.x >= c.x ? 4 : 0) + (vec.y >= c.y ? 2 : 0) + (vec.z >= c.z ? 1 : 0);
 }
 
-ContainmentType Octree::contains(const AbstractBoundingBox &c) {
-    OctreeNode* node = root;
-    BoundingCube cube = *this;
-
-    while (node) {
-        bool allContains = true;
-        bool anyIntersection = false;
-        OctreeNode* candidate = NULL;
-        BoundingCube candidateCube;
-        ChildBlock * block = node->getBlock(&allocator);
-
-        for(int i =0 ; i < 8 ; ++i) {
-            OctreeNode* subNode = node->getChildNode(i, &allocator, block);
-            if(subNode != NULL) {
-                BoundingCube subCube = cube.getChild(i);
-                bool cubeIntersects = subCube.intersects(c);
-                if(cubeIntersects) {               
-                    candidate = subNode;
-                    candidateCube = subCube;
-                    anyIntersection = true;
-                    if(!candidate->isSolid()) {
-                        allContains = false;
-                    }
-                }
-            }
-        }
-        if (!anyIntersection) {
-            return ContainmentType::Disjoint;
-        }
-        if (allContains) {
-            return ContainmentType::Contains;
-        }
-        node = candidate;
-        cube = candidateCube;
-    }
-    if (node == NULL){
-		return ContainmentType::Disjoint;
-	} 
-
-    return node->isSolid() ? ContainmentType::Contains : ContainmentType::Intersects;
-}
-
-ContainmentType Octree::contains(const glm::vec3 &pos) {
-    OctreeNode* node = root;
-    BoundingCube cube = *this;
-
-    while (node) {
-        bool testResult = cube.contains(pos);
-
-        // If completely outside, return Disjoint immediately
-        if (!testResult) {
-            return ContainmentType::Disjoint;
-        }
-
-        // If the node is marked as solid and the cube is not Disjoint, return Contains
-        if (node->isSolid()) {
-            break;
-        }
-		
-		int i = getNodeIndex(pos, cube);
-        if (i < 0) {
-            return ContainmentType::Disjoint;
-        }
-        ChildBlock * block = node->getBlock(&allocator);
-   		OctreeNode* candidate = node->getChildNode(i, &allocator, block);
-        if (candidate == NULL) {
-            break;
-        }
-
-        cube = cube.getChild(i);
-        node = candidate;
-    }
-    if (node == NULL){
-		return ContainmentType::Disjoint;
-	} 
-
-    return node->isSolid() ? ContainmentType::Contains : ContainmentType::Intersects;
-}
-
 OctreeNode* Octree::getNodeAt(const glm::vec3 &pos, int level, bool simplification) {
     OctreeNode* node = root;
     BoundingCube cube = *this;
@@ -309,11 +230,6 @@ void Octree::del(
 }
 
 
-float SOLID_SDF[8] = {-INFINITY, -INFINITY, -INFINITY, -INFINITY, 
-                      -INFINITY, -INFINITY, -INFINITY, -INFINITY};
-float EMPTY_SDF[8] = {INFINITY, INFINITY, INFINITY, INFINITY, 
-                      INFINITY, INFINITY, INFINITY, INFINITY};
-
 NodeOperationResult Octree::shape(
     float (*operation)(float, float),
     const ContainmentHandler &handler, 
@@ -342,15 +258,16 @@ NodeOperationResult Octree::shape(
             SpaceType childType;
             if(childNode) {
                 SDF::copySDF(childNode->sdf, childSDF);
-                childType = childNode->isSolid() ? SpaceType::Solid : SpaceType::Surface;
-            } else {
-                if((node && node->isSolid()) || frame.type == SpaceType::Solid) {
-                    SDF::copySDF(SOLID_SDF, childSDF);
+                if(childNode->isSolid()) {
                     childType = SpaceType::Solid;
+                } else if(childNode->isEmpty()) {
+                    childType = SpaceType::Empty;
                 } else {
-                    SDF::getChildSDF(frame.sdf, i, childSDF);
-                    childType = SDF::eval(childSDF);
+                    childType = SpaceType::Surface;
                 }
+            } else {
+                SDF::getChildSDF(frame.sdf, i, childSDF);
+                childType = SDF::eval(childSDF);
             }
   
             NodeOperationResult child = shape(operation, handler, function, painter, dirtyHandler, 
@@ -392,6 +309,7 @@ NodeOperationResult Octree::shape(
     if(node!=NULL) {
         node->setSdf(resultSDF);
         node->setSolid(resultType == SpaceType::Solid);
+        node->setEmpty(resultType == SpaceType::Empty);
         node->setSimplification(0);
         node->setDirty(true);
         if(resultType == SpaceType::Surface) {
@@ -413,9 +331,10 @@ NodeOperationResult Octree::shape(
                 NodeOperationResult child = children[i];
                 if(child.process) {
                     OctreeNode * childNode = child.node;
-                    if(resultType==SpaceType::Surface && childNode == NULL && child.resultType == SpaceType::Solid) {
+                    if(resultType==SpaceType::Surface && childNode == NULL && child.resultType != SpaceType::Surface) {
                         childNode = allocator.allocateOctreeNode(child.cube)->init(Vertex(child.cube.getCenter()));
-                        childNode->setSolid(true);
+                        childNode->setSolid(child.resultType == SpaceType::Solid);
+                        childNode->setEmpty(child.resultType == SpaceType::Empty);
                         childNode->setSdf(child.sdf);
                         childNode->setSimplification(0);
                         childNode->setDirty(true);
@@ -427,10 +346,6 @@ NodeOperationResult Octree::shape(
 
         if(resultType != SpaceType::Surface) {
             node->clear(&allocator, frame.cube);
-            if(resultType == SpaceType::Empty) {
-                allocator.deallocateOctreeNode(node, frame.cube);
-                node = NULL;
-            }
         }
     }
     return NodeOperationResult(frame.cube, node, shapeType, resultType, resultSDF, shapeType != SpaceType::Empty);

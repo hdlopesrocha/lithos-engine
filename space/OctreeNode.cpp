@@ -10,6 +10,7 @@ OctreeNode * OctreeNode::init(Vertex vertex) {
 	}
 	this->bits = 0x0;
 	this->setSolid(false);
+	this->setEmpty(false);
 	this->setSimplified(false);
 	this->setDirty(true);
 	this->vertex = vertex;
@@ -73,40 +74,49 @@ bool OctreeNode::isLeaf() {
 
 
 bool OctreeNode::isSolid(){
-	return this->bits & 0x100;
-}
-
-bool OctreeNode::isSimplified(){
-	return this->bits & 0x200;
-}
-
-bool OctreeNode::isDirty(){
-	return this->bits & 0x400;
+	return this->bits & 0x0001;
 }
 
 void OctreeNode::setSolid(bool value){
-	uint16_t mask = 0x0100;
+	uint16_t mask = 0x0001;
 	this->bits = (this->bits & (mask ^ 0xffff)) | (value ? mask : 0x0);
 }
 
+bool OctreeNode::isEmpty(){
+	return this->bits & 0x0002;
+}
+
+void OctreeNode::setEmpty(bool value){
+	uint16_t mask = 0x0002;
+	this->bits = (this->bits & (mask ^ 0xffff)) | (value ? mask : 0x0);
+}
+
+bool OctreeNode::isSimplified(){
+	return this->bits & 0x0004;
+}
+
 void OctreeNode::setSimplified(bool value){
-	uint16_t mask = 0x0200;
+	uint16_t mask = 0x0004;
 	this->bits = (this->bits & ~mask) | (value ? mask : 0x0);
 }
 
+bool OctreeNode::isDirty(){
+	return this->bits & 0x0008;
+}
+
 void OctreeNode::setDirty(bool value){
-	uint16_t mask = 0x0400;
+	uint16_t mask = 0x0008;
 	this->bits = (this->bits & ~mask ) | (value ? mask : 0x0);
 }
 
 
 void OctreeNode::setSimplification(uint8_t value){
-	uint16_t mask = 0xf000;
-	this->bits = (this->bits & (mask ^ 0xffff)) | (value ? mask : 0x0);
+	uint16_t mask = 0xff00;
+	this->bits = (this->bits & (mask ^ 0xffff)) | (uint16_t(value) << 8);
 }
 
 uint8_t OctreeNode::getSimplification(){
-	uint16_t mask = 0xf000;
-	return (this->bits & mask >> 12) & 0xf;
+	uint16_t mask = 0xff00;
+	return (this->bits & mask) >> 8;
 }
 

@@ -6,7 +6,7 @@ OctreeInstanceBuilderHandler::OctreeInstanceBuilderHandler() {
 }
 
 void OctreeInstanceBuilderHandler::handle(OctreeNodeData &data, std::vector<DebugInstanceData> * instances){
-	if(data.node->isSolid()) {
+	if(SDF::eval(data.node->sdf) == SpaceType::Empty && data.node->isLeaf()) {
 		glm::mat4 mat(1.0);
 		mat = glm::translate(mat, data.cube.getMin());
 		mat = glm::scale(mat, data.cube.getLength());
