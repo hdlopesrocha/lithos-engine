@@ -229,6 +229,19 @@ void Octree::del(
     shape(SDF::opSubtraction, handler, function, painter, dirtyHandler, OctreeNodeFrame(root, -1, *this, minSize, 0, root->sdf, SpaceType::Surface), NULL, simplifier);
 }
 
+SpaceType childToParent(float * sdf, bool childSolid, bool childEmpty, bool isLeaf) {
+    if(isLeaf) {
+        return SDF::eval(sdf);
+    } else {
+        if(childSolid) {
+            return SpaceType::Solid;
+        } else if(childEmpty) {
+            return SpaceType::Empty;
+        } else {
+            return SpaceType::Surface;
+        }
+    }
+}
 
 NodeOperationResult Octree::shape(
     float (*operation)(float, float),
@@ -285,22 +298,14 @@ NodeOperationResult Octree::shape(
     // Process Shape
     float shapeSDF[8];
     buildSDF(function, frame.cube, shapeSDF);
-    SpaceType shapeEvaluation = SDF::eval(shapeSDF);
-    bool isShapeSolid = childShapeSolid && shapeEvaluation == SpaceType::Solid;
-    bool isShapeEmpty = childShapeEmpty && shapeEvaluation == SpaceType::Empty;
-    SpaceType shapeType = isShapeEmpty ? SpaceType::Empty : 
-        (isShapeSolid ? SpaceType::Solid : SpaceType::Surface);
+    SpaceType shapeType = childToParent(shapeSDF, childShapeSolid, childShapeEmpty, isLeaf);
 
     // Process Result
     float resultSDF[8];
     for(int i = 0; i < 8; ++i) {
         resultSDF[i] = operation(frame.sdf[i], shapeSDF[i]);
     }
-    SpaceType resultEvaluation = SDF::eval(resultSDF);
-    bool isResultSolid = childResultSolid && resultEvaluation == SpaceType::Solid;
-    bool isResultEmpty = childResultEmpty && resultEvaluation == SpaceType::Empty;
-    SpaceType resultType = isResultEmpty ? SpaceType::Empty : 
-        (isResultSolid ? SpaceType::Solid : SpaceType::Surface);
+    SpaceType resultType = childToParent(resultSDF, childResultSolid, childResultEmpty, isLeaf);
         
     // Take action
     if(resultType == SpaceType::Surface && node == NULL) {
