@@ -343,7 +343,8 @@ NodeOperationResult Octree::shape(
             } else {
                 SDF::getChildSDF(frame.sdf, i, childSDF);
             }
-            SpaceType childType = node ? (node->isSolid() ? SpaceType::Solid : SDF::eval(childSDF) ) : frame.type;
+            SpaceType childType = node ? (node->isSolid() ? SpaceType::Solid : 
+                                            childNode ? SpaceType::Surface : SpaceType::Empty) : frame.type;
             NodeOperationResult child = shape(operation, handler, function, painter, dirtyHandler, 
                 OctreeNodeFrame(childNode, i, frame.cube.getChild(i), frame.minSize, frame.level + 1, childSDF, childType), 
                 chunk, simplifier);
@@ -368,12 +369,13 @@ NodeOperationResult Octree::shape(
 
     // Process Result
     float resultSDF[8];
-    for(int i = 0; i < 8; ++i) {       
-        resultSDF[i] = operation(frame.sdf[i], shapeSDF[i]);
+    for(int i = 0; i < 8; ++i) {
+        float baseSDF = frame.type == SpaceType::Solid ? SOLID_SDF : frame.type == SpaceType::Empty ? EMPTY_SDF : frame.sdf[i];
+        resultSDF[i] = operation(baseSDF, shapeSDF[i]);
     }
-    SpaceType resultEvalaluation = SDF::eval(resultSDF);
-    bool isResultSolid = childResultSolid && resultEvalaluation == SpaceType::Solid;
-    bool isResultEmpty = childResultEmpty && resultEvalaluation == SpaceType::Empty;
+    SpaceType resultEvaluation = SDF::eval(resultSDF);
+    bool isResultSolid = childResultSolid && resultEvaluation == SpaceType::Solid;
+    bool isResultEmpty = childResultEmpty && resultEvaluation == SpaceType::Empty;
     SpaceType resultType = isResultEmpty ? SpaceType::Empty : 
         (isResultSolid ? SpaceType::Solid : SpaceType::Surface);
         
@@ -386,10 +388,12 @@ NodeOperationResult Octree::shape(
         node->setSolid(resultType == SpaceType::Solid);
         node->setSimplification(0);
         node->setDirty(true);
-        if(shapeType == SpaceType::Surface) {
+        if(resultType == SpaceType::Surface) {
             //node->vertex.normal = SDF::getNormalFromPosition(node->sdf, frame.cube, node->vertex.position);
             node->vertex.position = SDF::getPosition(node->sdf, frame.cube);
-            node->vertex.normal = SDF::getNormal(node->sdf, frame.cube);
+            node->vertex.normal = SDF::getNormal(node->sdf, frame.cube);       
+        }
+        if(shapeType != SpaceType::Empty) {
             painter.paint(node->vertex);
         }
         if(node->id) {
@@ -420,7 +424,7 @@ NodeOperationResult Octree::shape(
             if(resultType == SpaceType::Empty) {
                 allocator.deallocateOctreeNode(node, frame.cube);
                 node = NULL;
-            } 
+            }
         }
     }
     return NodeOperationResult(frame.cube, node, shapeType, resultType, resultSDF, shapeType != SpaceType::Empty);

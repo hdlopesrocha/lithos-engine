@@ -2,15 +2,9 @@
 
 glm::vec3 SDF::getPosition(float *sdf, const BoundingCube &cube) {
     // Early exit if there's no surface inside this cube
-    bool allPositive = true;
-    bool allNegative = true;
-    for (int i = 0; i < 8; ++i) {
-        bool positive = sdf[i] >= 0.0f;
-        allPositive &= positive;
-        allNegative &= !positive;
-    }
-    if (allPositive || allNegative) {
-        return cube.getCenter();  // or return {} if invalid
+    SpaceType eval = SDF::eval(sdf);
+    if(eval != SpaceType::Surface) {
+        return cube.getCenter();  // or some fallback value
     }
 
     std::vector<glm::vec3> positions;
@@ -198,10 +192,8 @@ SpaceType SDF::eval(float * sdf) {
     bool hasPositive = false;
     bool hasNegative = false;
     for (int i = 0; i < 8; ++i) {  
-        if (sdf[i] > 0.0f) {
+        if (sdf[i] >= 0.0f) {
             hasPositive = true;
-        } else if (sdf[i] == 0.0f) {
-            return SpaceType::Surface; 
         } else {
             hasNegative = true;
         }
