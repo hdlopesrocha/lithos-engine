@@ -16,12 +16,12 @@ void Simplifier::simplify(BoundingCube chunkCube, const OctreeNodeData &params){
 	}else {
 		params.node->setSimplified(false);
 	}
-
-	ChildBlock * block = params.node->getBlock(params.allocator);
+	OctreeNode * node = params.node;
+	ChildBlock * block = node->getBlock(params.allocator);
 
 	bool hasSimplifiedChildren = false;
 	for(int i=0; i < 8 ; ++i) {
-		OctreeNode * c = params.node->getChildNode(i, params.allocator, block);
+		OctreeNode * c = node->getChildNode(i, params.allocator, block);
 		if(c != NULL && c->isSimplified()) {
 			hasSimplifiedChildren = true;
 			break;
@@ -29,11 +29,10 @@ void Simplifier::simplify(BoundingCube chunkCube, const OctreeNodeData &params){
 	}
 	if(hasSimplifiedChildren) {
 		// The parentNode plane
-		OctreeNode * parent = params.node;
-		Vertex * parentVertex = &parent->vertex;
-		Plane parentPlane(parent->vertex.normal, parentVertex->position); 
+		Vertex * nodeVertex = &node->vertex;
+		Plane parentPlane(nodeVertex->normal, nodeVertex->position); 
 
-		BoundingCube cube(params.cube.getMin() - params.cube.getLengthX(), params.cube.getLengthX());
+		BoundingCube cube(params.cube.getMin() - params.cube.getLength(), params.cube.getLengthX());
 		if(!chunkCube.contains(cube)){
 			return;
 		}
@@ -41,24 +40,23 @@ void Simplifier::simplify(BoundingCube chunkCube, const OctreeNodeData &params){
 		//uint mask = 0xff;
 		int nodeCount=0;
 
-
 		// for leaf nodes shouldn't loop
 		for(int i=0; i < 8 ; ++i) {
-			OctreeNode * node = params.node->getChildNode(i, params.allocator, block);
-			if(node!=NULL && !node->isSolid() && !node->isEmpty()) {
-				if(!node->isSimplified()) {
+			OctreeNode * child = node->getChildNode(i, params.allocator, block);
+			if(child!=NULL && !child->isSolid() && !child->isEmpty()) {
+				if(!child->isSimplified()) {
 					return;	
 				}
-				if(texturing && node->vertex.brushIndex != parentVertex->brushIndex) {
+				if(texturing && child->vertex.brushIndex != nodeVertex->brushIndex) {
 					return;	
 				}
 				
-				float d = parentPlane.distance(node->vertex.position);
+				float d = parentPlane.distance(child->vertex.position);
 				if( d > distance*cube.getLengthX() ) {
 					return;
 				}
 
-				float a = glm::dot(parentVertex->normal, node->vertex.normal);
+				float a = glm::dot(nodeVertex->normal, child->vertex.normal);
 				if(a < angle) {
 					return;
 				}
@@ -69,7 +67,8 @@ void Simplifier::simplify(BoundingCube chunkCube, const OctreeNodeData &params){
 		
 
 		if(nodeCount > 0) {	
-			parent->setSimplified(true);
+			//std::cout << "Simplifying node " << node->id << " with " << nodeCount << " children." << std::endl;
+			node->setSimplified(true);
 		}
 	}
 	return;

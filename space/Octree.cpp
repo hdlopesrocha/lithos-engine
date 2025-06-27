@@ -251,7 +251,9 @@ NodeOperationResult Octree::shape(
     if(check == ContainmentType::Disjoint) {
         return NodeOperationResult(frame.cube, node, SpaceType::Empty, frame.type, frame.sdf, false);  // Skip this node
     }
-    
+    if(chunk == NULL && frame.cube.getLengthX() < chunkSize){
+        chunk = &frame.cube;
+    }
     bool isLeaf = frame.cube.getLengthX() <= frame.minSize;
     NodeOperationResult children[8];
     bool childResultSolid = true;
