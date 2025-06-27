@@ -314,6 +314,9 @@ struct OctreeNodeSerialized {
     uint brushIndex;
     uint mask;
     bool isSolid;
+	bool isEmpty;
+	bool isSimplified;
+	uint8_t simplification; 
 	float sdf[8];
     uint children[8] = {0,0,0,0,0,0,0,0};
 };

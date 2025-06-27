@@ -12,11 +12,22 @@ OctreeNode * loadRecursive2(OctreeAllocator * allocator, OctreeNode * node, int 
 	if(node == NULL) {
 		Vertex vertex(serialized.position, serialized.normal, glm::vec2(0), serialized.brushIndex);
 		node = allocator->allocateOctreeNode(cube)->init(vertex);
-		node->setSdf(serialized.sdf);
-		node->setSolid(serialized.isSolid);
 	}
-	ChildBlock * block = node->createBlock(allocator);
-
+	node->setSdf(serialized.sdf);
+	node->setSolid(serialized.isSolid);
+	node->setEmpty(serialized.isEmpty);
+	node->setSimplified(serialized.isSimplified);
+	node->setSimplification(serialized.simplification);
+	node->setDirty(true);
+	bool isLeaf = true;
+	for(int j=0; j < 8; ++j) {
+		if(serialized.children[j] != 0) {
+			isLeaf = false;
+			break;
+		}
+	}
+	node->setDirty(true);
+	ChildBlock * block = isLeaf ? NULL : node->createBlock(allocator);
 	for(int j=0 ; j <8 ; ++j){
 		int index = serialized.children[j];
 		if(index != 0) {
@@ -58,9 +69,11 @@ uint saveRecursive2(OctreeAllocator * allocator, OctreeNode * node, std::vector<
 		n->normal = node->vertex.normal;
 		n->brushIndex = node->vertex.brushIndex;
 		n->isSolid = node->isSolid();
-		for(int i=0; i < 8; ++i) {
-			n->sdf[i] = node->sdf[i];
-		}
+		n->isEmpty = node->isEmpty();
+		n->isSimplified = node->isSimplified();
+		n->simplification = node->getSimplification();
+		SDF::copySDF(node->sdf, n->sdf);
+
 		uint index = nodes->size(); 
 		nodes->push_back(n);
 		ChildBlock * block = node->getBlock(allocator);

@@ -351,6 +351,10 @@ NodeOperationResult Octree::shape(
         if(resultType != SpaceType::Surface) {
             node->clear(&allocator, frame.cube);
         }
+
+        if(chunk != NULL) {
+            simplifier.simplify(*chunk, OctreeNodeData(frame.level, chunkSize, node, frame.cube, NULL, &allocator));  
+        }
     }
     return NodeOperationResult(frame.cube, node, shapeType, resultType, resultSDF, true);
 }

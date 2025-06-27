@@ -20,7 +20,18 @@ OctreeNode * loadRecursive(OctreeAllocator * allocator, int i, std::vector<Octre
 	OctreeNode * node = allocator->allocateOctreeNode(cube)->init(vertex);
 	node->setSdf(serialized.sdf);
 	node->setSolid(serialized.isSolid);
-	ChildBlock * block = node->createBlock(allocator);
+	node->setEmpty(serialized.isEmpty);
+	node->setSimplified(serialized.isSimplified);
+	node->setSimplification(serialized.simplification);
+	bool isLeaf = true;
+	for(int j=0; j < 8; ++j) {
+		if(serialized.children[j] != 0) {
+			isLeaf = false;
+			break;
+		}
+	}
+	node->setDirty(true);
+	ChildBlock * block = isLeaf ? NULL : node->createBlock(allocator);
 	if(cube.getLengthX() > chunkSize) {
 		for(int j=0 ; j <8 ; ++j){
 			int index = serialized.children[j];
@@ -83,9 +94,11 @@ uint saveRecursive(OctreeAllocator * allocator, OctreeNode * node, std::vector<O
 		n->normal = node->vertex.normal;
 		n->brushIndex = node->vertex.brushIndex;
 		n->isSolid = node->isSolid();
-		for(int i=0; i < 8; ++i) {
-			n->sdf[i] = node->sdf[i];
-		}
+		n->isEmpty = node->isEmpty();
+		n->isSimplified = node->isSimplified();
+		n->simplification = node->getSimplification();
+		SDF::copySDF(node->sdf, n->sdf);
+
 		uint index = nodes->size(); 
 		nodes->push_back(n);
 

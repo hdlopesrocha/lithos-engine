@@ -38,8 +38,6 @@ void Simplifier::simplify(BoundingCube chunkCube, const OctreeNodeData &params){
 			return;
 		}
 
-		glm::vec3 sumP = glm::vec3(0);
-		glm::vec3 sumN = glm::vec3(0);
 		//uint mask = 0xff;
 		int nodeCount=0;
 
@@ -47,7 +45,7 @@ void Simplifier::simplify(BoundingCube chunkCube, const OctreeNodeData &params){
 		// for leaf nodes shouldn't loop
 		for(int i=0; i < 8 ; ++i) {
 			OctreeNode * node = params.node->getChildNode(i, params.allocator, block);
-			if(node!=NULL && !node->isSolid()) {
+			if(node!=NULL && !node->isSolid() && !node->isEmpty()) {
 				if(!node->isSimplified()) {
 					return;	
 				}
@@ -64,15 +62,6 @@ void Simplifier::simplify(BoundingCube chunkCube, const OctreeNodeData &params){
 				if(a < angle) {
 					return;
 				}
-				/*
-				if(mask != 0xff && mask != node->getMask()) {
-					return;
-				}
-				
-				mask = node->getMask();
-				*/
-				sumP += node->vertex.position;
-				sumN += node->vertex.normal;
 				
 				++nodeCount;
 			}
@@ -81,10 +70,6 @@ void Simplifier::simplify(BoundingCube chunkCube, const OctreeNodeData &params){
 
 		if(nodeCount > 0) {	
 			parent->setSimplified(true);
-			parentVertex->position = sumP / (float)nodeCount;
-			parentVertex->normal = sumN / (float)nodeCount;
-			//parent->setMask(mask);
-			parent->setSolid(false);
 		}
 	}
 	return;
