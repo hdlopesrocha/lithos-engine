@@ -1,10 +1,8 @@
 #ifndef TOOLS_HPP
 #define TOOLS_HPP
 
-#define TYPE_INSTANCE_VEGETATION_DRAWABLE 0x1
-#define TYPE_INSTANCE_SOLID_DRAWABLE 0x2
-#define TYPE_INSTANCE_LIQUID_DRAWABLE 0x4
-#define TYPE_INSTANCE_OCTREE_DRAWABLE 0x8
+#define TYPE_INSTANCE_AMOUNT_DRAWABLE 0x1
+#define TYPE_INSTANCE_FULL_DRAWABLE 0x2
 
 #include "../gl/gl.hpp"
 #include "../space/space.hpp"
@@ -147,30 +145,39 @@ class Scene {
     public: 
 	Octree * solidSpace;
 	Octree * liquidSpace;
+	Octree * brushSpace;
 
+	long brushTrianglesCount;
 	long solidTrianglesCount;
 	long liquidTrianglesCount;
+
+	long brushInstancesVisible;
 	long solidInstancesVisible;
 	long liquidInstancesVisible;
 	long vegetationInstancesVisible;
+	long debugInstancesVisible;
 
 	std::vector<OctreeNodeData> visibleSolidNodes;
+	std::vector<OctreeNodeData> visibleBrushNodes;
 	std::vector<OctreeNodeData> visibleLiquidNodes;
 	std::vector<OctreeNodeData> visibleShadowNodes[SHADOW_MATRIX_COUNT];
 	Settings * settings;
 
 	Simplifier simplifier;
+	MeshGeometryBuilder * brushBuilder;
 	MeshGeometryBuilder * solidBuilder;
 	MeshGeometryBuilder * liquidBuilder;
 	VegetationGeometryBuilder * vegetationBuilder;
 	OctreeGeometryBuilder * debugBuilder;
 
 	std::unordered_map<long, NodeInfo<InstanceData>> solidInfo;
+	std::unordered_map<long, NodeInfo<InstanceData>> brushInfo;
 	std::unordered_map<long, NodeInfo<InstanceData>> liquidInfo;
 	std::unordered_map<long, NodeInfo<DebugInstanceData>> debugInfo;
 	std::unordered_map<long, NodeInfo<InstanceData>> vegetationInfo;
 
 	OctreeVisibilityChecker * solidRenderer;
+	OctreeVisibilityChecker * brushRenderer;
 	OctreeVisibilityChecker * liquidRenderer;
 	OctreeVisibilityChecker * shadowRenderer[SHADOW_MATRIX_COUNT];
 
@@ -183,11 +190,13 @@ class Scene {
 	void setVisibility(glm::mat4 viewProjection, std::vector<std::pair<glm::mat4, glm::vec3>> lightProjection ,Camera &camera);
 	void setVisibleNodes(Octree * tree, glm::mat4 viewProjection, glm::vec3 sortPosition, OctreeVisibilityChecker &checker);
 
-	void draw (uint drawableType, int mode, glm::vec3 cameraPosition, const std::vector<OctreeNodeData> &list);
+	template <typename T, typename H> void draw (uint drawableType, int mode, glm::vec3 cameraPosition, const std::vector<OctreeNodeData> &list, std::unordered_map<long, NodeInfo<T>> * info,long * count);
 	void drawVegetation(glm::vec3 cameraPosition, const std::vector<OctreeNodeData> &list);
 	void draw3dSolid(glm::vec3 cameraPosition, const std::vector<OctreeNodeData> &list) ;
 	void draw3dLiquid(glm::vec3 cameraPosition, const std::vector<OctreeNodeData> &list);
 	void draw3dOctree(glm::vec3 cameraPosition, const std::vector<OctreeNodeData> &list);
+	void draw3dBrush(glm::vec3 cameraPosition, const std::vector<OctreeNodeData> &list);
+
 	void import(const std::string &filename, Camera &camera) ;
 	void generate(Camera &camera) ;
 	template <typename T> bool loadSpace(Octree * tree, OctreeNodeData &data, std::unordered_map<long, NodeInfo<T>> *infos, GeometryBuilder<T> * builder);
