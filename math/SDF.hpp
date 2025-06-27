@@ -41,6 +41,7 @@ public:
 
 	static float box(glm::vec3 p, const glm::vec3 len);
 	static float sphere(glm::vec3 p, const float r);
+    static float capsule(glm::vec3 p, glm::vec3 a, glm::vec3 b, float r );
 
     static glm::vec3 getPosition(float *sdf, const BoundingCube &cube);
     static glm::vec3 getNormal(float* sdf, const BoundingCube& cube);
@@ -69,6 +70,15 @@ class BoxDistanceFunction : public SignedDistanceFunction {
 	BoundingBox box;
 	public:
 	BoxDistanceFunction(BoundingBox box);
+	float distance(const glm::vec3 p) const override;
+};
+
+class CapsuleDistanceFunction : public SignedDistanceFunction {
+    glm::vec3 a;
+    glm::vec3 b;
+    float radius;
+    public:	
+	CapsuleDistanceFunction(glm::vec3 a, glm::vec3 b, float r);
 	float distance(const glm::vec3 p) const override;
 };
 

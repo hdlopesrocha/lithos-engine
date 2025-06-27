@@ -99,6 +99,12 @@ float SDF::box(glm::vec3 p, const glm::vec3 len) {
     return glm::length(glm::max(q, glm::vec3(0.0))) + glm::min(glm::max(q.x,glm::max(q.y,q.z)),0.0f);
 }
 
+float SDF::capsule(glm::vec3 p, glm::vec3 a, glm::vec3 b, float r ) {
+    glm::vec3 pa = p - a, ba = b - a;
+    float h = glm::clamp( glm::dot(pa,ba)/glm::dot(ba,ba), 0.0f, 1.0f );
+    return glm::length( pa - ba*h ) - r;
+}
+
 float SDF::sphere(glm::vec3 p, const float r) {
     return glm::length(p) - r;
 }
@@ -172,6 +178,16 @@ SphereDistanceFunction::SphereDistanceFunction(const BoundingSphere sphere): sph
 float SphereDistanceFunction::distance(const glm::vec3 p) const {
     glm::vec3 pos = p - sphere.center;
     return SDF::sphere(pos, sphere.radius);
+}
+
+CapsuleDistanceFunction::CapsuleDistanceFunction(glm::vec3 a, glm::vec3 b, float r) {
+    this->a = a;
+    this->b = b;
+    this->radius = r;
+}
+
+float CapsuleDistanceFunction::distance(const glm::vec3 p) const {
+    return SDF::capsule(p, a, b, radius);
 }
 
 HeightMapDistanceFunction::HeightMapDistanceFunction(const HeightMap &map):map(map) {

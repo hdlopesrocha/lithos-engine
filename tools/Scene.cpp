@@ -253,10 +253,12 @@ void Scene::generate(Camera &camera) {
 		solidSpace->del(SphereContainmentHandler(sphere2), SphereDistanceFunction(sphere), SimpleBrush(14), DirtyHandler(*this), minSize, simplifier);
 	}
 	
-	for(int i = 900 ; i < 3000 ; i+= minSize) {
-		BoundingSphere sphere = BoundingSphere(glm::vec3(0,500 - i/5, -i),200);
-		BoundingSphere sphere2 = BoundingSphere(sphere.center,sphere.radius + 2*minSize);
-		solidSpace->del(SphereContainmentHandler(sphere2), SphereDistanceFunction(sphere), SimpleBrush(4), DirtyHandler(*this), minSize, simplifier);
+ 	{
+		glm::vec3 a = glm::vec3(0,320, -900);
+		glm::vec3 b = glm::vec3(0,-100, -3000);
+		float r = 200.0f;
+		BoundingSphere sphere2 = BoundingSphere((a+b)*0.5f, glm::distance(a,b) + r + 2*minSize);
+		solidSpace->del(SphereContainmentHandler(sphere2), CapsuleDistanceFunction(a, b, r), SimpleBrush(4), DirtyHandler(*this), minSize, simplifier);
 	}
 	
 	{
