@@ -469,7 +469,7 @@ public:
 		uniformBlockViewer = new UniformBlockViewer(&viewerBlock);
 		atlasPainter = new AtlasPainter(&atlasParams, &atlasTextures, atlasDrawer, programAtlas, programTexture, 256,256, &billboardLayers);
 		atlasViewer = new AtlasViewer(&atlasTextures, atlasDrawer, programAtlas, programTexture, 256,256, &atlasLayers, programCopy);
-		brushEditor = new BrushEditor(brush3d, &camera, &brushes, program3d, programTexture, &textureLayers);
+		brushEditor = new BrushEditor(brush3d, &camera, &brushes, program3d, programTexture, &textureLayers, mainScene->brushSpace);
 		cameraEditor = new CameraEditor(&camera);
 		gamepadEditor = new GamepadEditor(gamepadTexture);
 		shadowMapViewer = new ShadowMapViewer(&shadowFrameBuffers, 512, 512);
@@ -547,13 +547,7 @@ public:
 		UniformBlockBrush * brush = &brushes[brush3d->index];
 		UniformBlockBrush::uniform(program3d, brush, "brushes", "brushTextures", brush3d->index, brush->textureIndex);	
 
-		glm::mat4 model = glm::scale(
-			glm::translate(  
-				glm::mat4(1.0f), 
-				brush3d->position
-			), 
-			brush3d->scale
-		);
+		glm::mat4 model = glm::mat4(1.0f);
 
 		uniformBlock.world = model;
 		uniformBlock.set(OVERRIDE_FLAG, true);
@@ -561,12 +555,8 @@ public:
 
 		UniformBlockBrush::uniform(program3d, brush, "overrideProps");
 		UniformBlock::uniform(0, &uniformBlock, sizeof(UniformBlock) , &data);
-		long count = 0;
-		if(brush3d->shape == BrushShape::SPHERE) {
-			brushSphere->draw(GL_PATCHES, &count);
-		}else {
-			brushBox->draw(GL_PATCHES, &count);
-		}
+		
+		//TODO: Draw the brush geometry
 	}
 
 	float processTime = 0;

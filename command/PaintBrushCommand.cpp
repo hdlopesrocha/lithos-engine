@@ -11,7 +11,7 @@ PaintBrushCommand::PaintBrushCommand(Brush3d &brush3d, Scene &scene) :
 void PaintBrushCommand::execute(const float &value) {
     std::unique_ptr<ContainmentHandler> handler;
     std::unique_ptr<SignedDistanceFunction> function;
-
+/*
     if(brush3d.shape == BrushShape::BOX) {
         BoundingBox box = BoundingBox(brush3d.position- brush3d.scale*0.5f, brush3d.position + brush3d.scale*0.5f);
         glm::vec3 shift = glm::vec3(brush3d.detail*2);
@@ -30,6 +30,6 @@ void PaintBrushCommand::execute(const float &value) {
     } else if(brush3d.mode == BrushMode::REMOVE) {
         octree.del(*handler, *function, SimpleBrush(brush3d.index), dirtyHandler, brush3d.detail, simplifier);
     }
-
+*/
 }
 

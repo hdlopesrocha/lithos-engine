@@ -12,3 +12,7 @@ float OctreeDifferenceFunction::distance(const glm::vec3 p) const {
         tree->getSdfAt(p)
     );
 }
+
+SdfType OctreeDifferenceFunction::getType() const {
+    return SdfType::OCTREE_DIFFERENCE;
+}

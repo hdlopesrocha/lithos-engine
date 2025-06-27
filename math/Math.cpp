@@ -287,12 +287,4 @@ const char* toString(BrushMode v)
     }
 }
 
-const char* toString(BrushShape v)
-{
-    switch (v)
-    {
-        case BrushShape::SPHERE:     return "Sphere";
-        case BrushShape::BOX:  return "Box";
-        default:      return "Unknown";
-    }
-}
+

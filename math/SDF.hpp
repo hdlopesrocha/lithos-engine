@@ -3,6 +3,17 @@
 
 #include <glm/glm.hpp>
 #include "math.hpp"
+
+#define SDF_TYPE_SPHERE 0
+#define SDF_TYPE_BOX 1
+#define SDF_TYPE_CAPSULE 2
+#define SDF_TYPE_HEIGHTMAP 3
+
+enum SdfType {
+    SPHERE, BOX, CAPSULE, HEIGHTMAP, OCTREE_DIFFERENCE};
+const char* toString(SdfType t);
+
+
 //      6-----7
 //     /|    /|
 //    4z+---5 |
@@ -54,32 +65,42 @@ public:
 };
 
 
+
 class SignedDistanceFunction {
     public:
+    virtual SdfType getType() const = 0; 
 	virtual float distance(const glm::vec3 p) const = 0;
 };
 
 class SphereDistanceFunction : public SignedDistanceFunction {
-	BoundingSphere sphere;
-	public:	
-	SphereDistanceFunction(BoundingSphere sphere);
+    public:
+    glm::vec3 position;
+    float radius;	
+
+	SphereDistanceFunction(glm::vec3 pos, float radius);
 	float distance(const glm::vec3 p) const override;
+    SdfType getType() const override; 
 };
 
 class BoxDistanceFunction : public SignedDistanceFunction {
-	BoundingBox box;
-	public:
-	BoxDistanceFunction(BoundingBox box);
+    public:
+    glm::vec3 position;
+    glm::vec3 length;
+
+	BoxDistanceFunction(glm::vec3 pos, glm::vec3 len);
 	float distance(const glm::vec3 p) const override;
+    SdfType getType() const override; 
 };
 
 class CapsuleDistanceFunction : public SignedDistanceFunction {
+    public:	
     glm::vec3 a;
     glm::vec3 b;
     float radius;
-    public:	
-	CapsuleDistanceFunction(glm::vec3 a, glm::vec3 b, float r);
+
+    CapsuleDistanceFunction(glm::vec3 a, glm::vec3 b, float r);
 	float distance(const glm::vec3 p) const override;
+    SdfType getType() const override; 
 };
 
 class HeightMapDistanceFunction : public SignedDistanceFunction {
@@ -87,6 +108,7 @@ class HeightMapDistanceFunction : public SignedDistanceFunction {
 	public:
 	HeightMapDistanceFunction(const HeightMap &map);
 	float distance(const glm::vec3 p) const override;
+    SdfType getType() const override; 
 };
 
 #endif

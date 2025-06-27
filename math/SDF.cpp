@@ -163,21 +163,28 @@ void SDF::copySDF(float * src, float * dst) {
     }
 }
 
-BoxDistanceFunction::BoxDistanceFunction(const BoundingBox box): box(box) {
+BoxDistanceFunction::BoxDistanceFunction(glm::vec3 pos, glm::vec3 len): position(pos), length(len) {
+
 }
 
 float BoxDistanceFunction::distance(const glm::vec3 p) const {
-    glm::vec3 len = box.getLength()*0.5f;
-    glm::vec3 pos = p - box.getCenter();
-    return SDF::box(pos, len);
+    return SDF::box(position, length);
 }
 
-SphereDistanceFunction::SphereDistanceFunction(const BoundingSphere sphere): sphere(sphere) {
+SdfType BoxDistanceFunction::getType() const {
+    return SdfType::BOX;
+}
+
+SphereDistanceFunction::SphereDistanceFunction(glm::vec3 pos, float radius): position(pos), radius(radius) {
+    
 }
 
 float SphereDistanceFunction::distance(const glm::vec3 p) const {
-    glm::vec3 pos = p - sphere.center;
-    return SDF::sphere(pos, sphere.radius);
+    return SDF::sphere(position, radius);
+}
+
+SdfType SphereDistanceFunction::getType() const {
+    return SdfType::SPHERE;
 }
 
 CapsuleDistanceFunction::CapsuleDistanceFunction(glm::vec3 a, glm::vec3 b, float r) {
@@ -188,6 +195,10 @@ CapsuleDistanceFunction::CapsuleDistanceFunction(glm::vec3 a, glm::vec3 b, float
 
 float CapsuleDistanceFunction::distance(const glm::vec3 p) const {
     return SDF::capsule(p, a, b, radius);
+}
+
+SdfType CapsuleDistanceFunction::getType() const {
+    return SdfType::CAPSULE;
 }
 
 HeightMapDistanceFunction::HeightMapDistanceFunction(const HeightMap &map):map(map) {
@@ -204,6 +215,10 @@ float HeightMapDistanceFunction::distance(const glm::vec3 p) const {
     );
 }
 
+SdfType HeightMapDistanceFunction::getType() const {
+    return SdfType::HEIGHTMAP; 
+}
+
 SpaceType SDF::eval(float * sdf) {
     bool hasPositive = false;
     bool hasNegative = false;
@@ -217,3 +232,15 @@ SpaceType SDF::eval(float * sdf) {
     return hasNegative && hasPositive ? SpaceType::Surface : (hasPositive ? SpaceType::Empty : SpaceType::Solid);
 }
 
+const char* toString(SdfType t)
+{
+    switch (t)
+    {
+        case SdfType::SPHERE: return "Sphere";
+        case SdfType::BOX: return "Box";
+        case SdfType::CAPSULE: return "Capsule";
+        case SdfType::HEIGHTMAP: return "Height Map";
+        case SdfType::OCTREE_DIFFERENCE: return "Octree Difference";
+        default: return "Unknown";
+    }
+}

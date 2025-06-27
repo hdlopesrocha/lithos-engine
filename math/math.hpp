@@ -511,20 +511,12 @@ enum BrushMode {
     ADD, REMOVE, REPLACE, BrushMode_COUNT
 };
 
-enum BrushShape {
-    SPHERE, BOX, BrushShape_COUNT
-};
-
 const char* toString(BrushMode v);
-const char* toString(BrushShape v);
 
 class Brush3d {
 	public:
 		BrushMode mode;
-		BrushShape shape; 
 		int index = 0;
-		glm::vec3 position;
-		glm::vec3 scale;
 		float detail;
 		float translationSensitivity;
 		bool enabled;

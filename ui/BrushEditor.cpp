@@ -1,12 +1,18 @@
 #include "ui.hpp"
 
 
-BrushEditor::BrushEditor( Brush3d * brush, Camera * camera, std::vector<UniformBlockBrush> * brushes, GLuint program, GLuint previewProgram, TextureLayers * layers) {
+BrushEditor::BrushEditor( Brush3d * brush, Camera * camera, std::vector<UniformBlockBrush> * brushes, GLuint program, GLuint previewProgram, TextureLayers * layers, Octree * brushSpace) {
     this->program = program;
     this->camera = camera;
     this->brush = brush;
+    this->brushSpace = brushSpace;
     this->brushes = brushes;
     this->previewer = new TexturePreviewer(previewProgram, 256, 256, {"Color", "Normal", "Bump" }, layers);
+
+    functions.push_back(new SphereDistanceFunction(glm::vec3(0), 1.0f));
+    functions.push_back(new BoxDistanceFunction(glm::vec3(0), glm::vec3(1.0f)));
+    functions.push_back(new CapsuleDistanceFunction(glm::vec3(0, 0, 0), glm::vec3(1, 1, 1), 1.0f));
+    selectedFunction = functions[0];
 }
 
 
@@ -56,21 +62,63 @@ void BrushEditor::draw2d(float time){
 
     ImGui::Text("Shape: ");
 
-    for (int i = 0; i < BrushShape::BrushShape_COUNT; ++i) {
-        BrushShape bs = BrushShape(i);
-        std::string label = std::string(toString(bs));
-        if(ImGui::RadioButton(label.c_str(), brush->shape == bs)){
-            brush->shape = bs;
+    if (ImGui::BeginCombo("##selectedFunction", toString(selectedFunction->getType()))) {
+        
+        for (SignedDistanceFunction * function : functions) {
+            SdfType bs = function->getType();
+            std::string label = std::string(toString(bs));
+       
+            if (ImGui::Selectable(label.c_str(), function == selectedFunction)) {
+                selectedFunction = function;
+            }
+            if (function == selectedFunction) {
+                ImGui::SetItemDefaultFocus(); // Highlight selected item
+            }
+       
+       
         }
+        
+
+        ImGui::EndCombo();
     }
+    
+
+
+
     ImGui::Text("Detail: ");
     ImGui::InputFloat("m##brushDetail", &brush->detail);
 
-    ImGui::Text("Position: ");
-    ImGui::InputFloat3("m##brushPosition", &brush->position[0]);
+    switch (selectedFunction->getType())
+    {
+        case SdfType::SPHERE:
+            ImGui::Text("Sphere Radius: ");
+            ImGui::InputFloat("m##sphereRadius", &((SphereDistanceFunction*)selectedFunction)->radius);
+            ImGui::Text("Sphere Position: ");
+            ImGui::InputFloat3("m##spherePosition", &((SphereDistanceFunction*)selectedFunction)->position[0]);
+            break;  
+        case SdfType::BOX:
+            ImGui::Text("Box Length: ");
+            ImGui::InputFloat3("m##boxLength", &((BoxDistanceFunction*)selectedFunction)->length[0]);
+            ImGui::Text("Box Position: "); 
+            ImGui::InputFloat3("m##boxPosition", &((BoxDistanceFunction*)selectedFunction)->position[0]);
+            break;
+        case SdfType::CAPSULE:
+            ImGui::Text("Capsule Radius: ");
+            ImGui::InputFloat("m##capsuleRadius", &((CapsuleDistanceFunction*)selectedFunction)->radius);
+            ImGui::Text("Capsule A: ");
+            ImGui::InputFloat3("m##capsuleA", &((CapsuleDistanceFunction*)selectedFunction)->a[0]);
+            ImGui::Text("Capsule B: ");
+            ImGui::InputFloat3("m##capsuleB", &((CapsuleDistanceFunction*)selectedFunction)->b[0]);
+            break;
+        /* code */
+        break;
     
-    ImGui::Text("Scale: ");
-    ImGui::InputFloat3("m##brushScale", &brush->scale[0]);
+    default:
+        break;
+    }
+
+
+    ImGui::Separator();
 
     ImGui::Text("Texture Scale: ");
     ImGui::InputFloat2("\%##textureScale", &uniformBrush->textureScale[0]);
@@ -97,6 +145,10 @@ void BrushEditor::draw2d(float time){
     ImGui::InputFloat("\%##shininess", &uniformBrush->shininess);
 
     ImGui::End();
+
+    brushSpace->root->clear(&brushSpace->allocator, *brushSpace);
+
+
 }
 
 

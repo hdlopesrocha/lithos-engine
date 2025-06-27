@@ -280,5 +280,6 @@ class OctreeDifferenceFunction : public SignedDistanceFunction {
     public:
     OctreeDifferenceFunction(Octree * tree, BoundingBox box);
     float distance(const glm::vec3 p) const override;
+	SdfType getType() const override;
 };
 #endif

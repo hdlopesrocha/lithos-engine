@@ -9,6 +9,7 @@ void TranslateBrushCommand::execute(const glm::vec3 &value) {
     glm::vec3 yAxis = glm::vec3(0.0f, 1.0f, 0.0f)*camera.quaternion;
     glm::vec3 zAxis = glm::vec3(0.0f, 0.0f, -1.0f)*camera.quaternion;
 
-    brush3d.position += brush3d.translationSensitivity*(value.x*xAxis + value.y*yAxis + value.z * zAxis );
+    //TODO: fix command
+    //brush3d.position += brush3d.translationSensitivity*(value.x*xAxis + value.y*yAxis + value.z * zAxis );
 }
 
