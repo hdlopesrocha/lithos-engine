@@ -80,7 +80,7 @@ void BrushEditor::draw2d(float time){
     }
     
     ImGui::Text("Detail: ");
-    if(ImGui::InputFloat("m##brushDetail", &brush->detail)) {
+    if(ImGui::InputFloat("m##brushDetail", &brushContext->detail)) {
         changed = true; 
     }
 
@@ -130,9 +130,9 @@ void BrushEditor::draw2d(float time){
     if(changed) {
         brushSpace->root->clear(&brushSpace->allocator, *brushSpace);
         if(brush->mode == BrushMode::ADD) {
-            brushSpace->add(SphereContainmentHandler(brushContext->boundingVolume), *(brushContext->currentFunction), SimpleBrush(brush->index), brush->detail, *(brushContext->simplifier));
+            brushSpace->add(SphereContainmentHandler(brushContext->boundingVolume), *(brushContext->currentFunction), SimpleBrush(brush->index), brushContext->detail, *(brushContext->simplifier));
         } else if(brush->mode == BrushMode::REMOVE) {
-            brushSpace->del(SphereContainmentHandler(brushContext->boundingVolume), *(brushContext->currentFunction), SimpleBrush(brush->index), brush->detail, *(brushContext->simplifier));
+            brushSpace->del(SphereContainmentHandler(brushContext->boundingVolume), *(brushContext->currentFunction), SimpleBrush(brush->index), brushContext->detail, *(brushContext->simplifier));
         }
     }
 

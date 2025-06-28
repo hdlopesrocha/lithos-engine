@@ -517,7 +517,6 @@ class Brush3d {
 	public:
 		BrushMode mode;
 		int index = 0;
-		float detail;
 		float translationSensitivity;
 		bool enabled;
 

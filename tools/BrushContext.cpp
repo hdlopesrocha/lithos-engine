@@ -8,4 +8,5 @@ BrushContext::BrushContext() {
     this->functions.push_back(new BoxDistanceFunction(glm::vec3(0), glm::vec3(1.0f)));
     this->functions.push_back(new CapsuleDistanceFunction(glm::vec3(0, 0, 0), glm::vec3(1, 1, 1), 1.0f));
     this->currentFunction = this->functions[0];
-}   
+    this->detail = 1.0f;
+}

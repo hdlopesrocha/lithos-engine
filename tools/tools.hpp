@@ -277,6 +277,7 @@ class BrushContext {
 	SignedDistanceFunction * currentFunction;
 	BoundingSphere boundingVolume;
 	Simplifier * simplifier;
+	float detail;
 
 	BrushContext();
 

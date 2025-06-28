@@ -5,7 +5,6 @@ Brush3d::Brush3d() {
     this->index = 0;
    	this->translationSensitivity = 32.0f;
     this->enabled =true;
-    this->detail = 1.0;
 }
 
 void Brush3d::reset(Camera * camera) {
