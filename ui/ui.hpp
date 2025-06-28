@@ -99,13 +99,10 @@ class BrushEditor: public Closable {
     Octree * brushSpace;
     Camera * camera;
     TexturePreviewer * previewer;
-    std::vector<SignedDistanceFunction *> functions;
-    SignedDistanceFunction * selectedFunction = NULL;
-    Simplifier * simplifier;
-    BoundingSphere boundingVolume;
+    BrushContext * brushContext;
 
     public:
-    BrushEditor(Brush3d * brush, Camera * camera, std::vector<UniformBlockBrush> * brushes, GLuint program3d, GLuint previewProgram, TextureLayers * layers, Octree * brushSpace);
+    BrushEditor(Brush3d * brush, Camera * camera, std::vector<UniformBlockBrush> * brushes, GLuint program3d, GLuint previewProgram, TextureLayers * layers, Octree * brushSpace, BrushContext * brushContext);
     void draw2d(float time) override;
     int getSelectedBrush();
     void resetPosition();

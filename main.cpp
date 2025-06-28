@@ -65,7 +65,7 @@ class MainApplication : public LithosApplication {
 
 	// UI
 	UniformBlockViewer * uniformBlockViewer;
-
+	BrushContext * brushContext;
 	BrushEditor * brushEditor;
 	AtlasPainter * atlasPainter;
 	AtlasViewer * atlasViewer;
@@ -466,10 +466,12 @@ public:
         light.direction = glm::normalize(glm::vec3(-1.0,-1.0,-1.0));
 		glUseProgram(0);
 		//tesselator->normalize();
+
+		brushContext = new BrushContext();
 		uniformBlockViewer = new UniformBlockViewer(&viewerBlock);
 		atlasPainter = new AtlasPainter(&atlasParams, &atlasTextures, atlasDrawer, programAtlas, programTexture, 256,256, &billboardLayers);
 		atlasViewer = new AtlasViewer(&atlasTextures, atlasDrawer, programAtlas, programTexture, 256,256, &atlasLayers, programCopy);
-		brushEditor = new BrushEditor(brush3d, &camera, &brushes, program3d, programTexture, &textureLayers, mainScene->brushSpace);
+		brushEditor = new BrushEditor(brush3d, &camera, &brushes, program3d, programTexture, &textureLayers, mainScene->brushSpace, brushContext);
 		cameraEditor = new CameraEditor(&camera);
 		gamepadEditor = new GamepadEditor(gamepadTexture);
 		shadowMapViewer = new ShadowMapViewer(&shadowFrameBuffers, 512, 512);

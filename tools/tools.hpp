@@ -270,4 +270,16 @@ class OctreeDifferenceFunction : public SignedDistanceFunction {
     float distance(const glm::vec3 p) const override;
 	SdfType getType() const override;
 };
+
+class BrushContext {
+	public:
+	std::vector<SignedDistanceFunction*> functions;
+	SignedDistanceFunction * currentFunction;
+	BoundingSphere boundingVolume;
+	Simplifier * simplifier;
+
+	BrushContext();
+
+};
+
 #endif

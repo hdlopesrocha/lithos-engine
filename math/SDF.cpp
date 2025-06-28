@@ -163,24 +163,24 @@ void SDF::copySDF(float * src, float * dst) {
     }
 }
 
-BoxDistanceFunction::BoxDistanceFunction(glm::vec3 pos, glm::vec3 len): position(pos), length(len) {
+BoxDistanceFunction::BoxDistanceFunction(glm::vec3 pos, glm::vec3 len): center(pos), length(len) {
 
 }
 
 float BoxDistanceFunction::distance(const glm::vec3 p) const {
-    return SDF::box(position, length);
+    return SDF::box(p - center, length);
 }
 
 SdfType BoxDistanceFunction::getType() const {
     return SdfType::BOX;
 }
 
-SphereDistanceFunction::SphereDistanceFunction(glm::vec3 pos, float radius): position(pos), radius(radius) {
+SphereDistanceFunction::SphereDistanceFunction(glm::vec3 pos, float radius): center(pos), radius(radius) {
     
 }
 
 float SphereDistanceFunction::distance(const glm::vec3 p) const {
-    return SDF::sphere(position, radius);
+    return SDF::sphere(p - center, radius);
 }
 
 SdfType SphereDistanceFunction::getType() const {

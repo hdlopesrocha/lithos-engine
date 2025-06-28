@@ -1,20 +1,14 @@
 #include "ui.hpp"
 
 
-BrushEditor::BrushEditor( Brush3d * brush, Camera * camera, std::vector<UniformBlockBrush> * brushes, GLuint program, GLuint previewProgram, TextureLayers * layers, Octree * brushSpace) {
+BrushEditor::BrushEditor( Brush3d * brush, Camera * camera, std::vector<UniformBlockBrush> * brushes, GLuint program, GLuint previewProgram, TextureLayers * layers, Octree * brushSpace, BrushContext * brushContext) {
     this->program = program;
     this->camera = camera;
     this->brush = brush;
     this->brushSpace = brushSpace;
     this->brushes = brushes;
+    this->brushContext = brushContext;
     this->previewer = new TexturePreviewer(previewProgram, 256, 256, {"Color", "Normal", "Bump" }, layers);
-    this->simplifier = new Simplifier(0.99f, 0.01f, true);
-    this->boundingVolume = BoundingSphere(glm::vec3(0), 3.0f);
-
-    functions.push_back(new SphereDistanceFunction(glm::vec3(0), 1.0f));
-    functions.push_back(new BoxDistanceFunction(glm::vec3(0), glm::vec3(1.0f)));
-    functions.push_back(new CapsuleDistanceFunction(glm::vec3(0, 0, 0), glm::vec3(1, 1, 1), 1.0f));
-    selectedFunction = functions[0];
 }
 
 
@@ -66,21 +60,19 @@ void BrushEditor::draw2d(float time){
 
     ImGui::Text("Shape: ");
 
-    if (ImGui::BeginCombo("##selectedFunction", toString(selectedFunction->getType()))) {
+    if (ImGui::BeginCombo("##selectedFunction", toString(brushContext->currentFunction->getType()))) {
         
-        for (SignedDistanceFunction * function : functions) {
+        for (SignedDistanceFunction * function : brushContext->functions) {
             SdfType bs = function->getType();
             std::string label = std::string(toString(bs));
        
-            if (ImGui::Selectable(label.c_str(), function == selectedFunction)) {
-                selectedFunction = function;
+            if (ImGui::Selectable(label.c_str(), function == brushContext->currentFunction)) {
+                brushContext->currentFunction = function;
                 changed = true; 
             }
-            if (function == selectedFunction) {
+            if (function == brushContext->currentFunction) {
                 ImGui::SetItemDefaultFocus(); // Highlight selected item
             }
-       
-       
         }
         
 
@@ -92,39 +84,39 @@ void BrushEditor::draw2d(float time){
         changed = true; 
     }
 
-    switch (selectedFunction->getType())
+    switch (brushContext->currentFunction->getType())
     {
         case SdfType::SPHERE:
             ImGui::Text("Sphere Radius: ");
-            if(ImGui::InputFloat("m##sphereRadius", &((SphereDistanceFunction*)selectedFunction)->radius)) {
+            if(ImGui::InputFloat("m##sphereRadius", &((SphereDistanceFunction*)brushContext->currentFunction)->radius)) {
                 changed = true; 
             }
             ImGui::Text("Sphere Position: ");
-            if(ImGui::InputFloat3("m##spherePosition", &((SphereDistanceFunction*)selectedFunction)->position[0])) {
+            if(ImGui::InputFloat3("m##spherePosition", &((SphereDistanceFunction*)brushContext->currentFunction)->center[0])) {
                 changed = true; 
             }
             break;  
         case SdfType::BOX:
             ImGui::Text("Box Length: ");
-            if(ImGui::InputFloat3("m##boxLength", &((BoxDistanceFunction*)selectedFunction)->length[0])) {
+            if(ImGui::InputFloat3("m##boxLength", &((BoxDistanceFunction*)brushContext->currentFunction)->length[0])) {
                 changed = true; 
             }
             ImGui::Text("Box Position: "); 
-            if(ImGui::InputFloat3("m##boxPosition", &((BoxDistanceFunction*)selectedFunction)->position[0])) {
+            if(ImGui::InputFloat3("m##boxPosition", &((BoxDistanceFunction*)brushContext->currentFunction)->center[0])) {
                 changed = true; 
             }
             break;
         case SdfType::CAPSULE:
             ImGui::Text("Capsule Radius: ");
-            if(ImGui::InputFloat("m##capsuleRadius", &((CapsuleDistanceFunction*)selectedFunction)->radius)) {
+            if(ImGui::InputFloat("m##capsuleRadius", &((CapsuleDistanceFunction*)brushContext->currentFunction)->radius)) {
                 changed = true; 
             }
             ImGui::Text("Capsule A: ");
-            if(ImGui::InputFloat3("m##capsuleA", &((CapsuleDistanceFunction*)selectedFunction)->a[0])) {
+            if(ImGui::InputFloat3("m##capsuleA", &((CapsuleDistanceFunction*)brushContext->currentFunction)->a[0])) {
                 changed = true; 
             }
             ImGui::Text("Capsule B: ");
-            if(ImGui::InputFloat3("m##capsuleB", &((CapsuleDistanceFunction*)selectedFunction)->b[0])) {
+            if(ImGui::InputFloat3("m##capsuleB", &((CapsuleDistanceFunction*)brushContext->currentFunction)->b[0])) {
                 changed = true; 
             }
             break;
@@ -138,9 +130,9 @@ void BrushEditor::draw2d(float time){
     if(changed) {
         brushSpace->root->clear(&brushSpace->allocator, *brushSpace);
         if(brush->mode == BrushMode::ADD) {
-            brushSpace->add(SphereContainmentHandler(boundingVolume), *selectedFunction, SimpleBrush(brush->index), brush->detail, *simplifier);
+            brushSpace->add(SphereContainmentHandler(brushContext->boundingVolume), *(brushContext->currentFunction), SimpleBrush(brush->index), brush->detail, *(brushContext->simplifier));
         } else if(brush->mode == BrushMode::REMOVE) {
-            brushSpace->del(SphereContainmentHandler(boundingVolume), *selectedFunction, SimpleBrush(brush->index), brush->detail, *simplifier);
+            brushSpace->del(SphereContainmentHandler(brushContext->boundingVolume), *(brushContext->currentFunction), SimpleBrush(brush->index), brush->detail, *(brushContext->simplifier));
         }
     }
 

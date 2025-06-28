@@ -74,7 +74,7 @@ class SignedDistanceFunction {
 
 class SphereDistanceFunction : public SignedDistanceFunction {
     public:
-    glm::vec3 position;
+    glm::vec3 center;
     float radius;	
 
 	SphereDistanceFunction(glm::vec3 pos, float radius);
@@ -84,7 +84,7 @@ class SphereDistanceFunction : public SignedDistanceFunction {
 
 class BoxDistanceFunction : public SignedDistanceFunction {
     public:
-    glm::vec3 position;
+    glm::vec3 center;
     glm::vec3 length;
 
 	BoxDistanceFunction(glm::vec3 pos, glm::vec3 len);
