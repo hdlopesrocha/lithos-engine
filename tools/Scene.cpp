@@ -216,20 +216,20 @@ void Scene::generate(Camera &camera) {
 	int tiles= 256;
 	int height = 2048;
 	float minSize = 30;
-
+	
 	{
 		BoundingBox box = BoundingBox(glm::vec3(1500,0,0),glm::vec3(1500+256,256,256));
-		solidSpace->add(BoxContainmentHandler(box), BoxDistanceFunction(box.getCenter(), box.getLength()*0.5f), SimpleBrush(4), DirtyHandler(*this), 2.0, simplifier);
+		solidSpace->add(BoxContainmentHandler(box), BoxDistanceFunction(box.getCenter(), box.getLength()*0.5f), SimpleBrush(4), 2.0, simplifier);
 	}
 
 	{
 		BoundingBox box = BoundingBox(glm::vec3(2000,0,0),glm::vec3(2000+256,256,256));
-		solidSpace->add(BoxContainmentHandler(box), BoxDistanceFunction(box.getCenter(), box.getLength()*0.5f), SimpleBrush(4), DirtyHandler(*this), minSize, simplifier);
+		solidSpace->add(BoxContainmentHandler(box), BoxDistanceFunction(box.getCenter(), box.getLength()*0.5f), SimpleBrush(4), minSize, simplifier);
 	}
 
 	{
 		BoundingBox box = BoundingBox(glm::vec3(2500,0,0),glm::vec3(2500+256,256,256));
-		solidSpace->add(BoxContainmentHandler(box), BoxDistanceFunction(box.getCenter(), box.getLength()*0.5f), SimpleBrush(4), DirtyHandler(*this), minSize*2, simplifier);
+		solidSpace->add(BoxContainmentHandler(box), BoxDistanceFunction(box.getCenter(), box.getLength()*0.5f), SimpleBrush(4), minSize*2, simplifier);
 	}
 	BoundingBox mapBox = BoundingBox(glm::vec3(-sizePerTile*tiles*0.5,-height*0.5,-sizePerTile*tiles*0.5), glm::vec3(sizePerTile*tiles*0.5,height*0.5,sizePerTile*tiles*0.5));
 	camera.position.x = mapBox.getCenter().x;
@@ -241,12 +241,12 @@ void Scene::generate(Camera &camera) {
 	CachedHeightMapSurface cache = CachedHeightMapSurface(heightFunction, mapBox, sizePerTile);
 	HeightMap heightMap = HeightMap(cache, mapBox, sizePerTile);
 
-	solidSpace->add(BoxContainmentHandler(heightMap), HeightMapDistanceFunction(heightMap), LandBrush(), DirtyHandler(*this), minSize, simplifier);
+	solidSpace->add(BoxContainmentHandler(heightMap), HeightMapDistanceFunction(heightMap), LandBrush(), minSize, simplifier);
 
 	{
 		BoundingSphere sphere = BoundingSphere(glm::vec3(0,768,0),1024);
 		BoundingSphere sphere2 = BoundingSphere(sphere.center, sphere.radius + 2*minSize);
-		solidSpace->del(SphereContainmentHandler(sphere2), SphereDistanceFunction(sphere.center, sphere.radius), SimpleBrush(14), DirtyHandler(*this), minSize, simplifier);
+		solidSpace->del(SphereContainmentHandler(sphere2), SphereDistanceFunction(sphere.center, sphere.radius), SimpleBrush(14), minSize, simplifier);
 	}
 	
  	{
@@ -254,22 +254,22 @@ void Scene::generate(Camera &camera) {
 		glm::vec3 b = glm::vec3(0,-100, -3000);
 		float r = 200.0f;
 		BoundingSphere sphere2 = BoundingSphere((a+b)*0.5f, glm::distance(a,b) + r + 2*minSize);
-		solidSpace->del(SphereContainmentHandler(sphere2), CapsuleDistanceFunction(a, b, r), SimpleBrush(4), DirtyHandler(*this), minSize, simplifier);
+		solidSpace->del(SphereContainmentHandler(sphere2), CapsuleDistanceFunction(a, b, r), SimpleBrush(4), minSize, simplifier);
 	}
 	
 	{
 		BoundingBox box = BoundingBox(glm::vec3(1500,0,500),glm::vec3(1500+256,256,500+256));
-		solidSpace->add(BoxContainmentHandler(box), BoxDistanceFunction(box.getCenter(), box.getLength()*0.5f), SimpleBrush(4), DirtyHandler(*this), 2.0, simplifier);
+		solidSpace->add(BoxContainmentHandler(box), BoxDistanceFunction(box.getCenter(), box.getLength()*0.5f), SimpleBrush(4), 2.0, simplifier);
 	}
 
 	{
 		BoundingBox box = BoundingBox(glm::vec3(2000,0,500),glm::vec3(2000+256,256,500+256));
-		solidSpace->add(BoxContainmentHandler(box), BoxDistanceFunction(box.getCenter(), box.getLength()*0.5f), SimpleBrush(4), DirtyHandler(*this), minSize, simplifier);
+		solidSpace->add(BoxContainmentHandler(box), BoxDistanceFunction(box.getCenter(), box.getLength()*0.5f), SimpleBrush(4), minSize, simplifier);
 	}
 
 	{
 		BoundingBox box = BoundingBox(glm::vec3(2500,0,500),glm::vec3(2500+256,256,500+256));
-		solidSpace->add(BoxContainmentHandler(box), BoxDistanceFunction(box.getCenter(), box.getLength()*0.5f), SimpleBrush(4), DirtyHandler(*this), minSize*2, simplifier);
+		solidSpace->add(BoxContainmentHandler(box), BoxDistanceFunction(box.getCenter(), box.getLength()*0.5f), SimpleBrush(4), minSize*2, simplifier);
 	}
 	//solidSpace->add(BoxContainmentHandler(BoundingBox(glm::vec3(-20,-5,-20),glm::vec3(20,10,20)),SimpleBrush(8)), 1.0);
 	//solidSpace->del(BoxContainmentHandler(BoundingBox(glm::vec3(-17,-4,-17),glm::vec3(17,12,17)),SimpleBrush(6)), 1.0);
@@ -277,7 +277,7 @@ void Scene::generate(Camera &camera) {
 	
 	{
 		BoundingSphere sphere = BoundingSphere(glm::vec3(0,512,0),128);
-		solidSpace->add(SphereContainmentHandler(sphere), SphereDistanceFunction(sphere.center, sphere.radius), SimpleBrush(4), DirtyHandler(*this), 8.0, simplifier);
+		solidSpace->add(SphereContainmentHandler(sphere), SphereDistanceFunction(sphere.center, sphere.radius), SimpleBrush(4), 8.0, simplifier);
 	}
 	//solidSpace->add(SphereContainmentHandler(BoundingSphere(glm::vec3(-11,61,11),10), SimpleBrush(5)), 1.0);
 	//solidSpace->del(SphereContainmentHandler(BoundingSphere(glm::vec3(11,61,-11),10), SimpleBrush(4)), 1.0);
@@ -288,8 +288,8 @@ void Scene::generate(Camera &camera) {
 	waterBox.setMaxY(0);
 	glm::vec3 shift = glm::vec3(minSize*2);
 	BoundingBox waterBox2 = BoundingBox(waterBox.getMin() - shift, waterBox.getMax() + shift);
-	liquidSpace->add(BoxContainmentHandler(waterBox2), OctreeDifferenceFunction(solidSpace, waterBox), WaterBrush(0), DirtyHandler(*this), minSize, simplifier);
-	//liquidSpace->add(BoxContainmentHandler(waterBox), BoxDistanceFunction(waterBox), WaterBrush(0), DirtyHandler(*this), minSize, simplifier);
+	liquidSpace->add(BoxContainmentHandler(waterBox2), OctreeDifferenceFunction(solidSpace, waterBox), WaterBrush(0), minSize, simplifier);
+	//liquidSpace->add(BoxContainmentHandler(waterBox), BoxDistanceFunction(waterBox), WaterBrush(0), minSize, simplifier);
 }
 
 void Scene::import(const std::string &filename, Camera &camera) {
@@ -307,12 +307,12 @@ void Scene::import(const std::string &filename, Camera &camera) {
     CachedHeightMapSurface cache = CachedHeightMapSurface(heightFunction, mapBox, sizePerTile);
 	HeightMap heightMap = HeightMap(cache, mapBox, sizePerTile);
 
-	solidSpace->add(BoxContainmentHandler(heightMap), HeightMapDistanceFunction(heightMap), DerivativeLandBrush(), DirtyHandler(*this), minSize, simplifier);
+	solidSpace->add(BoxContainmentHandler(heightMap), HeightMapDistanceFunction(heightMap), DerivativeLandBrush(), minSize, simplifier);
 
 	BoundingBox waterBox = mapBox;
 	waterBox.setMaxY(0);
 	
-	//liquidSpace->add(OctreeContainmentHandler(solidSpace, waterBox, WaterBrush(0)), DirtyHandler(*this), minSize, simplifier);
+	//liquidSpace->add(OctreeContainmentHandler(solidSpace, waterBox, WaterBrush(0)),  minSize, simplifier);
 }
 
 void Scene::save(std::string folderPath, Camera &camera) {

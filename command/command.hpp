@@ -38,7 +38,6 @@ class TranslateBrushCommand : public ICommand<glm::vec3>{
 class PaintBrushCommand : public ICommand<float>{
     Brush3d &brush3d;
     Octree &octree;
-    DirtyHandler dirtyHandler;
     Simplifier simplifier;
     public:
     PaintBrushCommand(Brush3d &brush3d, Scene &scene);

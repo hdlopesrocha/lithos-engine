@@ -3,6 +3,7 @@
 
 #include <vector>
 #include "../gl/gl.hpp"
+#include "../tools/tools.hpp"
 
 class TexturePreviewer {
     RenderBuffer previewBuffer;
@@ -100,6 +101,9 @@ class BrushEditor: public Closable {
     TexturePreviewer * previewer;
     std::vector<SignedDistanceFunction *> functions;
     SignedDistanceFunction * selectedFunction = NULL;
+    Simplifier * simplifier;
+    BoundingSphere boundingVolume;
+
     public:
     BrushEditor(Brush3d * brush, Camera * camera, std::vector<UniformBlockBrush> * brushes, GLuint program3d, GLuint previewProgram, TextureLayers * layers, Octree * brushSpace);
     void draw2d(float time) override;

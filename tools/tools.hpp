@@ -206,18 +206,6 @@ class Scene {
 	void load(std::string folderPath, Camera &camera);
 };
 
-class DirtyHandler : public OctreeNodeDirtyHandler {
-	Scene &scene;
-	public:
-	DirtyHandler(Scene &scene) : scene(scene){
-
-	}
-
-	void handle(OctreeNode * node) const {
-		node->setDirty(true);
-	};
-};
-
 template <typename T> class Seriallizer {
 	public:
 

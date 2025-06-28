@@ -81,11 +81,6 @@ struct OctreeNodeData {
 	}
 };
 
-class OctreeNodeDirtyHandler {
-	public:
-
-	virtual void handle(OctreeNode * node) const = 0;
-};
 
 class OctreeAllocator {
 	Allocator<OctreeNode> nodeAllocator;
@@ -152,8 +147,8 @@ class Octree: public BoundingCube {
 
 		Octree(BoundingCube minCube, float chunkSize);
 		void expand(const ContainmentHandler &handler);
-		void add(const ContainmentHandler &handler, const SignedDistanceFunction &function, const TexturePainter &painter, const OctreeNodeDirtyHandler &dirtyHandler, float minSize, Simplifier &simplifier);
-		void del(const ContainmentHandler &handler, const SignedDistanceFunction &function, const TexturePainter &painter, const OctreeNodeDirtyHandler &dirtyHandler, float minSize, Simplifier &simplifier);
+		void add(const ContainmentHandler &handler, const SignedDistanceFunction &function, const TexturePainter &painter, float minSize, Simplifier &simplifier);
+		void del(const ContainmentHandler &handler, const SignedDistanceFunction &function, const TexturePainter &painter, float minSize, Simplifier &simplifier);
 		void iterate(IteratorHandler &handler);
 		void iterateFlat(IteratorHandler &handler);
 
@@ -171,7 +166,7 @@ class Octree: public BoundingCube {
 		int getMaxLevel(OctreeNode *node, BoundingCube &cube, BoundingCube &c, int level);
 
 		private:
-		NodeOperationResult shape(float (*operation)(float, float), const ContainmentHandler &handler, const SignedDistanceFunction &function, const TexturePainter &painter, const OctreeNodeDirtyHandler &dirtyHandler, OctreeNodeFrame frame, BoundingCube * chunk, Simplifier &simplifier);
+		NodeOperationResult shape(float (*operation)(float, float), const ContainmentHandler &handler, const SignedDistanceFunction &function, const TexturePainter &painter, OctreeNodeFrame frame, BoundingCube * chunk, Simplifier &simplifier);
 };
 
 class Simplifier {

@@ -216,17 +216,17 @@ void Octree::add(
     const ContainmentHandler &handler, 
     const SignedDistanceFunction &function, 
     const TexturePainter &painter,
-    const OctreeNodeDirtyHandler &dirtyHandler, float minSize, Simplifier &simplifier) {
+    float minSize, Simplifier &simplifier) {
 	expand(handler);	
-    shape(SDF::opUnion, handler, function, painter, dirtyHandler, OctreeNodeFrame(root, -1, *this, minSize, 0, root->sdf, SpaceType::Surface ), NULL, simplifier);
+    shape(SDF::opUnion, handler, function, painter, OctreeNodeFrame(root, -1, *this, minSize, 0, root->sdf, SpaceType::Surface ), NULL, simplifier);
 }
 
 void Octree::del(
     const ContainmentHandler &handler, 
     const SignedDistanceFunction &function, 
     const TexturePainter &painter,
-    const OctreeNodeDirtyHandler &dirtyHandler, float minSize, Simplifier &simplifier) {
-    shape(SDF::opSubtraction, handler, function, painter, dirtyHandler, OctreeNodeFrame(root, -1, *this, minSize, 0, root->sdf, SpaceType::Surface), NULL, simplifier);
+    float minSize, Simplifier &simplifier) {
+    shape(SDF::opSubtraction, handler, function, painter, OctreeNodeFrame(root, -1, *this, minSize, 0, root->sdf, SpaceType::Surface), NULL, simplifier);
 }
 
 SpaceType childToParent(bool childSolid, bool childEmpty) {
@@ -244,7 +244,6 @@ NodeOperationResult Octree::shape(
     const ContainmentHandler &handler, 
     const SignedDistanceFunction &function, 
     const TexturePainter &painter,
-    const OctreeNodeDirtyHandler &dirtyHandler, 
     OctreeNodeFrame frame, BoundingCube * chunk, Simplifier &simplifier) {
     ContainmentType check = handler.check(frame.cube);
     OctreeNode * node  = frame.node;
@@ -283,7 +282,7 @@ NodeOperationResult Octree::shape(
                 childType = SDF::eval(childSDF);
             }
   
-            NodeOperationResult child = shape(operation, handler, function, painter, dirtyHandler, 
+            NodeOperationResult child = shape(operation, handler, function, painter, 
                 OctreeNodeFrame(childNode, i, frame.cube.getChild(i), frame.minSize, frame.level + 1, childSDF, childType), 
                 chunk, simplifier);
         
@@ -327,7 +326,7 @@ NodeOperationResult Octree::shape(
             painter.paint(node->vertex);
         }
         if(node->id) {
-            dirtyHandler.handle(node);
+            //dirtyHandler.handle(node);
         }
         if(!isLeaf) {
             if(block == NULL) {
