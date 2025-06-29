@@ -271,9 +271,44 @@ class OctreeDifferenceFunction : public SignedDistanceFunction {
 	SdfType getType() const override;
 };
 
+
+#define TYPE_FLOAT 1
+#define TYPE_VEC2 2
+#define TYPE_VEC3 3
+
+class ControlledAttributeBase {
+	public:
+	virtual int getType() = 0;
+};
+
+template <typename T> class ControlledAttribute : public ControlledAttributeBase {
+    T * value;
+    int type;
+    public:
+    
+    ControlledAttribute(T * value, int type) {
+        value = value;
+        type = type;
+    }
+
+    int getType() override {
+        return type;
+    }
+
+    T * getValue() {
+        return value;
+    }
+};
+
+class ControlledObject {
+    public:
+    std::vector<ControlledAttributeBase*> attributes;
+};
+
 class BrushContext {
 	public:
 	std::vector<SignedDistanceFunction*> functions;
+	std::vector<ControlledObject*> controlledObjects;
 	SignedDistanceFunction * currentFunction;
 	BoundingSphere boundingVolume;
 	Simplifier * simplifier;
