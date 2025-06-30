@@ -5,6 +5,6 @@ CloseWindowCommand::CloseWindowCommand(LithosApplication &app) : app(app) {
 
 }
 
-void CloseWindowCommand::execute(const float &value) {
+void CloseWindowCommand::execute(float &value) {
     app.close();
 }

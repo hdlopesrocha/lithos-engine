@@ -2,6 +2,8 @@
 #include "math/math.hpp"
 #include "gl/gl.hpp"
 #include "ui/ui.hpp"
+#include "event/event.hpp"
+#include "controller/controller.hpp"
 #include "command/command.hpp"
 #include "tools/tools.hpp"
 #include <glm/glm.hpp>
@@ -64,6 +66,7 @@ class MainApplication : public LithosApplication {
 	float time = 0.0f;
 
 	// UI
+	EventManager eventManager;
 	UniformBlockViewer * uniformBlockViewer;
 	BrushContext * brushContext;
 	BrushEditor * brushEditor;
@@ -136,8 +139,8 @@ public:
 		uniformBrushData = new ProgramData();
 		brush3d = new Brush3d();
 
-		gamepadControllerStrategy = new GamepadControllerStrategy(camera, *brush3d, *mainScene);
-		keyboardControllerStrategy = new KeyboardControllerStrategy(camera, *brush3d, *this, *mainScene);
+		gamepadControllerStrategy = new GamepadControllerStrategy(eventManager);
+		keyboardControllerStrategy = new KeyboardControllerStrategy(*this, eventManager);
 
 		std::vector<GlslInclude> includes;
 		includes.push_back(GlslInclude("#include<functions.glsl>" , readFile("shaders/util/functions.glsl")));
@@ -482,6 +485,12 @@ public:
 		textureViewer = new TextureViewer(programTexture, &textureLayers);
 		impostorViewer = new ImpostorViewer(impostorDrawer, &impostors , programTexture, 256, 256, &impostorLayers);
 
+		// Events
+		eventManager.subscribe(EVENT_CLOSE_WINDOW, new EventTriggerCommand<float>(new CloseWindowCommand(*this)));
+		eventManager.subscribe(EVENT_PAINT_BRUSH, new EventTriggerCommand<float>(new PaintBrushCommand(*brush3d, *mainScene)));
+		eventManager.subscribe(EVENT_VECTOR_3D_0, new EventTriggerCommand<glm::vec3>(new TranslateCameraCommand(camera)));
+		eventManager.subscribe(EVENT_VECTOR_3D_1, new EventTriggerCommand<glm::vec3>(new RotateCameraCommand(camera)));
+
 		// ImGui
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
@@ -499,8 +508,8 @@ public:
 
 	virtual void update(float deltaTime){
 		time += deltaTime;
-		gamepadControllerStrategy->handleInput(deltaTime);
-		keyboardControllerStrategy->handleInput(deltaTime);
+		gamepadControllerStrategy->handleInput();
+		keyboardControllerStrategy->handleInput();
 	//    camera.projection[1][1] *= -1;
 	 //   modelMatrix = glm::rotate(modelMatrix, deltaTime * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 

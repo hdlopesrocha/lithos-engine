@@ -6,7 +6,7 @@ LDFLAGS =
 
 
 # Directories
-SRC_DIRS = . gl math space command ui tools libs/ImGuiFileDialog
+SRC_DIRS = . gl math space command event controller ui tools libs/ImGuiFileDialog
 BIN_DIR = bin
 DATA_DIR = data
 OBJ_DIR = obj

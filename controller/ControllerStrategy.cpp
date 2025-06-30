@@ -1,4 +1,4 @@
-#include "command.hpp"
+#include "controller.hpp"
 
 glm::vec3 ControllerStrategy::applyDeadzone(glm::vec3 input, float threshold) {
     glm::vec3 absInput = glm::abs(input);
