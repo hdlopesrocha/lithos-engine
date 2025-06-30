@@ -318,4 +318,13 @@ class BrushContext {
 
 };
 
+template<typename T> class TimedAttribute {
+    public:
+    float deltaTime;
+    T value;
+    TimedAttribute(float deltaTime, T value) : deltaTime(deltaTime), value(value) {}
+
+};
+
+
 #endif

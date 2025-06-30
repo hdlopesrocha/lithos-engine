@@ -12,7 +12,6 @@
 #define EVENT_VECTOR_3D_0 3
 #define EVENT_VECTOR_3D_1 4
 
-
 class EventHandlerBase {
     public:
     virtual ~EventHandlerBase() = default;

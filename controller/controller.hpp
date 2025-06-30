@@ -11,7 +11,7 @@
 class ControllerStrategy {
     public:
     virtual ~ControllerStrategy() = default;
-    virtual void handleInput() = 0;
+    virtual void handleInput(float deltaTime) = 0;
     glm::vec3 applyDeadzone(glm::vec3 input, float threshold);
     bool isAboveDeadzone(const glm::vec3& v, float threshold);
 };
@@ -26,7 +26,7 @@ class GamepadControllerStrategy : public ControllerStrategy {
 
     public:
         GamepadControllerStrategy(EventManager &eventManager);
-        void handleInput() override;
+        void handleInput(float deltaTime) override;
 
 };
 
@@ -35,7 +35,7 @@ class KeyboardControllerStrategy : public ControllerStrategy {
    	EventManager &eventManager;
     public:
         KeyboardControllerStrategy(LithosApplication &app, EventManager &eventManager);
-        void handleInput() override;
+        void handleInput(float deltaTime) override;
 };
 
 

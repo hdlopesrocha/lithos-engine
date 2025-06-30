@@ -488,8 +488,8 @@ public:
 		// Events
 		eventManager.subscribe(EVENT_CLOSE_WINDOW, new EventTriggerCommand<float>(new CloseWindowCommand(*this)));
 		eventManager.subscribe(EVENT_PAINT_BRUSH, new EventTriggerCommand<float>(new PaintBrushCommand(*brush3d, *mainScene)));
-		eventManager.subscribe(EVENT_VECTOR_3D_0, new EventTriggerCommand<glm::vec3>(new TranslateCameraCommand(camera)));
-		eventManager.subscribe(EVENT_VECTOR_3D_1, new EventTriggerCommand<glm::vec3>(new RotateCameraCommand(camera)));
+		eventManager.subscribe(EVENT_VECTOR_3D_0, new EventTriggerCommand<TimedAttribute<glm::vec3>>(new TranslateCameraCommand(camera)));
+		eventManager.subscribe(EVENT_VECTOR_3D_1, new EventTriggerCommand<TimedAttribute<glm::vec3>>(new RotateCameraCommand(camera)));
 
 		// ImGui
 		IMGUI_CHECKVERSION();
@@ -508,8 +508,8 @@ public:
 
 	virtual void update(float deltaTime){
 		time += deltaTime;
-		gamepadControllerStrategy->handleInput();
-		keyboardControllerStrategy->handleInput();
+		gamepadControllerStrategy->handleInput(deltaTime);
+		keyboardControllerStrategy->handleInput(deltaTime);
 	//    camera.projection[1][1] *= -1;
 	 //   modelMatrix = glm::rotate(modelMatrix, deltaTime * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 

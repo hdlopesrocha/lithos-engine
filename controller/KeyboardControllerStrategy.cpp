@@ -6,7 +6,7 @@ KeyboardControllerStrategy::KeyboardControllerStrategy(LithosApplication &app, E
  
 }
 
-void KeyboardControllerStrategy::handleInput() {
+void KeyboardControllerStrategy::handleInput(float deltaTime) {
     glm::vec3 vector3d0 = glm::vec3(0);
     glm::vec3 vector3d1 = glm::vec3(0);
 
@@ -57,11 +57,11 @@ void KeyboardControllerStrategy::handleInput() {
     vector3d0 = applyDeadzone(vector3d0, threshold);
     
     if(isAboveDeadzone(vector3d0, threshold)) {
-        eventManager.publish<glm::vec3>(EVENT_VECTOR_3D_0, vector3d0);
+        eventManager.publish<TimedAttribute<glm::vec3>>(EVENT_VECTOR_3D_0, TimedAttribute(deltaTime, vector3d0));
     }
 
     if(isAboveDeadzone(vector3d1, threshold)) {
-        eventManager.publish<glm::vec3>(EVENT_VECTOR_3D_1, vector3d1);
+        eventManager.publish<TimedAttribute<glm::vec3>>(EVENT_VECTOR_3D_1, TimedAttribute(deltaTime, vector3d1));
     }
 
     if (app.getKeyboardStatus(GLFW_KEY_ESCAPE) != GLFW_RELEASE) {

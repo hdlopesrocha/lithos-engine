@@ -7,7 +7,7 @@ PaintBrushCommand::PaintBrushCommand(Brush3d &brush3d, Scene &scene) :
      {
 }
 
-void PaintBrushCommand::execute(float &value) {
+void PaintBrushCommand::execute(float value) {
     std::unique_ptr<ContainmentHandler> handler;
     std::unique_ptr<SignedDistanceFunction> function;
 /*

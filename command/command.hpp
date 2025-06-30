@@ -7,22 +7,22 @@
 template<typename T> class ICommand {
     public:
     virtual ~ICommand() = default;
-    virtual void execute(T& value) = 0;
+    virtual void execute(T value) = 0;
 };
     
-class TranslateCameraCommand : public ICommand<glm::vec3>{
+class TranslateCameraCommand : public ICommand<TimedAttribute<glm::vec3>>{
     Camera &camera;
     public:
     TranslateCameraCommand(Camera &camera);
-    void execute(glm::vec3 &value) override ;
+    void execute(TimedAttribute<glm::vec3> value) override ;
 };
 
-class TranslateBrushCommand : public ICommand<glm::vec3>{
+class TranslateBrushCommand : public ICommand<TimedAttribute<glm::vec3>>{
     Brush3d &brush3d;
     Camera &camera;
     public:
     TranslateBrushCommand(Brush3d &brush3d, Camera &camera);
-    void execute(glm::vec3 &value) override ;
+    void execute(TimedAttribute<glm::vec3> value) override ;
 };
 
 class PaintBrushCommand : public ICommand<float>{
@@ -31,22 +31,22 @@ class PaintBrushCommand : public ICommand<float>{
     Simplifier simplifier;
     public:
     PaintBrushCommand(Brush3d &brush3d, Scene &scene);
-    void execute(float &value) override ;
+    void execute(float value) override ;
 };
 
 
-class RotateCameraCommand : public ICommand<glm::vec3>{
+class RotateCameraCommand : public ICommand<TimedAttribute<glm::vec3>>{
     Camera &camera;
     public:
     RotateCameraCommand(Camera &camera);
-    void execute(glm::vec3 &value) override ;
+    void execute(TimedAttribute<glm::vec3> value) override ;
 };
 
 class CloseWindowCommand : public ICommand<float>{
     LithosApplication &app;
     public:
     CloseWindowCommand(LithosApplication &app);
-    void execute(float &value) override ;
+    void execute(float value) override ;
 };
 
 
