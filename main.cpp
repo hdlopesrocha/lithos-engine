@@ -488,8 +488,8 @@ public:
 		// Events
 		eventManager.subscribe(EVENT_CLOSE_WINDOW, new EventTriggerCommand<float>(new CloseWindowCommand(*this)));
 		eventManager.subscribe(EVENT_PAINT_BRUSH, new EventTriggerCommand<float>(new PaintBrushCommand(*brush3d, *mainScene)));
-		eventManager.subscribe(EVENT_VECTOR_3D_0, new EventTriggerCommand<TimedAttribute<glm::vec3>>(new TranslateCameraCommand(camera)));
-		eventManager.subscribe(EVENT_VECTOR_3D_1, new EventTriggerCommand<TimedAttribute<glm::vec3>>(new RotateCameraCommand(camera)));
+		eventManager.subscribe(EVENT_VECTOR_3D_0, new EventTriggerCommand<TimedAttribute<glm::vec3>>(new TranslateCommand(camera, camera.position)));
+		eventManager.subscribe(EVENT_VECTOR_3D_1, new EventTriggerCommand<TimedAttribute<glm::vec3>>(new RotateCommand(camera, camera.quaternion)));
 
 		// ImGui
 		IMGUI_CHECKVERSION();

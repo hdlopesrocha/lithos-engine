@@ -10,18 +10,11 @@ template<typename T> class ICommand {
     virtual void execute(T value) = 0;
 };
     
-class TranslateCameraCommand : public ICommand<TimedAttribute<glm::vec3>>{
+class TranslateCommand : public ICommand<TimedAttribute<glm::vec3>>{
     Camera &camera;
+    glm::vec3 &vector;
     public:
-    TranslateCameraCommand(Camera &camera);
-    void execute(TimedAttribute<glm::vec3> value) override ;
-};
-
-class TranslateBrushCommand : public ICommand<TimedAttribute<glm::vec3>>{
-    Brush3d &brush3d;
-    Camera &camera;
-    public:
-    TranslateBrushCommand(Brush3d &brush3d, Camera &camera);
+    TranslateCommand(Camera &camera, glm::vec3 &vector);
     void execute(TimedAttribute<glm::vec3> value) override ;
 };
 
@@ -35,10 +28,11 @@ class PaintBrushCommand : public ICommand<float>{
 };
 
 
-class RotateCameraCommand : public ICommand<TimedAttribute<glm::vec3>>{
+class RotateCommand : public ICommand<TimedAttribute<glm::vec3>>{
     Camera &camera;
+    glm::quat &quaternion;
     public:
-    RotateCameraCommand(Camera &camera);
+    RotateCommand(Camera &camera, glm::quat &quaternion);
     void execute(TimedAttribute<glm::vec3> value) override ;
 };
 
