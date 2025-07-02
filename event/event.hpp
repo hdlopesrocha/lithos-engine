@@ -11,6 +11,8 @@
 #define EVENT_CLOSE_WINDOW 2
 #define EVENT_VECTOR_3D_0 3
 #define EVENT_VECTOR_3D_1 4
+#define EVENT_PREVIOUS_PAGE 5
+#define EVENT_NEXT_PAGE 6
 
 class EventHandlerBase {
     public:

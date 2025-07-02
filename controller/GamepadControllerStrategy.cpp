@@ -19,20 +19,32 @@ void GamepadControllerStrategy::handleInput(float deltaTime) {
         vector3d1.x = state.axes[GLFW_GAMEPAD_AXIS_LEFT_Y];
         vector3d1.z = (state.buttons[GLFW_GAMEPAD_BUTTON_RIGHT_BUMPER] == GLFW_PRESS ? 1 : 0) - (state.buttons[GLFW_GAMEPAD_BUTTON_LEFT_BUMPER] == GLFW_PRESS ? 1 : 0);	
     
-       
-        /*
-        if(state.buttons[GLFW_GAMEPAD_BUTTON_DPAD_UP] == GLFW_PRESS) {
-            controllerMode = ControllerMode::CAMERA;
+        if(state.buttons[GLFW_GAMEPAD_BUTTON_DPAD_RIGHT] == GLFW_PRESS) {
+            if(!keyWasPressed[GLFW_GAMEPAD_BUTTON_DPAD_RIGHT]) { 
+                eventManager.publish<float>(EVENT_NEXT_PAGE, 1.0f);
+            }
+            keyWasPressed[GLFW_GAMEPAD_BUTTON_DPAD_RIGHT] = true;
+        } else {
+            keyWasPressed[GLFW_GAMEPAD_BUTTON_DPAD_RIGHT] = false;
         }
+
         if(state.buttons[GLFW_GAMEPAD_BUTTON_DPAD_LEFT] == GLFW_PRESS) {
-            controllerMode = ControllerMode::BRUSH;
+            if(!keyWasPressed[GLFW_GAMEPAD_BUTTON_DPAD_LEFT]) { 
+                eventManager.publish<float>(EVENT_PREVIOUS_PAGE, 1.0f);
+            }
+            keyWasPressed[GLFW_GAMEPAD_BUTTON_DPAD_LEFT] = true;
+        } else {
+            keyWasPressed[GLFW_GAMEPAD_BUTTON_DPAD_LEFT] = false;
         }
-        */
+        
+        if(state.buttons[GLFW_GAMEPAD_BUTTON_A] == GLFW_PRESS) {
+            eventManager.publish<float>(EVENT_PAINT_BRUSH, 1.0f);
+        }
     }
 
-    if(state.buttons[GLFW_GAMEPAD_BUTTON_A] == GLFW_PRESS) {
-        eventManager.publish<float>(EVENT_PAINT_BRUSH, 1.0f);
-    }
+
+
+
 
     float threshold = 0.2;
     vector3d0 = applyDeadzone(vector3d0, threshold);
