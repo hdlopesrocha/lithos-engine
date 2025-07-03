@@ -19,6 +19,14 @@ class TranslateCommand : public ICommand<Axis3dEvent>{
     void execute(Axis3dEvent value) override ;
 };
 
+class ScaleCommand : public ICommand<Axis3dEvent>{
+    Camera &camera;
+    glm::vec3 &vector;
+    public:
+    ScaleCommand(Camera &camera, glm::vec3 &vector);
+    void execute(Axis3dEvent value) override ;
+};
+
 class PaintBrushCommand : public ICommand<float>{
     Brush3d &brush3d;
     Octree &octree;

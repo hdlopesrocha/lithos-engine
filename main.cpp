@@ -505,7 +505,7 @@ public:
 			EventManager * brushEventManager = new EventManager();
 			BoxDistanceFunction * function = (BoxDistanceFunction*) brushContext->functions[1];
 			brushEventManager->subscribe(EVENT_VECTOR_3D_0, new EventTriggerCommand<Axis3dEvent>(new TranslateCommand(camera, function->center)));
-			brushEventManager->subscribe(EVENT_VECTOR_3D_1, new EventTriggerCommand<Axis3dEvent>(new TranslateCommand(camera, function->length)));
+			brushEventManager->subscribe(EVENT_VECTOR_3D_1, new EventTriggerCommand<Axis3dEvent>(new ScaleCommand(camera, function->length)));
 			eventManager.addArea(brushEventManager);
 		}
 
