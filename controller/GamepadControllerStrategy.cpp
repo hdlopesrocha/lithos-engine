@@ -47,11 +47,11 @@ void GamepadControllerStrategy::handleInput(float deltaTime) {
     vector3d1 = applyDeadzone(vector3d1, threshold);
     
     if(isAboveDeadzone(vector3d0, threshold)) {
-        eventManager.publish<TimedAttribute<glm::vec3>>(EVENT_VECTOR_3D_0, TimedAttribute(deltaTime, vector3d0));
+        eventManager.publish<Axis3dEvent>(EVENT_VECTOR_3D_0, Axis3dEvent(vector3d0, deltaTime));
     }
 
     if(isAboveDeadzone(vector3d1, threshold)) {
-        eventManager.publish<TimedAttribute<glm::vec3>>(EVENT_VECTOR_3D_1, TimedAttribute(deltaTime, vector3d1));
+        eventManager.publish<Axis3dEvent>(EVENT_VECTOR_3D_1, Axis3dEvent(vector3d1, deltaTime));
     }
 
 }

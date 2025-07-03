@@ -6,7 +6,6 @@
 #include <string>
 #include <fstream>
 #include <sstream>
-#include "../command/command.hpp"
 #define EVENT_PAINT_BRUSH 1
 #define EVENT_CLOSE_WINDOW 2
 #define EVENT_VECTOR_3D_0 3
@@ -29,6 +28,8 @@ template<typename T> class EventHandler : public EventHandlerBase {
 
 class EventManager {
     std::map<int, EventHandlerBase*> handlers;
+    std::vector<EventManager*> areas; 
+    bool enabled = true;
     public:
 
     void subscribe(int eventType, EventHandlerBase *handler) {
@@ -36,27 +37,34 @@ class EventManager {
     }
 
     template<typename T> void publish(int eventType, T eventData) {
-        auto it = handlers.find(eventType);
-        if (it != handlers.end()) {
-            EventHandler<T> * handler = dynamic_cast<EventHandler<T>*>(it->second);
-            if (handler) {
-                handler->handle(eventData);
+        if(enabled) {
+            auto it = handlers.find(eventType);
+            if (it != handlers.end()) {
+                EventHandler<T> * handler = dynamic_cast<EventHandler<T>*>(it->second);
+                if (handler) {
+                    handler->handle(eventData);
+                } else {
+                    std::cerr << "Error: Handler for event type " << eventType << " does not match data type." << std::endl;
+                }
             } else {
-                std::cerr << "Error: Handler for event type " << eventType << " does not match data type." << std::endl;
+                for(const auto& area : areas) {
+                    area->publish(eventType, eventData);
+                }
+                //std::cerr << "Error: No handler found for event type " << eventType << "." << std::endl;
             }
-        } else {
-            std::cerr << "Error: No handler found for event type " << eventType << "." << std::endl;
         }
+    }
+
+    void addArea(EventManager *area) {
+        areas.push_back(area);
     }
 };
 
-template<typename T> class EventTriggerCommand : public EventHandler<T> {
-    ICommand<T> *command;
+class Axis3dEvent {
     public:
-    EventTriggerCommand(ICommand<T> *command) : command(command) {}
-    void handle(T value) override {
-        command->execute(value);
-    }
+    glm::vec3 axis;
+    float deltaTime;
+    Axis3dEvent(glm::vec3 axis, float deltaTime) : axis(axis), deltaTime(deltaTime) {}
 };
 
 #endif

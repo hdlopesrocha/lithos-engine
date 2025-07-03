@@ -3,6 +3,7 @@
 
 #include "../gl/gl.hpp"
 #include "../tools/tools.hpp"
+#include "../event/event.hpp"
 
 template<typename T> class ICommand {
     public:
@@ -10,12 +11,12 @@ template<typename T> class ICommand {
     virtual void execute(T value) = 0;
 };
     
-class TranslateCommand : public ICommand<TimedAttribute<glm::vec3>>{
+class TranslateCommand : public ICommand<Axis3dEvent>{
     Camera &camera;
     glm::vec3 &vector;
     public:
     TranslateCommand(Camera &camera, glm::vec3 &vector);
-    void execute(TimedAttribute<glm::vec3> value) override ;
+    void execute(Axis3dEvent value) override ;
 };
 
 class PaintBrushCommand : public ICommand<float>{
@@ -28,12 +29,12 @@ class PaintBrushCommand : public ICommand<float>{
 };
 
 
-class RotateCommand : public ICommand<TimedAttribute<glm::vec3>>{
+class RotateCommand : public ICommand<Axis3dEvent>{
     Camera &camera;
     glm::quat &quaternion;
     public:
     RotateCommand(Camera &camera, glm::quat &quaternion);
-    void execute(TimedAttribute<glm::vec3> value) override ;
+    void execute(Axis3dEvent value) override ;
 };
 
 class CloseWindowCommand : public ICommand<float>{
@@ -43,6 +44,13 @@ class CloseWindowCommand : public ICommand<float>{
     void execute(float value) override ;
 };
 
-
+template<typename T> class EventTriggerCommand : public EventHandler<T> {
+    ICommand<T> *command;
+    public:
+    EventTriggerCommand(ICommand<T> *command) : command(command) {}
+    void handle(T value) override {
+        command->execute(value);
+    }
+};
 
 #endif
