@@ -67,6 +67,8 @@ class MainApplication : public LithosApplication {
 
 	// UI
 	EventManager eventManager;
+	EventManagerGroup eventManagerGroup;
+
 	UniformBlockViewer * uniformBlockViewer;
 	BrushContext * brushContext;
 	BrushEditor * brushEditor;
@@ -487,18 +489,24 @@ public:
 
 		// Events
 		eventManager.subscribe(EVENT_CLOSE_WINDOW, new EventTriggerCommand<Event>(new CloseWindowCommand(*this)));
+		eventManager.subscribe(EVENT_NEXT_PAGE, new EventTriggerCommand<BinaryEvent>(new ControlEventManagerGroupCommand(eventManagerGroup)));
+		eventManager.subscribe(EVENT_PREVIOUS_PAGE, new EventTriggerCommand<BinaryEvent>(new ControlEventManagerGroupCommand(eventManagerGroup)));
+		
 		//eventManager.subscribe(EVENT_PAINT_BRUSH, new EventTriggerCommand<Event>(new PaintBrushCommand(*brush3d, *mainScene)));
 	
 		EventManager * cameraEventManager = new EventManager();
 		cameraEventManager->subscribe(EVENT_VECTOR_3D_0, new EventTriggerCommand<Axis3dEvent>(new TranslateCommand(camera, camera.position)));
 		cameraEventManager->subscribe(EVENT_VECTOR_3D_1, new EventTriggerCommand<Axis3dEvent>(new RotateCommand(camera, camera.quaternion)));
 		eventManager.addArea(cameraEventManager);
+		eventManagerGroup.addEventManager(cameraEventManager);
 
 		EventManager * brushEventManager = new EventManager();
 		brushEventManager->subscribe(EVENT_VECTOR_3D_0, new EventTriggerCommand<Axis3dEvent>(new ControlBrushCommand<Axis3dEvent>(*brushContext)));
 		brushEventManager->subscribe(EVENT_VECTOR_3D_1, new EventTriggerCommand<Axis3dEvent>(new ControlBrushCommand<Axis3dEvent>(*brushContext)));
 		brushEventManager->subscribe(EVENT_PAINT_BRUSH, new EventTriggerCommand<Event>(new ControlBrushCommand<Event>(*brushContext)));
 		eventManager.addArea(brushEventManager);
+		eventManagerGroup.addEventManager(brushEventManager);
+
 
 		// ImGui
 		IMGUI_CHECKVERSION();

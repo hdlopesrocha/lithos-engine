@@ -69,4 +69,18 @@ template<typename T> class ControlBrushCommand : public ICommand<T> {
     }
 };
 
+class ControlEventManagerGroupCommand : public ICommand<BinaryEvent> {
+    EventManagerGroup &eventManagerGroup;
+    public:
+    ControlEventManagerGroupCommand(EventManagerGroup &eventManagerGroup) : eventManagerGroup(eventManagerGroup) {}
+    void execute(BinaryEvent event) override {
+        if(event.value) {
+            eventManagerGroup.next();
+        } else {
+            eventManagerGroup.previous();
+        }
+    }
+};
+
+
 #endif

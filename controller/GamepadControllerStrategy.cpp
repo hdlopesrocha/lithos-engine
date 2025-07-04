@@ -21,7 +21,8 @@ void GamepadControllerStrategy::handleInput(float deltaTime) {
     
         if(state.buttons[GLFW_GAMEPAD_BUTTON_DPAD_RIGHT] == GLFW_PRESS) {
             if(!keyWasPressed[GLFW_GAMEPAD_BUTTON_DPAD_RIGHT]) { 
-                eventManager.publish<Event>(Event(EVENT_NEXT_PAGE));
+                eventManager.publish<BinaryEvent>(
+                    BinaryEvent(EVENT_NEXT_PAGE, true));
             }
             keyWasPressed[GLFW_GAMEPAD_BUTTON_DPAD_RIGHT] = true;
         } else {
@@ -30,7 +31,7 @@ void GamepadControllerStrategy::handleInput(float deltaTime) {
 
         if(state.buttons[GLFW_GAMEPAD_BUTTON_DPAD_LEFT] == GLFW_PRESS) {
             if(!keyWasPressed[GLFW_GAMEPAD_BUTTON_DPAD_LEFT]) { 
-                eventManager.publish<Event>(Event(EVENT_PREVIOUS_PAGE));
+                eventManager.publish<BinaryEvent>(BinaryEvent(EVENT_PREVIOUS_PAGE, false));
             }
             keyWasPressed[GLFW_GAMEPAD_BUTTON_DPAD_LEFT] = true;
         } else {

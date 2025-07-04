@@ -30,6 +30,12 @@ class Axis3dEvent : public Event {
     Axis3dEvent(int type, glm::vec3 axis, float deltaTime) : Event(type), axis(axis), deltaTime(deltaTime) {}
 };
 
+class BinaryEvent : public Event {
+    public:
+    bool value;
+    BinaryEvent(int type, bool value) : Event(type), value(value) {}
+};
+
 
 class EventHandlerBase {
     public:
@@ -75,10 +81,43 @@ class EventManager {
         }
     }
 
+    void setEnabled(bool enabled) {
+        this->enabled = enabled;
+    }
+
     void addArea(EventManager *area) {
         areas.push_back(area);
     }
 };
 
+class EventManagerGroup {
+    std::vector<EventManager*> eventManagers;
+    size_t selectedManager = 0;
+    public:
+    void addEventManager(EventManager *eventManager) {
+        eventManagers.push_back(eventManager);
+        select(0);
+    }
+
+    void select(int index) {
+        selectedManager = index % eventManagers.size();
+        for(size_t i = 0; i < eventManagers.size(); ++i) {
+            if(i == selectedManager) {
+                eventManagers[i]->setEnabled(true);
+            } else {
+                eventManagers[i]->setEnabled(false);
+            }
+        }
+
+    }
+
+    void next() {
+        select(++selectedManager);
+    }
+
+    void previous() {
+        select(--selectedManager);
+    }
+};
 
 #endif

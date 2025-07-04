@@ -68,22 +68,22 @@ void KeyboardControllerStrategy::handleInput(float deltaTime) {
         eventManager.publish<Event>(Event(EVENT_CLOSE_WINDOW));
     }
 
-    if (app.getKeyboardStatus(GLFW_KEY_2) != GLFW_RELEASE) {
-        if(!keyWasPressed[GLFW_KEY_2]) { 
-            eventManager.publish<Event>(Event(EVENT_NEXT_PAGE));
+    if (app.getKeyboardStatus(GLFW_KEY_X) != GLFW_RELEASE) {
+        if(!keyWasPressed[GLFW_KEY_X]) { 
+            eventManager.publish<BinaryEvent>(BinaryEvent(EVENT_NEXT_PAGE, true));
         }
-        keyWasPressed[GLFW_KEY_2] = true;
+        keyWasPressed[GLFW_KEY_X] = true;
     } else {
-        keyWasPressed[GLFW_KEY_2] = false;
+        keyWasPressed[GLFW_KEY_X] = false;
     }
 
-    if (app.getKeyboardStatus(GLFW_KEY_1) != GLFW_RELEASE) {
-        if(!keyWasPressed[GLFW_KEY_1]) { 
-            eventManager.publish<Event>(Event(EVENT_PREVIOUS_PAGE));
+    if (app.getKeyboardStatus(GLFW_KEY_Z) != GLFW_RELEASE) {
+        if(!keyWasPressed[GLFW_KEY_Z]) { 
+            eventManager.publish<BinaryEvent>(BinaryEvent(EVENT_PREVIOUS_PAGE, false));
         }
-        keyWasPressed[GLFW_KEY_1] = true;
+        keyWasPressed[GLFW_KEY_Z] = true;
     } else {
-        keyWasPressed[GLFW_KEY_1] = false;
+        keyWasPressed[GLFW_KEY_Z] = false;
     }
 
 }
