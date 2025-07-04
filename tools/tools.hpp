@@ -6,6 +6,7 @@
 
 #include "../gl/gl.hpp"
 #include "../space/space.hpp"
+#include "../event/event.hpp"
 #include <algorithm>
 #include <random>
 
@@ -308,14 +309,14 @@ class ControlledObject {
 class BrushContext {
 	public:
 	std::vector<SignedDistanceFunction*> functions;
-	std::vector<ControlledObject*> controlledObjects;
 	SignedDistanceFunction * currentFunction;
 	BoundingSphere boundingVolume;
 	Simplifier * simplifier;
 	float detail;
+	Camera &camera;
 
-	BrushContext();
-
+	BrushContext(Camera &camera);
+	void handleEvent(Event &event);
 };
 
 template<typename T> class TimedAttribute {

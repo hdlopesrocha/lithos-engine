@@ -470,7 +470,7 @@ public:
 		glUseProgram(0);
 		//tesselator->normalize();
 
-		brushContext = new BrushContext();
+		brushContext = new BrushContext(camera);
 		uniformBlockViewer = new UniformBlockViewer(&viewerBlock);
 		atlasPainter = new AtlasPainter(&atlasParams, &atlasTextures, atlasDrawer, programAtlas, programTexture, 256,256, &billboardLayers);
 		atlasViewer = new AtlasViewer(&atlasTextures, atlasDrawer, programAtlas, programTexture, 256,256, &atlasLayers, programCopy);
@@ -486,36 +486,19 @@ public:
 		impostorViewer = new ImpostorViewer(impostorDrawer, &impostors , programTexture, 256, 256, &impostorLayers);
 
 		// Events
-		eventManager.subscribe(EVENT_CLOSE_WINDOW, new EventTriggerCommand<float>(new CloseWindowCommand(*this)));
-		eventManager.subscribe(EVENT_PAINT_BRUSH, new EventTriggerCommand<float>(new PaintBrushCommand(*brush3d, *mainScene)));
+		eventManager.subscribe(EVENT_CLOSE_WINDOW, new EventTriggerCommand<Event>(new CloseWindowCommand(*this)));
+		//eventManager.subscribe(EVENT_PAINT_BRUSH, new EventTriggerCommand<Event>(new PaintBrushCommand(*brush3d, *mainScene)));
 	
 		EventManager * cameraEventManager = new EventManager();
 		cameraEventManager->subscribe(EVENT_VECTOR_3D_0, new EventTriggerCommand<Axis3dEvent>(new TranslateCommand(camera, camera.position)));
 		cameraEventManager->subscribe(EVENT_VECTOR_3D_1, new EventTriggerCommand<Axis3dEvent>(new RotateCommand(camera, camera.quaternion)));
 		eventManager.addArea(cameraEventManager);
 
-		{
-			EventManager * brushEventManager = new EventManager();
-			SphereDistanceFunction * function = (SphereDistanceFunction*) brushContext->functions[0];
-			brushEventManager->subscribe(EVENT_VECTOR_3D_0, new EventTriggerCommand<Axis3dEvent>(new TranslateCommand(camera, function->center)));
-			eventManager.addArea(brushEventManager);
-		}
-
-		{
-			EventManager * brushEventManager = new EventManager();
-			BoxDistanceFunction * function = (BoxDistanceFunction*) brushContext->functions[1];
-			brushEventManager->subscribe(EVENT_VECTOR_3D_0, new EventTriggerCommand<Axis3dEvent>(new TranslateCommand(camera, function->center)));
-			brushEventManager->subscribe(EVENT_VECTOR_3D_1, new EventTriggerCommand<Axis3dEvent>(new ScaleCommand(camera, function->length)));
-			eventManager.addArea(brushEventManager);
-		}
-
-		{
-			EventManager * brushEventManager = new EventManager();
-			CapsuleDistanceFunction * function = (CapsuleDistanceFunction*) brushContext->functions[2];
-			brushEventManager->subscribe(EVENT_VECTOR_3D_0, new EventTriggerCommand<Axis3dEvent>(new TranslateCommand(camera, function->a)));
-			brushEventManager->subscribe(EVENT_VECTOR_3D_1, new EventTriggerCommand<Axis3dEvent>(new TranslateCommand(camera, function->b)));
-			eventManager.addArea(brushEventManager);
-		}
+		EventManager * brushEventManager = new EventManager();
+		brushEventManager->subscribe(EVENT_VECTOR_3D_0, new EventTriggerCommand<Axis3dEvent>(new ControlBrushCommand<Axis3dEvent>(*brushContext)));
+		brushEventManager->subscribe(EVENT_VECTOR_3D_1, new EventTriggerCommand<Axis3dEvent>(new ControlBrushCommand<Axis3dEvent>(*brushContext)));
+		brushEventManager->subscribe(EVENT_PAINT_BRUSH, new EventTriggerCommand<Event>(new ControlBrushCommand<Event>(*brushContext)));
+		eventManager.addArea(brushEventManager);
 
 		// ImGui
 		IMGUI_CHECKVERSION();

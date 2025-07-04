@@ -3,7 +3,6 @@
 
 #include "../gl/gl.hpp"
 #include "../tools/tools.hpp"
-#include "../event/event.hpp"
 
 template<typename T> class ICommand {
     public:
@@ -27,13 +26,13 @@ class ScaleCommand : public ICommand<Axis3dEvent>{
     void execute(Axis3dEvent value) override ;
 };
 
-class PaintBrushCommand : public ICommand<float>{
+class PaintBrushCommand : public ICommand<Event>{
     Brush3d &brush3d;
     Octree &octree;
     Simplifier simplifier;
     public:
     PaintBrushCommand(Brush3d &brush3d, Scene &scene);
-    void execute(float value) override ;
+    void execute(Event event) override ;
 };
 
 
@@ -45,11 +44,11 @@ class RotateCommand : public ICommand<Axis3dEvent>{
     void execute(Axis3dEvent value) override ;
 };
 
-class CloseWindowCommand : public ICommand<float>{
+class CloseWindowCommand : public ICommand<Event>{
     LithosApplication &app;
     public:
     CloseWindowCommand(LithosApplication &app);
-    void execute(float value) override ;
+    void execute(Event value) override ;
 };
 
 template<typename T> class EventTriggerCommand : public EventHandler<T> {
@@ -58,6 +57,15 @@ template<typename T> class EventTriggerCommand : public EventHandler<T> {
     EventTriggerCommand(ICommand<T> *command) : command(command) {}
     void handle(T value) override {
         command->execute(value);
+    }
+};
+
+template<typename T> class ControlBrushCommand : public ICommand<T> {
+    BrushContext &brushContext;
+    public:
+    ControlBrushCommand(BrushContext &brushContext) : brushContext(brushContext) {}
+    void execute(T value) override {
+        brushContext.handleEvent( value);
     }
 };
 

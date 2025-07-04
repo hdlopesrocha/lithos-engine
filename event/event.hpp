@@ -2,6 +2,7 @@
 #define EVENT_HPP
 #include <map>
 #include <iostream>
+#include <type_traits>
 #include <vector>
 #include <string>
 #include <fstream>
@@ -12,6 +13,23 @@
 #define EVENT_VECTOR_3D_1 4
 #define EVENT_PREVIOUS_PAGE 5
 #define EVENT_NEXT_PAGE 6
+
+class Event {
+    public:
+    int type;
+    Event(int type) : type(type) {}
+    int getType() const {
+        return type;
+    }
+};
+
+class Axis3dEvent : public Event {
+    public:
+    glm::vec3 axis;
+    float deltaTime;
+    Axis3dEvent(int type, glm::vec3 axis, float deltaTime) : Event(type), axis(axis), deltaTime(deltaTime) {}
+};
+
 
 class EventHandlerBase {
     public:
@@ -36,7 +54,9 @@ class EventManager {
         handlers[eventType] = handler;
     }
 
-    template<typename T> void publish(int eventType, T eventData) {
+    template<typename T> void publish(T eventData) {
+        static_assert(std::is_base_of<Event, T>::value, "T must derive from Event");
+        int eventType = eventData.getType();
         if(enabled) {
             auto it = handlers.find(eventType);
             if (it != handlers.end()) {
@@ -48,7 +68,7 @@ class EventManager {
                 }
             } else {
                 for(const auto& area : areas) {
-                    area->publish(eventType, eventData);
+                    area->publish(eventData);
                 }
                 //std::cerr << "Error: No handler found for event type " << eventType << "." << std::endl;
             }
@@ -60,11 +80,5 @@ class EventManager {
     }
 };
 
-class Axis3dEvent {
-    public:
-    glm::vec3 axis;
-    float deltaTime;
-    Axis3dEvent(glm::vec3 axis, float deltaTime) : axis(axis), deltaTime(deltaTime) {}
-};
 
 #endif

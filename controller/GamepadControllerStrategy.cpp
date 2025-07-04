@@ -21,7 +21,7 @@ void GamepadControllerStrategy::handleInput(float deltaTime) {
     
         if(state.buttons[GLFW_GAMEPAD_BUTTON_DPAD_RIGHT] == GLFW_PRESS) {
             if(!keyWasPressed[GLFW_GAMEPAD_BUTTON_DPAD_RIGHT]) { 
-                eventManager.publish<float>(EVENT_NEXT_PAGE, 1.0f);
+                eventManager.publish<Event>(Event(EVENT_NEXT_PAGE));
             }
             keyWasPressed[GLFW_GAMEPAD_BUTTON_DPAD_RIGHT] = true;
         } else {
@@ -30,7 +30,7 @@ void GamepadControllerStrategy::handleInput(float deltaTime) {
 
         if(state.buttons[GLFW_GAMEPAD_BUTTON_DPAD_LEFT] == GLFW_PRESS) {
             if(!keyWasPressed[GLFW_GAMEPAD_BUTTON_DPAD_LEFT]) { 
-                eventManager.publish<float>(EVENT_PREVIOUS_PAGE, 1.0f);
+                eventManager.publish<Event>(Event(EVENT_PREVIOUS_PAGE));
             }
             keyWasPressed[GLFW_GAMEPAD_BUTTON_DPAD_LEFT] = true;
         } else {
@@ -38,7 +38,7 @@ void GamepadControllerStrategy::handleInput(float deltaTime) {
         }
         
         if(state.buttons[GLFW_GAMEPAD_BUTTON_A] == GLFW_PRESS) {
-            eventManager.publish<float>(EVENT_PAINT_BRUSH, 1.0f);
+            eventManager.publish<Event>(Event(EVENT_PAINT_BRUSH));
         }
     }
 
@@ -47,11 +47,11 @@ void GamepadControllerStrategy::handleInput(float deltaTime) {
     vector3d1 = applyDeadzone(vector3d1, threshold);
     
     if(isAboveDeadzone(vector3d0, threshold)) {
-        eventManager.publish<Axis3dEvent>(EVENT_VECTOR_3D_0, Axis3dEvent(vector3d0, deltaTime));
+        eventManager.publish<Axis3dEvent>(Axis3dEvent(EVENT_VECTOR_3D_0, vector3d0, deltaTime));
     }
 
     if(isAboveDeadzone(vector3d1, threshold)) {
-        eventManager.publish<Axis3dEvent>(EVENT_VECTOR_3D_1, Axis3dEvent(vector3d1, deltaTime));
+        eventManager.publish<Axis3dEvent>(Axis3dEvent(EVENT_VECTOR_3D_1, vector3d1, deltaTime));
     }
 
 }
