@@ -1,13 +1,13 @@
-#include "command.hpp"
+#include "handler.hpp"
 
-PaintBrushCommand::PaintBrushCommand(Brush3d &brush3d, Scene &scene) : 
+PaintBrushHandler::PaintBrushHandler(Brush3d &brush3d, Scene &scene) : 
     brush3d(brush3d), 
     octree(*scene.solidSpace),
     simplifier(0.99, 0.1, true)
      {
 }
 
-void PaintBrushCommand::execute(Event event) {
+void PaintBrushHandler::handle(Event event) {
     std::unique_ptr<ContainmentHandler> handler;
     std::unique_ptr<SignedDistanceFunction> function;
 /*

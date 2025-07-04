@@ -1,10 +1,10 @@
-#include "command.hpp"
+#include "handler.hpp"
 
-ScaleCommand::ScaleCommand(Camera &camera, glm::vec3 &vector) : camera(camera), vector(vector) {
+ScaleHandler::ScaleHandler(Camera &camera, glm::vec3 &vector) : camera(camera), vector(vector) {
 
 }
 
-void ScaleCommand::execute(Axis3dEvent value) {
+void ScaleHandler::handle(Axis3dEvent value) {
     vector += value.deltaTime*value.axis;
     if(vector.x < 0.0f){ 
         vector.x = 0.0f;

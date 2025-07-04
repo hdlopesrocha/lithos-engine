@@ -4,6 +4,7 @@
 #include "../gl/gl.hpp"
 #include "../tools/tools.hpp"
 #include "../event/event.hpp"
+#include "../handler/handler.hpp"
 #include "../command/command.hpp"
 
 

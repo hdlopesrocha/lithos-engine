@@ -1,5 +1,5 @@
 #include "tools.hpp"
-#include "../command/command.hpp"
+#include "../handler/handler.hpp"
 
 BrushContext::BrushContext(Camera &camera) : camera(camera) {
     this->simplifier = new Simplifier(0.99f, 0.01f, true);
@@ -28,7 +28,7 @@ void BrushContext::handleEvent(Event &event) {
         SphereDistanceFunction * function = (SphereDistanceFunction*) currentFunction;
         if(event.getType() == EVENT_VECTOR_3D_0) {
             Axis3dEvent * axisEvent = (Axis3dEvent*) &event;
-            TranslateCommand(camera, function->center).execute(*axisEvent);
+            TranslateHandler(camera, function->center).handle(*axisEvent);
         } 
     }
 
@@ -36,11 +36,11 @@ void BrushContext::handleEvent(Event &event) {
         BoxDistanceFunction * function = (BoxDistanceFunction*) currentFunction;
         if(event.getType() == EVENT_VECTOR_3D_0) {
             Axis3dEvent * axisEvent = (Axis3dEvent*) &event;
-            TranslateCommand(camera, function->center).execute(*axisEvent);
+            TranslateHandler(camera, function->center).handle(*axisEvent);
         } 
         if(event.getType() == EVENT_VECTOR_3D_1) {
             Axis3dEvent * axisEvent = (Axis3dEvent*) &event;
-            ScaleCommand(camera, function->length).execute(*axisEvent);
+            ScaleHandler(camera, function->length).handle(*axisEvent);
         }
     }
 
@@ -48,11 +48,11 @@ void BrushContext::handleEvent(Event &event) {
         CapsuleDistanceFunction * function = (CapsuleDistanceFunction*) currentFunction;
         if(event.getType() == EVENT_VECTOR_3D_0) {
             Axis3dEvent * axisEvent = (Axis3dEvent*) &event;
-            TranslateCommand(camera, function->a).execute(*axisEvent);
+            TranslateHandler(camera, function->a).handle(*axisEvent);
         } 
         if(event.getType() == EVENT_VECTOR_3D_1) {
             Axis3dEvent * axisEvent = (Axis3dEvent*) &event;
-            TranslateCommand(camera, function->b).execute(*axisEvent);
+            TranslateHandler(camera, function->b).handle(*axisEvent);
         }
     }
 

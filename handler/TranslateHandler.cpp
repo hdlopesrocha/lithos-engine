@@ -1,10 +1,10 @@
-#include "command.hpp"
+#include "handler.hpp"
 
-TranslateCommand::TranslateCommand(Camera &camera, glm::vec3 &vector) : camera(camera), vector(vector) {
+TranslateHandler::TranslateHandler(Camera &camera, glm::vec3 &vector) : camera(camera), vector(vector) {
 
 }
 
-void TranslateCommand::execute(Axis3dEvent value) {
+void TranslateHandler::handle(Axis3dEvent value) {
     glm::vec3 xAxis = glm::vec3(1.0f, 0.0f, 0.0f)*camera.quaternion;
     glm::vec3 yAxis = glm::vec3(0.0f, 1.0f, 0.0f)*camera.quaternion;
     glm::vec3 zAxis = glm::vec3(0.0f, 0.0f, -1.0f)*camera.quaternion;
