@@ -503,7 +503,9 @@ public:
 
 		EventManager * brushEventManager = new EventManager();
 		brushEventManager->subscribe(EVENT_VECTOR_3D_0, new ControlBrushHandler<Axis3dEvent>(*brushContext));
-		brushEventManager->subscribe(EVENT_VECTOR_3D_1, new ControlBrushHandler<Axis3dEvent>(*brushContext));
+		brushEventManager->subscribe(EVENT_VECTOR_3D_1, new ControlBrushHandler<Axis3dEvent>(*brushContext));		brushEventManager->subscribe(EVENT_VECTOR_3D_0, new ControlBrushHandler<Axis3dEvent>(*brushContext));
+		brushEventManager->subscribe(EVENT_COMPONENT_3D_0, new ControlBrushHandler<Axis3dEvent>(*brushContext));		brushEventManager->subscribe(EVENT_VECTOR_3D_0, new ControlBrushHandler<Axis3dEvent>(*brushContext));
+		brushEventManager->subscribe(EVENT_COMPONENT_3D_1, new ControlBrushHandler<Axis3dEvent>(*brushContext));
 		brushEventManager->subscribe(EVENT_PAINT_BRUSH, new ControlBrushHandler<Event>(*brushContext));
 		eventManager.addArea(brushEventManager);
 		eventManagerGroup.addEventManager(brushEventManager);

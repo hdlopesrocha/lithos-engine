@@ -102,10 +102,9 @@ class TranslateHandler : public EventHandler<Axis3dEvent>{
 };
 
 class ScaleHandler : public EventHandler<Axis3dEvent>{
-    Camera &camera;
     glm::vec3 &vector;
     public:
-    ScaleHandler(Camera &camera, glm::vec3 &vector);
+    ScaleHandler(glm::vec3 &vector);
     void handle(Axis3dEvent value) override ;
 };
 

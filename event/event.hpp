@@ -14,6 +14,8 @@
 #define EVENT_VECTOR_3D_1 4
 #define EVENT_PREVIOUS_PAGE 5
 #define EVENT_NEXT_PAGE 6
+#define EVENT_COMPONENT_3D_0 7
+#define EVENT_COMPONENT_3D_1 8
 
 class Event {
     public:

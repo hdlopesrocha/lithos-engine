@@ -38,9 +38,9 @@ void BrushContext::handleEvent(Event &event) {
             Axis3dEvent * axisEvent = (Axis3dEvent*) &event;
             TranslateHandler(camera, function->center).handle(*axisEvent);
         } 
-        if(event.getType() == EVENT_VECTOR_3D_1) {
+        if(event.getType() == EVENT_COMPONENT_3D_1) {
             Axis3dEvent * axisEvent = (Axis3dEvent*) &event;
-            ScaleHandler(camera, function->length).handle(*axisEvent);
+            ScaleHandler(function->length).handle(*axisEvent);
         }
     }
 

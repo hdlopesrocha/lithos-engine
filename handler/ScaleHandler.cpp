@@ -1,6 +1,6 @@
 #include "handler.hpp"
 
-ScaleHandler::ScaleHandler(Camera &camera, glm::vec3 &vector) : camera(camera), vector(vector) {
+ScaleHandler::ScaleHandler(glm::vec3 &vector) : vector(vector) {
 
 }
 
