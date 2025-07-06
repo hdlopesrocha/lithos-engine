@@ -577,23 +577,6 @@ public:
 		return smoothDirection;
 	}
 
-	void drawBrush3d(ProgramData data){
-		glUseProgram(program3d);
-		UniformBlockBrush * brush = &brushes[brush3d->index];
-		UniformBlockBrush::uniform(program3d, brush, "brushes", "brushTextures", brush3d->index, brush->textureIndex);	
-
-		glm::mat4 model = glm::mat4(1.0f);
-
-		uniformBlock.world = model;
-		uniformBlock.set(OVERRIDE_FLAG, true);
-		uniformBlock.uintData.w = uint(brush3d->index);
-
-		UniformBlockBrush::uniform(program3d, brush, "overrideProps");
-		UniformBlock::uniform(0, &uniformBlock, sizeof(UniformBlock) , &data);
-		
-		//TODO: Draw the brush geometry
-	}
-
 	float processTime = 0;
 
 
@@ -799,7 +782,8 @@ public:
 		}
 
 		if(brush3d->enabled) {
-			drawBrush3d(*uniformBlockData);
+			UniformBlock::uniform(0, &uniformBlock, sizeof(UniformBlock), uniformBlockData);
+			mainScene->draw3dBrush(camera.position, mainScene->visibleBrushNodes);
 		}	
 
 		glPolygonMode(GL_FRONT, GL_FILL);

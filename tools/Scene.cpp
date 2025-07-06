@@ -79,6 +79,9 @@ bool Scene::processSolid(OctreeNodeData &data, Octree * tree) {
 		if(loadSpace(tree, data, &debugInfo, debugBuilder)) {
 			result = true;			
 		}
+		if(loadSpace(tree, data, &brushInfo, brushBuilder)) {
+			result = true;			
+		}
 	}
 	return result;
 }
@@ -91,12 +94,23 @@ bool Scene::processSpace() {
 	brushInstancesVisible = 0;
 	debugInstancesVisible = 0;
 	int loadCountSolid = 1;
+	int loadCountBrush = 1;
 	int loadCountLiquid = 1;
 
 	for(OctreeNodeData &data : visibleSolidNodes) {
 		if(loadCountSolid > 0) {
 			if(processSolid(data, solidSpace)) {
 				--loadCountSolid;
+			}
+		} else {
+			break;
+		}
+	}
+
+	for(OctreeNodeData &data : visibleBrushNodes) {
+		if(loadCountBrush > 0) {
+			if(processSolid(data, brushSpace)) {
+				--loadCountBrush;
 			}
 		} else {
 			break;

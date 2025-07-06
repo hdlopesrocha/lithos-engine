@@ -7,7 +7,7 @@ Camera::Camera(glm::vec3 position, glm::quat quaternion, float near, float far) 
     this->position = position;
     this->quaternion = quaternion;
 	this->rotationSensitivity = 0.1f;
-	this->translationSensitivity = 128.0f;
+	this->translationSensitivity = 32.0f;
 }
 
 glm::vec3 Camera::getCameraDirection() {
