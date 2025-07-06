@@ -1,8 +1,8 @@
-#include "handler.hpp"
+#include "tools.hpp"
 
-PaintBrushHandler::PaintBrushHandler(Brush3d &brush3d, Scene &scene) : 
+PaintBrushHandler::PaintBrushHandler(Brush3d &brush3d, Octree &octree) : 
     brush3d(brush3d), 
-    octree(*scene.solidSpace),
+    octree(octree),
     simplifier(0.99, 0.1, true)
      {
 }

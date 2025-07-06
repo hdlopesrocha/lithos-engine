@@ -10,7 +10,10 @@ void GamepadControllerStrategy::handleInput(float deltaTime) {
     glm::vec3 vector3d0 = glm::vec3(0);
     glm::vec3 vector3d1 = glm::vec3(0);
     glm::vec3 component3d0 = glm::vec3(0);
-    glm::vec3 component3d1 = glm::vec3(0);
+    glm::vec3 component3d2 = glm::vec3(0);
+    float float0x = 0;
+    float float0y = 0;
+    float float0z = 0;
 
     if (glfwGetGamepadState(GLFW_JOYSTICK_1, &state)) {
         vector3d0.x = state.axes[GLFW_GAMEPAD_AXIS_RIGHT_X];
@@ -25,9 +28,9 @@ void GamepadControllerStrategy::handleInput(float deltaTime) {
         vector3d1.z = -state.axes[GLFW_GAMEPAD_AXIS_LEFT_Y];
         vector3d1.y = (state.buttons[GLFW_GAMEPAD_BUTTON_RIGHT_BUMPER] == GLFW_PRESS ? 1 : 0) - (state.buttons[GLFW_GAMEPAD_BUTTON_LEFT_BUMPER] == GLFW_PRESS ? 1 : 0);	
     
-        component3d1.x = state.axes[GLFW_GAMEPAD_AXIS_LEFT_X];
-        component3d1.y = state.axes[GLFW_GAMEPAD_AXIS_LEFT_Y];
-        component3d1.z = (state.buttons[GLFW_GAMEPAD_BUTTON_RIGHT_BUMPER] == GLFW_PRESS ? 1 : 0) - (state.buttons[GLFW_GAMEPAD_BUTTON_LEFT_BUMPER] == GLFW_PRESS ? 1 : 0);
+        component3d2.x = state.axes[GLFW_GAMEPAD_AXIS_LEFT_X];
+        component3d2.y = state.axes[GLFW_GAMEPAD_AXIS_LEFT_Y];
+        component3d2.z = (state.buttons[GLFW_GAMEPAD_BUTTON_RIGHT_BUMPER] == GLFW_PRESS ? 1 : 0) - (state.buttons[GLFW_GAMEPAD_BUTTON_LEFT_BUMPER] == GLFW_PRESS ? 1 : 0);
 
         if(state.buttons[GLFW_GAMEPAD_BUTTON_DPAD_RIGHT] == GLFW_PRESS) {
             if(!keyWasPressed[GLFW_GAMEPAD_BUTTON_DPAD_RIGHT]) { 
@@ -57,7 +60,7 @@ void GamepadControllerStrategy::handleInput(float deltaTime) {
     vector3d0 = applyDeadzone(vector3d0, threshold);
     vector3d1 = applyDeadzone(vector3d1, threshold);
     component3d0 = applyDeadzone(component3d0, threshold);
-    component3d1 = applyDeadzone(component3d1, threshold);
+    component3d2 = applyDeadzone(component3d2, threshold);
 
     if(isAboveDeadzone(vector3d0, threshold)) {
         eventManager.publish<Axis3dEvent>(Axis3dEvent(EVENT_VECTOR_3D_0, vector3d0, deltaTime));
@@ -71,8 +74,8 @@ void GamepadControllerStrategy::handleInput(float deltaTime) {
         eventManager.publish<Axis3dEvent>(Axis3dEvent(EVENT_COMPONENT_3D_0, component3d0, deltaTime));
     }
 
-    if(isAboveDeadzone(component3d1, threshold)) {
-        eventManager.publish<Axis3dEvent>(Axis3dEvent(EVENT_COMPONENT_3D_1, component3d1, deltaTime));
+    if(isAboveDeadzone(component3d2, threshold)) {
+        eventManager.publish<Axis3dEvent>(Axis3dEvent(EVENT_COMPONENT_3D_2, component3d2, deltaTime));
     }
 
 }

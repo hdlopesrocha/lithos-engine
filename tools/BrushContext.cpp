@@ -1,5 +1,4 @@
 #include "tools.hpp"
-#include "../handler/handler.hpp"
 
 BrushContext::BrushContext(Camera &camera) : camera(camera) {
     this->simplifier = new Simplifier(0.99f, 0.01f, true);

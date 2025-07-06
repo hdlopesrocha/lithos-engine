@@ -7,8 +7,7 @@
 #include <string>
 #include <fstream>
 #include <sstream>
-#include "../tools/tools.hpp"
-
+#include "../event/event.hpp"
 
 class EventHandlerBase {
     public:
@@ -108,16 +107,6 @@ class ScaleHandler : public EventHandler<Axis3dEvent>{
     void handle(Axis3dEvent value) override ;
 };
 
-class PaintBrushHandler : public EventHandler<Event>{
-    Brush3d &brush3d;
-    Octree &octree;
-    Simplifier simplifier;
-    public:
-    PaintBrushHandler(Brush3d &brush3d, Scene &scene);
-    void handle(Event event) override ;
-};
-
-
 class RotateHandler : public EventHandler<Axis3dEvent>{
     Camera &camera;
     glm::quat &quaternion;
@@ -126,21 +115,6 @@ class RotateHandler : public EventHandler<Axis3dEvent>{
     void handle(Axis3dEvent value) override ;
 };
 
-class CloseWindowHandler : public EventHandler<Event>{
-    LithosApplication &app;
-    public:
-    CloseWindowHandler(LithosApplication &app);
-    void handle(Event value) override ;
-};
-
-template<typename T> class ControlBrushHandler : public EventHandler<T> {
-    BrushContext &brushContext;
-    public:
-    ControlBrushHandler(BrushContext &brushContext) : brushContext(brushContext) {}
-    void handle(T value) override {
-        brushContext.handleEvent( value);
-    }
-};
 
 class ControlEventManagerGroupHandler : public EventHandler<BinaryEvent> {
     EventManagerGroup &eventManagerGroup;

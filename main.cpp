@@ -2,15 +2,11 @@
 #include "math/math.hpp"
 #include "gl/gl.hpp"
 #include "ui/ui.hpp"
-#include "event/event.hpp"
-#include "handler/handler.hpp"
-#include "controller/controller.hpp"
-#include "command/command.hpp"
-#include "tools/tools.hpp"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include "controller/controller.hpp"
 
 class MainApplication : public LithosApplication {
 	std::vector<UniformBlockBrush> brushes;
@@ -503,10 +499,15 @@ public:
 
 		EventManager * brushEventManager = new EventManager();
 		brushEventManager->subscribe(EVENT_VECTOR_3D_0, new ControlBrushHandler<Axis3dEvent>(*brushContext));
-		brushEventManager->subscribe(EVENT_VECTOR_3D_1, new ControlBrushHandler<Axis3dEvent>(*brushContext));		brushEventManager->subscribe(EVENT_VECTOR_3D_0, new ControlBrushHandler<Axis3dEvent>(*brushContext));
-		brushEventManager->subscribe(EVENT_COMPONENT_3D_0, new ControlBrushHandler<Axis3dEvent>(*brushContext));		brushEventManager->subscribe(EVENT_VECTOR_3D_0, new ControlBrushHandler<Axis3dEvent>(*brushContext));
-		brushEventManager->subscribe(EVENT_COMPONENT_3D_1, new ControlBrushHandler<Axis3dEvent>(*brushContext));
+		brushEventManager->subscribe(EVENT_VECTOR_3D_1, new ControlBrushHandler<Axis3dEvent>(*brushContext));		
+		brushEventManager->subscribe(EVENT_COMPONENT_3D_0, new ControlBrushHandler<Axis3dEvent>(*brushContext));		
+		brushEventManager->subscribe(EVENT_COMPONENT_3D_2, new ControlBrushHandler<Axis3dEvent>(*brushContext));
 		brushEventManager->subscribe(EVENT_PAINT_BRUSH, new ControlBrushHandler<Event>(*brushContext));
+		brushEventManager->subscribe(EVENT_FLOAT_1_X, new ControlBrushHandler<FloatEvent>(*brushContext));
+		brushEventManager->subscribe(EVENT_FLOAT_1_Y, new ControlBrushHandler<FloatEvent>(*brushContext));
+		brushEventManager->subscribe(EVENT_FLOAT_1_Z, new ControlBrushHandler<FloatEvent>(*brushContext));
+
+		
 		eventManager.addArea(brushEventManager);
 		eventManagerGroup.addEventManager(brushEventManager);
 

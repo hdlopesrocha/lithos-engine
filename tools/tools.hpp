@@ -6,7 +6,8 @@
 
 #include "../gl/gl.hpp"
 #include "../space/space.hpp"
-#include "../event/event.hpp"
+#include "../handler/handler.hpp"
+
 #include <algorithm>
 #include <random>
 
@@ -55,6 +56,19 @@ class DerivativeLandBrush : public TexturePainter {
 	public: 
 	DerivativeLandBrush();
 	void paint(Vertex &vertex) const override;
+};
+
+class BrushContext {
+	public:
+	std::vector<SignedDistanceFunction*> functions;
+	SignedDistanceFunction * currentFunction;
+	BoundingSphere boundingVolume;
+	Simplifier * simplifier;
+	float detail;
+	Camera &camera;
+
+	BrushContext(Camera &camera);
+	void handleEvent(Event &event);
 };
 
 class SimpleBrush : public TexturePainter {
@@ -306,18 +320,6 @@ class ControlledObject {
     std::vector<ControlledAttributeBase*> attributes;
 };
 
-class BrushContext {
-	public:
-	std::vector<SignedDistanceFunction*> functions;
-	SignedDistanceFunction * currentFunction;
-	BoundingSphere boundingVolume;
-	Simplifier * simplifier;
-	float detail;
-	Camera &camera;
-
-	BrushContext(Camera &camera);
-	void handleEvent(Event &event);
-};
 
 template<typename T> class TimedAttribute {
     public:
@@ -325,6 +327,37 @@ template<typename T> class TimedAttribute {
     T value;
     TimedAttribute(float deltaTime, T value) : deltaTime(deltaTime), value(value) {}
 
+};
+
+
+class PaintBrushHandler : public EventHandler<Event>{
+    Brush3d &brush3d;
+    Octree &octree;
+    Simplifier simplifier;
+    public:
+    PaintBrushHandler(Brush3d &brush3d, Octree &octree);
+    void handle(Event event) override ;
+};
+
+class CloseWindowHandler : public EventHandler<Event>{
+    LithosApplication &app;
+    public:
+    CloseWindowHandler(LithosApplication &app);
+    void handle(Event value) override ;
+};
+
+template<typename T> class ControlBrushHandler : public EventHandler<T> {
+    BrushContext &brushContext;
+    public:
+
+
+    ControlBrushHandler(BrushContext &brushContext) 
+        : brushContext(brushContext) {
+
+    }
+    void handle(T value) override {
+        brushContext.handleEvent( value);
+    }
 };
 
 
