@@ -1,13 +1,13 @@
 #include "tools.hpp"
 
-PaintBrushHandler::PaintBrushHandler(Brush3d &brush3d, Octree &octree) : 
+PaintBrushHandler::PaintBrushHandler(Brush3d * brush3d, Octree * octree) : 
     brush3d(brush3d), 
     octree(octree),
     simplifier(0.99, 0.1, true)
      {
 }
 
-void PaintBrushHandler::handle(Event event) {
+void PaintBrushHandler::handle(Event * event) {
     std::unique_ptr<ContainmentHandler> handler;
     std::unique_ptr<SignedDistanceFunction> function;
 /*

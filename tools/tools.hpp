@@ -65,10 +65,10 @@ class BrushContext {
 	BoundingSphere boundingVolume;
 	Simplifier * simplifier;
 	float detail;
-	Camera &camera;
+	Camera * camera;
 
-	BrushContext(Camera &camera);
-	void handleEvent(Event &event);
+	BrushContext(Camera *camera);
+	void handleEvent(Event * event);
 };
 
 class SimpleBrush : public TexturePainter {
@@ -287,9 +287,6 @@ class OctreeDifferenceFunction : public SignedDistanceFunction {
 };
 
 
-#define TYPE_FLOAT 1
-#define TYPE_VEC2 2
-#define TYPE_VEC3 3
 
 class ControlledAttributeBase {
 	public:
@@ -331,19 +328,19 @@ template<typename T> class TimedAttribute {
 
 
 class PaintBrushHandler : public EventHandler<Event>{
-    Brush3d &brush3d;
-    Octree &octree;
+    Brush3d * brush3d;
+    Octree * octree;
     Simplifier simplifier;
     public:
-    PaintBrushHandler(Brush3d &brush3d, Octree &octree);
-    void handle(Event event) override ;
+    PaintBrushHandler(Brush3d * brush3d, Octree * octree);
+    void handle(Event * event) override ;
 };
 
 class CloseWindowHandler : public EventHandler<Event>{
-    LithosApplication &app;
+    LithosApplication *app;
     public:
-    CloseWindowHandler(LithosApplication &app);
-    void handle(Event value) override ;
+    CloseWindowHandler(LithosApplication *app);
+    void handle(Event * value) override ;
 };
 
 template<typename T> class ControlBrushHandler : public EventHandler<T> {
@@ -355,7 +352,7 @@ template<typename T> class ControlBrushHandler : public EventHandler<T> {
         : brushContext(brushContext) {
 
     }
-    void handle(T value) override {
+    void handle(T * value) override {
         brushContext.handleEvent( value);
     }
 };

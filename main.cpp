@@ -469,7 +469,7 @@ public:
 		glUseProgram(0);
 		//tesselator->normalize();
 
-		brushContext = new BrushContext(camera);
+		brushContext = new BrushContext(&camera);
 		uniformBlockViewer = new UniformBlockViewer(&viewerBlock);
 		atlasPainter = new AtlasPainter(&atlasParams, &atlasTextures, atlasDrawer, programAtlas, programTexture, 256,256, &billboardLayers);
 		atlasViewer = new AtlasViewer(&atlasTextures, atlasDrawer, programAtlas, programTexture, 256,256, &atlasLayers, programCopy);
@@ -485,29 +485,32 @@ public:
 		impostorViewer = new ImpostorViewer(impostorDrawer, &impostors , programTexture, 256, 256, &impostorLayers);
 
 		// Events
-		eventManager.subscribe(EVENT_CLOSE_WINDOW, new CloseWindowHandler(*this));
-		eventManager.subscribe(EVENT_NEXT_PAGE, new ControlEventManagerGroupHandler(eventManagerGroup));
-		eventManager.subscribe(EVENT_PREVIOUS_PAGE, new ControlEventManagerGroupHandler(eventManagerGroup));
+		eventManager.subscribe(EVENT_CLOSE_WINDOW, new CloseWindowHandler(this));
+		eventManager.subscribe(EVENT_NEXT_PAGE, new ControlEventManagerGroupHandler(&eventManagerGroup));
+		eventManager.subscribe(EVENT_PREVIOUS_PAGE, new ControlEventManagerGroupHandler(&eventManagerGroup));
 		
 		//eventManager.subscribe(EVENT_PAINT_BRUSH, new EventTriggerCommand<Event>(new PaintBrushCommand(*brush3d, *mainScene)));
 	
 		EventManager * cameraEventManager = new EventManager();
-		cameraEventManager->subscribe(EVENT_VECTOR_3D_0, new TranslateHandler(camera, camera.position));
-		cameraEventManager->subscribe(EVENT_VECTOR_3D_1, new RotateHandler(camera, camera.quaternion));
+		cameraEventManager->subscribe(EVENT_VECTOR_3D_0, new TranslateHandler(&camera, &camera.position));
+		cameraEventManager->subscribe(EVENT_VECTOR_3D_1, new RotateHandler(&camera, &camera.quaternion));
 		eventManager.addArea(cameraEventManager);
 		eventManagerGroup.addEventManager(cameraEventManager);
 
 		EventManager * brushEventManager = new EventManager();
+		brushEventManager->subscribe(EVENT_PAINT_BRUSH, new ControlBrushHandler<Event>(*brushContext));
 		brushEventManager->subscribe(EVENT_VECTOR_3D_0, new ControlBrushHandler<Axis3dEvent>(*brushContext));
 		brushEventManager->subscribe(EVENT_VECTOR_3D_1, new ControlBrushHandler<Axis3dEvent>(*brushContext));		
-		brushEventManager->subscribe(EVENT_COMPONENT_3D_0, new ControlBrushHandler<Axis3dEvent>(*brushContext));		
-		brushEventManager->subscribe(EVENT_COMPONENT_3D_2, new ControlBrushHandler<Axis3dEvent>(*brushContext));
-		brushEventManager->subscribe(EVENT_PAINT_BRUSH, new ControlBrushHandler<Event>(*brushContext));
+		brushEventManager->subscribe(EVENT_VECTOR_3D_2, new ControlBrushHandler<Axis3dEvent>(*brushContext));		
+		brushEventManager->subscribe(EVENT_FLOAT_0_X, new ControlBrushHandler<FloatEvent>(*brushContext));
+		brushEventManager->subscribe(EVENT_FLOAT_0_Y, new ControlBrushHandler<FloatEvent>(*brushContext));
+		brushEventManager->subscribe(EVENT_FLOAT_0_Z, new ControlBrushHandler<FloatEvent>(*brushContext));
 		brushEventManager->subscribe(EVENT_FLOAT_1_X, new ControlBrushHandler<FloatEvent>(*brushContext));
 		brushEventManager->subscribe(EVENT_FLOAT_1_Y, new ControlBrushHandler<FloatEvent>(*brushContext));
 		brushEventManager->subscribe(EVENT_FLOAT_1_Z, new ControlBrushHandler<FloatEvent>(*brushContext));
-
-		
+		brushEventManager->subscribe(EVENT_FLOAT_2_X, new ControlBrushHandler<FloatEvent>(*brushContext));
+		brushEventManager->subscribe(EVENT_FLOAT_2_Y, new ControlBrushHandler<FloatEvent>(*brushContext));
+		brushEventManager->subscribe(EVENT_FLOAT_2_Z, new ControlBrushHandler<FloatEvent>(*brushContext));
 		eventManager.addArea(brushEventManager);
 		eventManagerGroup.addEventManager(brushEventManager);
 

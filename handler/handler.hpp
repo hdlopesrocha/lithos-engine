@@ -18,35 +18,35 @@ class EventHandlerBase {
 template<typename T> class EventHandler : public EventHandlerBase {
     public:
     virtual ~EventHandler() = default;
-    virtual void handle(T eventData) = 0;
+    virtual void handle(T * eventData) = 0;
 };
 
 
 class EventManager {
-    std::map<int, EventHandlerBase*> handlers;
+    std::map<EventType, EventHandlerBase*> handlers;
     std::vector<EventManager*> areas; 
     bool enabled = true;
     public:
 
-    void subscribe(int eventType, EventHandlerBase *handler) {
+    void subscribe(EventType eventType, EventHandlerBase *handler) {
         handlers[eventType] = handler;
     }
 
     template<typename T> void publish(T eventData) {
         static_assert(std::is_base_of<Event, T>::value, "T must derive from Event");
-        int eventType = eventData.getType();
         if(enabled) {
+            EventType eventType = eventData.getType();
             auto it = handlers.find(eventType);
             if (it != handlers.end()) {
                 EventHandler<T> * handler = dynamic_cast<EventHandler<T>*>(it->second);
                 if (handler) {
-                    handler->handle(eventData);
+                    handler->handle(&eventData);
                 } else {
                     std::cerr << "Error: Handler for event type " << eventType << " does not match data type." << std::endl;
                 }
             } else {
-                for(const auto& area : areas) {
-                    area->publish(eventData);
+                for(auto * area : areas) {
+                    area->publish<T>(eventData);
                 }
                 //std::cerr << "Error: No handler found for event type " << eventType << "." << std::endl;
             }
@@ -92,39 +92,47 @@ class EventManagerGroup {
     }
 };
 
-class TranslateHandler : public EventHandler<Axis3dEvent>{
-    Camera &camera;
-    glm::vec3 &vector;
+class FloatHandler : public EventHandler<FloatEvent>{
+    float * floatPtr;
     public:
-    TranslateHandler(Camera &camera, glm::vec3 &vector);
-    void handle(Axis3dEvent value) override ;
+    FloatHandler(float * floatPtr);
+    void handle(FloatEvent * value) override ;
 };
 
-class ScaleHandler : public EventHandler<Axis3dEvent>{
-    glm::vec3 &vector;
+
+class TranslateHandler : public EventHandler<Axis3dEvent>{
+    Camera * camera;
+    glm::vec3 * vector;
     public:
-    ScaleHandler(glm::vec3 &vector);
-    void handle(Axis3dEvent value) override ;
+    TranslateHandler(Camera * camera, glm::vec3 *vector);
+    void handle(Axis3dEvent  * value) override ;
+};
+
+class ScaleHandler : public EventHandler<FloatEvent>{
+    float * value;
+    public:
+    ScaleHandler(float *value);
+    void handle(FloatEvent * value) override ;
 };
 
 class RotateHandler : public EventHandler<Axis3dEvent>{
-    Camera &camera;
-    glm::quat &quaternion;
+    Camera * camera;
+    glm::quat * quaternion;
     public:
-    RotateHandler(Camera &camera, glm::quat &quaternion);
-    void handle(Axis3dEvent value) override ;
+    RotateHandler(Camera * camera, glm::quat * quaternion);
+    void handle(Axis3dEvent * value) override ;
 };
 
 
 class ControlEventManagerGroupHandler : public EventHandler<BinaryEvent> {
-    EventManagerGroup &eventManagerGroup;
+    EventManagerGroup * eventManagerGroup;
     public:
-    ControlEventManagerGroupHandler(EventManagerGroup &eventManagerGroup) : eventManagerGroup(eventManagerGroup) {}
-    void handle(BinaryEvent event) override {
-        if(event.value) {
-            eventManagerGroup.next();
+    ControlEventManagerGroupHandler(EventManagerGroup * eventManagerGroup) : eventManagerGroup(eventManagerGroup) {}
+    void handle(BinaryEvent * event) override {
+        if(event->value) {
+            eventManagerGroup->next();
         } else {
-            eventManagerGroup.previous();
+            eventManagerGroup->previous();
         }
     }
 };

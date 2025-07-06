@@ -87,40 +87,50 @@ void BrushEditor::draw2d(float time){
     switch (brushContext->currentFunction->getType())
     {
         case SdfType::SPHERE:
+        {
+            SphereDistanceFunction* function = (SphereDistanceFunction*)brushContext->currentFunction;
             ImGui::Text("Sphere Position: ");
-            if(ImGui::InputFloat3("m##spherePosition", &((SphereDistanceFunction*)brushContext->currentFunction)->center[0])) {
+            if(ImGui::InputFloat3("m##spherePosition", &(function->center[0]))) {
                 changed = true; 
             }
             ImGui::Text("Sphere Radius: ");
-            if(ImGui::InputFloat("m##sphereRadius", &((SphereDistanceFunction*)brushContext->currentFunction)->radius)) {
+            if(ImGui::InputFloat("m##sphereRadius", &(function->radius))) {
                 changed = true; 
             }
+        }
             break;  
         case SdfType::BOX:
+        {
+            BoxDistanceFunction* function = (BoxDistanceFunction*)brushContext->currentFunction;
             ImGui::Text("Box Position: "); 
-            if(ImGui::InputFloat3("m##boxPosition", &((BoxDistanceFunction*)brushContext->currentFunction)->center[0])) {
+            if(ImGui::InputFloat3("m##boxPosition", &(function->center[0]))) {
                 changed = true; 
             }    
             ImGui::Text("Box Length: ");
-            if(ImGui::InputFloat3("m##boxLength", &((BoxDistanceFunction*)brushContext->currentFunction)->length[0])) {
+            if(ImGui::InputFloat3("m##boxLength", &(function->length[0]))) {
                 changed = true; 
             }
+        }
             break;
         case SdfType::CAPSULE:
+        {
+            CapsuleDistanceFunction* function = (CapsuleDistanceFunction*)brushContext->currentFunction;
+
             ImGui::Text("Capsule A: ");
-            if(ImGui::InputFloat3("m##capsuleA", &((CapsuleDistanceFunction*)brushContext->currentFunction)->a[0])) {
+            if(ImGui::InputFloat3("m##capsuleA", &(function->a[0]))) {
                 changed = true; 
             }
             ImGui::Text("Capsule B: ");
-            if(ImGui::InputFloat3("m##capsuleB", &((CapsuleDistanceFunction*)brushContext->currentFunction)->b[0])) {
+            if(ImGui::InputFloat3("m##capsuleB", &(function->b[0]))) {
                 changed = true; 
             }    
             ImGui::Text("Capsule Radius: ");
-            if(ImGui::InputFloat("m##capsuleRadius", &((CapsuleDistanceFunction*)brushContext->currentFunction)->radius)) {
+            if(ImGui::InputFloat("m##capsuleRadius", &(function->radius))) {
                 changed = true; 
             }
             break;
         /* code */
+        }
         break;
     
     default:

@@ -1,10 +1,10 @@
 #include "tools.hpp"
 
 
-CloseWindowHandler::CloseWindowHandler(LithosApplication &app) : app(app) {
+CloseWindowHandler::CloseWindowHandler(LithosApplication *app) : app(app) {
 
 }
 
-void CloseWindowHandler::handle(Event value) {
-    app.close();
+void CloseWindowHandler::handle(Event * value) {
+    app->close();
 }

@@ -14,11 +14,9 @@ enum EventType {
     EVENT_CLOSE_WINDOW,
     EVENT_VECTOR_3D_0,
     EVENT_VECTOR_3D_1,
+    EVENT_VECTOR_3D_2,
     EVENT_PREVIOUS_PAGE,
     EVENT_NEXT_PAGE,
-    EVENT_COMPONENT_3D_0,
-    EVENT_COMPONENT_3D_1,
-    EVENT_COMPONENT_3D_2,
     EVENT_FLOAT_0_X,
     EVENT_FLOAT_0_Y,
     EVENT_FLOAT_0_Z,
@@ -31,7 +29,7 @@ enum EventType {
 };
 
 
-class Event {
+struct Event {
     public:
     EventType type;
     Event(EventType type) : type(type) {}
@@ -40,13 +38,13 @@ class Event {
     }
 };
 
-class FloatEvent : public Event {
+struct FloatEvent : public Event {
     public:
     float value;
     FloatEvent(EventType type, float value) : Event(type), value(value) {}
 };
 
-class Axis3dEvent : public Event {
+struct Axis3dEvent : public Event {
     public:
     glm::vec3 axis;
     float deltaTime;
