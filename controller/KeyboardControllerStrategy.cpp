@@ -66,21 +66,27 @@ void KeyboardControllerStrategy::handleInput(float deltaTime) {
 
     if (app.getKeyboardStatus(GLFW_KEY_J) != GLFW_RELEASE) {
         vector3d2.x = -1;
+        float3d2.x = -1;
     }
     if (app.getKeyboardStatus(GLFW_KEY_L) != GLFW_RELEASE) {
         vector3d2.x = 1;
+        float3d2.z = -1;
     }
     if (app.getKeyboardStatus(GLFW_KEY_I) != GLFW_RELEASE) {
         vector3d2.z = 1;
+        float3d2.y = 1;
     }
     if (app.getKeyboardStatus(GLFW_KEY_K) != GLFW_RELEASE) {
         vector3d2.z = -1;
+        float3d2.y = -1;
     }
     if (app.getKeyboardStatus(GLFW_KEY_U) != GLFW_RELEASE) {
         vector3d2.y = -1;
+        float3d2.x = 1;
     }
     if (app.getKeyboardStatus(GLFW_KEY_O) != GLFW_RELEASE) {
         vector3d2.y = 1;
+        float3d2.z = 1;
     }
 
     if (app.getKeyboardStatus(GLFW_KEY_SPACE) != GLFW_RELEASE) {
