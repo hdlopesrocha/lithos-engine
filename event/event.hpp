@@ -9,31 +9,33 @@
 #include <sstream>
 #include "../math/math.hpp"
 
-#define EVENT_PAINT_BRUSH 1
-#define EVENT_CLOSE_WINDOW 2
-#define EVENT_VECTOR_3D_0 3
-#define EVENT_VECTOR_3D_1 4
-#define EVENT_PREVIOUS_PAGE 5
-#define EVENT_NEXT_PAGE 6
-#define EVENT_COMPONENT_3D_0 7
-#define EVENT_COMPONENT_3D_1 8
-#define EVENT_COMPONENT_3D_2 9
-#define EVENT_FLOAT_0_X 10
-#define EVENT_FLOAT_0_Y 11
-#define EVENT_FLOAT_0_Z 12
-#define EVENT_FLOAT_1_X 13
-#define EVENT_FLOAT_1_Y 14
-#define EVENT_FLOAT_1_Z 15
-#define EVENT_FLOAT_2_X 16
-#define EVENT_FLOAT_2_Y 17
-#define EVENT_FLOAT_2_Z 18
+enum EventType {
+    EVENT_PAINT_BRUSH = 1,
+    EVENT_CLOSE_WINDOW,
+    EVENT_VECTOR_3D_0,
+    EVENT_VECTOR_3D_1,
+    EVENT_PREVIOUS_PAGE,
+    EVENT_NEXT_PAGE,
+    EVENT_COMPONENT_3D_0,
+    EVENT_COMPONENT_3D_1,
+    EVENT_COMPONENT_3D_2,
+    EVENT_FLOAT_0_X,
+    EVENT_FLOAT_0_Y,
+    EVENT_FLOAT_0_Z,
+    EVENT_FLOAT_1_X,
+    EVENT_FLOAT_1_Y,
+    EVENT_FLOAT_1_Z,
+    EVENT_FLOAT_2_X,
+    EVENT_FLOAT_2_Y,
+    EVENT_FLOAT_2_Z
+};
 
 
 class Event {
     public:
-    int type;
-    Event(int type) : type(type) {}
-    int getType() const {
+    EventType type;
+    Event(EventType type) : type(type) {}
+    EventType getType() const {
         return type;
     }
 };
@@ -41,20 +43,20 @@ class Event {
 class FloatEvent : public Event {
     public:
     float value;
-    FloatEvent(int type, float value) : Event(type), value(value) {}
+    FloatEvent(EventType type, float value) : Event(type), value(value) {}
 };
 
 class Axis3dEvent : public Event {
     public:
     glm::vec3 axis;
     float deltaTime;
-    Axis3dEvent(int type, glm::vec3 axis, float deltaTime) : Event(type), axis(axis), deltaTime(deltaTime) {}
+    Axis3dEvent(EventType type, glm::vec3 axis, float deltaTime) : Event(type), axis(axis), deltaTime(deltaTime) {}
 };
 
 class BinaryEvent : public Event {
     public:
     bool value;
-    BinaryEvent(int type, bool value) : Event(type), value(value) {}
+    BinaryEvent(EventType type, bool value) : Event(type), value(value) {}
 };
 
 
