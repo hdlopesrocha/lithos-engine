@@ -99,26 +99,26 @@ void KeyboardControllerStrategy::handleInput(float deltaTime) {
     vector3d2 = applyDeadzone(vector3d2, threshold);
 
     if(float3d0.x){
-        eventManager.publish<FloatEvent>(FloatEvent(EVENT_FLOAT_0_X, float3d0.x));
+        eventManager.publish<FloatEvent>(FloatEvent(EVENT_FLOAT_0_X, float3d0.x, deltaTime));
     }
     if(float3d0.y){
-        eventManager.publish<FloatEvent>(FloatEvent(EVENT_FLOAT_0_Y, float3d0.y));
+        eventManager.publish<FloatEvent>(FloatEvent(EVENT_FLOAT_0_Y, float3d0.y, deltaTime));
     }
     if(float3d0.z){
-        eventManager.publish<FloatEvent>(FloatEvent(EVENT_FLOAT_0_Z, float3d0.z));
+        eventManager.publish<FloatEvent>(FloatEvent(EVENT_FLOAT_0_Z, float3d0.z, deltaTime));
     }
     if(isAboveDeadzone(vector3d0, threshold)) {
         eventManager.publish<Axis3dEvent>(Axis3dEvent(EVENT_VECTOR_3D_0, vector3d0, deltaTime));
     }
 
     if(float3d1.x){
-        eventManager.publish<FloatEvent>(FloatEvent(EVENT_FLOAT_1_X, float3d1.x));
+        eventManager.publish<FloatEvent>(FloatEvent(EVENT_FLOAT_1_X, float3d1.x, deltaTime));
     }
     if(float3d1.y){
-        eventManager.publish<FloatEvent>(FloatEvent(EVENT_FLOAT_1_Y, float3d1.y));
+        eventManager.publish<FloatEvent>(FloatEvent(EVENT_FLOAT_1_Y, float3d1.y, deltaTime));
     }
     if(float3d1.z){
-        eventManager.publish<FloatEvent>(FloatEvent(EVENT_FLOAT_1_Z, float3d1.z));
+        eventManager.publish<FloatEvent>(FloatEvent(EVENT_FLOAT_1_Z, float3d1.z, deltaTime));
     }
     if(isAboveDeadzone(vector3d1, threshold)) {
         eventManager.publish<Axis3dEvent>(Axis3dEvent(EVENT_VECTOR_3D_1, vector3d1, deltaTime));
@@ -126,13 +126,13 @@ void KeyboardControllerStrategy::handleInput(float deltaTime) {
 
   
     if(float3d2.x){
-        eventManager.publish<FloatEvent>(FloatEvent(EVENT_FLOAT_2_X, float3d2.x));
+        eventManager.publish<FloatEvent>(FloatEvent(EVENT_FLOAT_2_X, float3d2.x, deltaTime));
     }
     if(float3d2.y){
-        eventManager.publish<FloatEvent>(FloatEvent(EVENT_FLOAT_2_Y, float3d2.y));
+        eventManager.publish<FloatEvent>(FloatEvent(EVENT_FLOAT_2_Y, float3d2.y, deltaTime));
     }
     if(float3d2.z){
-        eventManager.publish<FloatEvent>(FloatEvent(EVENT_FLOAT_2_Z, float3d2.z));
+        eventManager.publish<FloatEvent>(FloatEvent(EVENT_FLOAT_2_Z, float3d2.z, deltaTime));
     }
     if(isAboveDeadzone(vector3d2, threshold)) {
         eventManager.publish<Axis3dEvent>(Axis3dEvent(EVENT_VECTOR_3D_2, vector3d2, deltaTime));

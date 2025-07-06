@@ -41,7 +41,8 @@ struct Event {
 struct FloatEvent : public Event {
     public:
     float value;
-    FloatEvent(EventType type, float value) : Event(type), value(value) {}
+    float deltaTime;
+    FloatEvent(EventType type, float value, float deltaTime) : Event(type), value(value), deltaTime(deltaTime) {}
 };
 
 struct Axis3dEvent : public Event {
