@@ -1,5 +1,6 @@
 #include "controller.hpp"
 
+
 glm::vec3 ControllerStrategy::applyDeadzone(glm::vec3 input, float threshold) {
     glm::vec3 result = input;
     for (int i = 0; i < 3; ++i) {

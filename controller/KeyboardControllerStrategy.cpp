@@ -1,5 +1,14 @@
 #include "controller.hpp"
 
+float KeyboardControllerStrategy::tick(int key, float deltaTime) {
+    if(deltaTime!=0.0) {
+        keyWasPressed[key] += deltaTime;
+    } else {
+        keyWasPressed[key] = 0.0f;
+    }
+    return keyWasPressed[key];
+}
+
 
 
 KeyboardControllerStrategy::KeyboardControllerStrategy(LithosApplication &app, EventManager &eventManager): app(app), eventManager(eventManager) {
@@ -17,6 +26,7 @@ void KeyboardControllerStrategy::handleInput(float deltaTime) {
     if (app.getKeyboardStatus(GLFW_KEY_A) != GLFW_RELEASE) {
         vector3d0.x = -1;
         float3d0.x = -1;
+
     }
     if (app.getKeyboardStatus(GLFW_KEY_D) != GLFW_RELEASE) {
         vector3d0.x = 1;
@@ -98,45 +108,86 @@ void KeyboardControllerStrategy::handleInput(float deltaTime) {
     vector3d1 = applyDeadzone(vector3d1, threshold);
     vector3d2 = applyDeadzone(vector3d2, threshold);
 
+    float3d0 = applyDeadzone(float3d0, threshold);
+    float3d1 = applyDeadzone(float3d1, threshold);
+    float3d2 = applyDeadzone(float3d2, threshold);
+
     if(float3d0.x){
-        eventManager.publish<FloatEvent>(FloatEvent(EVENT_FLOAT_0_X, float3d0.x, deltaTime));
+        float duration = tick(EVENT_FLOAT_0_X, deltaTime);
+        eventManager.publish<FloatEvent>(FloatEvent(EVENT_FLOAT_0_X, float3d0.x, deltaTime, duration));
+    } else {
+        tick(EVENT_FLOAT_0_X, 0.0f);
     }
     if(float3d0.y){
-        eventManager.publish<FloatEvent>(FloatEvent(EVENT_FLOAT_0_Y, float3d0.y, deltaTime));
+        float duration = tick(EVENT_FLOAT_0_Y, deltaTime);
+        eventManager.publish<FloatEvent>(FloatEvent(EVENT_FLOAT_0_Y, float3d0.y, deltaTime, duration));
+    } else {
+        tick(EVENT_FLOAT_0_Y, 0.0f);
     }
     if(float3d0.z){
-        eventManager.publish<FloatEvent>(FloatEvent(EVENT_FLOAT_0_Z, float3d0.z, deltaTime));
+        float duration = tick(EVENT_FLOAT_0_Z, deltaTime);
+        eventManager.publish<FloatEvent>(FloatEvent(EVENT_FLOAT_0_Z, float3d0.z, deltaTime, duration));
+    } else {
+        tick(EVENT_FLOAT_0_Z, 0.0f);
     }
     if(isAboveDeadzone(vector3d0, threshold)) {
-        eventManager.publish<Axis3dEvent>(Axis3dEvent(EVENT_VECTOR_3D_0, vector3d0, deltaTime));
+        float duration = tick(EVENT_VECTOR_3D_0, deltaTime);
+        eventManager.publish<Axis3dEvent>(Axis3dEvent(EVENT_VECTOR_3D_0, vector3d0, deltaTime, duration));
+    } else {
+        tick(EVENT_VECTOR_3D_0, 0.0f);
     }
 
     if(float3d1.x){
-        eventManager.publish<FloatEvent>(FloatEvent(EVENT_FLOAT_1_X, float3d1.x, deltaTime));
+        float duration = tick(EVENT_FLOAT_1_X, deltaTime);
+        eventManager.publish<FloatEvent>(FloatEvent(EVENT_FLOAT_1_X, float3d1.x, deltaTime, duration));
+    } else {
+        tick(EVENT_FLOAT_1_X, 0.0f);
     }
     if(float3d1.y){
-        eventManager.publish<FloatEvent>(FloatEvent(EVENT_FLOAT_1_Y, float3d1.y, deltaTime));
+        float duration = tick(EVENT_FLOAT_1_Y, deltaTime);
+        eventManager.publish<FloatEvent>(FloatEvent(EVENT_FLOAT_1_Y, float3d1.y, deltaTime, duration));
+    } else {
+        tick(EVENT_FLOAT_1_Y, 0.0f);
     }
     if(float3d1.z){
-        eventManager.publish<FloatEvent>(FloatEvent(EVENT_FLOAT_1_Z, float3d1.z, deltaTime));
+        float duration = tick(EVENT_FLOAT_1_Z, deltaTime);
+        eventManager.publish<FloatEvent>(FloatEvent(EVENT_FLOAT_1_Z, float3d1.z, deltaTime, duration));
+    } else {
+        tick(EVENT_FLOAT_1_Z, 0.0f);
     }
     if(isAboveDeadzone(vector3d1, threshold)) {
-        eventManager.publish<Axis3dEvent>(Axis3dEvent(EVENT_VECTOR_3D_1, vector3d1, deltaTime));
+        float duration = tick(EVENT_VECTOR_3D_1, deltaTime);
+        eventManager.publish<Axis3dEvent>(Axis3dEvent(EVENT_VECTOR_3D_1, vector3d1, deltaTime, duration));
+    } else {
+        tick(EVENT_VECTOR_3D_1, 0.0f);
     }
 
   
     if(float3d2.x){
-        eventManager.publish<FloatEvent>(FloatEvent(EVENT_FLOAT_2_X, float3d2.x, deltaTime));
+        float duration = tick(EVENT_FLOAT_2_X, deltaTime);
+        eventManager.publish<FloatEvent>(FloatEvent(EVENT_FLOAT_2_X, float3d2.x, deltaTime, duration));
+    } else {
+        tick(EVENT_FLOAT_2_X, 0.0f);
     }
     if(float3d2.y){
-        eventManager.publish<FloatEvent>(FloatEvent(EVENT_FLOAT_2_Y, float3d2.y, deltaTime));
+        float duration = tick(EVENT_FLOAT_2_Y, deltaTime);
+        eventManager.publish<FloatEvent>(FloatEvent(EVENT_FLOAT_2_Y, float3d2.y, deltaTime, duration));
+    } else {
+        tick(EVENT_FLOAT_2_Y, 0.0f);
     }
     if(float3d2.z){
-        eventManager.publish<FloatEvent>(FloatEvent(EVENT_FLOAT_2_Z, float3d2.z, deltaTime));
+        float duration = tick(EVENT_FLOAT_2_Z, deltaTime);
+        eventManager.publish<FloatEvent>(FloatEvent(EVENT_FLOAT_2_Z, float3d2.z, deltaTime, duration));
+    } else {
+        tick(EVENT_FLOAT_0_X, 0.0f);
     }
     if(isAboveDeadzone(vector3d2, threshold)) {
-        eventManager.publish<Axis3dEvent>(Axis3dEvent(EVENT_VECTOR_3D_2, vector3d2, deltaTime));
+        float duration = tick(EVENT_VECTOR_3D_2, deltaTime);
+        eventManager.publish<Axis3dEvent>(Axis3dEvent(EVENT_VECTOR_3D_2, vector3d2, deltaTime, duration));
+    } else {
+        tick(EVENT_VECTOR_3D_2, 0.0f);
     }
+
 
     if (app.getKeyboardStatus(GLFW_KEY_ESCAPE) != GLFW_RELEASE) {
         eventManager.publish<Event>(Event(EVENT_CLOSE_WINDOW));

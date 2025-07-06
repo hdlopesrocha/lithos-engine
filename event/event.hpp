@@ -42,14 +42,16 @@ struct FloatEvent : public Event {
     public:
     float value;
     float deltaTime;
-    FloatEvent(EventType type, float value, float deltaTime) : Event(type), value(value), deltaTime(deltaTime) {}
+    float duration;
+    FloatEvent(EventType type, float value, float deltaTime, float duration) : Event(type), value(value), deltaTime(deltaTime), duration(duration) {}
 };
 
 struct Axis3dEvent : public Event {
     public:
     glm::vec3 axis;
     float deltaTime;
-    Axis3dEvent(EventType type, glm::vec3 axis, float deltaTime) : Event(type), axis(axis), deltaTime(deltaTime) {}
+    float duration;
+    Axis3dEvent(EventType type, glm::vec3 axis, float deltaTime, float duration) : Event(type), axis(axis), deltaTime(deltaTime), duration(duration)  {}
 };
 
 class BinaryEvent : public Event {

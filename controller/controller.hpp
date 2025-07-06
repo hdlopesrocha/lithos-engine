@@ -22,22 +22,24 @@ enum ControllerMode {
 
 class GamepadControllerStrategy : public ControllerStrategy {
    	EventManager &eventManager;
-    std::unordered_map<int, bool> keyWasPressed;
+    std::unordered_map<int, float> keyWasPressed;
 
     public:
         GamepadControllerStrategy(EventManager &eventManager);
         void handleInput(float deltaTime) override;
+        float tick(int key, float deltaTime);
 
 };
 
 class KeyboardControllerStrategy : public ControllerStrategy {
     LithosApplication &app;
    	EventManager &eventManager;
-    std::unordered_map<int, bool> keyWasPressed;
+    std::unordered_map<int, float> keyWasPressed;
 
     public:
         KeyboardControllerStrategy(LithosApplication &app, EventManager &eventManager);
         void handleInput(float deltaTime) override;
+        float tick(int key, float deltaTime);
 };
 
 
