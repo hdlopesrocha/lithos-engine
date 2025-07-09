@@ -72,6 +72,7 @@ class SignedDistanceFunction {
 	virtual float distance(const glm::vec3 p) const = 0;
 };
 
+
 class SphereDistanceFunction : public SignedDistanceFunction {
     public:
     glm::vec3 center;
@@ -104,11 +105,143 @@ class CapsuleDistanceFunction : public SignedDistanceFunction {
 };
 
 class HeightMapDistanceFunction : public SignedDistanceFunction {
-	const HeightMap &map;
 	public:
+	const HeightMap &map;
 	HeightMapDistanceFunction(const HeightMap &map);
 	float distance(const glm::vec3 p) const override;
     SdfType getType() const override; 
 };
+
+class WrappedSignedDistanceFunction : public SignedDistanceFunction {
+    protected:
+    SignedDistanceFunction * function;
+    float bias;
+    public:
+    WrappedSignedDistanceFunction(SignedDistanceFunction * function, float bias) : function(function), bias(bias) {
+
+    }
+
+    virtual ContainmentType check(const BoundingCube &cube) const = 0;
+    virtual bool isContained(const BoundingCube &cube) const = 0;
+    virtual glm::vec3 getCenter() const = 0;
+
+    SdfType getType() const override {
+        return function->getType();
+    }    
+
+	float distance(const glm::vec3 p) const override {
+        return function->distance(p);
+    }
+};
+
+class WrappedSphere : public WrappedSignedDistanceFunction {
+    public:
+    WrappedSphere(SphereDistanceFunction * function, float bias) : WrappedSignedDistanceFunction(function, bias) {
+
+    }
+
+    BoundingSphere getSphere() const {
+        SphereDistanceFunction * f = (SphereDistanceFunction*) function;
+        return BoundingSphere(f->center, f->radius + bias);
+    };
+
+    ContainmentType check(const BoundingCube &cube) const override {
+        BoundingSphere sphere = getSphere();
+        return sphere.test(cube);
+    };
+
+    bool isContained(const BoundingCube &cube) const override {
+        BoundingSphere sphere = getSphere();
+        return cube.contains(sphere);
+    };
+
+    glm::vec3 getCenter() const override {
+        SphereDistanceFunction * f = (SphereDistanceFunction*) function;
+        return f->center;
+    };
+};
+
+class WrappedBox : public WrappedSignedDistanceFunction {
+    public:
+    WrappedBox(BoxDistanceFunction * function, float bias) : WrappedSignedDistanceFunction(function, bias) {
+
+    }
+
+    BoundingBox getBox() const {
+        BoxDistanceFunction * f = (BoxDistanceFunction*) function;
+        glm::vec3 lenOver2 = f->length+glm::vec3(bias);
+        return BoundingBox(f->center-lenOver2, f->center+lenOver2);
+    };
+
+    ContainmentType check(const BoundingCube &cube) const override {
+        BoundingBox box = getBox();
+        return box.test(cube);
+    };
+
+    bool isContained(const BoundingCube &cube) const override {
+        BoundingBox box = getBox();
+        return cube.contains(box);
+    };
+
+    glm::vec3 getCenter() const override {
+        BoxDistanceFunction * f = (BoxDistanceFunction*) function;
+        return f->center;
+    };
+};
+
+class WrappedCapsule : public WrappedSignedDistanceFunction {
+    public:
+    WrappedCapsule(CapsuleDistanceFunction * function, float bias) : WrappedSignedDistanceFunction(function, bias) {
+
+    }
+
+    BoundingSphere getSphere() const {
+        CapsuleDistanceFunction * f = (CapsuleDistanceFunction*) function;
+        return BoundingSphere(0.5f*(f->a + f->b), glm::distance(f->a, f->b) + f->radius + bias);
+    };
+
+    ContainmentType check(const BoundingCube &cube) const override {
+        BoundingSphere sphere = getSphere();
+        return sphere.test(cube);
+    };
+
+    bool isContained(const BoundingCube &cube) const override {
+        BoundingSphere sphere = getSphere();
+        return cube.contains(sphere);
+    };
+
+    glm::vec3 getCenter() const override {
+        CapsuleDistanceFunction * f = (CapsuleDistanceFunction*) function;
+        return 0.5f * (f->a + f->b);
+    };
+};
+
+class WrappedHeightMap : public WrappedSignedDistanceFunction {
+    public:
+    WrappedHeightMap(HeightMapDistanceFunction * function, float bias) : WrappedSignedDistanceFunction(function, bias) {
+
+    }
+
+    BoundingBox getBox() const {
+        HeightMapDistanceFunction * f = (HeightMapDistanceFunction*) function;
+        return BoundingBox(f->map.getMin()-glm::vec3(bias), f->map.getMax()+glm::vec3(bias));
+    }
+        
+    ContainmentType check(const BoundingCube &cube) const override {
+        BoundingBox box = getBox();
+        return box.test(cube);
+    };
+
+    bool isContained(const BoundingCube &cube) const override {
+        BoundingBox box = getBox();
+        return cube.contains(box);
+    };
+
+    glm::vec3 getCenter() const override {
+        BoundingBox box = getBox();
+        return box.getCenter();
+    };
+};
+
 
 #endif

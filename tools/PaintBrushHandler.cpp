@@ -8,7 +8,6 @@ PaintBrushHandler::PaintBrushHandler(Brush3d * brush3d, Octree * octree) :
 }
 
 void PaintBrushHandler::handle(Event * event) {
-    std::unique_ptr<ContainmentHandler> handler;
     std::unique_ptr<SignedDistanceFunction> function;
 /*
     if(brush3d.shape == BrushShape::BOX) {

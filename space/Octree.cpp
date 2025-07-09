@@ -193,9 +193,9 @@ void buildSDF(const SignedDistanceFunction &function, BoundingCube &cube, float 
     }
 }
 
-void Octree::expand(const ContainmentHandler &handler) {
-	while (!handler.isContained(*this)) {
-		glm::vec3 point = handler.getCenter();
+void Octree::expand(const WrappedSignedDistanceFunction &function) {
+	while (!function.isContained(*this)) {
+		glm::vec3 point = function.getCenter();
 	    unsigned int i = getNodeIndex(point, *this) ^ 0x7;
 
 	    setMin(getMin() -  Octree::getShift(i) * getLengthX());
@@ -213,20 +213,18 @@ void Octree::expand(const ContainmentHandler &handler) {
 }
 
 void Octree::add(
-    const ContainmentHandler &handler, 
-    const SignedDistanceFunction &function, 
+    const WrappedSignedDistanceFunction &function, 
     const TexturePainter &painter,
     float minSize, Simplifier &simplifier) {
-	expand(handler);	
-    shape(SDF::opUnion, handler, function, painter, OctreeNodeFrame(root, -1, *this, minSize, 0, root->sdf, SpaceType::Surface ), NULL, simplifier);
+	expand(function);	
+    shape(SDF::opUnion, function, painter, OctreeNodeFrame(root, -1, *this, minSize, 0, root->sdf, SpaceType::Surface ), NULL, simplifier);
 }
 
 void Octree::del(
-    const ContainmentHandler &handler, 
-    const SignedDistanceFunction &function, 
+    const WrappedSignedDistanceFunction &function, 
     const TexturePainter &painter,
     float minSize, Simplifier &simplifier) {
-    shape(SDF::opSubtraction, handler, function, painter, OctreeNodeFrame(root, -1, *this, minSize, 0, root->sdf, SpaceType::Surface), NULL, simplifier);
+    shape(SDF::opSubtraction, function, painter, OctreeNodeFrame(root, -1, *this, minSize, 0, root->sdf, SpaceType::Surface), NULL, simplifier);
 }
 
 SpaceType childToParent(bool childSolid, bool childEmpty) {
@@ -241,11 +239,10 @@ SpaceType childToParent(bool childSolid, bool childEmpty) {
 
 NodeOperationResult Octree::shape(
     float (*operation)(float, float),
-    const ContainmentHandler &handler, 
-    const SignedDistanceFunction &function, 
+    const WrappedSignedDistanceFunction &function, 
     const TexturePainter &painter,
     OctreeNodeFrame frame, BoundingCube * chunk, Simplifier &simplifier) {
-    ContainmentType check = handler.check(frame.cube);
+    ContainmentType check = function.check(frame.cube);
     OctreeNode * node  = frame.node;
     if(check == ContainmentType::Disjoint) {
         return NodeOperationResult(frame.cube, node, SpaceType::Empty, frame.type, frame.sdf, false);  // Skip this node
@@ -282,7 +279,7 @@ NodeOperationResult Octree::shape(
                 childType = SDF::eval(childSDF);
             }
   
-            NodeOperationResult child = shape(operation, handler, function, painter, 
+            NodeOperationResult child = shape(operation, function, painter, 
                 OctreeNodeFrame(childNode, i, frame.cube.getChild(i), frame.minSize, frame.level + 1, childSDF, childType), 
                 chunk, simplifier);
         

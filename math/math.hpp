@@ -335,13 +335,6 @@ class HeightMapTif : public HeightFunction {
 
 };
 
-class ContainmentHandler {
-	public: 
-		virtual ContainmentType check(const BoundingCube &cube) const = 0;
-		virtual bool isContained(const BoundingCube &cube) const = 0;
-		virtual glm::vec3 getCenter() const = 0;
-};
-
 class Geometry
 {
 public:
@@ -451,26 +444,6 @@ class TexturePainter {
 	virtual void paint(Vertex &v) const = 0;
 };
 
-
-class SphereContainmentHandler : public ContainmentHandler {
-	public:
-	BoundingSphere sphere;
-
-	SphereContainmentHandler(BoundingSphere s);
-	glm::vec3 getCenter() const override;
-	bool isContained(const BoundingCube &cube) const override;
-	ContainmentType check(const BoundingCube &cube) const override;
-};
-
-class BoxContainmentHandler : public ContainmentHandler {
-	public: 
-	BoundingBox box;
-
-	BoxContainmentHandler(BoundingBox box);
-	bool isContained(const BoundingCube &cube) const override;
-	ContainmentType check(const BoundingCube &cube) const override;
-	glm::vec3 getCenter() const override;
-};
 
 class Camera {
     public:

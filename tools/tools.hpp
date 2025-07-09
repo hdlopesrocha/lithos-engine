@@ -278,12 +278,39 @@ class EnvironmentFile {
 };
 
 class OctreeDifferenceFunction : public SignedDistanceFunction {
+    public:
     Octree * tree;
     BoundingBox box;
-    public:
     OctreeDifferenceFunction(Octree * tree, BoundingBox box);
     float distance(const glm::vec3 p) const override;
 	SdfType getType() const override;
+};
+
+class WrappedOctreeDifference : public WrappedSignedDistanceFunction {
+    public:
+    WrappedOctreeDifference(OctreeDifferenceFunction * function, float bias) : WrappedSignedDistanceFunction(function, bias) {
+
+    }
+
+    BoundingBox getBox() const {
+        OctreeDifferenceFunction * f = (OctreeDifferenceFunction*) function;
+        return BoundingBox(f->box.getMin()-glm::vec3(bias), f->box.getMax()+glm::vec3(bias));
+    }
+        
+    ContainmentType check(const BoundingCube &cube) const override {
+        BoundingBox box = getBox();
+        return box.test(cube);
+    };
+
+    bool isContained(const BoundingCube &cube) const override {
+        BoundingBox box = getBox();
+        return cube.contains(box);
+    };
+
+    glm::vec3 getCenter() const override {
+        BoundingBox box = getBox();
+        return box.getCenter();
+    };
 };
 
 

@@ -57,18 +57,3 @@ void BoundingBox::setMaxZ(float v){
     this->max.z = v;
 }
 
-BoxContainmentHandler::BoxContainmentHandler(BoundingBox box) : ContainmentHandler(), box(box) {
-
-}
-
-bool BoxContainmentHandler::isContained(const BoundingCube &cube) const {
-    return cube.contains(box);
-}
-
-ContainmentType BoxContainmentHandler::check(const BoundingCube &cube) const {
-    return box.test(cube); 
-}
-
-glm::vec3 BoxContainmentHandler::getCenter() const {
-    return box.getCenter();
-}

@@ -233,57 +233,63 @@ void Scene::generate(Camera &camera) {
 	
 	{
 		BoundingBox box = BoundingBox(glm::vec3(1500,0,0),glm::vec3(1500+256,256,256));
-		solidSpace->add(BoxContainmentHandler(box), BoxDistanceFunction(box.getCenter(), box.getLength()*0.5f), SimpleBrush(4), 2.0, simplifier);
+		BoxDistanceFunction function(box.getCenter(), box.getLength()*0.5f);
+		solidSpace->add(WrappedBox(&function, minSize), SimpleBrush(4), 2.0, simplifier);
 	}
 
 	{
 		BoundingBox box = BoundingBox(glm::vec3(2000,0,0),glm::vec3(2000+256,256,256));
-		solidSpace->add(BoxContainmentHandler(box), BoxDistanceFunction(box.getCenter(), box.getLength()*0.5f), SimpleBrush(4), minSize, simplifier);
+		BoxDistanceFunction function(box.getCenter(), box.getLength()*0.5f);
+		solidSpace->add(WrappedBox(&function, minSize), SimpleBrush(4), minSize, simplifier);
 	}
 
 	{
 		BoundingBox box = BoundingBox(glm::vec3(2500,0,0),glm::vec3(2500+256,256,256));
-		solidSpace->add(BoxContainmentHandler(box), BoxDistanceFunction(box.getCenter(), box.getLength()*0.5f), SimpleBrush(4), minSize*2, simplifier);
+		BoxDistanceFunction function(box.getCenter(), box.getLength()*0.5f);
+		solidSpace->add(WrappedBox(&function, minSize), SimpleBrush(4), minSize*2, simplifier);
 	}
 	BoundingBox mapBox = BoundingBox(glm::vec3(-sizePerTile*tiles*0.5,-height*0.5,-sizePerTile*tiles*0.5), glm::vec3(sizePerTile*tiles*0.5,height*0.5,sizePerTile*tiles*0.5));
 	camera.position.x = mapBox.getCenter().x;
 	camera.position.y = mapBox.getMaxY();
 	camera.position.z = mapBox.getCenter().z;
 
-
-	GradientPerlinSurface heightFunction = GradientPerlinSurface(height, 1.0/(256.0f*sizePerTile), -64);
-	CachedHeightMapSurface cache = CachedHeightMapSurface(heightFunction, mapBox, sizePerTile);
-	HeightMap heightMap = HeightMap(cache, mapBox, sizePerTile);
-
-	solidSpace->add(BoxContainmentHandler(heightMap), HeightMapDistanceFunction(heightMap), LandBrush(), minSize, simplifier);
-
+	{
+		GradientPerlinSurface heightFunction = GradientPerlinSurface(height, 1.0/(256.0f*sizePerTile), -64);
+		CachedHeightMapSurface cache = CachedHeightMapSurface(heightFunction, mapBox, sizePerTile);
+		HeightMap heightMap = HeightMap(cache, mapBox, sizePerTile);
+		HeightMapDistanceFunction function(heightMap);
+		solidSpace->add(WrappedHeightMap(&function, minSize), LandBrush(), minSize, simplifier);
+	}
 	{
 		BoundingSphere sphere = BoundingSphere(glm::vec3(0,768,0),1024);
-		BoundingSphere sphere2 = BoundingSphere(sphere.center, sphere.radius + 2*minSize);
-		solidSpace->del(SphereContainmentHandler(sphere2), SphereDistanceFunction(sphere.center, sphere.radius), SimpleBrush(14), minSize, simplifier);
+		SphereDistanceFunction function(sphere.center, sphere.radius);
+		solidSpace->del(WrappedSphere(&function, minSize), SimpleBrush(14), minSize, simplifier);
 	}
 	
  	{
 		glm::vec3 a = glm::vec3(0,320, -900);
 		glm::vec3 b = glm::vec3(0,-100, -3000);
 		float r = 200.0f;
-		BoundingSphere sphere2 = BoundingSphere((a+b)*0.5f, glm::distance(a,b) + r + 2*minSize);
-		solidSpace->add(SphereContainmentHandler(sphere2), CapsuleDistanceFunction(a, b, r), SimpleBrush(4), minSize, simplifier);
+		CapsuleDistanceFunction function(a, b, r);
+		solidSpace->add(WrappedCapsule(&function, minSize), SimpleBrush(4), minSize, simplifier);
 	}
 	
 	{
 		BoundingBox box = BoundingBox(glm::vec3(1500,0,500),glm::vec3(1500+256,256,500+256));
-		solidSpace->add(BoxContainmentHandler(box), BoxDistanceFunction(box.getCenter(), box.getLength()*0.5f), SimpleBrush(4), 2.0, simplifier);
+		BoxDistanceFunction function(box.getCenter(), box.getLength()*0.5f);
+		solidSpace->add(WrappedBox(&function, minSize), SimpleBrush(4), 2.0, simplifier);
 	}
 
 	{
 		BoundingBox box = BoundingBox(glm::vec3(2000,0,500),glm::vec3(2000+256,256,500+256));
-		solidSpace->add(BoxContainmentHandler(box), BoxDistanceFunction(box.getCenter(), box.getLength()*0.5f), SimpleBrush(4), minSize, simplifier);
+		BoxDistanceFunction function(box.getCenter(), box.getLength()*0.5f);
+		solidSpace->add(WrappedBox(&function, minSize), SimpleBrush(4), minSize, simplifier);
 	}
 
 	{
 		BoundingBox box = BoundingBox(glm::vec3(2500,0,500),glm::vec3(2500+256,256,500+256));
-		solidSpace->add(BoxContainmentHandler(box), BoxDistanceFunction(box.getCenter(), box.getLength()*0.5f), SimpleBrush(4), minSize*2, simplifier);
+		BoxDistanceFunction function(box.getCenter(), box.getLength()*0.5f);
+		solidSpace->add(WrappedBox(&function, minSize), SimpleBrush(4), minSize*2, simplifier);
 	}
 	//solidSpace->add(BoxContainmentHandler(BoundingBox(glm::vec3(-20,-5,-20),glm::vec3(20,10,20)),SimpleBrush(8)), 1.0);
 	//solidSpace->del(BoxContainmentHandler(BoundingBox(glm::vec3(-17,-4,-17),glm::vec3(17,12,17)),SimpleBrush(6)), 1.0);
@@ -291,18 +297,21 @@ void Scene::generate(Camera &camera) {
 	
 	{
 		BoundingSphere sphere = BoundingSphere(glm::vec3(0,512,0),128);
-		solidSpace->add(SphereContainmentHandler(sphere), SphereDistanceFunction(sphere.center, sphere.radius), SimpleBrush(4), 8.0, simplifier);
+		SphereDistanceFunction function(sphere.center, sphere.radius);
+		solidSpace->add(WrappedSphere(&function, minSize), SimpleBrush(4), 8.0, simplifier);
 	}
 	//solidSpace->add(SphereContainmentHandler(BoundingSphere(glm::vec3(-11,61,11),10), SimpleBrush(5)), 1.0);
 	//solidSpace->del(SphereContainmentHandler(BoundingSphere(glm::vec3(11,61,-11),10), SimpleBrush(4)), 1.0);
 	//solidSpace->del(SphereContainmentHandler(BoundingSphere(glm::vec3(4,54,-4),8), SimpleBrush(1)), 1.0);
 
 	//liquidSpace->add(SphereContainmentHandler(BoundingSphere(glm::vec3(11,61,-11),4), SimpleBrush(0)));
-	BoundingBox waterBox = mapBox;
-	waterBox.setMaxY(0);
-	glm::vec3 shift = glm::vec3(minSize*2);
-	BoundingBox waterBox2 = BoundingBox(waterBox.getMin() - shift, waterBox.getMax() + shift);
-	liquidSpace->add(BoxContainmentHandler(waterBox2), OctreeDifferenceFunction(solidSpace, waterBox), WaterBrush(0), minSize, simplifier);
+
+	{
+		BoundingBox waterBox = mapBox;
+		waterBox.setMaxY(0);
+		OctreeDifferenceFunction function(solidSpace, waterBox);
+		liquidSpace->add(WrappedOctreeDifference(&function, minSize), WaterBrush(0), minSize, simplifier);
+	}
 	//liquidSpace->add(BoxContainmentHandler(waterBox), BoxDistanceFunction(waterBox), WaterBrush(0), minSize, simplifier);
 }
 
@@ -320,8 +329,8 @@ void Scene::import(const std::string &filename, Camera &camera) {
 	HeightMapTif heightFunction = HeightMapTif(filename, mapBox, sizePerTile,1.0f, -320.0f);
     CachedHeightMapSurface cache = CachedHeightMapSurface(heightFunction, mapBox, sizePerTile);
 	HeightMap heightMap = HeightMap(cache, mapBox, sizePerTile);
-
-	solidSpace->add(BoxContainmentHandler(heightMap), HeightMapDistanceFunction(heightMap), DerivativeLandBrush(), minSize, simplifier);
+	HeightMapDistanceFunction function(heightMap);
+	solidSpace->add(WrappedHeightMap(&function, minSize), DerivativeLandBrush(), minSize, simplifier);
 
 	BoundingBox waterBox = mapBox;
 	waterBox.setMaxY(0);

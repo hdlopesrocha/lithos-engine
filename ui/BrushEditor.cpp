@@ -140,9 +140,9 @@ void BrushEditor::draw2d(float time){
     if(changed) {
         brushSpace->root->clear(&brushSpace->allocator, *brushSpace);
         if(brush->mode == BrushMode::ADD) {
-            brushSpace->add(SphereContainmentHandler(brushContext->boundingVolume), *(brushContext->currentFunction), SimpleBrush(brush->index), brushContext->detail, *(brushContext->simplifier));
+       //     brushSpace->add(SphereContainmentHandler(brushContext->boundingVolume), *(brushContext->currentFunction), SimpleBrush(brush->index), brushContext->detail, *(brushContext->simplifier));
         } else if(brush->mode == BrushMode::REMOVE) {
-            brushSpace->del(SphereContainmentHandler(brushContext->boundingVolume), *(brushContext->currentFunction), SimpleBrush(brush->index), brushContext->detail, *(brushContext->simplifier));
+        //    brushSpace->del(SphereContainmentHandler(brushContext->boundingVolume), *(brushContext->currentFunction), SimpleBrush(brush->index), brushContext->detail, *(brushContext->simplifier));
         }
     }
 

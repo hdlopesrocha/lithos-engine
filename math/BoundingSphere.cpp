@@ -41,19 +41,3 @@ ContainmentType BoundingSphere::test(const AbstractBoundingBox& cube) const {
     
     return ContainmentType::Disjoint;
 }
-
-SphereContainmentHandler::SphereContainmentHandler(BoundingSphere s) : ContainmentHandler(), sphere(s) {
-
-}
-
-glm::vec3 SphereContainmentHandler::getCenter() const {
-    return sphere.center;
-}
-
-bool SphereContainmentHandler::isContained(const BoundingCube &cube) const {
-    return cube.contains(sphere);
-}
-
-ContainmentType SphereContainmentHandler::check(const BoundingCube &cube) const {
-    return sphere.test(cube); 
-}
