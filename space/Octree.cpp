@@ -213,7 +213,7 @@ void Octree::expand(const WrappedSignedDistanceFunction &function) {
 }
 
 void Octree::add(
-    const WrappedSignedDistanceFunction &function, 
+    WrappedSignedDistanceFunction &function, 
     const TexturePainter &painter,
     float minSize, Simplifier &simplifier) {
 	expand(function);	
@@ -221,7 +221,7 @@ void Octree::add(
 }
 
 void Octree::del(
-    const WrappedSignedDistanceFunction &function, 
+    WrappedSignedDistanceFunction &function, 
     const TexturePainter &painter,
     float minSize, Simplifier &simplifier) {
     shape(SDF::opSubtraction, function, painter, OctreeNodeFrame(root, -1, *this, minSize, 0, root->sdf, SpaceType::Surface), NULL, simplifier);

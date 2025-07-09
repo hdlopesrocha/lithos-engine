@@ -13,7 +13,7 @@ BrushEditor::BrushEditor( Brush3d * brush, Camera * camera, std::vector<UniformB
 
 
 int BrushEditor::getSelectedBrush() {
-    return brush->index;
+    return brushContext->brushIndex;
 }
 
 void BrushEditor::draw2d(float time){
@@ -21,22 +21,22 @@ void BrushEditor::draw2d(float time){
 
     ImGui::Begin("Brush Editor", &open, ImGuiWindowFlags_AlwaysAutoResize);
 
-    previewer->draw2d(brush->index);
+    previewer->draw2d(brushContext->brushIndex);
 
     ImGui::Checkbox("Enabled", &brush->enabled);
 
-    ImGui::Text("Selected texture: %d", brush->index);
+    ImGui::Text("Selected texture: %d", brushContext->brushIndex);
     ImGui::SameLine();
 
     if (ImGui::ArrowButton("##arrow_left", ImGuiDir_Left)) {
-        --brush->index;
+        --brushContext->brushIndex;
     }
     ImGui::SameLine();
     if (ImGui::ArrowButton("##arrow_right", ImGuiDir_Right)) {
-        ++brush->index;
+        ++brushContext->brushIndex;
     }
-    brush->index = Math::mod(brush->index, brushes->size());
-    UniformBlockBrush * uniformBrush = &(*brushes)[brush->index];
+    brushContext->brushIndex = Math::mod(brushContext->brushIndex, brushes->size());
+    UniformBlockBrush * uniformBrush = &(*brushes)[brushContext->brushIndex];
 
     const char* buttonText = "Reset Position";
     ImVec2 textSize = ImGui::CalcTextSize(buttonText);
@@ -53,8 +53,8 @@ void BrushEditor::draw2d(float time){
     for (int i = 0; i < BrushMode::BrushMode_COUNT; ++i) {
         BrushMode bm = BrushMode(i);
         std::string label = std::string(toString(bm));
-        if(ImGui::RadioButton(label.c_str(), brush->mode == bm)){
-            brush->mode = bm;
+        if(ImGui::RadioButton(label.c_str(), brushContext->mode == bm)){
+            brushContext->mode = bm;
         }
     }
 
@@ -139,9 +139,9 @@ void BrushEditor::draw2d(float time){
 
     if(changed) {
         brushSpace->root->clear(&brushSpace->allocator, *brushSpace);
-        if(brush->mode == BrushMode::ADD) {
+        if(brushContext->mode == BrushMode::ADD) {
        //     brushSpace->add(SphereContainmentHandler(brushContext->boundingVolume), *(brushContext->currentFunction), SimpleBrush(brush->index), brushContext->detail, *(brushContext->simplifier));
-        } else if(brush->mode == BrushMode::REMOVE) {
+        } else if(brushContext->mode == BrushMode::REMOVE) {
         //    brushSpace->del(SphereContainmentHandler(brushContext->boundingVolume), *(brushContext->currentFunction), SimpleBrush(brush->index), brushContext->detail, *(brushContext->simplifier));
         }
     }

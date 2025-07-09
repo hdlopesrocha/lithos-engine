@@ -498,19 +498,19 @@ public:
 		eventManagerGroup.addEventManager(cameraEventManager);
 
 		EventManager * brushEventManager = new EventManager();
-		brushEventManager->subscribe(EVENT_PAINT_BRUSH, new ControlBrushHandler<Event>(*brushContext));
-		brushEventManager->subscribe(EVENT_VECTOR_3D_0, new ControlBrushHandler<Axis3dEvent>(*brushContext));
-		brushEventManager->subscribe(EVENT_VECTOR_3D_1, new ControlBrushHandler<Axis3dEvent>(*brushContext));		
-		brushEventManager->subscribe(EVENT_VECTOR_3D_2, new ControlBrushHandler<Axis3dEvent>(*brushContext));		
-		brushEventManager->subscribe(EVENT_FLOAT_0_X, new ControlBrushHandler<FloatEvent>(*brushContext));
-		brushEventManager->subscribe(EVENT_FLOAT_0_Y, new ControlBrushHandler<FloatEvent>(*brushContext));
-		brushEventManager->subscribe(EVENT_FLOAT_0_Z, new ControlBrushHandler<FloatEvent>(*brushContext));
-		brushEventManager->subscribe(EVENT_FLOAT_1_X, new ControlBrushHandler<FloatEvent>(*brushContext));
-		brushEventManager->subscribe(EVENT_FLOAT_1_Y, new ControlBrushHandler<FloatEvent>(*brushContext));
-		brushEventManager->subscribe(EVENT_FLOAT_1_Z, new ControlBrushHandler<FloatEvent>(*brushContext));
-		brushEventManager->subscribe(EVENT_FLOAT_2_X, new ControlBrushHandler<FloatEvent>(*brushContext));
-		brushEventManager->subscribe(EVENT_FLOAT_2_Y, new ControlBrushHandler<FloatEvent>(*brushContext));
-		brushEventManager->subscribe(EVENT_FLOAT_2_Z, new ControlBrushHandler<FloatEvent>(*brushContext));
+		brushEventManager->subscribe(EVENT_PAINT_BRUSH, new BrushEventHandler<Event>(*brushContext, *mainScene->brushSpace));
+		brushEventManager->subscribe(EVENT_VECTOR_3D_0, new BrushEventHandler<Axis3dEvent>(*brushContext, *mainScene->brushSpace));
+		brushEventManager->subscribe(EVENT_VECTOR_3D_1, new BrushEventHandler<Axis3dEvent>(*brushContext, *mainScene->brushSpace));		
+		brushEventManager->subscribe(EVENT_VECTOR_3D_2, new BrushEventHandler<Axis3dEvent>(*brushContext, *mainScene->brushSpace));		
+		brushEventManager->subscribe(EVENT_FLOAT_0_X, new BrushEventHandler<FloatEvent>(*brushContext, *mainScene->brushSpace));
+		brushEventManager->subscribe(EVENT_FLOAT_0_Y, new BrushEventHandler<FloatEvent>(*brushContext, *mainScene->brushSpace));
+		brushEventManager->subscribe(EVENT_FLOAT_0_Z, new BrushEventHandler<FloatEvent>(*brushContext, *mainScene->brushSpace));
+		brushEventManager->subscribe(EVENT_FLOAT_1_X, new BrushEventHandler<FloatEvent>(*brushContext, *mainScene->brushSpace));
+		brushEventManager->subscribe(EVENT_FLOAT_1_Y, new BrushEventHandler<FloatEvent>(*brushContext, *mainScene->brushSpace));
+		brushEventManager->subscribe(EVENT_FLOAT_1_Z, new BrushEventHandler<FloatEvent>(*brushContext, *mainScene->brushSpace));
+		brushEventManager->subscribe(EVENT_FLOAT_2_X, new BrushEventHandler<FloatEvent>(*brushContext, *mainScene->brushSpace));
+		brushEventManager->subscribe(EVENT_FLOAT_2_Y, new BrushEventHandler<FloatEvent>(*brushContext, *mainScene->brushSpace));
+		brushEventManager->subscribe(EVENT_FLOAT_2_Z, new BrushEventHandler<FloatEvent>(*brushContext, *mainScene->brushSpace));
 		eventManager.addArea(brushEventManager);
 		eventManagerGroup.addEventManager(brushEventManager);
 

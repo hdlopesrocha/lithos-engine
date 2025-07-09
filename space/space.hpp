@@ -147,8 +147,8 @@ class Octree: public BoundingCube {
 
 		Octree(BoundingCube minCube, float chunkSize);
 		void expand(const WrappedSignedDistanceFunction &function);
-		void add(const WrappedSignedDistanceFunction &function, const TexturePainter &painter, float minSize, Simplifier &simplifier);
-		void del(const WrappedSignedDistanceFunction &function, const TexturePainter &painter, float minSize, Simplifier &simplifier);
+		void add(WrappedSignedDistanceFunction &function, const TexturePainter &painter, float minSize, Simplifier &simplifier);
+		void del(WrappedSignedDistanceFunction &function, const TexturePainter &painter, float minSize, Simplifier &simplifier);
 		void iterate(IteratorHandler &handler);
 		void iterateFlat(IteratorHandler &handler);
 

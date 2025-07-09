@@ -60,15 +60,16 @@ class DerivativeLandBrush : public TexturePainter {
 
 class BrushContext {
 	public:
+	BrushMode mode;
 	std::vector<SignedDistanceFunction*> functions;
 	SignedDistanceFunction * currentFunction;
 	BoundingSphere boundingVolume;
 	Simplifier * simplifier;
 	float detail;
 	Camera * camera;
+	int brushIndex;
 
 	BrushContext(Camera *camera);
-	void handleEvent(Event * event);
 };
 
 class SimpleBrush : public TexturePainter {
@@ -370,19 +371,19 @@ class CloseWindowHandler : public EventHandler<Event>{
     void handle(Event * value) override ;
 };
 
-template<typename T> class ControlBrushHandler : public EventHandler<T> {
-    BrushContext &brushContext;
-    public:
 
+template<typename T> class BrushEventHandler : public EventHandler<T> {
+	BrushContext &context;
+	Octree &brushSpace;
+	public:
+	BrushEventHandler(BrushContext &context, Octree &brushSpace);
 
-    ControlBrushHandler(BrushContext &brushContext) 
-        : brushContext(brushContext) {
-
-    }
-    void handle(T * value) override {
-        brushContext.handleEvent( value);
-    }
+	void handle(T * event) override;
 };
+
+template class BrushEventHandler<Event>;
+template class BrushEventHandler<Axis3dEvent>;
+template class BrushEventHandler<FloatEvent>;
 
 
 #endif

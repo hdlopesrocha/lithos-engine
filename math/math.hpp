@@ -488,8 +488,6 @@ const char* toString(BrushMode v);
 
 class Brush3d {
 	public:
-		BrushMode mode;
-		int index = 0;
 		float translationSensitivity;
 		bool enabled;
 

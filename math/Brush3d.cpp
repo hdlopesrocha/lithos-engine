@@ -1,8 +1,6 @@
 #include "math.hpp"
 
 Brush3d::Brush3d() {
-    this->mode = BrushMode::ADD;
-    this->index = 0;
    	this->translationSensitivity = 32.0f;
     this->enabled =true;
 }
