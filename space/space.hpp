@@ -138,6 +138,13 @@ struct NodeOperationResult {
 };
 
 
+class OctreeChangeHandler {
+	public:
+	virtual void create(uint nodeId) = 0;
+	virtual void update(uint nodeId) = 0;
+	virtual void erase(uint nodeId) = 0;
+};
+
 class Octree: public BoundingCube {
 	using BoundingCube::BoundingCube;
 	public: 
@@ -147,8 +154,8 @@ class Octree: public BoundingCube {
 
 		Octree(BoundingCube minCube, float chunkSize);
 		void expand(const WrappedSignedDistanceFunction &function);
-		void add(WrappedSignedDistanceFunction &function, const TexturePainter &painter, float minSize, Simplifier &simplifier);
-		void del(WrappedSignedDistanceFunction &function, const TexturePainter &painter, float minSize, Simplifier &simplifier);
+		void add(WrappedSignedDistanceFunction &function, const TexturePainter &painter, float minSize, Simplifier &simplifier, OctreeChangeHandler &changeHandler);
+		void del(WrappedSignedDistanceFunction &function, const TexturePainter &painter, float minSize, Simplifier &simplifier, OctreeChangeHandler &changeHandler);
 		void iterate(IteratorHandler &handler);
 		void iterateFlat(IteratorHandler &handler);
 
@@ -166,7 +173,7 @@ class Octree: public BoundingCube {
 		int getMaxLevel(OctreeNode *node, BoundingCube &cube, BoundingCube &c, int level);
 
 		private:
-		NodeOperationResult shape(float (*operation)(float, float), const WrappedSignedDistanceFunction &function, const TexturePainter &painter, OctreeNodeFrame frame, BoundingCube * chunk, Simplifier &simplifier);
+		NodeOperationResult shape(float (*operation)(float, float), const WrappedSignedDistanceFunction &function, const TexturePainter &painter, OctreeNodeFrame frame, BoundingCube * chunk, Simplifier &simplifier, OctreeChangeHandler &changeHandler);
 };
 
 class Simplifier {

@@ -215,16 +215,16 @@ void Octree::expand(const WrappedSignedDistanceFunction &function) {
 void Octree::add(
     WrappedSignedDistanceFunction &function, 
     const TexturePainter &painter,
-    float minSize, Simplifier &simplifier) {
+    float minSize, Simplifier &simplifier, OctreeChangeHandler &changeHandler) {
 	expand(function);	
-    shape(SDF::opUnion, function, painter, OctreeNodeFrame(root, -1, *this, minSize, 0, root->sdf, SpaceType::Surface ), NULL, simplifier);
+    shape(SDF::opUnion, function, painter, OctreeNodeFrame(root, -1, *this, minSize, 0, root->sdf, SpaceType::Surface ), NULL, simplifier, changeHandler);
 }
 
 void Octree::del(
     WrappedSignedDistanceFunction &function, 
     const TexturePainter &painter,
-    float minSize, Simplifier &simplifier) {
-    shape(SDF::opSubtraction, function, painter, OctreeNodeFrame(root, -1, *this, minSize, 0, root->sdf, SpaceType::Surface), NULL, simplifier);
+    float minSize, Simplifier &simplifier, OctreeChangeHandler &changeHandler) {
+    shape(SDF::opSubtraction, function, painter, OctreeNodeFrame(root, -1, *this, minSize, 0, root->sdf, SpaceType::Surface), NULL, simplifier, changeHandler);
 }
 
 SpaceType childToParent(bool childSolid, bool childEmpty) {
@@ -241,7 +241,7 @@ NodeOperationResult Octree::shape(
     float (*operation)(float, float),
     const WrappedSignedDistanceFunction &function, 
     const TexturePainter &painter,
-    OctreeNodeFrame frame, BoundingCube * chunk, Simplifier &simplifier) {
+    OctreeNodeFrame frame, BoundingCube * chunk, Simplifier &simplifier, OctreeChangeHandler &changeHandler) {
     ContainmentType check = function.check(frame.cube);
     OctreeNode * node  = frame.node;
     if(check == ContainmentType::Disjoint) {
@@ -281,7 +281,7 @@ NodeOperationResult Octree::shape(
   
             NodeOperationResult child = shape(operation, function, painter, 
                 OctreeNodeFrame(childNode, i, frame.cube.getChild(i), frame.minSize, frame.level + 1, childSDF, childType), 
-                chunk, simplifier);
+                chunk, simplifier, changeHandler);
         
             children[i] = child;
             childResultEmpty &= child.resultType == SpaceType::Empty;

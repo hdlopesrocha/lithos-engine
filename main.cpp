@@ -130,8 +130,9 @@ public:
 
 		// Register all GDAL drivers
 		GDALAllRegister();
+		OctreeChangeHandler * changeHandler = new SpaceChangeHandler();
 
-		mainScene = new Scene(settings);
+		mainScene = new Scene(settings, *changeHandler);
 		//mainScene->load("data");
 	
 		uniformBlockData = new ProgramData();
@@ -469,7 +470,8 @@ public:
 		glUseProgram(0);
 		//tesselator->normalize();
 
-		brushContext = new BrushContext(&camera);
+
+		brushContext = new BrushContext(&camera, *changeHandler);
 		uniformBlockViewer = new UniformBlockViewer(&viewerBlock);
 		atlasPainter = new AtlasPainter(&atlasParams, &atlasTextures, atlasDrawer, programAtlas, programTexture, 256,256, &billboardLayers);
 		atlasViewer = new AtlasViewer(&atlasTextures, atlasDrawer, programAtlas, programTexture, 256,256, &atlasLayers, programCopy);

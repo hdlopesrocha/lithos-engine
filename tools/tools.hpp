@@ -68,8 +68,9 @@ class BrushContext {
 	float detail;
 	Camera * camera;
 	int brushIndex;
+	OctreeChangeHandler &changeHandler;
 
-	BrushContext(Camera *camera);
+	BrushContext(Camera *camera, OctreeChangeHandler &changeHandler);
 	void apply(Octree &space);
 	WrappedSignedDistanceFunction * getWrapped();
 };
@@ -198,8 +199,9 @@ class Scene {
 	OctreeVisibilityChecker * brushRenderer;
 	OctreeVisibilityChecker * liquidRenderer;
 	OctreeVisibilityChecker * shadowRenderer[SHADOW_MATRIX_COUNT];
-
-	Scene(Settings * settings);
+	OctreeChangeHandler &changeHandler;
+	
+	Scene(Settings * settings, OctreeChangeHandler &changeHandler);
 
 	bool processSpace();
 	bool processLiquid(OctreeNodeData &data, Octree * tree);
@@ -387,5 +389,24 @@ template class BrushEventHandler<Event>;
 template class BrushEventHandler<Axis3dEvent>;
 template class BrushEventHandler<FloatEvent>;
 
+class SpaceChangeHandler : public OctreeChangeHandler {
+
+	public:
+	SpaceChangeHandler() {
+
+	}
+
+	void create(uint nodeId) override {
+
+	}
+
+	void update(uint nodeId) override {
+		
+	}
+
+	void erase(uint nodeId) override {
+		
+	}
+};
 
 #endif
