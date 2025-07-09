@@ -18,7 +18,6 @@ OctreeNode * loadRecursive2(OctreeAllocator * allocator, OctreeNode * node, int 
 	node->setEmpty(serialized.isEmpty);
 	node->setSimplified(serialized.isSimplified);
 	node->setSimplification(serialized.simplification);
-	node->setDirty(true);
 	bool isLeaf = true;
 	for(int j=0; j < 8; ++j) {
 		if(serialized.children[j] != 0) {
@@ -26,7 +25,6 @@ OctreeNode * loadRecursive2(OctreeAllocator * allocator, OctreeNode * node, int 
 			break;
 		}
 	}
-	node->setDirty(true);
 	ChildBlock * block = isLeaf ? NULL : node->createBlock(allocator);
 	for(int j=0 ; j <8 ; ++j){
 		int index = serialized.children[j];

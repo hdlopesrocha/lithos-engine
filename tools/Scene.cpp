@@ -1,8 +1,8 @@
 
 #include "tools.hpp"
 
-Scene::Scene(Settings * settings, OctreeChangeHandler &changeHandler):
-    simplifier(0.99, 0.1, true), changeHandler(changeHandler)
+Scene::Scene(Settings * settings):
+    simplifier(0.99, 0.1, true)
 
  {
 	this->settings = settings;
@@ -32,18 +32,34 @@ Scene::Scene(Settings * settings, OctreeChangeHandler &changeHandler):
 	for(int i = 0 ; i < SHADOW_MATRIX_COUNT ; ++i) {
 		shadowRenderer[i]= new OctreeVisibilityChecker(&visibleShadowNodes[i]);
 	}
+
+
+
+	liquidSpaceChangeHandler = new LiquidSpaceChangeHandler(&liquidInfo);
+	solidSpaceChangeHandler = new SolidSpaceChangeHandler(&solidInfo, &vegetationInfo, &debugInfo);
+	brushSpaceChangeHandler = new BrushSpaceChangeHandler(&brushInfo);
 }
 
-template <typename T> bool Scene::loadSpace(Octree* tree, OctreeNodeData& data, std::unordered_map<long, NodeInfo<T>>* infos, GeometryBuilder<T>* builder) {
+template <typename T> bool Scene::loadSpace(Octree* tree, OctreeNodeData& data, std::unordered_map<OctreeNode*, NodeInfo<T>>* infos, GeometryBuilder<T>* builder) {
+	auto infoIter = infos->find(data.node);
+	if(infoIter != infos->end()) {
+        NodeInfo<T>& info = infoIter->second;
+		if(info.update) {
+			info.update = false;
+		} else {
+			return false;
+		}
+	}
+	
 	InstanceGeometry<T>* loadable = builder->build(data);
 	if (loadable == NULL) {
 		// No geometry to load — erase entry if it exists
-		infos->erase(data.node->id);
+		infos->erase(data.node);
 		return false;
 	}
 
 	// Try to insert a new NodeInfo with loadable
-	auto [it, inserted] = infos->try_emplace(data.node->id, loadable);
+	auto [it, inserted] = infos->try_emplace(data.node, loadable);
 	if (!inserted) {
 		// Already existed — replace existing loadable
 		if (it->second.loadable) {
@@ -57,31 +73,25 @@ template <typename T> bool Scene::loadSpace(Octree* tree, OctreeNodeData& data, 
 
 bool Scene::processLiquid(OctreeNodeData &data, Octree * tree) {
 	bool result = false;
-	if(data.node->isDirty()) {
-		data.node->setDirty(false);
-		if(loadSpace(tree, data, &liquidInfo, liquidBuilder)) {
-			result = true;			
-		}
+	if(loadSpace(tree, data, &liquidInfo, liquidBuilder)) {
+		result = true;			
 	}
 	return result;
 }
 
 bool Scene::processSolid(OctreeNodeData &data, Octree * tree) {
 	bool result = false;
-	if(data.node->isDirty()) {
-		data.node->setDirty(false);
-		if(loadSpace(tree, data, &solidInfo, solidBuilder)) {
-			result = true;			
-		}
-		if(loadSpace(tree, data, &vegetationInfo, vegetationBuilder)) {
-			result = true;			
-		}
-		if(loadSpace(tree, data, &debugInfo, debugBuilder)) {
-			result = true;			
-		}
-		if(loadSpace(tree, data, &brushInfo, brushBuilder)) {
-			result = true;			
-		}
+	if(loadSpace(tree, data, &solidInfo, solidBuilder)) {
+		result = true;			
+	}
+	if(loadSpace(tree, data, &vegetationInfo, vegetationBuilder)) {
+		result = true;			
+	}
+	if(loadSpace(tree, data, &debugInfo, debugBuilder)) {
+		result = true;			
+	}
+	if(loadSpace(tree, data, &brushInfo, brushBuilder)) {
+		result = true;			
 	}
 	return result;
 }
@@ -161,8 +171,8 @@ void Scene::setVisibleNodes(Octree * tree, glm::mat4 viewProjection, glm::vec3 s
 	tree->iterateFlat(checker);	//here we get the visible nodes for that LOD + geometryLEvel
 }
 
-template <typename T> DrawableInstanceGeometry<T> * Scene::loadIfNeeded(std::unordered_map<long, NodeInfo<T>>* infos, long index, InstanceHandler<T> * handler) {
-	auto it = infos->find(index);
+template <typename T> DrawableInstanceGeometry<T> * Scene::loadIfNeeded(std::unordered_map<OctreeNode*, NodeInfo<T>>* infos, OctreeNode* node, InstanceHandler<T> * handler) {
+	auto it = infos->find(node);
 	if (it == infos->end()) {
 		return NULL;
 	}
@@ -178,11 +188,11 @@ template <typename T> DrawableInstanceGeometry<T> * Scene::loadIfNeeded(std::uno
 	return ni.drawable;
 }
 
-template <typename T, typename H> void Scene::draw(uint drawableType, int mode, glm::vec3 cameraPosition, const std::vector<OctreeNodeData> &list, std::unordered_map<long, NodeInfo<T>> * info, long * count) {
+template <typename T, typename H> void Scene::draw(uint drawableType, int mode, glm::vec3 cameraPosition, const std::vector<OctreeNodeData> &list, std::unordered_map<OctreeNode*, NodeInfo<T>> * info, long * count) {
 	H handler;
 	for(const OctreeNodeData &data : list) {
 		OctreeNode * node = data.node;
-		DrawableInstanceGeometry<T> * drawable = loadIfNeeded(info, node->id, &handler);
+		DrawableInstanceGeometry<T> * drawable = loadIfNeeded(info, node, &handler);
 		
 		if(drawableType == TYPE_INSTANCE_AMOUNT_DRAWABLE) {
 			if(drawable != NULL) {
@@ -234,21 +244,21 @@ void Scene::generate(Camera &camera) {
 		BoundingBox box = BoundingBox(glm::vec3(1500,0,0),glm::vec3(1500+256,256,256));
 		BoxDistanceFunction function(box.getCenter(), box.getLength()*0.5f);
 		WrappedBox wrappedFunction = WrappedBox(&function, minSize);
-		solidSpace->add(wrappedFunction, SimpleBrush(4), 2.0, simplifier, changeHandler);
+		solidSpace->add(wrappedFunction, SimpleBrush(4), 2.0, simplifier, *solidSpaceChangeHandler);
 	}
 
 	{
 		BoundingBox box = BoundingBox(glm::vec3(2000,0,0),glm::vec3(2000+256,256,256));
 		BoxDistanceFunction function(box.getCenter(), box.getLength()*0.5f);
 		WrappedBox wrappedFunction = WrappedBox(&function, minSize);
-		solidSpace->add(wrappedFunction, SimpleBrush(4), minSize, simplifier, changeHandler);
+		solidSpace->add(wrappedFunction, SimpleBrush(4), minSize, simplifier, *solidSpaceChangeHandler);
 	}
 
 	{
 		BoundingBox box = BoundingBox(glm::vec3(2500,0,0),glm::vec3(2500+256,256,256));
 		BoxDistanceFunction function(box.getCenter(), box.getLength()*0.5f);
 		WrappedBox wrappedFunction = WrappedBox(&function, minSize);
-		solidSpace->add(wrappedFunction, SimpleBrush(4), minSize*2, simplifier, changeHandler);
+		solidSpace->add(wrappedFunction, SimpleBrush(4), minSize*2, simplifier, *solidSpaceChangeHandler);
 	}
 
 	BoundingBox mapBox = BoundingBox(glm::vec3(-sizePerTile*tiles*0.5,-height*0.5,-sizePerTile*tiles*0.5), glm::vec3(sizePerTile*tiles*0.5,height*0.5,sizePerTile*tiles*0.5));
@@ -262,13 +272,13 @@ void Scene::generate(Camera &camera) {
 		HeightMap heightMap = HeightMap(cache, mapBox, sizePerTile);
 		HeightMapDistanceFunction function(heightMap);
 		WrappedHeightMap wrappedFunction = WrappedHeightMap(&function, minSize);
-		solidSpace->add(wrappedFunction, LandBrush(), minSize, simplifier, changeHandler);
+		solidSpace->add(wrappedFunction, LandBrush(), minSize, simplifier, *solidSpaceChangeHandler);
 	}
 	{
 		BoundingSphere sphere = BoundingSphere(glm::vec3(0,768,0),1024);
 		SphereDistanceFunction function(sphere.center, sphere.radius);
 		WrappedSphere wrappedFunction = WrappedSphere(&function, minSize);
-		solidSpace->del(wrappedFunction, SimpleBrush(14), minSize, simplifier, changeHandler);
+		solidSpace->del(wrappedFunction, SimpleBrush(14), minSize, simplifier, *solidSpaceChangeHandler);
 	}
 	
  	{
@@ -277,35 +287,35 @@ void Scene::generate(Camera &camera) {
 		float r = 200.0f;
 		CapsuleDistanceFunction function(a, b, r);
 		WrappedCapsule wrappedFunction = WrappedCapsule(&function, minSize);
-		solidSpace->add(wrappedFunction, SimpleBrush(4), minSize, simplifier, changeHandler);
+		solidSpace->add(wrappedFunction, SimpleBrush(4), minSize, simplifier, *solidSpaceChangeHandler);
 	}
 	
 	{
 		BoundingBox box = BoundingBox(glm::vec3(1500,0,500),glm::vec3(1500+256,256,500+256));
 		BoxDistanceFunction function(box.getCenter(), box.getLength()*0.5f);
 		WrappedBox wrappedFunction = WrappedBox(&function, minSize);
-		solidSpace->add(wrappedFunction, SimpleBrush(4), 2.0, simplifier, changeHandler);
+		solidSpace->add(wrappedFunction, SimpleBrush(4), 2.0, simplifier, *solidSpaceChangeHandler);
 	}
 
 	{
 		BoundingBox box = BoundingBox(glm::vec3(2000,0,500),glm::vec3(2000+256,256,500+256));
 		BoxDistanceFunction function(box.getCenter(), box.getLength()*0.5f);
 		WrappedBox wrappedFunction = WrappedBox(&function, minSize);
-		solidSpace->add(wrappedFunction, SimpleBrush(4), minSize, simplifier, changeHandler);
+		solidSpace->add(wrappedFunction, SimpleBrush(4), minSize, simplifier, *solidSpaceChangeHandler);
 	}
 
 	{
 		BoundingBox box = BoundingBox(glm::vec3(2500,0,500),glm::vec3(2500+256,256,500+256));
 		BoxDistanceFunction function(box.getCenter(), box.getLength()*0.5f);
 		WrappedBox wrappedFunction = WrappedBox(&function, minSize);
-		solidSpace->add(wrappedFunction, SimpleBrush(4), minSize*2, simplifier, changeHandler);
+		solidSpace->add(wrappedFunction, SimpleBrush(4), minSize*2, simplifier, *solidSpaceChangeHandler);
 	}
 
 	{
 		BoundingSphere sphere = BoundingSphere(glm::vec3(0,512,0),128);
 		SphereDistanceFunction function(sphere.center, sphere.radius);
 		WrappedSphere wrappedFunction = WrappedSphere(&function, minSize);
-		solidSpace->add(wrappedFunction, SimpleBrush(4), 8.0, simplifier, changeHandler);
+		solidSpace->add(wrappedFunction, SimpleBrush(4), 8.0, simplifier, *solidSpaceChangeHandler);
 	}
 
 	{
@@ -313,7 +323,7 @@ void Scene::generate(Camera &camera) {
 		waterBox.setMaxY(0);
 		OctreeDifferenceFunction function(solidSpace, waterBox);
 		WrappedOctreeDifference wrappedFunction = WrappedOctreeDifference(&function, minSize);
-		liquidSpace->add(wrappedFunction, WaterBrush(0), minSize, simplifier, changeHandler);
+		liquidSpace->add(wrappedFunction, WaterBrush(0), minSize, simplifier, *liquidSpaceChangeHandler);
 	}
 }
 
@@ -333,7 +343,7 @@ void Scene::import(const std::string &filename, Camera &camera) {
 	HeightMap heightMap = HeightMap(cache, mapBox, sizePerTile);
 	HeightMapDistanceFunction function(heightMap);
 	WrappedHeightMap wrappedFunction = WrappedHeightMap(&function, minSize);
-	solidSpace->add(wrappedFunction, DerivativeLandBrush(), minSize, simplifier, changeHandler);
+	solidSpace->add(wrappedFunction, DerivativeLandBrush(), minSize, simplifier, *solidSpaceChangeHandler);
 
 	BoundingBox waterBox = mapBox;
 	waterBox.setMaxY(0);

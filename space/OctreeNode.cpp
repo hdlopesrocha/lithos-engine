@@ -12,7 +12,6 @@ OctreeNode * OctreeNode::init(Vertex vertex) {
 	this->setSolid(false);
 	this->setEmpty(false);
 	this->setSimplified(false);
-	this->setDirty(true);
 	this->vertex = vertex;
 	this->id = UINT_MAX;
 	return this;
@@ -99,16 +98,6 @@ void OctreeNode::setSimplified(bool value){
 	uint16_t mask = 0x0004;
 	this->bits = (this->bits & ~mask) | (value ? mask : 0x0);
 }
-
-bool OctreeNode::isDirty(){
-	return this->bits & 0x0008;
-}
-
-void OctreeNode::setDirty(bool value){
-	uint16_t mask = 0x0008;
-	this->bits = (this->bits & ~mask ) | (value ? mask : 0x0);
-}
-
 
 void OctreeNode::setSimplification(uint8_t value){
 	uint16_t mask = 0xff00;

@@ -1,6 +1,6 @@
 #include "tools.hpp"
 
-BrushContext::BrushContext(Camera *camera, OctreeChangeHandler &changeHandler) : camera(camera) , changeHandler(changeHandler) {
+BrushContext::BrushContext(Camera *camera, Scene &scene) : camera(camera) , scene(scene) {
     this->simplifier = new Simplifier(0.99f, 0.01f, true);
     this->boundingVolume = BoundingSphere(glm::vec3(0), 3.0f);
     
@@ -34,9 +34,9 @@ void BrushContext::apply(Octree &space) {
     WrappedSignedDistanceFunction * wrapped = getWrapped();
     if(wrapped) {
         if(mode == BrushMode::ADD) {
-            space.add(*wrapped, SimpleBrush(brushIndex), detail, *simplifier, changeHandler);
+            space.add(*wrapped, SimpleBrush(brushIndex), detail, *simplifier, *scene.brushSpaceChangeHandler);
         } else {
-            space.del(*wrapped, SimpleBrush(brushIndex), detail, *simplifier, changeHandler);
+            space.del(*wrapped, SimpleBrush(brushIndex), detail, *simplifier, *scene.brushSpaceChangeHandler);
         }
         delete wrapped;
     }

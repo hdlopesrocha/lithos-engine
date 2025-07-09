@@ -58,22 +58,6 @@ class DerivativeLandBrush : public TexturePainter {
 	void paint(Vertex &vertex) const override;
 };
 
-class BrushContext {
-	public:
-	BrushMode mode;
-	std::vector<SignedDistanceFunction*> functions;
-	SignedDistanceFunction * currentFunction;
-	BoundingSphere boundingVolume;
-	Simplifier * simplifier;
-	float detail;
-	Camera * camera;
-	int brushIndex;
-	OctreeChangeHandler &changeHandler;
-
-	BrushContext(Camera *camera, OctreeChangeHandler &changeHandler);
-	void apply(Octree &space);
-	WrappedSignedDistanceFunction * getWrapped();
-};
 
 class SimpleBrush : public TexturePainter {
 	int brush;
@@ -142,10 +126,13 @@ class VegetationInstanceBuilder : public OctreeNodeTriangleHandler {
 };
 
 template <typename T> struct NodeInfo {
+	bool update;
+
 	InstanceGeometry<T> * loadable;
 	DrawableInstanceGeometry<T> * drawable;
 
 	NodeInfo(InstanceGeometry<T> * loadable){
+		this->update = false;
 		this->drawable = NULL;
 		this->loadable = loadable;
 	}
@@ -159,6 +146,51 @@ template <typename T> struct NodeInfo {
 		}
 	}
 };
+
+
+class LiquidSpaceChangeHandler : public OctreeChangeHandler {
+	std::unordered_map<OctreeNode*, NodeInfo<InstanceData>> * liquidInfo;
+ 
+	public:
+	LiquidSpaceChangeHandler(
+		std::unordered_map<OctreeNode*, NodeInfo<InstanceData>> * liquidInfo
+	);
+
+	void create(OctreeNode* nodeId) override;
+	void update(OctreeNode* nodeId) override;
+	void erase(OctreeNode* nodeId) override;
+};
+
+class SolidSpaceChangeHandler : public OctreeChangeHandler {
+	std::unordered_map<OctreeNode*, NodeInfo<InstanceData>> * solidInfo;
+	std::unordered_map<OctreeNode*, NodeInfo<InstanceData>> * vegetationInfo;
+	std::unordered_map<OctreeNode*, NodeInfo<DebugInstanceData>> * debugInfo;
+ 
+	public:
+	SolidSpaceChangeHandler(
+		std::unordered_map<OctreeNode*, NodeInfo<InstanceData>> * solidInfo,
+		std::unordered_map<OctreeNode*, NodeInfo<InstanceData>> * vegetationInfo,
+		std::unordered_map<OctreeNode*, NodeInfo<DebugInstanceData>> * debugInfo
+	);
+
+	void create(OctreeNode* nodeId) override;
+	void update(OctreeNode* nodeId) override;
+	void erase(OctreeNode* nodeId) override;
+};
+
+class BrushSpaceChangeHandler : public OctreeChangeHandler {
+	std::unordered_map<OctreeNode*, NodeInfo<InstanceData>> * brushInfo;
+ 
+	public:
+	BrushSpaceChangeHandler(
+		std::unordered_map<OctreeNode*, NodeInfo<InstanceData>> * brushInfo
+	);
+
+	void create(OctreeNode* nodeId) override;
+	void update(OctreeNode* nodeId) override;
+	void erase(OctreeNode* nodeId) override;
+};
+
 
 class Scene {
     public: 
@@ -189,19 +221,22 @@ class Scene {
 	VegetationGeometryBuilder * vegetationBuilder;
 	OctreeGeometryBuilder * debugBuilder;
 
-	std::unordered_map<long, NodeInfo<InstanceData>> solidInfo;
-	std::unordered_map<long, NodeInfo<InstanceData>> brushInfo;
-	std::unordered_map<long, NodeInfo<InstanceData>> liquidInfo;
-	std::unordered_map<long, NodeInfo<DebugInstanceData>> debugInfo;
-	std::unordered_map<long, NodeInfo<InstanceData>> vegetationInfo;
+	std::unordered_map<OctreeNode*, NodeInfo<InstanceData>> solidInfo;
+	std::unordered_map<OctreeNode*, NodeInfo<InstanceData>> brushInfo;
+	std::unordered_map<OctreeNode*, NodeInfo<InstanceData>> liquidInfo;
+	std::unordered_map<OctreeNode*, NodeInfo<DebugInstanceData>> debugInfo;
+	std::unordered_map<OctreeNode*, NodeInfo<InstanceData>> vegetationInfo;
+
+	LiquidSpaceChangeHandler * liquidSpaceChangeHandler;
+	SolidSpaceChangeHandler * solidSpaceChangeHandler;
+	BrushSpaceChangeHandler * brushSpaceChangeHandler;
 
 	OctreeVisibilityChecker * solidRenderer;
 	OctreeVisibilityChecker * brushRenderer;
 	OctreeVisibilityChecker * liquidRenderer;
 	OctreeVisibilityChecker * shadowRenderer[SHADOW_MATRIX_COUNT];
-	OctreeChangeHandler &changeHandler;
-	
-	Scene(Settings * settings, OctreeChangeHandler &changeHandler);
+
+	Scene(Settings * settings);
 
 	bool processSpace();
 	bool processLiquid(OctreeNodeData &data, Octree * tree);
@@ -210,7 +245,7 @@ class Scene {
 	void setVisibility(glm::mat4 viewProjection, std::vector<std::pair<glm::mat4, glm::vec3>> lightProjection ,Camera &camera);
 	void setVisibleNodes(Octree * tree, glm::mat4 viewProjection, glm::vec3 sortPosition, OctreeVisibilityChecker &checker);
 
-	template <typename T, typename H> void draw (uint drawableType, int mode, glm::vec3 cameraPosition, const std::vector<OctreeNodeData> &list, std::unordered_map<long, NodeInfo<T>> * info,long * count);
+	template <typename T, typename H> void draw (uint drawableType, int mode, glm::vec3 cameraPosition, const std::vector<OctreeNodeData> &list, std::unordered_map<OctreeNode*, NodeInfo<T>> * info,long * count);
 	void drawVegetation(glm::vec3 cameraPosition, const std::vector<OctreeNodeData> &list);
 	void draw3dSolid(glm::vec3 cameraPosition, const std::vector<OctreeNodeData> &list) ;
 	void draw3dLiquid(glm::vec3 cameraPosition, const std::vector<OctreeNodeData> &list);
@@ -219,12 +254,32 @@ class Scene {
 
 	void import(const std::string &filename, Camera &camera) ;
 	void generate(Camera &camera) ;
-	template <typename T> bool loadSpace(Octree * tree, OctreeNodeData &data, std::unordered_map<long, NodeInfo<T>> *infos, GeometryBuilder<T> * builder);
-	template <typename T> DrawableInstanceGeometry<T> * loadIfNeeded(std::unordered_map<long, NodeInfo<T>> * infos, long index, InstanceHandler<T> * handler);
+	template <typename T> bool loadSpace(Octree * tree, OctreeNodeData &data, std::unordered_map<OctreeNode*, NodeInfo<T>> *infos, GeometryBuilder<T> * builder);
+	template <typename T> DrawableInstanceGeometry<T> * loadIfNeeded(std::unordered_map<OctreeNode*, NodeInfo<T>> * infos, OctreeNode* node, InstanceHandler<T> * handler);
 
 	void save(std::string folderPath, Camera &camera);
 	void load(std::string folderPath, Camera &camera);
+
+
 };
+
+class BrushContext {
+	public:
+	BrushMode mode;
+	std::vector<SignedDistanceFunction*> functions;
+	SignedDistanceFunction * currentFunction;
+	BoundingSphere boundingVolume;
+	Simplifier * simplifier;
+	float detail;
+	Camera * camera;
+	int brushIndex;
+	Scene &scene;
+
+	BrushContext(Camera *camera, Scene &scene);
+	void apply(Octree &space);
+	WrappedSignedDistanceFunction * getWrapped();
+};
+
 
 template <typename T> class Seriallizer {
 	public:
@@ -389,24 +444,6 @@ template class BrushEventHandler<Event>;
 template class BrushEventHandler<Axis3dEvent>;
 template class BrushEventHandler<FloatEvent>;
 
-class SpaceChangeHandler : public OctreeChangeHandler {
 
-	public:
-	SpaceChangeHandler() {
-
-	}
-
-	void create(uint nodeId) override {
-
-	}
-
-	void update(uint nodeId) override {
-		
-	}
-
-	void erase(uint nodeId) override {
-		
-	}
-};
 
 #endif

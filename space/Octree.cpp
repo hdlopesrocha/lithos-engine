@@ -313,7 +313,6 @@ NodeOperationResult Octree::shape(
         node->setSolid(resultType == SpaceType::Solid);
         node->setEmpty(resultType == SpaceType::Empty);
         node->setSimplification(0);
-        node->setDirty(true);
         if(resultType == SpaceType::Surface) {
             //node->vertex.normal = SDF::getNormalFromPosition(node->sdf, frame.cube, node->vertex.position);
             node->vertex.position = SDF::getPosition(node->sdf, frame.cube);
@@ -339,7 +338,6 @@ NodeOperationResult Octree::shape(
                         childNode->setEmpty(child.resultType == SpaceType::Empty);
                         childNode->setSdf(child.sdf);
                         childNode->setSimplification(0);
-                        childNode->setDirty(true);
                     }
                     node->setChildNode(i, childNode, &allocator, block);
                 }
@@ -347,7 +345,10 @@ NodeOperationResult Octree::shape(
         }
 
         if(resultType != SpaceType::Surface) {
+            changeHandler.erase(node);
             node->clear(&allocator, frame.cube);
+        } else {
+            changeHandler.update(node);
         }
 
         if(chunk != NULL) {

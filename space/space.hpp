@@ -36,8 +36,6 @@ class OctreeNode {
 		void setEmpty(bool value);
 		bool isSimplified();
 		void setSimplified(bool value);
-		bool isDirty();
-		void setDirty(bool value);
 		void setSdf(float * value);
 
 };
@@ -140,9 +138,9 @@ struct NodeOperationResult {
 
 class OctreeChangeHandler {
 	public:
-	virtual void create(uint nodeId) = 0;
-	virtual void update(uint nodeId) = 0;
-	virtual void erase(uint nodeId) = 0;
+	virtual void create(OctreeNode* nodeId) = 0;
+	virtual void update(OctreeNode* nodeId) = 0;
+	virtual void erase(OctreeNode* nodeId) = 0;
 };
 
 class Octree: public BoundingCube {

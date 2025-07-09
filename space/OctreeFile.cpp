@@ -30,7 +30,6 @@ OctreeNode * loadRecursive(OctreeAllocator * allocator, int i, std::vector<Octre
 			break;
 		}
 	}
-	node->setDirty(true);
 	ChildBlock * block = isLeaf ? NULL : node->createBlock(allocator);
 	if(cube.getLengthX() > chunkSize) {
 		for(int j=0 ; j <8 ; ++j){
