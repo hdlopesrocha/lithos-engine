@@ -70,6 +70,8 @@ class BrushContext {
 	int brushIndex;
 
 	BrushContext(Camera *camera);
+	void apply(Octree &space);
+	WrappedSignedDistanceFunction * getWrapped();
 };
 
 class SimpleBrush : public TexturePainter {

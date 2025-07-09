@@ -30,10 +30,12 @@ void BrushEditor::draw2d(float time){
 
     if (ImGui::ArrowButton("##arrow_left", ImGuiDir_Left)) {
         --brushContext->brushIndex;
+        changed = true;
     }
     ImGui::SameLine();
     if (ImGui::ArrowButton("##arrow_right", ImGuiDir_Right)) {
         ++brushContext->brushIndex;
+        changed = true;
     }
     brushContext->brushIndex = Math::mod(brushContext->brushIndex, brushes->size());
     UniformBlockBrush * uniformBrush = &(*brushes)[brushContext->brushIndex];
@@ -139,11 +141,7 @@ void BrushEditor::draw2d(float time){
 
     if(changed) {
         brushSpace->root->clear(&brushSpace->allocator, *brushSpace);
-        if(brushContext->mode == BrushMode::ADD) {
-       //     brushSpace->add(SphereContainmentHandler(brushContext->boundingVolume), *(brushContext->currentFunction), SimpleBrush(brush->index), brushContext->detail, *(brushContext->simplifier));
-        } else if(brushContext->mode == BrushMode::REMOVE) {
-        //    brushSpace->del(SphereContainmentHandler(brushContext->boundingVolume), *(brushContext->currentFunction), SimpleBrush(brush->index), brushContext->detail, *(brushContext->simplifier));
-        }
+        brushContext->apply(*brushSpace);
     }
 
     ImGui::Separator();
