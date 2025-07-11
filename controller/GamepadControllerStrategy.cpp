@@ -2,11 +2,11 @@
 
 float GamepadControllerStrategy::tick(int key, float deltaTime) {
     if(deltaTime!=0.0) {
-        keyWasPressed[key] += deltaTime;
+        keyDuration[key] += deltaTime;
     } else {
-        keyWasPressed[key] = 0.0f;
+        keyDuration[key] = 0.0f;
     }
-    return keyWasPressed[key];
+    return keyDuration[key];
 }
 
 
@@ -31,33 +31,30 @@ void GamepadControllerStrategy::handleInput(float deltaTime) {
         float3d0.y = state.axes[GLFW_GAMEPAD_AXIS_RIGHT_Y];
         float3d0.z = state.axes[GLFW_GAMEPAD_AXIS_RIGHT_TRIGGER] - state.axes[GLFW_GAMEPAD_AXIS_LEFT_TRIGGER];
 
-        vector3d2.x = state.axes[GLFW_GAMEPAD_AXIS_LEFT_X];
-        vector3d2.z = -state.axes[GLFW_GAMEPAD_AXIS_LEFT_Y];
-        vector3d2.y = (state.buttons[GLFW_GAMEPAD_BUTTON_RIGHT_BUMPER] == GLFW_PRESS ? 1 : 0) - (state.buttons[GLFW_GAMEPAD_BUTTON_LEFT_BUMPER] == GLFW_PRESS ? 1 : 0);	
-        float3d2.x = state.axes[GLFW_GAMEPAD_AXIS_LEFT_X];
-        float3d2.y = state.axes[GLFW_GAMEPAD_AXIS_LEFT_Y];
-        float3d2.z = (state.buttons[GLFW_GAMEPAD_BUTTON_RIGHT_BUMPER] == GLFW_PRESS ? 1 : 0) - (state.buttons[GLFW_GAMEPAD_BUTTON_LEFT_BUMPER] == GLFW_PRESS ? 1 : 0);	
-        
-        if(state.buttons[GLFW_GAMEPAD_BUTTON_DPAD_RIGHT] == GLFW_PRESS) {
-            tick(EVENT_NEXT_PAGE, deltaTime);
+        vector3d1.x = state.axes[GLFW_GAMEPAD_AXIS_LEFT_X];
+        vector3d1.z = -state.axes[GLFW_GAMEPAD_AXIS_LEFT_Y];
+        vector3d1.y = (state.buttons[GLFW_GAMEPAD_BUTTON_RIGHT_BUMPER] == GLFW_PRESS ? 1 : 0) - (state.buttons[GLFW_GAMEPAD_BUTTON_LEFT_BUMPER] == GLFW_PRESS ? 1 : 0);	
+        float3d1.x = state.axes[GLFW_GAMEPAD_AXIS_LEFT_X];
+        float3d1.y = state.axes[GLFW_GAMEPAD_AXIS_LEFT_Y];
+        float3d1.z = (state.buttons[GLFW_GAMEPAD_BUTTON_RIGHT_BUMPER] == GLFW_PRESS ? 1 : 0) - (state.buttons[GLFW_GAMEPAD_BUTTON_LEFT_BUMPER] == GLFW_PRESS ? 1 : 0);	
+     
+        if(state.buttons[GLFW_GAMEPAD_BUTTON_DPAD_RIGHT] != GLFW_RELEASE) {
             if(!keyWasPressed[GLFW_GAMEPAD_BUTTON_DPAD_RIGHT]) { 
-               eventManager.publish<BinaryEvent>(
-                    BinaryEvent(EVENT_NEXT_PAGE, true));
+                eventManager.publish<Event>(Event(EVENT_NEXT_PAGE));
             }
-        }else {
-            tick(EVENT_NEXT_PAGE, 0.0f);
+            keyWasPressed[GLFW_GAMEPAD_BUTTON_DPAD_RIGHT] = true;
+        } else {
+            keyWasPressed[GLFW_GAMEPAD_BUTTON_DPAD_RIGHT] = false;
         }
-     
-        if(state.buttons[GLFW_GAMEPAD_BUTTON_DPAD_LEFT] == GLFW_PRESS) {
-            tick(EVENT_PREVIOUS_PAGE, deltaTime);
+
+        if(state.buttons[GLFW_GAMEPAD_BUTTON_DPAD_LEFT] != GLFW_RELEASE) {
             if(!keyWasPressed[GLFW_GAMEPAD_BUTTON_DPAD_LEFT]) { 
-                eventManager.publish<BinaryEvent>(
-                    BinaryEvent(EVENT_PREVIOUS_PAGE, false));
+                eventManager.publish<Event>(Event(EVENT_PREVIOUS_PAGE));
             }
-        }else {
-            tick(EVENT_PREVIOUS_PAGE, 0.0f);
+            keyWasPressed[GLFW_GAMEPAD_BUTTON_DPAD_LEFT] = true;
+        } else {
+            keyWasPressed[GLFW_GAMEPAD_BUTTON_DPAD_LEFT] = false;
         }
-     
 
         if(state.buttons[GLFW_GAMEPAD_BUTTON_A] == GLFW_PRESS) {
             tick(EVENT_PAINT_BRUSH, deltaTime);

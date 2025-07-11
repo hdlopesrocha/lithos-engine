@@ -22,7 +22,8 @@ enum ControllerMode {
 
 class GamepadControllerStrategy : public ControllerStrategy {
    	EventManager &eventManager;
-    std::unordered_map<int, float> keyWasPressed;
+    std::unordered_map<int, float> keyDuration;
+    std::unordered_map<int, bool> keyWasPressed;
 
     public:
         GamepadControllerStrategy(EventManager &eventManager);
@@ -34,7 +35,8 @@ class GamepadControllerStrategy : public ControllerStrategy {
 class KeyboardControllerStrategy : public ControllerStrategy {
     LithosApplication &app;
    	EventManager &eventManager;
-    std::unordered_map<int, float> keyWasPressed;
+    std::unordered_map<int, bool> keyWasPressed;
+    std::unordered_map<int, float> keyDuration;
 
     public:
         KeyboardControllerStrategy(LithosApplication &app, EventManager &eventManager);

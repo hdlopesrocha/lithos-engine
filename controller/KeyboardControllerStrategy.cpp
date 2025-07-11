@@ -2,11 +2,11 @@
 
 float KeyboardControllerStrategy::tick(int key, float deltaTime) {
     if(deltaTime!=0.0) {
-        keyWasPressed[key] += deltaTime;
+        keyDuration[key] += deltaTime;
     } else {
-        keyWasPressed[key] = 0.0f;
+        keyDuration[key] = 0.0f;
     }
-    return keyWasPressed[key];
+    return keyDuration[key];
 }
 
 
@@ -195,7 +195,7 @@ void KeyboardControllerStrategy::handleInput(float deltaTime) {
 
     if (app.getKeyboardStatus(GLFW_KEY_X) != GLFW_RELEASE) {
         if(!keyWasPressed[GLFW_KEY_X]) { 
-            eventManager.publish<BinaryEvent>(BinaryEvent(EVENT_NEXT_PAGE, true));
+            eventManager.publish<Event>(Event(EVENT_NEXT_PAGE));
         }
         keyWasPressed[GLFW_KEY_X] = true;
     } else {
@@ -204,7 +204,7 @@ void KeyboardControllerStrategy::handleInput(float deltaTime) {
 
     if (app.getKeyboardStatus(GLFW_KEY_Z) != GLFW_RELEASE) {
         if(!keyWasPressed[GLFW_KEY_Z]) { 
-            eventManager.publish<BinaryEvent>(BinaryEvent(EVENT_PREVIOUS_PAGE, false));
+            eventManager.publish<Event>(Event(EVENT_PREVIOUS_PAGE));
         }
         keyWasPressed[GLFW_KEY_Z] = true;
     } else {

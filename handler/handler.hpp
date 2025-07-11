@@ -124,14 +124,14 @@ class RotateHandler : public EventHandler<Axis3dEvent>{
 };
 
 
-class ControlEventManagerGroupHandler : public EventHandler<BinaryEvent> {
+class ControlEventManagerGroupHandler : public EventHandler<Event> {
     EventManagerGroup * eventManagerGroup;
     public:
     ControlEventManagerGroupHandler(EventManagerGroup * eventManagerGroup) : eventManagerGroup(eventManagerGroup) {}
-    void handle(BinaryEvent * event) override {
-        if(event->value) {
+    void handle(Event * event) override {
+        if(event->getType() == EventType::EVENT_NEXT_PAGE) {
             eventManagerGroup->next();
-        } else {
+        } else if(event->getType() == EventType::EVENT_PREVIOUS_PAGE) {
             eventManagerGroup->previous();
         }
     }
