@@ -5,6 +5,7 @@ ScaleHandler::ScaleHandler(float * value) : value(value) {
 }
 
 void ScaleHandler::handle(FloatEvent * event) {
-    *value += event->value*event->deltaTime;
+    float time = event->duration;
+    *value += time * event->value*event->deltaTime;
 }
 

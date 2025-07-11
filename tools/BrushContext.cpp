@@ -30,13 +30,13 @@ WrappedSignedDistanceFunction * BrushContext::getWrapped() {
 }
 
 
-void BrushContext::apply(Octree &space) {
+void BrushContext::apply(Octree &space, OctreeChangeHandler &handler, bool preview) {
     WrappedSignedDistanceFunction * wrapped = getWrapped();
     if(wrapped) {
-        if(mode == BrushMode::ADD) {
-            space.add(*wrapped, SimpleBrush(brushIndex), detail, *simplifier, *scene.brushSpaceChangeHandler);
+        if(preview  || mode == BrushMode::ADD) {
+            space.add(*wrapped, SimpleBrush(brushIndex), detail, *simplifier, handler);
         } else {
-            space.del(*wrapped, SimpleBrush(brushIndex), detail, *simplifier, *scene.brushSpaceChangeHandler);
+            space.del(*wrapped, SimpleBrush(brushIndex), detail, *simplifier, handler);
         }
         delete wrapped;
     }

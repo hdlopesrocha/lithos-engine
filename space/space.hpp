@@ -15,7 +15,7 @@ class OctreeNode {
 
 	public: 
 		Vertex vertex;
-		uint16_t bits;
+		uint8_t bits;
 		uint id;
 		float sdf[8];
 
@@ -28,14 +28,14 @@ class OctreeNode {
 		ChildBlock * createBlock(OctreeAllocator * allocator);
 		OctreeNode * getChildNode(int i, OctreeAllocator * allocator, ChildBlock * block);
 		bool isLeaf();
-		void setSimplification(uint8_t value);
-		uint8_t getSimplification();
 		bool isSolid();
 		void setSolid(bool value);
 		bool isEmpty();
 		void setEmpty(bool value);
 		bool isSimplified();
 		void setSimplified(bool value);
+		bool isDirty();
+		void setDirty(bool value);
 		void setSdf(float * value);
 
 };
@@ -98,15 +98,14 @@ class OctreeAllocator {
 
 struct OctreeNodeFrame {
     OctreeNode* node;
-    int childIndex;
     BoundingCube cube;
     float minSize;
 	uint level;
 	float sdf[8];
 	SpaceType type;
 
-	OctreeNodeFrame(OctreeNode* node, int childIndex, BoundingCube cube, float minSize, uint level, float * sdf, SpaceType type) 
-		: node(node), childIndex(childIndex), cube(cube), minSize(minSize), level(level), type(type) {
+	OctreeNodeFrame(OctreeNode* node, BoundingCube cube, float minSize, uint level, float * sdf, SpaceType type) 
+		: node(node), cube(cube), minSize(minSize), level(level), type(type) {
 			for(int i = 0; i < 8; ++i) {
 				this->sdf[i] = sdf!=NULL ? sdf[i] : 0.0f;
 			}	
@@ -309,14 +308,8 @@ class Tesselator : public IteratorHandler, OctreeNodeTriangleHandler{
 
 struct OctreeNodeSerialized {
     public:
-    glm::vec3 position;
-    glm::vec3 normal;
     uint brushIndex;
-    uint mask;
-    bool isSolid;
-	bool isEmpty;
-	bool isSimplified;
-	uint8_t simplification; 
+    uint8_t bits;
 	float sdf[8];
     uint children[8] = {0,0,0,0,0,0,0,0};
 };

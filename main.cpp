@@ -121,18 +121,11 @@ public:
 		std::cout << "sizeof(ChildBlock) = " << sizeof(ChildBlock) << std::endl; 
 		std::cout << "sizeof(OctreeNodeSerialized) = " << sizeof(OctreeNodeSerialized) << std::endl; 
 
-		BoundingCube box(glm::vec3(0), 1);
-		BoundingCube c0 = box.getChild(0);
-		BoundingCube c1 = box.getChild(1);
-		if(c0.intersects(c1)) {
-			std::cout << "Neighbors Intersect" << std::endl;
-		}
-
 		// Register all GDAL drivers
 		GDALAllRegister();
 
 		mainScene = new Scene(settings);
-		//mainScene->load("data");
+		//mainScene->generate(camera);
 	
 		uniformBlockData = new ProgramData();
 		uniformBrushData = new ProgramData();
@@ -474,7 +467,7 @@ public:
 		uniformBlockViewer = new UniformBlockViewer(&viewerBlock);
 		atlasPainter = new AtlasPainter(&atlasParams, &atlasTextures, atlasDrawer, programAtlas, programTexture, 256,256, &billboardLayers);
 		atlasViewer = new AtlasViewer(&atlasTextures, atlasDrawer, programAtlas, programTexture, 256,256, &atlasLayers, programCopy);
-		brushEditor = new BrushEditor(brush3d, &camera, &brushes, program3d, programTexture, &textureLayers, mainScene->brushSpace, brushContext);
+		brushEditor = new BrushEditor(brush3d, &camera, &brushes, program3d, programTexture, &textureLayers, mainScene, brushContext);
 		cameraEditor = new CameraEditor(&camera);
 		gamepadEditor = new GamepadEditor(gamepadTexture);
 		shadowMapViewer = new ShadowMapViewer(&shadowFrameBuffers, 512, 512);
@@ -490,7 +483,6 @@ public:
 		eventManager.subscribe(EVENT_NEXT_PAGE, new ControlEventManagerGroupHandler(&eventManagerGroup));
 		eventManager.subscribe(EVENT_PREVIOUS_PAGE, new ControlEventManagerGroupHandler(&eventManagerGroup));
 		
-		//eventManager.subscribe(EVENT_PAINT_BRUSH, new EventTriggerCommand<Event>(new PaintBrushCommand(*brush3d, *mainScene)));
 	
 		EventManager * cameraEventManager = new EventManager();
 		cameraEventManager->subscribe(EVENT_VECTOR_3D_0, new TranslateHandler(&camera, &camera.position));
@@ -499,19 +491,19 @@ public:
 		eventManagerGroup.addEventManager(cameraEventManager);
 
 		EventManager * brushEventManager = new EventManager();
-		brushEventManager->subscribe(EVENT_PAINT_BRUSH, new BrushEventHandler<Event>(*brushContext, *mainScene->brushSpace));
-		brushEventManager->subscribe(EVENT_VECTOR_3D_0, new BrushEventHandler<Axis3dEvent>(*brushContext, *mainScene->brushSpace));
-		brushEventManager->subscribe(EVENT_VECTOR_3D_1, new BrushEventHandler<Axis3dEvent>(*brushContext, *mainScene->brushSpace));		
-		brushEventManager->subscribe(EVENT_VECTOR_3D_2, new BrushEventHandler<Axis3dEvent>(*brushContext, *mainScene->brushSpace));		
-		brushEventManager->subscribe(EVENT_FLOAT_0_X, new BrushEventHandler<FloatEvent>(*brushContext, *mainScene->brushSpace));
-		brushEventManager->subscribe(EVENT_FLOAT_0_Y, new BrushEventHandler<FloatEvent>(*brushContext, *mainScene->brushSpace));
-		brushEventManager->subscribe(EVENT_FLOAT_0_Z, new BrushEventHandler<FloatEvent>(*brushContext, *mainScene->brushSpace));
-		brushEventManager->subscribe(EVENT_FLOAT_1_X, new BrushEventHandler<FloatEvent>(*brushContext, *mainScene->brushSpace));
-		brushEventManager->subscribe(EVENT_FLOAT_1_Y, new BrushEventHandler<FloatEvent>(*brushContext, *mainScene->brushSpace));
-		brushEventManager->subscribe(EVENT_FLOAT_1_Z, new BrushEventHandler<FloatEvent>(*brushContext, *mainScene->brushSpace));
-		brushEventManager->subscribe(EVENT_FLOAT_2_X, new BrushEventHandler<FloatEvent>(*brushContext, *mainScene->brushSpace));
-		brushEventManager->subscribe(EVENT_FLOAT_2_Y, new BrushEventHandler<FloatEvent>(*brushContext, *mainScene->brushSpace));
-		brushEventManager->subscribe(EVENT_FLOAT_2_Z, new BrushEventHandler<FloatEvent>(*brushContext, *mainScene->brushSpace));
+		brushEventManager->subscribe(EVENT_PAINT_BRUSH, new BrushEventHandler<Event>(*brushContext, *mainScene));
+		brushEventManager->subscribe(EVENT_VECTOR_3D_0, new BrushEventHandler<Axis3dEvent>(*brushContext, *mainScene));
+		brushEventManager->subscribe(EVENT_VECTOR_3D_1, new BrushEventHandler<Axis3dEvent>(*brushContext, *mainScene));		
+		brushEventManager->subscribe(EVENT_VECTOR_3D_2, new BrushEventHandler<Axis3dEvent>(*brushContext, *mainScene));		
+		brushEventManager->subscribe(EVENT_FLOAT_0_X, new BrushEventHandler<FloatEvent>(*brushContext, *mainScene));
+		brushEventManager->subscribe(EVENT_FLOAT_0_Y, new BrushEventHandler<FloatEvent>(*brushContext, *mainScene));
+		brushEventManager->subscribe(EVENT_FLOAT_0_Z, new BrushEventHandler<FloatEvent>(*brushContext, *mainScene));
+		brushEventManager->subscribe(EVENT_FLOAT_1_X, new BrushEventHandler<FloatEvent>(*brushContext, *mainScene));
+		brushEventManager->subscribe(EVENT_FLOAT_1_Y, new BrushEventHandler<FloatEvent>(*brushContext, *mainScene));
+		brushEventManager->subscribe(EVENT_FLOAT_1_Z, new BrushEventHandler<FloatEvent>(*brushContext, *mainScene));
+		brushEventManager->subscribe(EVENT_FLOAT_2_X, new BrushEventHandler<FloatEvent>(*brushContext, *mainScene));
+		brushEventManager->subscribe(EVENT_FLOAT_2_Y, new BrushEventHandler<FloatEvent>(*brushContext, *mainScene));
+		brushEventManager->subscribe(EVENT_FLOAT_2_Z, new BrushEventHandler<FloatEvent>(*brushContext, *mainScene));
 		eventManager.addArea(brushEventManager);
 		eventManagerGroup.addEventManager(brushEventManager);
 

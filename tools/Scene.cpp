@@ -73,7 +73,8 @@ template <typename T> bool Scene::loadSpace(Octree* tree, OctreeNodeData& data, 
 
 bool Scene::processLiquid(OctreeNodeData &data, Octree * tree) {
 	bool result = false;
-	if(loadSpace(tree, data, &liquidInfo, liquidBuilder)) {
+	if(data.node->isDirty() && loadSpace(tree, data, &liquidInfo, liquidBuilder)) {
+		data.node->setDirty(false);	
 		result = true;			
 	}
 	return result;
@@ -81,16 +82,25 @@ bool Scene::processLiquid(OctreeNodeData &data, Octree * tree) {
 
 bool Scene::processSolid(OctreeNodeData &data, Octree * tree) {
 	bool result = false;
-	if(loadSpace(tree, data, &solidInfo, solidBuilder)) {
+	if(data.node->isDirty() && loadSpace(tree, data, &solidInfo, solidBuilder)) {
+		data.node->setDirty(false);	
+		result = true;		
+	}
+	if(data.node->isDirty() && loadSpace(tree, data, &vegetationInfo, vegetationBuilder)) {
+		data.node->setDirty(false);	
 		result = true;			
 	}
-	if(loadSpace(tree, data, &vegetationInfo, vegetationBuilder)) {
+	if(data.node->isDirty() && loadSpace(tree, data, &debugInfo, debugBuilder)) {
+		data.node->setDirty(false);	
 		result = true;			
 	}
-	if(loadSpace(tree, data, &debugInfo, debugBuilder)) {
-		result = true;			
-	}
-	if(loadSpace(tree, data, &brushInfo, brushBuilder)) {
+	return result;
+}
+
+bool Scene::processBrush(OctreeNodeData &data, Octree * tree) {
+	bool result = false;
+	if(data.node->isDirty() && loadSpace(tree, data, &brushInfo, brushBuilder)) {
+		data.node->setDirty(false);	
 		result = true;			
 	}
 	return result;
@@ -104,7 +114,6 @@ bool Scene::processSpace() {
 	brushInstancesVisible = 0;
 	debugInstancesVisible = 0;
 	int loadCountSolid = 1;
-	int loadCountBrush = 1;
 	int loadCountLiquid = 1;
 
 	for(OctreeNodeData &data : visibleSolidNodes) {
@@ -118,13 +127,7 @@ bool Scene::processSpace() {
 	}
 
 	for(OctreeNodeData &data : visibleBrushNodes) {
-		if(loadCountBrush > 0) {
-			if(processSolid(data, brushSpace)) {
-				--loadCountBrush;
-			}
-		} else {
-			break;
-		}
+		processBrush(data, brushSpace);
 	}
 
 	for(OctreeNodeData &data : visibleLiquidNodes) {
@@ -168,7 +171,7 @@ void Scene::setVisibleNodes(Octree * tree, glm::mat4 viewProjection, glm::vec3 s
 	checker.visibleNodes->clear();
 	checker.sortPosition = sortPosition;
 	checker.update(viewProjection);
-	tree->iterateFlat(checker);	//here we get the visible nodes for that LOD + geometryLEvel
+	tree->iterateFlat(checker);	//here we get the visible nodes for that LOD + geometryLevel
 }
 
 template <typename T> DrawableInstanceGeometry<T> * Scene::loadIfNeeded(std::unordered_map<OctreeNode*, NodeInfo<T>>* infos, OctreeNode* node, InstanceHandler<T> * handler) {

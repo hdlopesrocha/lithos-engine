@@ -241,6 +241,7 @@ class Scene {
 	bool processSpace();
 	bool processLiquid(OctreeNodeData &data, Octree * tree);
 	bool processSolid(OctreeNodeData &data, Octree * tree);
+	bool processBrush(OctreeNodeData &data, Octree * tree);
 
 	void setVisibility(glm::mat4 viewProjection, std::vector<std::pair<glm::mat4, glm::vec3>> lightProjection ,Camera &camera);
 	void setVisibleNodes(Octree * tree, glm::mat4 viewProjection, glm::vec3 sortPosition, OctreeVisibilityChecker &checker);
@@ -276,7 +277,7 @@ class BrushContext {
 	Scene &scene;
 
 	BrushContext(Camera *camera, Scene &scene);
-	void apply(Octree &space);
+	void apply(Octree &space, OctreeChangeHandler &handler, bool preview);
 	WrappedSignedDistanceFunction * getWrapped();
 };
 
@@ -433,9 +434,9 @@ class CloseWindowHandler : public EventHandler<Event>{
 
 template<typename T> class BrushEventHandler : public EventHandler<T> {
 	BrushContext &context;
-	Octree &brushSpace;
+	Scene &scene;
 	public:
-	BrushEventHandler(BrushContext &context, Octree &brushSpace);
+	BrushEventHandler(BrushContext &context, Scene &scene);
 
 	void handle(T * event) override;
 };

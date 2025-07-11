@@ -10,14 +10,13 @@ OctreeNodeFile::OctreeNodeFile(OctreeNode * node, std::string filename) {
 OctreeNode * loadRecursive2(OctreeAllocator * allocator, OctreeNode * node, int i, BoundingCube &cube, std::vector<OctreeNodeSerialized> * nodes) {
 	OctreeNodeSerialized serialized = nodes->at(i);
 	if(node == NULL) {
-		Vertex vertex(serialized.position, serialized.normal, glm::vec2(0), serialized.brushIndex);
+		glm::vec3 position = SDF::getPosition(serialized.sdf, cube);
+		glm::vec3 normal = SDF::getNormal(serialized.sdf, cube);
+		Vertex vertex(position, normal, glm::vec2(0), serialized.brushIndex);
 		node = allocator->allocateOctreeNode(cube)->init(vertex);
 	}
 	node->setSdf(serialized.sdf);
-	node->setSolid(serialized.isSolid);
-	node->setEmpty(serialized.isEmpty);
-	node->setSimplified(serialized.isSimplified);
-	node->setSimplification(serialized.simplification);
+	node->bits = serialized.bits;
 	bool isLeaf = true;
 	for(int j=0; j < 8; ++j) {
 		if(serialized.children[j] != 0) {
@@ -63,13 +62,8 @@ void OctreeNodeFile::load(OctreeAllocator * allocator, std::string baseFolder, B
 uint saveRecursive2(OctreeAllocator * allocator, OctreeNode * node, std::vector<OctreeNodeSerialized*> * nodes) {
 	if(node!=NULL) {
 		OctreeNodeSerialized * n = new OctreeNodeSerialized();
-		n->position = node->vertex.position;
-		n->normal = node->vertex.normal;
 		n->brushIndex = node->vertex.brushIndex;
-		n->isSolid = node->isSolid();
-		n->isEmpty = node->isEmpty();
-		n->isSimplified = node->isSimplified();
-		n->simplification = node->getSimplification();
+		n->bits = node->bits;
 		SDF::copySDF(node->sdf, n->sdf);
 
 		uint index = nodes->size(); 

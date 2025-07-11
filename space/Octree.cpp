@@ -217,14 +217,14 @@ void Octree::add(
     const TexturePainter &painter,
     float minSize, Simplifier &simplifier, OctreeChangeHandler &changeHandler) {
 	expand(function);	
-    shape(SDF::opUnion, function, painter, OctreeNodeFrame(root, -1, *this, minSize, 0, root->sdf, SpaceType::Surface ), NULL, simplifier, changeHandler);
+    shape(SDF::opUnion, function, painter, OctreeNodeFrame(root, *this, minSize, 0, root->sdf, SpaceType::Surface ), NULL, simplifier, changeHandler);
 }
 
 void Octree::del(
     WrappedSignedDistanceFunction &function, 
     const TexturePainter &painter,
     float minSize, Simplifier &simplifier, OctreeChangeHandler &changeHandler) {
-    shape(SDF::opSubtraction, function, painter, OctreeNodeFrame(root, -1, *this, minSize, 0, root->sdf, SpaceType::Surface), NULL, simplifier, changeHandler);
+    shape(SDF::opSubtraction, function, painter, OctreeNodeFrame(root, *this, minSize, 0, root->sdf, SpaceType::Surface), NULL, simplifier, changeHandler);
 }
 
 SpaceType childToParent(bool childSolid, bool childEmpty) {
@@ -244,11 +244,13 @@ NodeOperationResult Octree::shape(
     OctreeNodeFrame frame, BoundingCube * chunk, Simplifier &simplifier, OctreeChangeHandler &changeHandler) {
     ContainmentType check = function.check(frame.cube);
     OctreeNode * node  = frame.node;
+    bool chunkNode = false;
     if(check == ContainmentType::Disjoint) {
         return NodeOperationResult(frame.cube, node, SpaceType::Empty, frame.type, frame.sdf, false);  // Skip this node
     }
     if(chunk == NULL && frame.cube.getLengthX() < chunkSize){
         chunk = &frame.cube;
+        chunkNode = true;
     }
     bool isLeaf = frame.cube.getLengthX() <= frame.minSize;
     NodeOperationResult children[8];
@@ -280,7 +282,7 @@ NodeOperationResult Octree::shape(
             }
   
             NodeOperationResult child = shape(operation, function, painter, 
-                OctreeNodeFrame(childNode, i, frame.cube.getChild(i), frame.minSize, frame.level + 1, childSDF, childType), 
+                OctreeNodeFrame(childNode, frame.cube.getChild(i), frame.minSize, frame.level + 1, childSDF, childType), 
                 chunk, simplifier, changeHandler);
         
             children[i] = child;
@@ -312,7 +314,6 @@ NodeOperationResult Octree::shape(
         node->setSdf(resultSDF);
         node->setSolid(resultType == SpaceType::Solid);
         node->setEmpty(resultType == SpaceType::Empty);
-        node->setSimplification(0);
         if(resultType == SpaceType::Surface) {
             //node->vertex.normal = SDF::getNormalFromPosition(node->sdf, frame.cube, node->vertex.position);
             node->vertex.position = SDF::getPosition(node->sdf, frame.cube);
@@ -320,9 +321,6 @@ NodeOperationResult Octree::shape(
         }
         if(shapeType != SpaceType::Empty) {
             painter.paint(node->vertex);
-        }
-        if(node->id) {
-            //dirtyHandler.handle(node);
         }
         if(!isLeaf) {
             if(block == NULL) {
@@ -337,7 +335,6 @@ NodeOperationResult Octree::shape(
                         childNode->setSolid(child.resultType == SpaceType::Solid);
                         childNode->setEmpty(child.resultType == SpaceType::Empty);
                         childNode->setSdf(child.sdf);
-                        childNode->setSimplification(0);
                     }
                     node->setChildNode(i, childNode, &allocator, block);
                 }
@@ -345,10 +342,15 @@ NodeOperationResult Octree::shape(
         }
 
         if(resultType != SpaceType::Surface) {
-            changeHandler.erase(node);
+            if(chunkNode) {
+                changeHandler.erase(node);
+            }
             node->clear(&allocator, frame.cube);
         } else {
-            changeHandler.update(node);
+            if(chunkNode) {
+                changeHandler.update(node);
+                node->setDirty(true);
+            }
         }
 
         if(chunk != NULL) {
