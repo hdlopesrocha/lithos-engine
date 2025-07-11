@@ -74,6 +74,23 @@ template<typename T> void BrushEventHandler<T>::handle(T * event) {
         }
     }
 
+    if(context.currentFunction == context.functions[3]) {
+        OctahedronDistanceFunction * function = (OctahedronDistanceFunction*) context.currentFunction;
+        if(event->getType() == EVENT_VECTOR_3D_0) {
+            Axis3dEvent * e = (Axis3dEvent*) event;
+            TranslateHandler(context.camera, &(function->center)).handle(e);
+            changed = true;
+            //std::cout << "EVENT_VECTOR_3D_0 = " << std::to_string(e->axis.x)<< ":"<< std::to_string(e->axis.y)<< ":"<<  std::to_string(e->axis.z) << std::endl;
+        }
+        if(event->getType() == EVENT_FLOAT_1_X) {
+            FloatEvent * e = (FloatEvent*) event;
+            ScaleHandler(&(function->radius)).handle(e);
+            changed = true;
+            //std::cout << "EVENT_FLOAT_1_X = " << std::to_string(e->value) << std::endl;
+        }
+    }
+
+
     if(event->getType() == EVENT_PAINT_BRUSH) {
         std::cout << "EVENT_PAINT_BRUSH" << std::endl;
         context.apply(*scene.solidSpace, *scene.solidSpaceChangeHandler, false);

@@ -109,6 +109,19 @@ float SDF::sphere(glm::vec3 p, const float r) {
     return glm::length(p) - r;
 }
 
+float SDF::octahedron(glm::vec3 p, float s ) {
+  p = abs(p);
+  float m = p.x+p.y+p.z-s;
+  glm::vec3 q;
+       if( 3.0*p.x < m ) q = glm::vec3(p.x, p.y, p.z);
+  else if( 3.0*p.y < m ) q = glm::vec3(p.y, p.z, p.x);
+  else if( 3.0*p.z < m ) q = glm::vec3(p.z, p.x, p.y);
+  else return m*0.57735027;
+    
+  float k = glm::clamp(0.5f*(q.z-q.y+s),0.0f,s); 
+  return glm::length(glm::vec3(q.x,q.y-s+k,q.z-k)); 
+}
+
 float SDF::opSmoothUnion( float d1, float d2, float k ) {
     float h = glm::clamp( 0.5 + 0.5*(d2-d1)/k, 0.0, 1.0 );
     return glm::mix( d2, d1, h ) - k*h*(1.0-h);
@@ -219,6 +232,18 @@ SdfType HeightMapDistanceFunction::getType() const {
     return SdfType::HEIGHTMAP; 
 }
 
+OctahedronDistanceFunction::OctahedronDistanceFunction(glm::vec3 pos, float radius): center(pos), radius(radius) {
+    
+}
+
+float OctahedronDistanceFunction::distance(const glm::vec3 p) const {
+    return SDF::octahedron(p - center, radius);
+}
+
+SdfType OctahedronDistanceFunction::getType() const {
+    return SdfType::OCTAHEDRON;
+}
+
 SpaceType SDF::eval(float * sdf) {
     bool hasPositive = false;
     bool hasNegative = false;
@@ -241,6 +266,7 @@ const char* toString(SdfType t)
         case SdfType::CAPSULE: return "Capsule";
         case SdfType::HEIGHTMAP: return "Height Map";
         case SdfType::OCTREE_DIFFERENCE: return "Octree Difference";
+        case SdfType::OCTAHEDRON: return "Octahedron";
         default: return "Unknown";
     }
 }

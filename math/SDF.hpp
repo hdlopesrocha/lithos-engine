@@ -10,7 +10,7 @@
 #define SDF_TYPE_HEIGHTMAP 3
 
 enum SdfType {
-    SPHERE, BOX, CAPSULE, HEIGHTMAP, OCTREE_DIFFERENCE};
+    SPHERE, BOX, CAPSULE, HEIGHTMAP, OCTREE_DIFFERENCE, OCTAHEDRON};
 const char* toString(SdfType t);
 
 
@@ -53,6 +53,7 @@ public:
 	static float box(glm::vec3 p, const glm::vec3 len);
 	static float sphere(glm::vec3 p, const float r);
     static float capsule(glm::vec3 p, glm::vec3 a, glm::vec3 b, float r );
+    static float octahedron(glm::vec3 p, float s);
 
     static glm::vec3 getPosition(float *sdf, const BoundingCube &cube);
     static glm::vec3 getNormal(float* sdf, const BoundingCube& cube);
@@ -108,6 +109,16 @@ class HeightMapDistanceFunction : public SignedDistanceFunction {
 	public:
 	const HeightMap &map;
 	HeightMapDistanceFunction(const HeightMap &map);
+	float distance(const glm::vec3 p) const override;
+    SdfType getType() const override; 
+};
+
+class OctahedronDistanceFunction : public SignedDistanceFunction {
+    public:
+    glm::vec3 center;
+    float radius;	
+
+	OctahedronDistanceFunction(glm::vec3 pos, float radius);
 	float distance(const glm::vec3 p) const override;
     SdfType getType() const override; 
 };
@@ -240,6 +251,33 @@ class WrappedHeightMap : public WrappedSignedDistanceFunction {
     glm::vec3 getCenter() const override {
         BoundingBox box = getBox();
         return box.getCenter();
+    };
+};
+
+class WrappedOctahedron : public WrappedSignedDistanceFunction {
+    public:
+    WrappedOctahedron(OctahedronDistanceFunction * function, float bias) : WrappedSignedDistanceFunction(function, bias) {
+
+    }
+
+    BoundingSphere getSphere() const {
+        OctahedronDistanceFunction * f = (OctahedronDistanceFunction*) function;
+        return BoundingSphere(f->center, f->radius + bias);
+    };
+
+    ContainmentType check(const BoundingCube &cube) const override {
+        BoundingSphere sphere = getSphere();
+        return sphere.test(cube);
+    };
+
+    bool isContained(const BoundingCube &cube) const override {
+        BoundingSphere sphere = getSphere();
+        return cube.contains(sphere);
+    };
+
+    glm::vec3 getCenter() const override {
+        OctahedronDistanceFunction * f = (OctahedronDistanceFunction*) function;
+        return f->center;
     };
 };
 

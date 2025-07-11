@@ -91,11 +91,11 @@ void BrushEditor::draw2d(float time){
         case SdfType::SPHERE:
         {
             SphereDistanceFunction* function = (SphereDistanceFunction*)brushContext->currentFunction;
-            ImGui::Text("Sphere Position: ");
+            ImGui::Text("Position: ");
             if(ImGui::InputFloat3("m##spherePosition", &(function->center[0]))) {
                 changed = true; 
             }
-            ImGui::Text("Sphere Radius: ");
+            ImGui::Text("Radius: ");
             if(ImGui::InputFloat("m##sphereRadius", &(function->radius))) {
                 changed = true; 
             }
@@ -104,11 +104,11 @@ void BrushEditor::draw2d(float time){
         case SdfType::BOX:
         {
             BoxDistanceFunction* function = (BoxDistanceFunction*)brushContext->currentFunction;
-            ImGui::Text("Box Position: "); 
+            ImGui::Text("Position: "); 
             if(ImGui::InputFloat3("m##boxPosition", &(function->center[0]))) {
                 changed = true; 
             }    
-            ImGui::Text("Box Length: ");
+            ImGui::Text("Length: ");
             if(ImGui::InputFloat3("m##boxLength", &(function->length[0]))) {
                 changed = true; 
             }
@@ -118,23 +118,34 @@ void BrushEditor::draw2d(float time){
         {
             CapsuleDistanceFunction* function = (CapsuleDistanceFunction*)brushContext->currentFunction;
 
-            ImGui::Text("Capsule A: ");
+            ImGui::Text("A: ");
             if(ImGui::InputFloat3("m##capsuleA", &(function->a[0]))) {
                 changed = true; 
             }
-            ImGui::Text("Capsule B: ");
+            ImGui::Text("B: ");
             if(ImGui::InputFloat3("m##capsuleB", &(function->b[0]))) {
                 changed = true; 
             }    
-            ImGui::Text("Capsule Radius: ");
+            ImGui::Text("Radius: ");
             if(ImGui::InputFloat("m##capsuleRadius", &(function->radius))) {
                 changed = true; 
             }
             break;
-        /* code */
         }
         break;
-    
+        case SdfType::OCTAHEDRON:
+        {
+            OctahedronDistanceFunction* function = (OctahedronDistanceFunction*)brushContext->currentFunction;
+            ImGui::Text("Position: ");
+            if(ImGui::InputFloat3("m##octahedronPosition", &(function->center[0]))) {
+                changed = true; 
+            }
+            ImGui::Text("Radius: ");
+            if(ImGui::InputFloat("m##octahedronRadius", &(function->radius))) {
+                changed = true; 
+            }
+        }
+            break;  
     default:
         break;
     }

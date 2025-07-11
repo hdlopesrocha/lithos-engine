@@ -7,6 +7,7 @@ BrushContext::BrushContext(Camera *camera, Scene &scene) : camera(camera) , scen
     this->functions.push_back(new SphereDistanceFunction(glm::vec3(0), 1.0f));
     this->functions.push_back(new BoxDistanceFunction(glm::vec3(0), glm::vec3(1.0f)));
     this->functions.push_back(new CapsuleDistanceFunction(glm::vec3(0, 0, 0), glm::vec3(1, 1, 1), 1.0f));
+    this->functions.push_back(new OctahedronDistanceFunction(glm::vec3(0), 1.0f));
     this->currentFunction = this->functions[0];
     this->detail = 1.0f;
     this->mode = BrushMode::ADD;
@@ -25,6 +26,10 @@ WrappedSignedDistanceFunction * BrushContext::getWrapped() {
     else if(currentFunction == functions[2]) {
         CapsuleDistanceFunction * function = (CapsuleDistanceFunction*) currentFunction;
         return new WrappedCapsule(function, detail);
+    }
+    else if(currentFunction == functions[3]) {
+        OctahedronDistanceFunction * function = (OctahedronDistanceFunction*) currentFunction;
+        return new WrappedOctahedron(function, detail);
     }
     return NULL;
 }
