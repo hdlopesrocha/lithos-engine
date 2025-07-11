@@ -82,17 +82,17 @@ bool Scene::processLiquid(OctreeNodeData &data, Octree * tree) {
 
 bool Scene::processSolid(OctreeNodeData &data, Octree * tree) {
 	bool result = false;
-	if(data.node->isDirty() && loadSpace(tree, data, &solidInfo, solidBuilder)) {
+	if(data.node->isDirty()) { 
+		if(loadSpace(tree, data, &solidInfo, solidBuilder)) {
+			result = true;		
+		}
+		if(loadSpace(tree, data, &vegetationInfo, vegetationBuilder)) {
+			result = true;			
+		}
+		if(loadSpace(tree, data, &debugInfo, debugBuilder)) {
+			result = true;			
+		}
 		data.node->setDirty(false);	
-		result = true;		
-	}
-	if(data.node->isDirty() && loadSpace(tree, data, &vegetationInfo, vegetationBuilder)) {
-		data.node->setDirty(false);	
-		result = true;			
-	}
-	if(data.node->isDirty() && loadSpace(tree, data, &debugInfo, debugBuilder)) {
-		data.node->setDirty(false);	
-		result = true;			
 	}
 	return result;
 }
