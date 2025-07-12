@@ -189,20 +189,19 @@ class WrappedBox : public WrappedSignedDistanceFunction {
 
     }
 
-    BoundingBox getBox() const {
+    BoundingSphere getSphere() const {
         BoxDistanceFunction * f = (BoxDistanceFunction*) function;
-        glm::vec3 lenOver2 = f->length+glm::vec3(bias);
-        return BoundingBox(f->center-lenOver2, f->center+lenOver2);
+        return BoundingSphere(f->center, glm::length(f->length)+ bias);
     };
 
     ContainmentType check(const BoundingCube &cube) const override {
-        BoundingBox box = getBox();
-        return box.test(cube);
+        BoundingSphere sphere = getSphere();
+        return sphere.test(cube);
     };
 
     bool isContained(const BoundingCube &cube) const override {
-        BoundingBox box = getBox();
-        return cube.contains(box);
+        BoundingSphere sphere = getSphere();
+        return cube.contains(sphere);
     };
 
 };
