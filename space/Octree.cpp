@@ -185,11 +185,24 @@ void Octree::handleQuadNodes(OctreeNodeData &data, OctreeNodeTriangleHandler * h
 	}
 }
 
+glm::vec3 sdf_rotated(glm::vec3 p, glm::quat q, glm::vec3 pivot) {
+    // Step 1: Translate point to rotation origin
+    glm::vec3 local = p - pivot;
+
+    // Step 2: Apply inverse rotation
+    glm::vec3 rotated = glm::inverse(q) * local;
+
+    // Step 3: Translate back
+    return rotated + pivot;
+}
+
+
 void buildSDF(const SignedDistanceFunction &function, glm::quat quaternion, BoundingCube &cube, float * resultSDF) {
     const glm::vec3 min = cube.getMin();
     const glm::vec3 length = cube.getLength();
     for (int i = 0; i < 8; ++i) {
-        resultSDF[i] = function.distance(min + length * Octree::getShift(i));
+        glm::vec3 corner = min + length * Octree::getShift(i);
+        resultSDF[i] = function.distance(sdf_rotated(corner, quaternion, function.getCenter()));
     }
 }
 
