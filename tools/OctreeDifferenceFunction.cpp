@@ -16,3 +16,7 @@ float OctreeDifferenceFunction::distance(const glm::vec3 p) const {
 SdfType OctreeDifferenceFunction::getType() const {
     return SdfType::OCTREE_DIFFERENCE;
 }
+
+glm::vec3 OctreeDifferenceFunction::getCenter() const {
+    return this->box.getCenter();
+}

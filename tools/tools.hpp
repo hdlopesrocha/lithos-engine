@@ -271,6 +271,9 @@ class BrushContext {
 	SignedDistanceFunction * currentFunction;
 	BoundingSphere boundingVolume;
 	Simplifier * simplifier;
+    float pitch;
+    float yaw;
+    float roll;	
 	float detail;
 	Camera * camera;
 	int brushIndex;
@@ -345,6 +348,8 @@ class OctreeDifferenceFunction : public SignedDistanceFunction {
     OctreeDifferenceFunction(Octree * tree, BoundingBox box);
     float distance(const glm::vec3 p) const override;
 	SdfType getType() const override;
+	glm::vec3 getCenter() const override;
+
 };
 
 class WrappedOctreeDifference : public WrappedSignedDistanceFunction {

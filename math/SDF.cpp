@@ -188,6 +188,11 @@ SdfType BoxDistanceFunction::getType() const {
     return SdfType::BOX;
 }
 
+glm::vec3 BoxDistanceFunction::getCenter() const {
+    return this->center;
+}
+
+
 SphereDistanceFunction::SphereDistanceFunction(glm::vec3 pos, float radius): center(pos), radius(radius) {
     
 }
@@ -199,6 +204,11 @@ float SphereDistanceFunction::distance(const glm::vec3 p) const {
 SdfType SphereDistanceFunction::getType() const {
     return SdfType::SPHERE;
 }
+
+glm::vec3 SphereDistanceFunction::getCenter() const {
+    return this->center;
+}
+
 
 CapsuleDistanceFunction::CapsuleDistanceFunction(glm::vec3 a, glm::vec3 b, float r) {
     this->a = a;
@@ -212,6 +222,10 @@ float CapsuleDistanceFunction::distance(const glm::vec3 p) const {
 
 SdfType CapsuleDistanceFunction::getType() const {
     return SdfType::CAPSULE;
+}
+
+glm::vec3 CapsuleDistanceFunction::getCenter() const {
+    return 0.5f*(this->a+this->b);
 }
 
 HeightMapDistanceFunction::HeightMapDistanceFunction(const HeightMap &map):map(map) {
@@ -232,6 +246,10 @@ SdfType HeightMapDistanceFunction::getType() const {
     return SdfType::HEIGHTMAP; 
 }
 
+glm::vec3 HeightMapDistanceFunction::getCenter() const {
+    return this->map.getCenter();
+}
+
 OctahedronDistanceFunction::OctahedronDistanceFunction(glm::vec3 pos, float radius): center(pos), radius(radius) {
     
 }
@@ -243,6 +261,11 @@ float OctahedronDistanceFunction::distance(const glm::vec3 p) const {
 SdfType OctahedronDistanceFunction::getType() const {
     return SdfType::OCTAHEDRON;
 }
+
+glm::vec3 OctahedronDistanceFunction::getCenter() const {
+    return this->center;
+}
+
 
 SpaceType SDF::eval(float * sdf) {
     bool hasPositive = false;

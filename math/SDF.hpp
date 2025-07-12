@@ -71,6 +71,7 @@ class SignedDistanceFunction {
     public:
     virtual SdfType getType() const = 0; 
 	virtual float distance(const glm::vec3 p) const = 0;
+    virtual glm::vec3 getCenter() const = 0;
 };
 
 
@@ -82,6 +83,8 @@ class SphereDistanceFunction : public SignedDistanceFunction {
 	SphereDistanceFunction(glm::vec3 pos, float radius);
 	float distance(const glm::vec3 p) const override;
     SdfType getType() const override; 
+    glm::vec3 getCenter() const override;
+
 };
 
 class BoxDistanceFunction : public SignedDistanceFunction {
@@ -92,6 +95,8 @@ class BoxDistanceFunction : public SignedDistanceFunction {
 	BoxDistanceFunction(glm::vec3 pos, glm::vec3 len);
 	float distance(const glm::vec3 p) const override;
     SdfType getType() const override; 
+    glm::vec3 getCenter() const override;
+
 };
 
 class CapsuleDistanceFunction : public SignedDistanceFunction {
@@ -103,6 +108,8 @@ class CapsuleDistanceFunction : public SignedDistanceFunction {
     CapsuleDistanceFunction(glm::vec3 a, glm::vec3 b, float r);
 	float distance(const glm::vec3 p) const override;
     SdfType getType() const override; 
+    glm::vec3 getCenter() const override;
+
 };
 
 class HeightMapDistanceFunction : public SignedDistanceFunction {
@@ -111,6 +118,8 @@ class HeightMapDistanceFunction : public SignedDistanceFunction {
 	HeightMapDistanceFunction(const HeightMap &map);
 	float distance(const glm::vec3 p) const override;
     SdfType getType() const override; 
+    glm::vec3 getCenter() const override;
+
 };
 
 class OctahedronDistanceFunction : public SignedDistanceFunction {
@@ -121,6 +130,8 @@ class OctahedronDistanceFunction : public SignedDistanceFunction {
 	OctahedronDistanceFunction(glm::vec3 pos, float radius);
 	float distance(const glm::vec3 p) const override;
     SdfType getType() const override; 
+    glm::vec3 getCenter() const override;
+
 };
 
 class WrappedSignedDistanceFunction : public SignedDistanceFunction {
@@ -134,7 +145,6 @@ class WrappedSignedDistanceFunction : public SignedDistanceFunction {
 
     virtual ContainmentType check(const BoundingCube &cube) const = 0;
     virtual bool isContained(const BoundingCube &cube) const = 0;
-    virtual glm::vec3 getCenter() const = 0;
 
     SdfType getType() const override {
         return function->getType();
@@ -143,6 +153,11 @@ class WrappedSignedDistanceFunction : public SignedDistanceFunction {
 	float distance(const glm::vec3 p) const override {
         return function->distance(p);
     }
+
+    glm::vec3 getCenter() const override {
+        return function->getCenter();
+    };
+
 };
 
 class WrappedSphere : public WrappedSignedDistanceFunction {
@@ -166,10 +181,6 @@ class WrappedSphere : public WrappedSignedDistanceFunction {
         return cube.contains(sphere);
     };
 
-    glm::vec3 getCenter() const override {
-        SphereDistanceFunction * f = (SphereDistanceFunction*) function;
-        return f->center;
-    };
 };
 
 class WrappedBox : public WrappedSignedDistanceFunction {
@@ -194,10 +205,6 @@ class WrappedBox : public WrappedSignedDistanceFunction {
         return cube.contains(box);
     };
 
-    glm::vec3 getCenter() const override {
-        BoxDistanceFunction * f = (BoxDistanceFunction*) function;
-        return f->center;
-    };
 };
 
 class WrappedCapsule : public WrappedSignedDistanceFunction {
@@ -221,10 +228,6 @@ class WrappedCapsule : public WrappedSignedDistanceFunction {
         return cube.contains(sphere);
     };
 
-    glm::vec3 getCenter() const override {
-        CapsuleDistanceFunction * f = (CapsuleDistanceFunction*) function;
-        return 0.5f * (f->a + f->b);
-    };
 };
 
 class WrappedHeightMap : public WrappedSignedDistanceFunction {
@@ -246,11 +249,6 @@ class WrappedHeightMap : public WrappedSignedDistanceFunction {
     bool isContained(const BoundingCube &cube) const override {
         BoundingBox box = getBox();
         return cube.contains(box);
-    };
-
-    glm::vec3 getCenter() const override {
-        BoundingBox box = getBox();
-        return box.getCenter();
     };
 };
 
@@ -275,10 +273,6 @@ class WrappedOctahedron : public WrappedSignedDistanceFunction {
         return cube.contains(sphere);
     };
 
-    glm::vec3 getCenter() const override {
-        OctahedronDistanceFunction * f = (OctahedronDistanceFunction*) function;
-        return f->center;
-    };
 };
 
 

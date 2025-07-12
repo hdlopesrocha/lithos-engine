@@ -38,10 +38,14 @@ WrappedSignedDistanceFunction * BrushContext::getWrapped() {
 void BrushContext::apply(Octree &space, OctreeChangeHandler &handler, bool preview) {
     WrappedSignedDistanceFunction * wrapped = getWrapped();
     if(wrapped) {
+        glm::quat quaternion = glm::angleAxis(glm::radians(yaw), glm::vec3(0.0f, 1.0f, 0.0f)) * // Yaw (Y-axis)
+                                glm::angleAxis(glm::radians(pitch), glm::vec3(1.0f, 0.0f, 0.0f)) * // Pitch (X-axis)
+                                glm::angleAxis(glm::radians(roll), glm::vec3(0.0f, 0.0f, 1.0f));  // Roll (Z-axis)
+
         if(preview  || mode == BrushMode::ADD) {
-            space.add(*wrapped, SimpleBrush(brushIndex), detail, *simplifier, handler);
+            space.add(*wrapped, quaternion, SimpleBrush(brushIndex), detail, *simplifier, handler);
         } else {
-            space.del(*wrapped, SimpleBrush(brushIndex), detail, *simplifier, handler);
+            space.del(*wrapped, quaternion, SimpleBrush(brushIndex), detail, *simplifier, handler);
         }
         delete wrapped;
     }

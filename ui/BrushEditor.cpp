@@ -150,12 +150,27 @@ void BrushEditor::draw2d(float time){
         break;
     }
 
+    if (ImGui::SliderFloat("Pitch", &brushContext->pitch, -180.0f, 180.0f)) {
+        changed = true; 
+    }
+    if (ImGui::SliderFloat("Yaw", &brushContext->yaw, -180.0f, 180.0f)) {
+        changed = true; 
+    }
+    if (ImGui::SliderFloat("Roll", &brushContext->roll, -180.0f, 180.0f)) {
+        changed = true; 
+    }
+
     if(changed) {
         Octree * space = scene->brushSpace;
         space->root->clear(&space->allocator, *space);
-        brushContext->apply(*space, *scene->brushSpaceChangeHandler, true);
         scene->brushInfo.clear();
+        brushContext->apply(*space, *scene->brushSpaceChangeHandler, true);
     }
+
+
+
+
+
 
     ImGui::Separator();
 

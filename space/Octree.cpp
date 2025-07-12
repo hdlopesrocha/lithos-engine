@@ -185,7 +185,7 @@ void Octree::handleQuadNodes(OctreeNodeData &data, OctreeNodeTriangleHandler * h
 	}
 }
 
-void buildSDF(const SignedDistanceFunction &function, BoundingCube &cube, float * resultSDF) {
+void buildSDF(const SignedDistanceFunction &function, glm::quat quaternion, BoundingCube &cube, float * resultSDF) {
     const glm::vec3 min = cube.getMin();
     const glm::vec3 length = cube.getLength();
     for (int i = 0; i < 8; ++i) {
@@ -214,17 +214,19 @@ void Octree::expand(const WrappedSignedDistanceFunction &function) {
 
 void Octree::add(
     WrappedSignedDistanceFunction &function, 
+    const glm::quat quaternion, 
     const TexturePainter &painter,
     float minSize, Simplifier &simplifier, OctreeChangeHandler &changeHandler) {
 	expand(function);	
-    shape(SDF::opUnion, function, painter, OctreeNodeFrame(root, *this, minSize, 0, root->sdf, SpaceType::Surface ), NULL, simplifier, changeHandler);
+    shape(SDF::opUnion, function, painter, quaternion, OctreeNodeFrame(root, *this, minSize, 0, root->sdf, SpaceType::Surface ), NULL, simplifier, changeHandler);
 }
 
 void Octree::del(
     WrappedSignedDistanceFunction &function, 
+    const glm::quat quaternion, 
     const TexturePainter &painter,
     float minSize, Simplifier &simplifier, OctreeChangeHandler &changeHandler) {
-    shape(SDF::opSubtraction, function, painter, OctreeNodeFrame(root, *this, minSize, 0, root->sdf, SpaceType::Surface), NULL, simplifier, changeHandler);
+    shape(SDF::opSubtraction, function, painter, quaternion, OctreeNodeFrame(root, *this, minSize, 0, root->sdf, SpaceType::Surface), NULL, simplifier, changeHandler);
 }
 
 SpaceType childToParent(bool childSolid, bool childEmpty) {
@@ -241,6 +243,7 @@ NodeOperationResult Octree::shape(
     float (*operation)(float, float),
     const WrappedSignedDistanceFunction &function, 
     const TexturePainter &painter,
+    const glm::quat quaternion,
     OctreeNodeFrame frame, BoundingCube * chunk, Simplifier &simplifier, OctreeChangeHandler &changeHandler) {
     ContainmentType check = function.check(frame.cube);
     OctreeNode * node  = frame.node;
@@ -282,7 +285,7 @@ NodeOperationResult Octree::shape(
             }
   
             NodeOperationResult child = shape(operation, function, painter, 
-                OctreeNodeFrame(childNode, frame.cube.getChild(i), frame.minSize, frame.level + 1, childSDF, childType), 
+                quaternion, OctreeNodeFrame(childNode, frame.cube.getChild(i), frame.minSize, frame.level + 1, childSDF, childType), 
                 chunk, simplifier, changeHandler);
         
             children[i] = child;
@@ -296,7 +299,7 @@ NodeOperationResult Octree::shape(
 
     // Process Shape
     float shapeSDF[8];
-    buildSDF(function, frame.cube, shapeSDF);
+    buildSDF(function, quaternion, frame.cube, shapeSDF);
     SpaceType shapeType = isLeaf ? SDF::eval(shapeSDF) : childToParent(childShapeSolid, childShapeEmpty);
 
     // Process Result
