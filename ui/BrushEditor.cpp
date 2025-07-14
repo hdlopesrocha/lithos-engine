@@ -145,20 +145,40 @@ void BrushEditor::draw2d(float time){
                 changed = true; 
             }
         }
-            break;  
+        break;  
+
+        case SdfType::PYRAMID:
+        {
+            PyramidDistanceFunction* function = (PyramidDistanceFunction*)brushContext->currentFunction;
+            ImGui::Text("Base: ");
+            if(ImGui::InputFloat3("m##pyramidPosition", &(function->base[0]))) {
+                changed = true; 
+            }
+        }
+        break;  
     default:
         break;
     }
 
-    if (ImGui::SliderFloat("Pitch", &brushContext->pitch, -180.0f, 180.0f)) {
+    if (ImGui::SliderFloat("Pitch", &brushContext->model.pitch, -180.0f, 180.0f)) {
         changed = true; 
     }
-    if (ImGui::SliderFloat("Yaw", &brushContext->yaw, -180.0f, 180.0f)) {
+    if (ImGui::SliderFloat("Yaw", &brushContext->model.yaw, -180.0f, 180.0f)) {
         changed = true; 
     }
-    if (ImGui::SliderFloat("Roll", &brushContext->roll, -180.0f, 180.0f)) {
+    if (ImGui::SliderFloat("Roll", &brushContext->model.roll, -180.0f, 180.0f)) {
         changed = true; 
     }
+
+    ImGui::Text("Scale: ");
+    if(ImGui::InputFloat3("m##scale", &(brushContext->model.scale[0]))) {
+        changed = true; 
+    }  
+
+    ImGui::Text("Translate: ");
+    if(ImGui::InputFloat3("m##translate", &(brushContext->model.translate[0]))) {
+        changed = true; 
+    }  
 
     if(changed) {
         Octree * space = scene->brushSpace;

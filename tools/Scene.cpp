@@ -241,29 +241,29 @@ void Scene::generate(Camera &camera) {
 	int tiles= 256;
 	int height = 2048;
 	float minSize = 30;
+	Transformation model = Transformation(glm::vec3(1.0f),glm::vec3(0.0f), 0.0f, 0.0f, 0.0f);
 
-	glm::quat quaternion(1.0f, 0.0f, 0.0f, 0.0f);
-	glm::mat4 rotation = glm::toMat4(quaternion);
+
 
 	{
 		BoundingBox box = BoundingBox(glm::vec3(1500,0,0),glm::vec3(1500+256,256,256));
 		BoxDistanceFunction function(box.getCenter(), box.getLength()*0.5f);
-		WrappedBox wrappedFunction = WrappedBox(&function, minSize);
-		solidSpace->add(wrappedFunction, rotation, SimpleBrush(4), 2.0, simplifier, *solidSpaceChangeHandler);
+		WrappedBox wrappedFunction = WrappedBox(&function, minSize, model);
+		solidSpace->add(wrappedFunction, model, SimpleBrush(4), 2.0, simplifier, *solidSpaceChangeHandler);
 	}
 
 	{
 		BoundingBox box = BoundingBox(glm::vec3(2000,0,0),glm::vec3(2000+256,256,256));
 		BoxDistanceFunction function(box.getCenter(), box.getLength()*0.5f);
-		WrappedBox wrappedFunction = WrappedBox(&function, minSize);
-		solidSpace->add(wrappedFunction, rotation, SimpleBrush(4), minSize, simplifier, *solidSpaceChangeHandler);
+		WrappedBox wrappedFunction = WrappedBox(&function, minSize, model);
+		solidSpace->add(wrappedFunction, model, SimpleBrush(4), minSize, simplifier, *solidSpaceChangeHandler);
 	}
 
 	{
 		BoundingBox box = BoundingBox(glm::vec3(2500,0,0),glm::vec3(2500+256,256,256));
 		BoxDistanceFunction function(box.getCenter(), box.getLength()*0.5f);
-		WrappedBox wrappedFunction = WrappedBox(&function, minSize);
-		solidSpace->add(wrappedFunction, rotation, SimpleBrush(4), minSize*2, simplifier, *solidSpaceChangeHandler);
+		WrappedBox wrappedFunction = WrappedBox(&function, minSize, model);
+		solidSpace->add(wrappedFunction, model, SimpleBrush(4), minSize*2, simplifier, *solidSpaceChangeHandler);
 	}
 
 	BoundingBox mapBox = BoundingBox(glm::vec3(-sizePerTile*tiles*0.5,-height*0.5,-sizePerTile*tiles*0.5), glm::vec3(sizePerTile*tiles*0.5,height*0.5,sizePerTile*tiles*0.5));
@@ -276,14 +276,14 @@ void Scene::generate(Camera &camera) {
 		CachedHeightMapSurface cache = CachedHeightMapSurface(heightFunction, mapBox, sizePerTile);
 		HeightMap heightMap = HeightMap(cache, mapBox, sizePerTile);
 		HeightMapDistanceFunction function(heightMap);
-		WrappedHeightMap wrappedFunction = WrappedHeightMap(&function, minSize);
-		solidSpace->add(wrappedFunction, rotation, LandBrush(), minSize, simplifier, *solidSpaceChangeHandler);
+		WrappedHeightMap wrappedFunction = WrappedHeightMap(&function, minSize, model);
+		solidSpace->add(wrappedFunction, model, LandBrush(), minSize, simplifier, *solidSpaceChangeHandler);
 	}
 	{
 		BoundingSphere sphere = BoundingSphere(glm::vec3(0,768,0),1024);
 		SphereDistanceFunction function(sphere.center, sphere.radius);
-		WrappedSphere wrappedFunction = WrappedSphere(&function, minSize);
-		solidSpace->del(wrappedFunction, rotation, SimpleBrush(14), minSize, simplifier, *solidSpaceChangeHandler);
+		WrappedSphere wrappedFunction = WrappedSphere(&function, minSize, model);
+		solidSpace->del(wrappedFunction, model, SimpleBrush(14), minSize, simplifier, *solidSpaceChangeHandler);
 	}
 	
  	{
@@ -291,44 +291,44 @@ void Scene::generate(Camera &camera) {
 		glm::vec3 b = glm::vec3(0,-100, -3000);
 		float r = 200.0f;
 		CapsuleDistanceFunction function(a, b, r);
-		WrappedCapsule wrappedFunction = WrappedCapsule(&function, minSize);
-		solidSpace->add(wrappedFunction, rotation, SimpleBrush(4), minSize, simplifier, *solidSpaceChangeHandler);
+		WrappedCapsule wrappedFunction = WrappedCapsule(&function, minSize, model);
+		solidSpace->add(wrappedFunction, model, SimpleBrush(4), minSize, simplifier, *solidSpaceChangeHandler);
 	}
 	
 	{
 		BoundingBox box = BoundingBox(glm::vec3(1500,0,500),glm::vec3(1500+256,256,500+256));
 		BoxDistanceFunction function(box.getCenter(), box.getLength()*0.5f);
-		WrappedBox wrappedFunction = WrappedBox(&function, minSize);
-		solidSpace->add(wrappedFunction, rotation, SimpleBrush(4), 2.0, simplifier, *solidSpaceChangeHandler);
+		WrappedBox wrappedFunction = WrappedBox(&function, minSize, model);
+		solidSpace->add(wrappedFunction, model, SimpleBrush(4), 2.0, simplifier, *solidSpaceChangeHandler);
 	}
 
 	{
 		BoundingBox box = BoundingBox(glm::vec3(2000,0,500),glm::vec3(2000+256,256,500+256));
 		BoxDistanceFunction function(box.getCenter(), box.getLength()*0.5f);
-		WrappedBox wrappedFunction = WrappedBox(&function, minSize);
-		solidSpace->add(wrappedFunction, rotation, SimpleBrush(4), minSize, simplifier, *solidSpaceChangeHandler);
+		WrappedBox wrappedFunction = WrappedBox(&function, minSize, model);
+		solidSpace->add(wrappedFunction, model, SimpleBrush(4), minSize, simplifier, *solidSpaceChangeHandler);
 	}
 
 	{
 		BoundingBox box = BoundingBox(glm::vec3(2500,0,500),glm::vec3(2500+256,256,500+256));
 		BoxDistanceFunction function(box.getCenter(), box.getLength()*0.5f);
-		WrappedBox wrappedFunction = WrappedBox(&function, minSize);
-		solidSpace->add(wrappedFunction, rotation, SimpleBrush(4), minSize*2, simplifier, *solidSpaceChangeHandler);
+		WrappedBox wrappedFunction = WrappedBox(&function, minSize, model);
+		solidSpace->add(wrappedFunction, model, SimpleBrush(4), minSize*2, simplifier, *solidSpaceChangeHandler);
 	}
 
 	{
 		BoundingSphere sphere = BoundingSphere(glm::vec3(0,512,0),128);
 		SphereDistanceFunction function(sphere.center, sphere.radius);
-		WrappedSphere wrappedFunction = WrappedSphere(&function, minSize);
-		solidSpace->add(wrappedFunction, rotation, SimpleBrush(4), 8.0, simplifier, *solidSpaceChangeHandler);
+		WrappedSphere wrappedFunction = WrappedSphere(&function, minSize, model);
+		solidSpace->add(wrappedFunction, model, SimpleBrush(4), 8.0, simplifier, *solidSpaceChangeHandler);
 	}
 
 	{
 		BoundingBox waterBox = mapBox;
 		waterBox.setMaxY(0);
 		OctreeDifferenceFunction function(solidSpace, waterBox);
-		WrappedOctreeDifference wrappedFunction = WrappedOctreeDifference(&function, minSize);
-		liquidSpace->add(wrappedFunction, rotation, WaterBrush(0), minSize, simplifier, *liquidSpaceChangeHandler);
+		WrappedOctreeDifference wrappedFunction = WrappedOctreeDifference(&function, minSize, model);
+		liquidSpace->add(wrappedFunction, model, WaterBrush(0), minSize, simplifier, *liquidSpaceChangeHandler);
 	}
 }
 
@@ -337,9 +337,7 @@ void Scene::import(const std::string &filename, Camera &camera) {
 	int tiles= 1024;
 	int height = 2048;
 	float minSize = 30;
-	
-	glm::quat quaternion(1.0f, 0.0f, 0.0f, 0.0f);
-	glm::mat4 rotation = glm::toMat4(quaternion);
+	Transformation model = Transformation(glm::vec3(1.0f),glm::vec3(0.0f), 0.0f, 0.0f, 0.0f);
 
 	BoundingBox mapBox = BoundingBox(glm::vec3(-sizePerTile*tiles*0.5,-height*0.5,-sizePerTile*tiles*0.5), glm::vec3(sizePerTile*tiles*0.5,height*0.5,sizePerTile*tiles*0.5));
 	camera.position.x = mapBox.getCenter().x;
@@ -350,8 +348,8 @@ void Scene::import(const std::string &filename, Camera &camera) {
     CachedHeightMapSurface cache = CachedHeightMapSurface(heightFunction, mapBox, sizePerTile);
 	HeightMap heightMap = HeightMap(cache, mapBox, sizePerTile);
 	HeightMapDistanceFunction function(heightMap);
-	WrappedHeightMap wrappedFunction = WrappedHeightMap(&function, minSize);
-	solidSpace->add(wrappedFunction, rotation, DerivativeLandBrush(), minSize, simplifier, *solidSpaceChangeHandler);
+	WrappedHeightMap wrappedFunction = WrappedHeightMap(&function, minSize, model);
+	solidSpace->add(wrappedFunction, model, DerivativeLandBrush(), minSize, simplifier, *solidSpaceChangeHandler);
 
 	BoundingBox waterBox = mapBox;
 	waterBox.setMaxY(0);

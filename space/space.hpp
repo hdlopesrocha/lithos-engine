@@ -142,6 +142,9 @@ class OctreeChangeHandler {
 	virtual void erase(OctreeNode* nodeId) = 0;
 };
 
+
+
+
 class Octree: public BoundingCube {
 	using BoundingCube::BoundingCube;
 	public: 
@@ -150,9 +153,9 @@ class Octree: public BoundingCube {
 		OctreeAllocator allocator;
 
 		Octree(BoundingCube minCube, float chunkSize);
-		void expand(const WrappedSignedDistanceFunction &function);
-		void add(WrappedSignedDistanceFunction &function, const glm::quat quaternion, const TexturePainter &painter, float minSize, Simplifier &simplifier, OctreeChangeHandler &changeHandler);
-		void del(WrappedSignedDistanceFunction &function, const glm::quat quaternion, const TexturePainter &painter, float minSize, Simplifier &simplifier, OctreeChangeHandler &changeHandler);
+		void expand(const WrappedSignedDistanceFunction &function, Transformation model);
+		void add(WrappedSignedDistanceFunction &function, const Transformation model, const TexturePainter &painter, float minSize, Simplifier &simplifier, OctreeChangeHandler &changeHandler);
+		void del(WrappedSignedDistanceFunction &function, const Transformation model, const TexturePainter &painter, float minSize, Simplifier &simplifier, OctreeChangeHandler &changeHandler);
 		void iterate(IteratorHandler &handler);
 		void iterateFlat(IteratorHandler &handler);
 
@@ -170,7 +173,7 @@ class Octree: public BoundingCube {
 		int getMaxLevel(OctreeNode *node, BoundingCube &cube, BoundingCube &c, int level);
 
 		private:
-		NodeOperationResult shape(float (*operation)(float, float), const WrappedSignedDistanceFunction &function, const TexturePainter &painter, const glm::quat quaternion, OctreeNodeFrame frame, BoundingCube * chunk, Simplifier &simplifier, OctreeChangeHandler &changeHandler);
+		NodeOperationResult shape(float (*operation)(float, float), const WrappedSignedDistanceFunction &function, const TexturePainter &painter, const Transformation model, OctreeNodeFrame frame, BoundingCube * chunk, Simplifier &simplifier, OctreeChangeHandler &changeHandler);
 };
 
 class Simplifier {

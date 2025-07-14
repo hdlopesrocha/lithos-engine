@@ -188,10 +188,10 @@ void KeyboardControllerStrategy::handleInput(float deltaTime) {
         tick(EVENT_VECTOR_3D_2, 0.0f);
     }
 
-
     if (app.getKeyboardStatus(GLFW_KEY_ESCAPE) != GLFW_RELEASE) {
         eventManager.publish<Event>(Event(EVENT_CLOSE_WINDOW));
     }
+
 
     if (app.getKeyboardStatus(GLFW_KEY_X) != GLFW_RELEASE) {
         if(!keyWasPressed[GLFW_KEY_X]) { 
@@ -209,6 +209,24 @@ void KeyboardControllerStrategy::handleInput(float deltaTime) {
         keyWasPressed[GLFW_KEY_Z] = true;
     } else {
         keyWasPressed[GLFW_KEY_Z] = false;
+    }
+
+    if (app.getKeyboardStatus(GLFW_KEY_V) != GLFW_RELEASE) {
+        if(!keyWasPressed[GLFW_KEY_V]) { 
+            eventManager.publish<Event>(Event(EVENT_NEXT_TAB));
+        }
+        keyWasPressed[GLFW_KEY_V] = true;
+    } else {
+        keyWasPressed[GLFW_KEY_V] = false;
+    }
+
+    if (app.getKeyboardStatus(GLFW_KEY_C) != GLFW_RELEASE) {
+        if(!keyWasPressed[GLFW_KEY_C]) { 
+            eventManager.publish<Event>(Event(EVENT_PREVIOUS_TAB));
+        }
+        keyWasPressed[GLFW_KEY_C] = true;
+    } else {
+        keyWasPressed[GLFW_KEY_C] = false;
     }
 
 }

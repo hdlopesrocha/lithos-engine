@@ -10,7 +10,7 @@
 #define SDF_TYPE_HEIGHTMAP 3
 
 enum SdfType {
-    SPHERE, BOX, CAPSULE, HEIGHTMAP, OCTREE_DIFFERENCE, OCTAHEDRON};
+    SPHERE, BOX, CAPSULE, HEIGHTMAP, OCTREE_DIFFERENCE, OCTAHEDRON, PYRAMID};
 const char* toString(SdfType t);
 
 
@@ -35,6 +35,32 @@ static const glm::ivec2 SDF_EDGES[12] = {
     {3, 7}
 }; 
 
+class Transformation {
+	public:
+	glm::vec3 scale;
+	glm::vec3 translate;
+    float pitch;
+    float yaw;
+    float roll;	
+
+	Transformation(glm::vec3 scale, glm::vec3 translate, float yaw, float pitch, float roll) {
+		this->scale = scale;
+		this->translate = translate;
+		this->yaw = yaw;
+		this->pitch = pitch;
+		this->roll = roll;
+	}
+
+
+	glm::quat getRotation() {
+		return 	glm::angleAxis(glm::radians(yaw), glm::vec3(0.0f, 1.0f, 0.0f)) * // Yaw (Y-axis)
+				glm::angleAxis(glm::radians(pitch), glm::vec3(1.0f, 0.0f, 0.0f)) * // Pitch (X-axis)
+				glm::angleAxis(glm::radians(roll), glm::vec3(0.0f, 0.0f, 1.0f));  // Roll (Z-axis)
+	}
+
+
+};
+
 class SDF
 {
 public:
@@ -54,6 +80,7 @@ public:
 	static float sphere(glm::vec3 p, const float r);
     static float capsule(glm::vec3 p, glm::vec3 a, glm::vec3 b, float r );
     static float octahedron(glm::vec3 p, float s);
+    static float pyramid(glm::vec3 p, float h );
 
     static glm::vec3 getPosition(float *sdf, const BoundingCube &cube);
     static glm::vec3 getNormal(float* sdf, const BoundingCube& cube);
@@ -70,8 +97,8 @@ public:
 class SignedDistanceFunction {
     public:
     virtual SdfType getType() const = 0; 
-	virtual float distance(const glm::vec3 p) const = 0;
-    virtual glm::vec3 getCenter() const = 0;
+	virtual float distance(const glm::vec3 p, Transformation model) const = 0;
+    virtual glm::vec3 getCenter(Transformation model) const = 0;
 };
 
 
@@ -81,9 +108,9 @@ class SphereDistanceFunction : public SignedDistanceFunction {
     float radius;	
 
 	SphereDistanceFunction(glm::vec3 pos, float radius);
-	float distance(const glm::vec3 p) const override;
+	float distance(const glm::vec3 p, Transformation model) const override;
     SdfType getType() const override; 
-    glm::vec3 getCenter() const override;
+    glm::vec3 getCenter(Transformation model) const override;
 
 };
 
@@ -93,9 +120,9 @@ class BoxDistanceFunction : public SignedDistanceFunction {
     glm::vec3 length;
 
 	BoxDistanceFunction(glm::vec3 pos, glm::vec3 len);
-	float distance(const glm::vec3 p) const override;
+	float distance(const glm::vec3 p, Transformation model) const override;
     SdfType getType() const override; 
-    glm::vec3 getCenter() const override;
+    glm::vec3 getCenter(Transformation model) const override;
 
 };
 
@@ -106,9 +133,9 @@ class CapsuleDistanceFunction : public SignedDistanceFunction {
     float radius;
 
     CapsuleDistanceFunction(glm::vec3 a, glm::vec3 b, float r);
-	float distance(const glm::vec3 p) const override;
+	float distance(const glm::vec3 p, Transformation model) const override;
     SdfType getType() const override; 
-    glm::vec3 getCenter() const override;
+    glm::vec3 getCenter(Transformation model) const override;
 
 };
 
@@ -116,9 +143,9 @@ class HeightMapDistanceFunction : public SignedDistanceFunction {
 	public:
 	const HeightMap &map;
 	HeightMapDistanceFunction(const HeightMap &map);
-	float distance(const glm::vec3 p) const override;
+	float distance(const glm::vec3 p, Transformation model) const override;
     SdfType getType() const override; 
-    glm::vec3 getCenter() const override;
+    glm::vec3 getCenter(Transformation model) const override;
 
 };
 
@@ -128,18 +155,32 @@ class OctahedronDistanceFunction : public SignedDistanceFunction {
     float radius;	
 
 	OctahedronDistanceFunction(glm::vec3 pos, float radius);
-	float distance(const glm::vec3 p) const override;
+	float distance(const glm::vec3 p, Transformation model) const override;
     SdfType getType() const override; 
-    glm::vec3 getCenter() const override;
+    glm::vec3 getCenter(Transformation model) const override;
 
 };
+
+class PyramidDistanceFunction : public SignedDistanceFunction {
+    public:
+    glm::vec3 base; 
+
+
+	PyramidDistanceFunction(glm::vec3 base);
+	float distance(const glm::vec3 p, Transformation model) const override;
+    SdfType getType() const override; 
+    glm::vec3 getCenter(Transformation model) const override;
+
+};
+
 
 class WrappedSignedDistanceFunction : public SignedDistanceFunction {
     protected:
     SignedDistanceFunction * function;
     float bias;
+    Transformation &model;
     public:
-    WrappedSignedDistanceFunction(SignedDistanceFunction * function, float bias) : function(function), bias(bias) {
+    WrappedSignedDistanceFunction(SignedDistanceFunction * function, float bias, Transformation &model) : function(function), bias(bias), model(model) {
 
     }
 
@@ -150,19 +191,19 @@ class WrappedSignedDistanceFunction : public SignedDistanceFunction {
         return function->getType();
     }    
 
-	float distance(const glm::vec3 p) const override {
-        return function->distance(p);
+	float distance(const glm::vec3 p, Transformation model) const override {
+        return function->distance(p, model);
     }
 
-    glm::vec3 getCenter() const override {
-        return function->getCenter();
+    glm::vec3 getCenter(Transformation model) const override {
+        return function->getCenter(model);
     };
 
 };
 
 class WrappedSphere : public WrappedSignedDistanceFunction {
     public:
-    WrappedSphere(SphereDistanceFunction * function, float bias) : WrappedSignedDistanceFunction(function, bias) {
+    WrappedSphere(SphereDistanceFunction * function, float bias, Transformation &model) : WrappedSignedDistanceFunction(function, bias, model) {
 
     }
 
@@ -185,13 +226,13 @@ class WrappedSphere : public WrappedSignedDistanceFunction {
 
 class WrappedBox : public WrappedSignedDistanceFunction {
     public:
-    WrappedBox(BoxDistanceFunction * function, float bias) : WrappedSignedDistanceFunction(function, bias) {
+    WrappedBox(BoxDistanceFunction * function, float bias, Transformation &model) : WrappedSignedDistanceFunction(function, bias, model) {
 
     }
 
     BoundingSphere getSphere() const {
         BoxDistanceFunction * f = (BoxDistanceFunction*) function;
-        return BoundingSphere(f->center, glm::length(f->length)+ bias);
+        return BoundingSphere(f->getCenter(model), glm::length(f->length*model.scale)+ bias);
     };
 
     ContainmentType check(const BoundingCube &cube) const override {
@@ -208,7 +249,7 @@ class WrappedBox : public WrappedSignedDistanceFunction {
 
 class WrappedCapsule : public WrappedSignedDistanceFunction {
     public:
-    WrappedCapsule(CapsuleDistanceFunction * function, float bias) : WrappedSignedDistanceFunction(function, bias) {
+    WrappedCapsule(CapsuleDistanceFunction * function, float bias, Transformation &model) : WrappedSignedDistanceFunction(function, bias, model) {
 
     }
 
@@ -231,7 +272,7 @@ class WrappedCapsule : public WrappedSignedDistanceFunction {
 
 class WrappedHeightMap : public WrappedSignedDistanceFunction {
     public:
-    WrappedHeightMap(HeightMapDistanceFunction * function, float bias) : WrappedSignedDistanceFunction(function, bias) {
+    WrappedHeightMap(HeightMapDistanceFunction * function, float bias, Transformation &model) : WrappedSignedDistanceFunction(function, bias, model) {
 
     }
 
@@ -253,7 +294,7 @@ class WrappedHeightMap : public WrappedSignedDistanceFunction {
 
 class WrappedOctahedron : public WrappedSignedDistanceFunction {
     public:
-    WrappedOctahedron(OctahedronDistanceFunction * function, float bias) : WrappedSignedDistanceFunction(function, bias) {
+    WrappedOctahedron(OctahedronDistanceFunction * function, float bias, Transformation &model) : WrappedSignedDistanceFunction(function, bias, model) {
 
     }
 
@@ -274,5 +315,32 @@ class WrappedOctahedron : public WrappedSignedDistanceFunction {
 
 };
 
+class WrappedPyramid : public WrappedSignedDistanceFunction {
+    public:
+    WrappedPyramid(PyramidDistanceFunction * function, float bias, Transformation &model) : WrappedSignedDistanceFunction(function, bias, model) {
+
+    }
+
+    float boundingSphereRadius(float width, float depth, float height) const {
+        return glm::length(glm::vec3(width, height, depth));
+    }
+
+    BoundingSphere getSphere() const {
+        PyramidDistanceFunction * f = (PyramidDistanceFunction*) function;
+        BoundingSphere s = BoundingSphere(f->getCenter(model) , 1.0f+ bias);
+        return s;
+    };
+
+    ContainmentType check(const BoundingCube &cube) const override {
+        BoundingSphere sphere = getSphere();
+        return sphere.test(cube);
+    };
+
+    bool isContained(const BoundingCube &cube) const override {
+        BoundingSphere sphere = getSphere();
+        return cube.contains(sphere);
+    };
+
+};
 
 #endif

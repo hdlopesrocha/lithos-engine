@@ -482,6 +482,7 @@ public:
 		eventManager.subscribe(EVENT_CLOSE_WINDOW, new CloseWindowHandler(this));
 		eventManager.subscribe(EVENT_NEXT_PAGE, new ControlEventManagerGroupHandler(&eventManagerGroup));
 		eventManager.subscribe(EVENT_PREVIOUS_PAGE, new ControlEventManagerGroupHandler(&eventManagerGroup));
+
 		
 	
 		EventManager * cameraEventManager = new EventManager();
@@ -504,6 +505,8 @@ public:
 		brushEventManager->subscribe(EVENT_FLOAT_2_X, new BrushEventHandler<FloatEvent>(*brushContext, *mainScene));
 		brushEventManager->subscribe(EVENT_FLOAT_2_Y, new BrushEventHandler<FloatEvent>(*brushContext, *mainScene));
 		brushEventManager->subscribe(EVENT_FLOAT_2_Z, new BrushEventHandler<FloatEvent>(*brushContext, *mainScene));
+		brushEventManager->subscribe(EVENT_NEXT_TAB, new BrushEventHandler<Event>(*brushContext, *mainScene));
+		brushEventManager->subscribe(EVENT_PREVIOUS_TAB, new BrushEventHandler<Event>(*brushContext, *mainScene));
 		eventManager.addArea(brushEventManager);
 		eventManagerGroup.addEventManager(brushEventManager);
 

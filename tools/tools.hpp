@@ -271,13 +271,12 @@ class BrushContext {
 	SignedDistanceFunction * currentFunction;
 	BoundingSphere boundingVolume;
 	Simplifier * simplifier;
-    float pitch;
-    float yaw;
-    float roll;	
+
 	float detail;
 	Camera * camera;
 	int brushIndex;
 	Scene &scene;
+	Transformation model;
 
 	BrushContext(Camera *camera, Scene &scene);
 	void apply(Octree &space, OctreeChangeHandler &handler, bool preview);
@@ -346,15 +345,15 @@ class OctreeDifferenceFunction : public SignedDistanceFunction {
     Octree * tree;
     BoundingBox box;
     OctreeDifferenceFunction(Octree * tree, BoundingBox box);
-    float distance(const glm::vec3 p) const override;
+    float distance(const glm::vec3 p, Transformation model) const override;
 	SdfType getType() const override;
-	glm::vec3 getCenter() const override;
+	glm::vec3 getCenter(Transformation model) const override;
 
 };
 
 class WrappedOctreeDifference : public WrappedSignedDistanceFunction {
     public:
-    WrappedOctreeDifference(OctreeDifferenceFunction * function, float bias) : WrappedSignedDistanceFunction(function, bias) {
+    WrappedOctreeDifference(OctreeDifferenceFunction * function, float bias, Transformation model) : WrappedSignedDistanceFunction(function, bias, model) {
 
     }
 
@@ -373,7 +372,7 @@ class WrappedOctreeDifference : public WrappedSignedDistanceFunction {
         return cube.contains(box);
     };
 
-    glm::vec3 getCenter() const override {
+    glm::vec3 getCenter(Transformation model) const override {
         BoundingBox box = getBox();
         return box.getCenter();
     };
@@ -437,9 +436,20 @@ class CloseWindowHandler : public EventHandler<Event>{
 };
 
 
+enum Tab {
+	PAGE_ROTATION,
+	PAGE_SCALE,
+	PAGE_TRANSLATE,
+	PAGE_SDF0,
+	PAGE_SDF1,
+	PAGE_SDF2,
+	COUNT
+};
+
 template<typename T> class BrushEventHandler : public EventHandler<T> {
 	BrushContext &context;
 	Scene &scene;
+	Tab currentTab;
 	public:
 	BrushEventHandler(BrushContext &context, Scene &scene);
 
