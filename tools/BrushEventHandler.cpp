@@ -2,25 +2,24 @@
 
 
 template<typename T> BrushEventHandler<T>::BrushEventHandler(BrushContext &context, Scene &scene) : context(context), scene(scene) {
-    currentTab = Tab::PAGE_ROTATION;
 }
 
 template<typename T> void BrushEventHandler<T>::handle(T * event) {
     bool changed = false;
 
     if(event->getType() == EVENT_NEXT_TAB) {
-        int tab = static_cast<int>(currentTab) + 1;
+        int tab = static_cast<int>(context.currentTab) + 1;
         int count = static_cast<int>(Tab::COUNT);
-        currentTab =static_cast<Tab>((tab + count + 1) % count);
+        context.currentTab = static_cast<Tab>(Math::mod(tab, count));
     } 
     if(event->getType() == EVENT_PREVIOUS_TAB) {
-        int tab = static_cast<int>(currentTab) - 1;
+        int tab = static_cast<int>(context.currentTab) - 1;
         int count = static_cast<int>(Tab::COUNT);
-        currentTab =static_cast<Tab>((tab + count - 1) % count);
+        context.currentTab = static_cast<Tab>(Math::mod(tab, count));
     } 
 
 
-    switch (currentTab)
+    switch (context.currentTab)
     {
     case PAGE_ROTATION:
         if(event->getType() == EVENT_FLOAT_0_X) {
@@ -159,12 +158,11 @@ template<typename T> void BrushEventHandler<T>::handle(T * event) {
     }
 
     if(event->getType() == EVENT_NEXT_TAB) {
-        std::cout << "EVENT_NEXT_TAB" << std::endl;
-        
+        std::cout << "EVENT_NEXT_TAB:" << std::to_string(context.currentTab) << std::endl;
     }
 
     if(event->getType() == EVENT_PREVIOUS_TAB) {
-        std::cout << "EVENT_PREVIOUS_TAB" << std::endl;
+        std::cout << "EVENT_PREVIOUS_TAB:" << std::to_string(context.currentTab) << std::endl;
     }
 
     if(changed) {

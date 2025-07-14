@@ -11,6 +11,17 @@
 #include <algorithm>
 #include <random>
 
+enum Tab {
+	PAGE_ROTATION,
+	PAGE_SCALE,
+	PAGE_TRANSLATE,
+	PAGE_SDF0,
+	PAGE_SDF1,
+	PAGE_SDF2,
+	COUNT
+};
+
+
 class WaveSurface : public HeightFunction {
     float amplitude;
     float offset;
@@ -271,6 +282,7 @@ class BrushContext {
 	SignedDistanceFunction * currentFunction;
 	BoundingSphere boundingVolume;
 	Simplifier * simplifier;
+	Tab currentTab;
 
 	float detail;
 	Camera * camera;
@@ -435,21 +447,10 @@ class CloseWindowHandler : public EventHandler<Event>{
     void handle(Event * value) override ;
 };
 
-
-enum Tab {
-	PAGE_ROTATION,
-	PAGE_SCALE,
-	PAGE_TRANSLATE,
-	PAGE_SDF0,
-	PAGE_SDF1,
-	PAGE_SDF2,
-	COUNT
-};
-
 template<typename T> class BrushEventHandler : public EventHandler<T> {
 	BrushContext &context;
 	Scene &scene;
-	Tab currentTab;
+
 	public:
 	BrushEventHandler(BrushContext &context, Scene &scene);
 

@@ -8,11 +8,13 @@ BrushContext::BrushContext(Camera *camera, Scene &scene) : camera(camera) , scen
     this->functions.push_back(new BoxDistanceFunction(glm::vec3(0), glm::vec3(1.0f)));
     this->functions.push_back(new CapsuleDistanceFunction(glm::vec3(0, 0, 0), glm::vec3(1, 1, 1), 1.0f));
     this->functions.push_back(new OctahedronDistanceFunction(glm::vec3(0), 1.0f));
-    this->functions.push_back(new PyramidDistanceFunction(glm::vec3(0)));
+    this->functions.push_back(new PyramidDistanceFunction(glm::vec3(0), 1.0f));
     this->currentFunction = this->functions[0];
     this->detail = 1.0f;
     this->mode = BrushMode::ADD;
     this->brushIndex = 0;
+    this->currentTab = Tab::PAGE_ROTATION;
+
 }
 
 WrappedSignedDistanceFunction * BrushContext::getWrapped() {

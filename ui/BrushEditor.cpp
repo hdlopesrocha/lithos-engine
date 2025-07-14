@@ -154,6 +154,10 @@ void BrushEditor::draw2d(float time){
             if(ImGui::InputFloat3("m##pyramidPosition", &(function->base[0]))) {
                 changed = true; 
             }
+            ImGui::Text("Height: ");
+            if(ImGui::InputFloat("m##pyramidHeight", &(function->height))) {
+                changed = true; 
+            }
         }
         break;  
     default:

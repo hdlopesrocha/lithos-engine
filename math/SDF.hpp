@@ -119,7 +119,7 @@ class BoxDistanceFunction : public SignedDistanceFunction {
     glm::vec3 center;
     glm::vec3 length;
 
-	BoxDistanceFunction(glm::vec3 pos, glm::vec3 len);
+	BoxDistanceFunction(glm::vec3 center, glm::vec3 length);
 	float distance(const glm::vec3 p, Transformation model) const override;
     SdfType getType() const override; 
     glm::vec3 getCenter(Transformation model) const override;
@@ -154,7 +154,7 @@ class OctahedronDistanceFunction : public SignedDistanceFunction {
     glm::vec3 center;
     float radius;	
 
-	OctahedronDistanceFunction(glm::vec3 pos, float radius);
+	OctahedronDistanceFunction(glm::vec3 center, float radius);
 	float distance(const glm::vec3 p, Transformation model) const override;
     SdfType getType() const override; 
     glm::vec3 getCenter(Transformation model) const override;
@@ -164,9 +164,9 @@ class OctahedronDistanceFunction : public SignedDistanceFunction {
 class PyramidDistanceFunction : public SignedDistanceFunction {
     public:
     glm::vec3 base; 
+    float height;
 
-
-	PyramidDistanceFunction(glm::vec3 base);
+	PyramidDistanceFunction(glm::vec3 base, float height);
 	float distance(const glm::vec3 p, Transformation model) const override;
     SdfType getType() const override; 
     glm::vec3 getCenter(Transformation model) const override;
@@ -209,7 +209,7 @@ class WrappedSphere : public WrappedSignedDistanceFunction {
 
     BoundingSphere getSphere() const {
         SphereDistanceFunction * f = (SphereDistanceFunction*) function;
-        return BoundingSphere(f->center, f->radius + bias);
+        return BoundingSphere(f->getCenter(model), f->radius*glm::length(model.scale) + bias);
     };
 
     ContainmentType check(const BoundingCube &cube) const override {
@@ -255,7 +255,7 @@ class WrappedCapsule : public WrappedSignedDistanceFunction {
 
     BoundingSphere getSphere() const {
         CapsuleDistanceFunction * f = (CapsuleDistanceFunction*) function;
-        return BoundingSphere(0.5f*(f->a + f->b), glm::distance(f->a, f->b) + f->radius + bias);
+        return BoundingSphere(f->getCenter(model), (f->radius+glm::distance(f->a, f->b))*glm::length(model.scale) + bias);
     };
 
     ContainmentType check(const BoundingCube &cube) const override {
@@ -300,7 +300,7 @@ class WrappedOctahedron : public WrappedSignedDistanceFunction {
 
     BoundingSphere getSphere() const {
         OctahedronDistanceFunction * f = (OctahedronDistanceFunction*) function;
-        return BoundingSphere(f->center, f->radius + bias);
+        return BoundingSphere(f->getCenter(model), f->radius*glm::length(model.scale) + bias);
     };
 
     ContainmentType check(const BoundingCube &cube) const override {
@@ -327,8 +327,7 @@ class WrappedPyramid : public WrappedSignedDistanceFunction {
 
     BoundingSphere getSphere() const {
         PyramidDistanceFunction * f = (PyramidDistanceFunction*) function;
-        BoundingSphere s = BoundingSphere(f->getCenter(model) , 1.0f+ bias);
-        return s;
+        return BoundingSphere(f->getCenter(model), f->height*glm::length(model.scale) + bias);
     };
 
     ContainmentType check(const BoundingCube &cube) const override {
