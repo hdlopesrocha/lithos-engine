@@ -241,30 +241,8 @@ void Scene::generate(Camera &camera) {
 	int tiles= 256;
 	int height = 2048;
 	float minSize = 30;
-	Transformation model = Transformation(glm::vec3(1.0f),glm::vec3(0.0f), 0.0f, 0.0f, 0.0f);
+	Transformation model = Transformation();
 
-
-
-	{
-		BoundingBox box = BoundingBox(glm::vec3(1500,0,0),glm::vec3(1500+256,256,256));
-		BoxDistanceFunction function(box.getCenter(), box.getLength()*0.5f);
-		WrappedBox wrappedFunction = WrappedBox(&function, minSize, model);
-		solidSpace->add(wrappedFunction, model, SimpleBrush(4), 2.0, simplifier, *solidSpaceChangeHandler);
-	}
-
-	{
-		BoundingBox box = BoundingBox(glm::vec3(2000,0,0),glm::vec3(2000+256,256,256));
-		BoxDistanceFunction function(box.getCenter(), box.getLength()*0.5f);
-		WrappedBox wrappedFunction = WrappedBox(&function, minSize, model);
-		solidSpace->add(wrappedFunction, model, SimpleBrush(4), minSize, simplifier, *solidSpaceChangeHandler);
-	}
-
-	{
-		BoundingBox box = BoundingBox(glm::vec3(2500,0,0),glm::vec3(2500+256,256,256));
-		BoxDistanceFunction function(box.getCenter(), box.getLength()*0.5f);
-		WrappedBox wrappedFunction = WrappedBox(&function, minSize, model);
-		solidSpace->add(wrappedFunction, model, SimpleBrush(4), minSize*2, simplifier, *solidSpaceChangeHandler);
-	}
 
 	BoundingBox mapBox = BoundingBox(glm::vec3(-sizePerTile*tiles*0.5,-height*0.5,-sizePerTile*tiles*0.5), glm::vec3(sizePerTile*tiles*0.5,height*0.5,sizePerTile*tiles*0.5));
 	camera.position.x = mapBox.getCenter().x;
@@ -285,42 +263,41 @@ void Scene::generate(Camera &camera) {
 		WrappedSphere wrappedFunction = WrappedSphere(&function, minSize, model);
 		solidSpace->del(wrappedFunction, model, SimpleBrush(14), minSize, simplifier, *solidSpaceChangeHandler);
 	}
-	
- 	{
-		glm::vec3 a = glm::vec3(0,320, -900);
-		glm::vec3 b = glm::vec3(0,-100, -3000);
-		float r = 200.0f;
-		CapsuleDistanceFunction function(a, b, r);
-		WrappedCapsule wrappedFunction = WrappedCapsule(&function, minSize, model);
-		solidSpace->add(wrappedFunction, model, SimpleBrush(4), minSize, simplifier, *solidSpaceChangeHandler);
-	}
-	
+
 	{
-		BoundingBox box = BoundingBox(glm::vec3(1500,0,500),glm::vec3(1500+256,256,500+256));
+		glm::vec3 min = glm::vec3(1500,0,500);
+		glm::vec3 len = glm::vec3(512.0f);
+		BoundingBox box = BoundingBox(min,min+len);
 		BoxDistanceFunction function(box.getCenter(), box.getLength()*0.5f);
 		WrappedBox wrappedFunction = WrappedBox(&function, minSize, model);
-		solidSpace->add(wrappedFunction, model, SimpleBrush(4), 2.0, simplifier, *solidSpaceChangeHandler);
+		solidSpace->add(wrappedFunction, model, SimpleBrush(8), minSize, simplifier, *solidSpaceChangeHandler);
 	}
 
 	{
-		BoundingBox box = BoundingBox(glm::vec3(2000,0,500),glm::vec3(2000+256,256,500+256));
-		BoxDistanceFunction function(box.getCenter(), box.getLength()*0.5f);
-		WrappedBox wrappedFunction = WrappedBox(&function, minSize, model);
-		solidSpace->add(wrappedFunction, model, SimpleBrush(4), minSize, simplifier, *solidSpaceChangeHandler);
-	}
-
-	{
-		BoundingBox box = BoundingBox(glm::vec3(2500,0,500),glm::vec3(2500+256,256,500+256));
-		BoxDistanceFunction function(box.getCenter(), box.getLength()*0.5f);
-		WrappedBox wrappedFunction = WrappedBox(&function, minSize, model);
-		solidSpace->add(wrappedFunction, model, SimpleBrush(4), minSize*2, simplifier, *solidSpaceChangeHandler);
-	}
-
-	{
-		BoundingSphere sphere = BoundingSphere(glm::vec3(0,512,0),128);
+		glm::vec3 min = glm::vec3(1500,0,500);
+		glm::vec3 len = glm::vec3(512.0f);
+		BoundingSphere sphere = BoundingSphere(min+3.0f*len/4.0f, 256);
 		SphereDistanceFunction function(sphere.center, sphere.radius);
 		WrappedSphere wrappedFunction = WrappedSphere(&function, minSize, model);
-		solidSpace->add(wrappedFunction, model, SimpleBrush(4), 8.0, simplifier, *solidSpaceChangeHandler);
+		solidSpace->add(wrappedFunction, model, SimpleBrush(6), minSize, simplifier, *solidSpaceChangeHandler);
+	}
+
+	{
+		glm::vec3 min = glm::vec3(1500,0,500);
+		glm::vec3 len = glm::vec3(512.0f);
+		BoundingSphere sphere = BoundingSphere(min+len, 128);
+		SphereDistanceFunction function(sphere.center, sphere.radius);
+		WrappedSphere wrappedFunction = WrappedSphere(&function, minSize, model);
+		solidSpace->del(wrappedFunction, model, SimpleBrush(4), minSize, simplifier, *solidSpaceChangeHandler);
+	}
+
+	{
+		glm::vec3 min = glm::vec3(1500,0,500);
+		glm::vec3 len = glm::vec3(512.0f);
+		BoundingSphere sphere = BoundingSphere(min+3.0f*len/4.0f, 128);
+		SphereDistanceFunction function(sphere.center, sphere.radius);
+		WrappedSphere wrappedFunction = WrappedSphere(&function, minSize, model);
+		solidSpace->del(wrappedFunction, model, SimpleBrush(1), minSize, simplifier, *solidSpaceChangeHandler);
 	}
 
 	{
@@ -329,6 +306,42 @@ void Scene::generate(Camera &camera) {
 		OctreeDifferenceFunction function(solidSpace, waterBox);
 		WrappedOctreeDifference wrappedFunction = WrappedOctreeDifference(&function, minSize, model);
 		liquidSpace->add(wrappedFunction, model, WaterBrush(0), minSize, simplifier, *liquidSpaceChangeHandler);
+	}
+
+	{
+		glm::vec3 a = glm::vec3(0,0, -3000);
+		glm::vec3 b = glm::vec3(0,500,0);
+		float r = 256.0f;
+		CapsuleDistanceFunction function(a, b, r);
+		WrappedCapsule wrappedFunction = WrappedCapsule(&function, minSize, model);
+		solidSpace->del(wrappedFunction, model, SimpleBrush(4), minSize, simplifier, *solidSpaceChangeHandler);
+	}
+
+	{
+		glm::vec3 min = glm::vec3(1500,0,500);
+		glm::vec3 len = glm::vec3(512.0f);
+		BoundingSphere sphere = BoundingSphere(min+len, 64);
+		SphereDistanceFunction function(sphere.center, sphere.radius);
+		WrappedSphere wrappedFunction = WrappedSphere(&function, minSize, model);
+		liquidSpace->add(wrappedFunction, model, SimpleBrush(0), minSize, simplifier, *solidSpaceChangeHandler);
+	}
+
+	{
+		glm::vec3 center = glm::vec3(0,400,-600);
+		float radius = 256.0f;
+		OctahedronDistanceFunction function(center, radius);
+		WrappedOctahedron wrappedFunction = WrappedOctahedron(&function, minSize, model);
+		solidSpace->add(wrappedFunction, model, SimpleBrush(4), minSize, simplifier, *solidSpaceChangeHandler);
+	}
+
+	{
+		glm::vec3 center = glm::vec3(0,500,0);
+		float radius = 512.0f;
+		PyramidDistanceFunction function(glm::vec3(0.0f), 1.0f);
+		Transformation model2(glm::vec3(radius), center, 0,0,0);
+
+		WrappedPyramid wrappedFunction = WrappedPyramid(&function, minSize, model2);
+		solidSpace->add(wrappedFunction, model2, SimpleBrush(4), minSize, simplifier, *solidSpaceChangeHandler);
 	}
 }
 

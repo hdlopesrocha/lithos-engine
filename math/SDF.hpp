@@ -41,6 +41,12 @@ class Transformation {
 	glm::vec3 translate;
     glm::quat quaternion;
 
+    Transformation() {
+        this->scale = glm::vec3(1.0f,1.0f,1.0f);
+        this->translate = glm::vec3(0.0f,0.0f,0.0f);
+        this->quaternion = getRotation(0.0f, 0.0f, 0.0f);
+    }
+
 
 	Transformation(glm::vec3 scale, glm::vec3 translate, float yaw, float pitch, float roll) {
 		this->scale = scale;
@@ -252,7 +258,7 @@ class WrappedCapsule : public WrappedSignedDistanceFunction {
 
     BoundingSphere getSphere() const {
         CapsuleDistanceFunction * f = (CapsuleDistanceFunction*) function;
-        return BoundingSphere(f->getCenter(model), (f->radius+glm::distance(f->a, f->b))*glm::length(model.scale) + bias);
+        return BoundingSphere(f->getCenter(model), (2.0f*f->radius+glm::distance(f->a, f->b))*glm::length(model.scale) + bias);
     };
 
     ContainmentType check(const BoundingCube &cube) const override {

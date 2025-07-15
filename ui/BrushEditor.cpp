@@ -164,6 +164,11 @@ void BrushEditor::draw2d(float time){
         break;
     }
 
+    glm::vec3 euler = glm::eulerAngles(brushContext->model.quaternion);
+    pitch = glm::degrees(euler.x);
+    yaw   = glm::degrees(euler.y);
+    roll  = glm::degrees(euler.z);
+
     if (ImGui::SliderFloat("Pitch", &pitch, -180.0f, 180.0f)) {
         changed = true; 
         brushContext->model.quaternion = glm::quat(glm::radians(glm::vec3(pitch, yaw, roll)));
