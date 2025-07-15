@@ -212,7 +212,7 @@ BoxDistanceFunction::BoxDistanceFunction(glm::vec3 center, glm::vec3 length): ce
 
 float BoxDistanceFunction::distance(const glm::vec3 p, Transformation model) const {
     glm::vec3 pos = p - getCenter(model); // Move point into model space
-    pos = glm::inverse(model.getRotation()) * pos;
+    pos = glm::inverse(model.quaternion) * pos;
     return SDF::box(pos/model.scale, length);
 }
 
@@ -231,7 +231,7 @@ SphereDistanceFunction::SphereDistanceFunction(glm::vec3 pos, float radius): cen
 
 float SphereDistanceFunction::distance(const glm::vec3 p, Transformation model) const {
     glm::vec3 pos = p - getCenter(model); // Move point into model space
-    pos = glm::inverse(model.getRotation()) * pos;
+    pos = glm::inverse(model.quaternion) * pos;
     return SDF::sphere(pos/model.scale, radius);
 }
 
@@ -252,7 +252,7 @@ CapsuleDistanceFunction::CapsuleDistanceFunction(glm::vec3 a, glm::vec3 b, float
 
 float CapsuleDistanceFunction::distance(const glm::vec3 p, Transformation model) const {
     glm::vec3 pos = p - getCenter(model); // Move point into model space
-    pos = glm::inverse(model.getRotation()) * pos;
+    pos = glm::inverse(model.quaternion) * pos;
     return SDF::capsule(pos/model.scale, a, b, radius);
 }
 
@@ -292,7 +292,7 @@ OctahedronDistanceFunction::OctahedronDistanceFunction(glm::vec3 center, float r
 
 float OctahedronDistanceFunction::distance(const glm::vec3 p, Transformation model) const {
     glm::vec3 pos = p - getCenter(model); // Move point into model space
-    pos = glm::inverse(model.getRotation()) * pos;
+    pos = glm::inverse(model.quaternion) * pos;
     return SDF::octahedron(pos/model.scale, radius);
 }
 
@@ -311,7 +311,7 @@ PyramidDistanceFunction::PyramidDistanceFunction(glm::vec3 base, float height): 
 
 float PyramidDistanceFunction::distance(const glm::vec3 p, Transformation model) const {
     glm::vec3 pos = p - getCenter(model); // Move point into model space
-    pos = glm::inverse(model.getRotation()) * pos;
+    pos = glm::inverse(model.quaternion) * pos;
     return SDF::pyramid(pos/model.scale, height);
 }
 

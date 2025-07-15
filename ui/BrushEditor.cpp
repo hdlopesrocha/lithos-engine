@@ -164,15 +164,20 @@ void BrushEditor::draw2d(float time){
         break;
     }
 
-    if (ImGui::SliderFloat("Pitch", &brushContext->model.pitch, -180.0f, 180.0f)) {
+    if (ImGui::SliderFloat("Pitch", &pitch, -180.0f, 180.0f)) {
         changed = true; 
+        brushContext->model.quaternion = glm::quat(glm::radians(glm::vec3(pitch, yaw, roll)));
     }
-    if (ImGui::SliderFloat("Yaw", &brushContext->model.yaw, -180.0f, 180.0f)) {
+    if (ImGui::SliderFloat("Yaw", &yaw, -180.0f, 180.0f)) {
         changed = true; 
+        brushContext->model.quaternion = glm::quat(glm::radians(glm::vec3(pitch, yaw, roll)));
     }
-    if (ImGui::SliderFloat("Roll", &brushContext->model.roll, -180.0f, 180.0f)) {
+    if (ImGui::SliderFloat("Roll", &roll, -180.0f, 180.0f)) {
         changed = true; 
+        brushContext->model.quaternion = glm::quat(glm::radians(glm::vec3(pitch, yaw, roll)));
     }
+
+
 
     ImGui::Text("Scale: ");
     if(ImGui::InputFloat3("m##scale", &(brushContext->model.scale[0]))) {

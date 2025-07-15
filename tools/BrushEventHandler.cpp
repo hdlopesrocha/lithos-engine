@@ -22,47 +22,41 @@ template<typename T> void BrushEventHandler<T>::handle(T * event) {
     switch (context.currentTab)
     {
     case PAGE_ROTATION:
-        if(event->getType() == EVENT_FLOAT_0_X) {
-            FloatEvent * e = (FloatEvent*) event;
-            ScaleHandler(&(context.model.yaw)).handle(e);
-            changed = true;
-        } if(event->getType() == EVENT_FLOAT_0_Y) {
-            FloatEvent * e = (FloatEvent*) event;
-            ScaleHandler(&(context.model.pitch)).handle(e);
-            changed = true;
-        } if(event->getType() == EVENT_FLOAT_0_Z) {
-            FloatEvent * e = (FloatEvent*) event;
-            ScaleHandler(&(context.model.roll)).handle(e);
+        if(event->getType() == EVENT_VECTOR_3D_0) {
+            Axis3dEvent * e = (Axis3dEvent*) event;
+            TranslateHandler(context.camera, &(context.model.translate)).handle(e);
             changed = true;
         }
+        if(event->getType() == EVENT_VECTOR_3D_1) {
+            Axis3dEvent * e = (Axis3dEvent*) event;
+            RotateHandler(context.camera, &(context.model.quaternion)).handle(e);
+            changed = true;
+        } 
         break;
     case PAGE_SCALE:
-        if(event->getType() == EVENT_FLOAT_0_X) {
+        if(event->getType() == EVENT_VECTOR_3D_0) {
+            Axis3dEvent * e = (Axis3dEvent*) event;
+            TranslateHandler(context.camera, &(context.model.translate)).handle(e);
+            changed = true;
+        }
+        if(event->getType() == EVENT_FLOAT_1_X) {
             FloatEvent * e = (FloatEvent*) event;
             ScaleHandler(&(context.model.scale.x)).handle(e);
             changed = true;
-        } if(event->getType() == EVENT_FLOAT_0_Y) {
+        } if(event->getType() == EVENT_FLOAT_1_Y) {
             FloatEvent * e = (FloatEvent*) event;
             ScaleHandler(&(context.model.scale.y)).handle(e);
             changed = true;
-        } if(event->getType() == EVENT_FLOAT_0_Z) {
+        } if(event->getType() == EVENT_FLOAT_1_Z) {
             FloatEvent * e = (FloatEvent*) event;
             ScaleHandler(&(context.model.scale.z)).handle(e);
             changed = true;
         }
         break;
     case PAGE_TRANSLATE:
-        if(event->getType() == EVENT_FLOAT_0_X) {
-            FloatEvent * e = (FloatEvent*) event;
-            ScaleHandler(&(context.model.translate.x)).handle(e);
-            changed = true;
-        } if(event->getType() == EVENT_FLOAT_0_Y) {
-            FloatEvent * e = (FloatEvent*) event;
-            ScaleHandler(&(context.model.translate.y)).handle(e);
-            changed = true;
-        } if(event->getType() == EVENT_FLOAT_0_Z) {
-            FloatEvent * e = (FloatEvent*) event;
-            ScaleHandler(&(context.model.translate.z)).handle(e);
+        if(event->getType() == EVENT_VECTOR_3D_0) {
+            Axis3dEvent * e = (Axis3dEvent*) event;
+            TranslateHandler(context.camera, &(context.model.translate)).handle(e);
             changed = true;
         }
         break;        

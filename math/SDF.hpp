@@ -39,20 +39,17 @@ class Transformation {
 	public:
 	glm::vec3 scale;
 	glm::vec3 translate;
-    float pitch;
-    float yaw;
-    float roll;	
+    glm::quat quaternion;
+
 
 	Transformation(glm::vec3 scale, glm::vec3 translate, float yaw, float pitch, float roll) {
 		this->scale = scale;
 		this->translate = translate;
-		this->yaw = yaw;
-		this->pitch = pitch;
-		this->roll = roll;
+		this->quaternion = getRotation(yaw, pitch, roll);
 	}
 
 
-	glm::quat getRotation() {
+	glm::quat getRotation(float yaw, float pitch, float roll) {
 		return 	glm::angleAxis(glm::radians(yaw), glm::vec3(0.0f, 1.0f, 0.0f)) * // Yaw (Y-axis)
 				glm::angleAxis(glm::radians(pitch), glm::vec3(1.0f, 0.0f, 0.0f)) * // Pitch (X-axis)
 				glm::angleAxis(glm::radians(roll), glm::vec3(0.0f, 0.0f, 1.0f));  // Roll (Z-axis)

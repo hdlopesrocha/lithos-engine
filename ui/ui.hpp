@@ -100,7 +100,8 @@ class BrushEditor: public Closable {
     Camera * camera;
     TexturePreviewer * previewer;
     BrushContext * brushContext;
-
+    float yaw, pitch, roll;
+    
     public:
     BrushEditor(Brush3d * brush, Camera * camera, std::vector<UniformBlockBrush> * brushes, GLuint program3d, GLuint previewProgram, TextureLayers * layers, Scene * scene, BrushContext * brushContext);
     void draw2d(float time) override;
