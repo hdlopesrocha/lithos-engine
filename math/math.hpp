@@ -139,7 +139,7 @@ enum SpaceType {
 };
 
 class AbstractBoundingBox {
-	private: 
+	protected: 
 	glm::vec3 min;
 
 	public:
@@ -189,7 +189,7 @@ struct Plane {
 
 class BoundingCube : public AbstractBoundingBox {
 	using AbstractBoundingBox::AbstractBoundingBox;
-	private: 
+	protected: 
 		float length;
 	
 	public: 

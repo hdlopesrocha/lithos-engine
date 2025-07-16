@@ -75,7 +75,7 @@ void OctreeFile::load(std::string baseFolder, float chunkSize) {
 
 	tree->setMin(octreeSerialized.min);
 	tree->setLength(octreeSerialized.length);
-
+	tree->chunkSize = octreeSerialized.chunkSize;
 	tree->root = loadRecursive(&tree->allocator, 0,&nodes, chunkSize, filename, *tree, baseFolder);
 
     file.close();
@@ -126,6 +126,7 @@ void OctreeFile::save(std::string baseFolder, float chunkSize){
 	OctreeSerialized  octreeSerialized;
 	octreeSerialized.min = tree->getMin();
 	octreeSerialized.length = tree->getLengthX();
+	octreeSerialized.chunkSize = tree->chunkSize;
 
     std::ostringstream decompressed;
 	decompressed.write(reinterpret_cast<const char*>(&octreeSerialized), sizeof(OctreeSerialized));

@@ -109,5 +109,30 @@ void OctreeNode::setDirty(bool value){
 	this->bits = (this->bits & ~mask) | (value ? mask : 0x0);
 }
 
+uint OctreeNode::exportSerialization(OctreeAllocator * allocator, std::vector<OctreeNodeSerialized> * nodes, BoundingCube cube) {
+		OctreeNodeSerialized n;
+		n.brushIndex = this->vertex.brushIndex;
+		n.bits = this->bits;
+		SDF::copySDF(this->sdf, n.sdf);
 
+		for(int i=0 ; i < 8 ; ++i) {
+			n.children[i] = UINT_MAX;
+		}
 
+		uint index = nodes->size(); 
+		nodes->push_back(n);
+
+		ChildBlock * block = this->getBlock(allocator);
+		if(block != NULL) {
+			OctreeNodeSerialized * real = &(*nodes)[index];
+			for(int i=0; i < 8; ++i) {
+				OctreeNode * childNode = this->getChildNode(i, allocator,block);
+				if(childNode != NULL) {
+					
+					BoundingCube c = cube.getChild(i);
+					real->children[i] = childNode->exportSerialization(allocator, nodes, c);
+				}
+			}
+		}
+		return index;
+}

@@ -386,3 +386,19 @@ void Octree::iterateFlat(IteratorHandler &handler) {
     handler.iterateFlatIn(OctreeNodeData(0, chunkSize,root, cube, NULL, &this->allocator));
 }
 
+OctreeSerialized Octree::exportOctreeSerialization() {
+    std::cout << "exportOctreeSerialization()" << std::endl;
+    OctreeSerialized node;
+    node.min = this->min;
+    node.length = this->length;
+    node.chunkSize = this->chunkSize;
+    return node;
+}
+
+void Octree::exportNodesSerialization(std::vector<OctreeNodeSerialized> * nodes) {
+	std::cout << "exportNodesSerialization()" << std::endl;
+    nodes->clear();
+    nodes->reserve(10000000);
+
+    root->exportSerialization(&allocator, nodes, *this);
+}

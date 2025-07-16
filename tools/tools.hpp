@@ -21,6 +21,21 @@ enum Tab {
 	COUNT
 };
 
+class ComputeShader {
+	GLuint program;
+	GLuint vertexSSBO;
+	GLuint indexSSBO;
+	GLuint counterSSBO;
+    GLuint octreeSSBO;
+    GLuint nodesSSBO;
+	
+	public:
+	ComputeShader(GLuint program);
+	void allocateSSBO();
+	void dispatch();
+	void writeSSBO(OctreeSerialized * octree, std::vector<OctreeNodeSerialized> * nodes);
+};
+
 
 class WaveSurface : public HeightFunction {
     float amplitude;
@@ -223,8 +238,7 @@ class Scene {
 	std::vector<OctreeNodeData> visibleBrushNodes;
 	std::vector<OctreeNodeData> visibleLiquidNodes;
 	std::vector<OctreeNodeData> visibleShadowNodes[SHADOW_MATRIX_COUNT];
-	Settings * settings;
-
+	
 	Simplifier simplifier;
 	MeshGeometryBuilder * brushBuilder;
 	MeshGeometryBuilder * solidBuilder;
@@ -247,7 +261,11 @@ class Scene {
 	OctreeVisibilityChecker * liquidRenderer;
 	OctreeVisibilityChecker * shadowRenderer[SHADOW_MATRIX_COUNT];
 
-	Scene(Settings * settings);
+	Settings * settings;
+	ComputeShader &computeShader;
+	
+
+	Scene(Settings * settings, ComputeShader &computeShader);
 
 	bool processSpace();
 	bool processLiquid(OctreeNodeData &data, Octree * tree);

@@ -1,8 +1,8 @@
 
 #include "tools.hpp"
 
-Scene::Scene(Settings * settings):
-    simplifier(0.99, 0.1, true)
+Scene::Scene(Settings * settings, ComputeShader &computeShader):
+    simplifier(0.99, 0.1, true), computeShader(computeShader)
 
  {
 	this->settings = settings;
@@ -336,13 +336,22 @@ void Scene::generate(Camera &camera) {
 
 	{
 		glm::vec3 center = glm::vec3(0,500,0);
-		float radius = 512.0f;
+		float radius = 256.0f;
 		PyramidDistanceFunction function(glm::vec3(0.0f), 1.0f);
 		Transformation model2(glm::vec3(radius), center, 0,0,0);
 
 		WrappedPyramid wrappedFunction = WrappedPyramid(&function, minSize, model2);
 		solidSpace->add(wrappedFunction, model2, SimpleBrush(4), minSize, simplifier, *solidSpaceChangeHandler);
 	}
+
+
+	OctreeSerialized octreeSerialized = solidSpace->exportOctreeSerialization();
+	std::vector<OctreeNodeSerialized> nodes;
+	solidSpace->exportNodesSerialization(&nodes);
+
+	int x = 0;
+	computeShader.writeSSBO(&octreeSerialized, &nodes);
+	computeShader.dispatch();
 }
 
 void Scene::import(const std::string &filename, Camera &camera) {
@@ -368,6 +377,14 @@ void Scene::import(const std::string &filename, Camera &camera) {
 	waterBox.setMaxY(0);
 	
 	//liquidSpace->add(OctreeContainmentHandler(solidSpace, waterBox, WaterBrush(0)),  minSize, simplifier);
+
+	OctreeSerialized octreeSerialized = solidSpace->exportOctreeSerialization();
+	std::vector<OctreeNodeSerialized> nodes;
+	solidSpace->exportNodesSerialization(&nodes);
+
+	int x = 0;
+	computeShader.writeSSBO(&octreeSerialized, &nodes);
+	computeShader.dispatch();
 }
 
 void Scene::save(std::string folderPath, Camera &camera) {

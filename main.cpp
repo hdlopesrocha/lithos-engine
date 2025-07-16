@@ -30,6 +30,8 @@ class MainApplication : public LithosApplication {
 
 	GLuint programSwap;
 	GLuint program3d;
+	GLuint octreeComputeShader3d;
+	ComputeShader * computeShader;
 	GLuint programBillboard;
 	GLuint programImpostor;
 	GLuint programDeferred;
@@ -124,7 +126,6 @@ public:
 		// Register all GDAL drivers
 		GDALAllRegister();
 
-		mainScene = new Scene(settings);
 		//mainScene->generate(camera);
 	
 		uniformBlockData = new ProgramData();
@@ -145,6 +146,15 @@ public:
 		includes.push_back(GlslInclude("#include<shadow.glsl>" , readFile("shaders/util/shadow.glsl")));
 		includes.push_back(GlslInclude("#include<tbn.glsl>" , readFile("shaders/util/tbn.glsl")));
 		includes.push_back(GlslInclude("#include<triplanar.glsl>" , readFile("shaders/util/triplanar.glsl")));
+	
+
+	
+		octreeComputeShader3d = createShaderProgram({
+			compileShader(GlslInclude::replaceIncludes(includes,readFile("shaders/octree_compute.glsl")), GL_COMPUTE_SHADER)
+		});
+		computeShader = new ComputeShader(octreeComputeShader3d);
+		computeShader->allocateSSBO();
+		mainScene = new Scene(settings, *computeShader);
 
 		programAtlas = createShaderProgram({
 			compileShader(GlslInclude::replaceIncludes(includes,readFile("shaders/texture/atlas_vertex.glsl")),GL_VERTEX_SHADER), 
@@ -212,6 +222,7 @@ public:
 			compileShader(GlslInclude::replaceIncludes(includes,readFile("shaders/deferred_geometry.glsl")),GL_GEOMETRY_SHADER), 
 			compileShader(GlslInclude::replaceIncludes(includes,readFile("shaders/deferred_fragment.glsl")),GL_FRAGMENT_SHADER) 
 		});
+
 
 		textureLayers.textures[0] = createTextureArray(1024, 1024, 20, GL_RGB8);
 		textureLayers.textures[1] = createTextureArray(1024, 1024, 20, GL_RGB8);
@@ -519,7 +530,6 @@ public:
 		ImGui::StyleColorsDark();
 		ImGui_ImplGlfw_InitForOpenGL(getWindow(), true);
 		ImGui_ImplOpenGL3_Init("#version 460");
-
 
 		//mainScene->generate(camera);
 	}

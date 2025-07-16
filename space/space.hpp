@@ -11,6 +11,21 @@ class OctreeAllocator;
 class Simplifier;
 struct ChildBlock;
 
+struct OctreeSerialized {
+    public:
+    glm::vec3 min;
+    float length;
+	float chunkSize;
+};
+
+struct OctreeNodeSerialized {
+    public:
+    uint brushIndex;
+    uint8_t bits;
+	float sdf[8];
+    uint children[8] = {0,0,0,0,0,0,0,0};
+};
+
 class OctreeNode {
 
 	public: 
@@ -37,8 +52,9 @@ class OctreeNode {
 		bool isDirty();
 		void setDirty(bool value);
 		void setSdf(float * value);
+		uint exportSerialization(OctreeAllocator * allocator, std::vector<OctreeNodeSerialized> * nodes, BoundingCube cube);
 
-};
+	};
 
 struct ChildBlock {
 	uint children[8]; 
@@ -153,9 +169,12 @@ class Octree: public BoundingCube {
 		OctreeAllocator allocator;
 
 		Octree(BoundingCube minCube, float chunkSize);
+		
 		void expand(const WrappedSignedDistanceFunction &function, Transformation model);
 		void add(WrappedSignedDistanceFunction &function, const Transformation model, const TexturePainter &painter, float minSize, Simplifier &simplifier, OctreeChangeHandler &changeHandler);
 		void del(WrappedSignedDistanceFunction &function, const Transformation model, const TexturePainter &painter, float minSize, Simplifier &simplifier, OctreeChangeHandler &changeHandler);
+		NodeOperationResult shape(float (*operation)(float, float), const WrappedSignedDistanceFunction &function, const TexturePainter &painter, const Transformation model, OctreeNodeFrame frame, BoundingCube * chunk, Simplifier &simplifier, OctreeChangeHandler &changeHandler);
+
 		void iterate(IteratorHandler &handler);
 		void iterateFlat(IteratorHandler &handler);
 
@@ -172,8 +191,8 @@ class Octree: public BoundingCube {
 		int getMaxLevel(BoundingCube &cube);
 		int getMaxLevel(OctreeNode *node, BoundingCube &cube, BoundingCube &c, int level);
 
-		private:
-		NodeOperationResult shape(float (*operation)(float, float), const WrappedSignedDistanceFunction &function, const TexturePainter &painter, const Transformation model, OctreeNodeFrame frame, BoundingCube * chunk, Simplifier &simplifier, OctreeChangeHandler &changeHandler);
+		OctreeSerialized exportOctreeSerialization();
+		void exportNodesSerialization(std::vector<OctreeNodeSerialized> * nodes);
 };
 
 class Simplifier {
@@ -308,20 +327,6 @@ class Tesselator : public IteratorHandler, OctreeNodeTriangleHandler{
 
 };
 
-
-struct OctreeNodeSerialized {
-    public:
-    uint brushIndex;
-    uint8_t bits;
-	float sdf[8];
-    uint children[8] = {0,0,0,0,0,0,0,0};
-};
-
-struct OctreeSerialized {
-    public:
-    glm::vec3 min;
-    float length;
-};
 
 class OctreeFile {
 	Octree * tree;
