@@ -58,7 +58,6 @@ const ivec2 SDF_EDGES[12] = ivec2[](
 
 layout(local_size_x = 64) in;
 
-
 layout(std430, binding = 0) buffer VertexBuffer {
     Vertex vertices[];
 };
@@ -298,7 +297,9 @@ void handleTriangle(OctreeNodeSerialized n0, OctreeNodeSerialized n1 , OctreeNod
 
 
 void main() {
-  
+    vertexCount = 0u;
+    indexCount = 0u;
+
     uint nodeIdx = gl_GlobalInvocationID.x;
     if (nodeIdx >= nodes.length()) return;
 

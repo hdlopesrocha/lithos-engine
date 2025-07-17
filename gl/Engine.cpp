@@ -1,4 +1,3 @@
-
 #define STB_IMAGE_IMPLEMENTATION
 
 #include <stb/stb_image.h>
@@ -8,13 +7,50 @@ double lastFrameTime = 0.0;
 
 void APIENTRY openglDebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity,
                                   GLsizei length, const GLchar* message, const void* userParam) {
+    auto getSourceString = [](GLenum source) {
+        switch (source) {
+            case GL_DEBUG_SOURCE_API: return "API";
+            case GL_DEBUG_SOURCE_WINDOW_SYSTEM: return "Window System";
+            case GL_DEBUG_SOURCE_SHADER_COMPILER: return "Shader Compiler";
+            case GL_DEBUG_SOURCE_THIRD_PARTY: return "Third Party";
+            case GL_DEBUG_SOURCE_APPLICATION: return "Application";
+            case GL_DEBUG_SOURCE_OTHER: return "Other";
+            default: return "Unknown";
+        }
+    };
+    auto getTypeString = [](GLenum type) {
+        switch (type) {
+            case GL_DEBUG_TYPE_ERROR: return "Error";
+            case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: return "Deprecated Behavior";
+            case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR: return "Undefined Behavior";
+            case GL_DEBUG_TYPE_PORTABILITY: return "Portability";
+            case GL_DEBUG_TYPE_PERFORMANCE: return "Performance";
+            case GL_DEBUG_TYPE_MARKER: return "Marker";
+            case GL_DEBUG_TYPE_PUSH_GROUP: return "Push Group";
+            case GL_DEBUG_TYPE_POP_GROUP: return "Pop Group";
+            case GL_DEBUG_TYPE_OTHER: return "Other";
+            default: return "Unknown";
+        }
+    };
+    auto getSeverityString = [](GLenum severity) {
+        switch (severity) {
+            case GL_DEBUG_SEVERITY_HIGH: return "High";
+            case GL_DEBUG_SEVERITY_MEDIUM: return "Medium";
+            case GL_DEBUG_SEVERITY_LOW: return "Low";
+            case GL_DEBUG_SEVERITY_NOTIFICATION: return "Notification";
+            default: return "Unknown";
+        }
+    };
     
     if(severity == GL_DEBUG_SEVERITY_HIGH) {
-        std::cerr << "OpenGL Debug Message: " << message << std::endl;
-     //   throw std::runtime_error("OpenGL error in openglDebugCallback");
+        std::cerr << "OpenGL Debug Message:\n"
+              << "  Source: " << getSourceString(source) << "\n"
+              << "  Type: " << getTypeString(type) << "\n"
+              << "  ID: " << id << "\n"
+              << "  Severity: " << getSeverityString(severity) << "\n"
+              << "  Message: " << message << std::endl;
     }
 }
-
 
 int LithosApplication::initWindow() {
     // Initialize GLFW
