@@ -219,7 +219,6 @@ void createVertex(Vertex vertex) {
 // Generate vertex
     uint vertexIdx = atomicAdd(vertexCount, 1);
     vertices[vertexIdx] = vertex;
-
     uint indexIdx = atomicAdd(indexCount, 1);
     indices[indexIdx] = vertexIdx;
 }   
@@ -256,10 +255,13 @@ void handleTriangle(OctreeNodeSerialized n0, OctreeNodeSerialized n1 , OctreeNod
     if(n0.bits != 0u && n1.bits != 0u && n2.bits != 0u) {
         return;
     }
-    if(n0.brushIndex == -1 || n1.brushIndex == -1 || n2.brushIndex == -1 ) {
+    if(n0.brushIndex < 0 || n1.brushIndex < 0 || n2.brushIndex < 0 ) {
         return;
     }
 
+    if(evalSDF(n0.sdf)!=1 || evalSDF(n1.sdf)!=1 || evalSDF(n2.sdf)!=1) {
+        return;
+    }  
 
     vec3 p0 = estimatePosition(n0.sdf);
     vec3 p1 = estimatePosition(n1.sdf);
@@ -323,13 +325,15 @@ void main() {
                 vec3 cubeCenter = octree.min + vec3(octree.length*0.5);
                 vec3 pos = cubeCenter + direction * octree.length * getShift(i);
 
-				uint n = getNodeAt(pos, true);
-                OctreeNodeSerialized node = nodes[n];
-                if((node.bits & 0x01u) != 0u && (node.bits & 0x02u) != 0u) { // not solid and not empty = surface
-                    quads[i] = node;
-                }
-                else {
-                    quads[i].bits = 0u;
+				int n = getNodeAt(pos, true);
+                if(n >= 0) {
+                    OctreeNodeSerialized node = nodes[n];
+                    if((node.bits & 0x01u) != 0u && (node.bits & 0x02u) != 0u) { // not solid and not empty = surface
+                        quads[i] = node;
+                    }
+                    else {
+                        quads[i].bits = 0u;
+                    }
                 }
 			}
 

@@ -41,7 +41,7 @@ void ComputeShader::allocateSSBO() {
 
 void ComputeShader::writeSSBO(OctreeSerialized * octree, std::vector<OctreeNodeSerialized> * nodes) {
     std::cout << "ComputeShader::writeSSBO: " << nodes->size() << std::endl;
-    GLuint zero[2] = {0, 0};
+    GLuint zero[2] = {0u, 0u};
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, counterSSBO);
     glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, 2 * sizeof(GLuint), zero);
 
@@ -49,7 +49,7 @@ void ComputeShader::writeSSBO(OctreeSerialized * octree, std::vector<OctreeNodeS
     glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, sizeof(OctreeSerialized), octree);
 
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, nodesSSBO);
-    glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, nodes->size()*sizeof(OctreeNodeSerialized), &(*nodes).data()[0]);
+    glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, nodes->size()*sizeof(OctreeNodeSerialized), &nodes->data()[0]);
 
 }
 
@@ -66,5 +66,15 @@ void ComputeShader::dispatch() {
     glDispatchCompute(numWorkgroups, 1, 1);
     glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
     std::cout << "Ok!" << std::endl;
+   
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, counterSSBO);
+    glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+    GLuint * counter = (GLuint*) glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_READ_ONLY);
+    GLuint vertexCount = counter[0];
+    GLuint indexCount = counter[1];
+    glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
+
+    std::cout << "vertexCount = " << std::to_string(vertexCount) <<std::endl;
+    std::cout << "indexCount = " << std::to_string(indexCount) <<std::endl;
 
 }
