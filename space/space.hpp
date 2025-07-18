@@ -11,20 +11,25 @@ class OctreeAllocator;
 class Simplifier;
 struct ChildBlock;
 
+#pragma pack(16)  // Ensure 16-byte alignment for UBO
 struct OctreeSerialized {
     public:
     glm::vec3 min;
     float length;
 	float chunkSize;
 };
+#pragma pack()  // Reset to default packing
 
+#pragma pack(16)  // Ensure 16-byte alignment for UBO
 struct OctreeNodeSerialized {
     public:
-    uint brushIndex;
-    uint8_t bits;
 	float sdf[8];
     uint children[8] = {0,0,0,0,0,0,0,0};
+    int brushIndex;
+    uint bits;
 };
+#pragma pack()  // Reset to default packing
+
 
 class OctreeNode {
 
@@ -191,7 +196,7 @@ class Octree: public BoundingCube {
 		int getMaxLevel(BoundingCube &cube);
 		int getMaxLevel(OctreeNode *node, BoundingCube &cube, BoundingCube &c, int level);
 
-		OctreeSerialized exportOctreeSerialization();
+		void exportOctreeSerialization(OctreeSerialized * octree);
 		void exportNodesSerialization(std::vector<OctreeNodeSerialized> * nodes);
 };
 

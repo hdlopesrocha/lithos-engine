@@ -28,12 +28,11 @@ class ComputeShader {
 	GLuint counterSSBO;
     GLuint octreeSSBO;
     GLuint nodesSSBO;
-	
+	int nodesCount;
 	public:
 	ComputeShader(GLuint program);
-	void allocateSSBO();
+	void allocateSSBO(OctreeSerialized * octree, std::vector<OctreeNodeSerialized> * nodes);
 	void dispatch();
-	void writeSSBO(OctreeSerialized * octree, std::vector<OctreeNodeSerialized> * nodes);
 };
 
 
@@ -479,6 +478,17 @@ template class BrushEventHandler<Event>;
 template class BrushEventHandler<Axis3dEvent>;
 template class BrushEventHandler<FloatEvent>;
 
+#pragma pack(16)  // Ensure 16-byte alignment for UBO
+struct ComputeShaderResult {
+	public:
+	glm::vec4 result4f;
+	GLuint vertexCount;
+	GLuint indexCount;
 
+	ComputeShaderResult();
+	ComputeShaderResult(GLuint vertexCount, GLuint indexCount, glm::vec4 result4f);
+	void reset();
+};
+#pragma pack()
 
 #endif

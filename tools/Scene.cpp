@@ -345,12 +345,13 @@ void Scene::generate(Camera &camera) {
 	}
 
 
-	OctreeSerialized octreeSerialized = solidSpace->exportOctreeSerialization();
+	OctreeSerialized octreeSerialized;
+	solidSpace->exportOctreeSerialization(&octreeSerialized);
 	std::vector<OctreeNodeSerialized> nodes;
 	solidSpace->exportNodesSerialization(&nodes);
 
 	int x = 0;
-	computeShader.writeSSBO(&octreeSerialized, &nodes);
+	computeShader.allocateSSBO(&octreeSerialized, &nodes);
 	computeShader.dispatch();
 }
 
@@ -378,12 +379,13 @@ void Scene::import(const std::string &filename, Camera &camera) {
 	
 	//liquidSpace->add(OctreeContainmentHandler(solidSpace, waterBox, WaterBrush(0)),  minSize, simplifier);
 
-	OctreeSerialized octreeSerialized = solidSpace->exportOctreeSerialization();
+	OctreeSerialized octreeSerialized;
+	solidSpace->exportOctreeSerialization(&octreeSerialized);
 	std::vector<OctreeNodeSerialized> nodes;
 	solidSpace->exportNodesSerialization(&nodes);
 
 	int x = 0;
-	computeShader.writeSSBO(&octreeSerialized, &nodes);
+	computeShader.allocateSSBO(&octreeSerialized, &nodes);
 	computeShader.dispatch();
 }
 

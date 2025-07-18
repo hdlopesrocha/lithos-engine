@@ -12,10 +12,10 @@ struct OctreeSerialized {
 
 
 struct OctreeNodeSerialized {
-    uint brushIndex;
-    uint bits;
-    float sdf[8];
+	float sdf[8];
     uint children[8];
+    int brushIndex;
+    uint bits;
 };
 
 struct Vertex {
@@ -25,6 +25,11 @@ struct Vertex {
     uint brushIndex;
 };
 
+struct ComputeShaderResult {
+    vec4 result4f; 
+    uint vertexCount;
+    uint indexCount;
+};
 
 const ivec4 tessOrder[3] = ivec4[](
     ivec4(0, 1, 3, 2),
@@ -66,16 +71,17 @@ layout(std430, binding = 1) buffer IndexBuffer {
     uint indices[];
 };
 
-layout(std430, binding = 2) buffer CounterBuffer {
-    uint vertexCount;
-    uint indexCount;
+layout(std140, binding = 2) buffer ComputeShaderResultBuffer {
+    ComputeShaderResult result;
 };
 
-layout(std430, binding = 3) readonly buffer OctreeInfo {
-    OctreeSerialized octree;
+layout(std430, binding = 3) readonly buffer OctreeBuffer {
+    vec3 min;
+    float length;
+    float chunkSize;
 };
 
-layout(std430, binding = 4) readonly buffer OctreeNodes {
+layout(std430, binding = 4) readonly buffer NodesBuffer {
     OctreeNodeSerialized nodes[];
 };
 
@@ -99,20 +105,20 @@ vec3 getShift(int i) {
     );
 }
 bool contains(vec3 pos) {
-    vec3 max = octree.min + vec3(octree.length);
-    return all(greaterThanEqual(pos, octree.min)) && all(lessThanEqual(pos, max));
+    vec3 max = min + vec3(length);
+    return all(greaterThanEqual(pos, min)) && all(lessThanEqual(pos, max));
 }
 
 int getNodeIndex(vec3 pos, vec3 cubeMin, float cubeLength) {
     vec3 center = cubeMin + vec3(cubeLength * 0.5);
     int idx = 0;
-    if (pos.x >= center.x) idx |= 1;
+    if (pos.x >= center.x) idx |= 4;
     if (pos.y >= center.y) idx |= 2;
-    if (pos.z >= center.z) idx |= 4;
+    if (pos.z >= center.z) idx |= 1;
     return idx;
 }
 bool isSimplified(uint bits) {
-    return (bits & (1u << 4)) != 0;  // exemplo: simplification flag no bit 0
+    return (bits & (0x1u << 3)) != 0;  // exemplo: simplification flag no bit 0
 }
 
 
@@ -121,8 +127,8 @@ int getNodeAt(vec3 pos, bool simplification) {
     if (!contains(pos)) return -1; // Não está na octree
 
     int nodeIdx = 0; // root
-    vec3 cubeMin = octree.min;
-    float cubeLength = octree.length;
+    vec3 cubeMin = min;
+    float cubeLength = length;
 
     while (true) {
         OctreeNodeSerialized node = nodes[nodeIdx];
@@ -137,9 +143,9 @@ int getNodeAt(vec3 pos, bool simplification) {
 
         nodeIdx = int(nextNodeIdx);
         cubeLength *= 0.5;
-        if ((childIdx & 1) != 0) cubeMin.x += cubeLength;
+        if ((childIdx & 4) != 0) cubeMin.x += cubeLength;
         if ((childIdx & 2) != 0) cubeMin.y += cubeLength;
-        if ((childIdx & 4) != 0) cubeMin.z += cubeLength;
+        if ((childIdx & 1) != 0) cubeMin.z += cubeLength;
     }
 
     return nodeIdx;
@@ -174,13 +180,16 @@ int evalSDF(float sdf[8]) {
         } else {
             hasNegative = true;
         }
+        if(hasPositive && hasNegative) {
+            break;  // Early exit if both signs are found
+        }
     }
-    return hasNegative && hasPositive ? 1 : (hasPositive ? 0 : 2);
+    return hasNegative && hasPositive ? SpaceType_Surface : (hasPositive ? SpaceType_Empty : SpaceType_Solid);
 }
 
 vec3 estimatePosition(float sdf[8]) {
     // Early exit if there's no surface inside this cube
-    vec3 center =octree.min+ vec3(octree.length*0.5f);
+    vec3 center =min+ vec3(length*0.5f);
     int eval = evalSDF(sdf);
     if(eval != SpaceType_Surface) {
         return center;  // or some fallback value
@@ -198,8 +207,8 @@ vec3 estimatePosition(float sdf[8]) {
 		bool sign1 = d1 < 0.0f;
 
         if (sign0 != sign1) {
-            vec3 p0 = octree.min + octree.length * getShift(edge[0]);
-            vec3 p1 = octree.min + octree.length * getShift(edge[1]);
+            vec3 p0 = min + length * getShift(edge[0]);
+            vec3 p1 = min + length * getShift(edge[1]);
             float t = d0 / (d0 - d1);  // Safe due to sign change
             sum+= p0 + t * (p1 - p0);
             ++sums;
@@ -216,24 +225,24 @@ vec3 estimatePosition(float sdf[8]) {
 
 void createVertex(Vertex vertex) {
 // Generate vertex
-    uint vertexIdx = atomicAdd(vertexCount, 1);
+    uint vertexIdx = atomicAdd(result.vertexCount, 1);
     vertices[vertexIdx] = vertex;
-    uint indexIdx = atomicAdd(indexCount, 1);
+    uint indexIdx = atomicAdd(result.indexCount, 1);
     indices[indexIdx] = vertexIdx;
 }   
 
-bool mustSkip(OctreeNodeSerialized node){
+bool mustSkip(OctreeNodeSerialized node) {
     if (!isLeaf(node))
         return true;
 
-    // Heuristic: skip if all SDF signs are same (inside or outside)
-    bool pos = node.sdf[0] > 0.0;
-    for (int i = 1; i < 8; i++) {
-        if ((node.sdf[i] > 0.0) != pos)
-            break;
-        if (i == 7) return true; // All same sign → no surface
+    bool allPositive = true;
+    bool allNegative = true;
+    for (int i = 0; i < 8; i++) {
+        if (node.sdf[i] <= 0.0) allPositive = false;
+        if (node.sdf[i] >= 0.0) allNegative = false;
     }
-    return false;
+    // If all are positive or all are negative, skip (no surface)
+    return allPositive || allNegative;
 }
 
 
@@ -250,17 +259,17 @@ int triplanarPlane(vec3 position, vec3 normal) {
 }
 
 void handleTriangle(OctreeNodeSerialized n0, OctreeNodeSerialized n1 , OctreeNodeSerialized n2, bool sign) {
+    
     float triplanarScale = 1.0f;
-    if(n0.bits != 0u && n1.bits != 0u && n2.bits != 0u) {
-        return;
-    }
+    
     if(n0.brushIndex < 0 || n1.brushIndex < 0 || n2.brushIndex < 0 ) {
         return;
     }
 
-    if(evalSDF(n0.sdf)!=1 || evalSDF(n1.sdf)!=1 || evalSDF(n2.sdf)!=1) {
-        return;
-    }  
+    result.result4f= vec4(n0.sdf[0],n0.sdf[1],n0.sdf[2],n0.sdf[3]);
+
+    // uint indexIdx = atomicAdd(indexCount, 1);
+
 
     vec3 p0 = estimatePosition(n0.sdf);
     vec3 p1 = estimatePosition(n1.sdf);
@@ -297,19 +306,16 @@ void handleTriangle(OctreeNodeSerialized n0, OctreeNodeSerialized n1 , OctreeNod
 
 
 void main() {
-    vertexCount = 0u;
-    indexCount = 0u;
-
     uint nodeIdx = gl_GlobalInvocationID.x;
     if (nodeIdx >= nodes.length()) return;
-
+    
     OctreeNodeSerialized node = nodes[nodeIdx];
 
     if(mustSkip(node)){
         return;
     }
 
-    for(int k =0 ; k < tessOrder.length(); ++k) {
+    for(int k =0 ; k < tessEdge.length(); ++k) {
 		ivec2 edge = tessEdge[k];
 
         float d0 = node.sdf[edge[0]];
@@ -323,18 +329,14 @@ void main() {
             OctreeNodeSerialized quads[4];
             int direction = 1;
 			for(int i =0; i<4 ; ++i) {
-                vec3 cubeCenter = octree.min + vec3(octree.length*0.5);
-                vec3 pos = cubeCenter + direction * octree.length * getShift(i);
+                vec3 cubeCenter = min + vec3(length*0.25);
+                vec3 pos = cubeCenter + direction * vec3(length*0.5) * getShift(i);
 
-				int n = getNodeAt(pos, true);
+				int n = getNodeAt(pos, false);
                 if(n >= 0) {
-                    OctreeNodeSerialized node = nodes[n];
-                    if((node.bits & 0x01u) != 0u && (node.bits & 0x02u) != 0u) { // not solid and not empty = surface
-                        quads[i] = node;
-                    }
-                    else {
-                        quads[i].bits = 0u;
-                    }
+                    quads[i] = nodes[n];
+                }else {
+                    quads[i].brushIndex = -1; // Mark as empty and solid
                 }
 			}
 

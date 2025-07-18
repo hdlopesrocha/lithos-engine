@@ -153,7 +153,6 @@ public:
 			compileShader(GlslInclude::replaceIncludes(includes,readFile("shaders/octree_compute.glsl")), GL_COMPUTE_SHADER)
 		});
 		computeShader = new ComputeShader(octreeComputeShader3d);
-		computeShader->allocateSSBO();
 		mainScene = new Scene(settings, *computeShader);
 
 		programAtlas = createShaderProgram({
