@@ -150,6 +150,8 @@ class VegetationInstanceBuilder : public OctreeNodeTriangleHandler {
 	void handle(OctreeNode* c0,OctreeNode* c1,OctreeNode* c2, bool sign) override;
 };
 
+
+
 template <typename T> struct NodeInfo {
 	bool update;
 
@@ -203,6 +205,17 @@ class SolidSpaceChangeHandler : public OctreeChangeHandler {
 	void erase(OctreeNode* nodeId) override;
 };
 
+class UnionChangeHandler : public OctreeChangeHandler {
+ 	std::vector<OctreeChangeHandler*> handlers;
+	public:
+	UnionChangeHandler(std::initializer_list<OctreeChangeHandler*> shaders);
+
+	void create(OctreeNode* nodeId) override;
+	void update(OctreeNode* nodeId) override;
+	void erase(OctreeNode* nodeId) override;
+};
+
+
 class BrushSpaceChangeHandler : public OctreeChangeHandler {
 	std::unordered_map<OctreeNode*, NodeInfo<InstanceData>> * brushInfo;
  
@@ -216,6 +229,28 @@ class BrushSpaceChangeHandler : public OctreeChangeHandler {
 	void erase(OctreeNode* nodeId) override;
 };
 
+
+struct ComputeShaderInfo {
+	public:
+	ComputeShader * computeShader;
+
+	ComputeShaderInfo(ComputeShader * computeShader) {
+		this->computeShader = computeShader;
+	}
+};
+
+class ComputeShaderInfoHandler : public OctreeChangeHandler {
+	std::unordered_map<OctreeNode*, ComputeShaderInfo> * info;
+ 
+	public:
+	ComputeShaderInfoHandler(
+		std::unordered_map<OctreeNode*, ComputeShaderInfo> * info
+	);
+
+	void create(OctreeNode* nodeId) override;
+	void update(OctreeNode* nodeId) override;
+	void erase(OctreeNode* nodeId) override;
+};
 
 class Scene {
     public: 
@@ -250,11 +285,14 @@ class Scene {
 	std::unordered_map<OctreeNode*, NodeInfo<InstanceData>> liquidInfo;
 	std::unordered_map<OctreeNode*, NodeInfo<DebugInstanceData>> debugInfo;
 	std::unordered_map<OctreeNode*, NodeInfo<InstanceData>> vegetationInfo;
+	std::unordered_map<OctreeNode*, ComputeShaderInfo> computeInfo;
+
 
 	LiquidSpaceChangeHandler * liquidSpaceChangeHandler;
 	SolidSpaceChangeHandler * solidSpaceChangeHandler;
 	BrushSpaceChangeHandler * brushSpaceChangeHandler;
-
+	ComputeShaderInfoHandler * computeShaderInfoHandler;
+	
 	OctreeVisibilityChecker * solidRenderer;
 	OctreeVisibilityChecker * brushRenderer;
 	OctreeVisibilityChecker * liquidRenderer;
