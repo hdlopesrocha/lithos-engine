@@ -399,10 +399,10 @@ void Octree::exportOctreeSerialization(OctreeSerialized * node) {
     std::cout << "\tchunkSize: " << std::to_string(node->chunkSize) << std::endl;
 }
 
-void Octree::exportNodesSerialization(std::vector<OctreeNodeSerialized> * nodes) {
+void Octree::exportNodesSerialization(std::vector<OctreeNodeCubeSerialized> * nodes) {
 	std::cout << "exportNodesSerialization()" << std::endl;
     nodes->clear();
     nodes->reserve(10000000);
-
     root->exportSerialization(&allocator, nodes, *this);
 }
+

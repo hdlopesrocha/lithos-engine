@@ -1,8 +1,8 @@
 
 #include "tools.hpp"
 
-Scene::Scene(Settings * settings, ComputeShader &computeShader):
-    simplifier(0.99, 0.1, true), computeShader(computeShader)
+Scene::Scene(Settings * settings, GeometrySSBO &geometrySSBO):
+    simplifier(0.99, 0.1, true), geometrySSBO(geometrySSBO)
 
  {
 	this->settings = settings;
@@ -350,15 +350,24 @@ void Scene::generate(Camera &camera) {
 		solidSpace->add(wrappedFunction, model2, SimpleBrush(4), minSize, simplifier, unionChangeHandler);
 	}
 
+	geometrySSBO.allocate();
 
 	OctreeSerialized octreeSerialized;
 	solidSpace->exportOctreeSerialization(&octreeSerialized);
-	std::vector<OctreeNodeSerialized> nodes;
+	std::vector<OctreeNodeCubeSerialized> nodes;
 	solidSpace->exportNodesSerialization(&nodes);
 
-	int x = 0;
-	computeShader.allocateSSBO(&octreeSerialized, &nodes);
-	computeShader.dispatch();
+	OctreeSSBO octreeSSBO = OctreeSSBO(geometrySSBO.program);
+	octreeSSBO.allocateCopy(&octreeSerialized, &nodes);
+	InputSSBO inputSSBO = InputSSBO(geometrySSBO.program);
+	inputSSBO.allocate();
+
+	ComputeShaderInput inputData = ComputeShaderInput();
+	inputData.chunkMin = glm::vec4(1,2,3,0);
+	inputData.chunkLength = glm::vec4(512,512,512,0);
+	inputSSBO.copy(&inputData); 
+
+	geometrySSBO.dispatch(geometrySSBO.program);
 }
 
 void Scene::import(const std::string &filename, Camera &camera) {
@@ -392,12 +401,22 @@ void Scene::import(const std::string &filename, Camera &camera) {
 
 	OctreeSerialized octreeSerialized;
 	solidSpace->exportOctreeSerialization(&octreeSerialized);
-	std::vector<OctreeNodeSerialized> nodes;
+	std::vector<OctreeNodeCubeSerialized> nodes;
 	solidSpace->exportNodesSerialization(&nodes);
 
-	int x = 0;
-	computeShader.allocateSSBO(&octreeSerialized, &nodes);
-	computeShader.dispatch();
+
+	OctreeSSBO octreeSSBO = OctreeSSBO(geometrySSBO.program);
+	octreeSSBO.allocateCopy(&octreeSerialized, &nodes);
+	InputSSBO inputSSBO = InputSSBO(geometrySSBO.program);
+	inputSSBO.allocate();
+
+	ComputeShaderInput inputData = ComputeShaderInput();
+	inputData.chunkMin = glm::vec4(1,2,3,0);
+	inputData.chunkLength = glm::vec4(512,512,512,0);
+	inputSSBO.copy(&inputData); 
+
+	
+	geometrySSBO.dispatch(geometrySSBO.program);
 }
 
 void Scene::save(std::string folderPath, Camera &camera) {

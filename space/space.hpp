@@ -20,6 +20,20 @@ struct OctreeSerialized {
 };
 #pragma pack()  // Reset to default packing
 
+
+
+#pragma pack(16)
+struct OctreeNodeCubeSerialized {
+	float sdf[8];
+    uint children[8];
+    glm::vec3 min;
+    int brushIndex;
+    glm::vec3 length;
+    uint bits;
+};
+#pragma pack()
+
+
 #pragma pack(16)  // Ensure 16-byte alignment for UBO
 struct OctreeNodeSerialized {
     public:
@@ -27,6 +41,16 @@ struct OctreeNodeSerialized {
     uint children[8] = {0,0,0,0,0,0,0,0};
     int brushIndex;
     uint bits;
+
+	bool isDirty(){
+		return this->bits & (0x1 << 3);
+	}
+
+	void setDirty(bool value){
+		uint8_t mask = (0x1 << 3);
+		this->bits = (this->bits & ~mask) | (value ? mask : 0x0);
+	}
+
 };
 #pragma pack()  // Reset to default packing
 
@@ -57,8 +81,7 @@ class OctreeNode {
 		bool isDirty();
 		void setDirty(bool value);
 		void setSdf(float * value);
-		uint exportSerialization(OctreeAllocator * allocator, std::vector<OctreeNodeSerialized> * nodes, BoundingCube cube);
-
+		uint exportSerialization(OctreeAllocator * allocator, std::vector<OctreeNodeCubeSerialized> * nodes, BoundingCube cube);
 	};
 
 struct ChildBlock {
@@ -197,7 +220,7 @@ class Octree: public BoundingCube {
 		int getMaxLevel(OctreeNode *node, BoundingCube &cube, BoundingCube &c, int level);
 
 		void exportOctreeSerialization(OctreeSerialized * octree);
-		void exportNodesSerialization(std::vector<OctreeNodeSerialized> * nodes);
+		void exportNodesSerialization(std::vector<OctreeNodeCubeSerialized> * nodes);
 };
 
 class Simplifier {

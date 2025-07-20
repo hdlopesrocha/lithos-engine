@@ -21,19 +21,39 @@ enum Tab {
 	COUNT
 };
 
-class ComputeShader {
-	GLuint program;
+#pragma pack(16)  // Ensure 16-byte alignment for UBO
+struct ComputeShaderInput {
+    glm::vec4 chunkMin;
+    glm::vec4 chunkLength;
+};
+#pragma pack()  // Reset to default packing
+
+class OctreeSSBO {
+	public:
+    GLuint octreeSSBO;
+    GLuint nodesSSBO;
+
+	void allocateCopy(OctreeSerialized * octree, std::vector<OctreeNodeCubeSerialized> * nodes);
+};
+
+class GeometrySSBO {
+	public:
 	GLuint vertexSSBO;
 	GLuint indexSSBO;
 	GLuint counterSSBO;
-    GLuint octreeSSBO;
-    GLuint nodesSSBO;
+
+
 	int nodesCount;
-	public:
-	ComputeShader(GLuint program);
-	void allocateSSBO(OctreeSerialized * octree, std::vector<OctreeNodeSerialized> * nodes);
-	void dispatch();
+	GeometrySSBO();
+	void allocate();
+	void dispatch(GLuint program);
 };
+
+class InputSSBO {
+	public:
+	GLuint inputSSBO; 	
+};
+
 
 
 class WaveSurface : public HeightFunction {
@@ -232,9 +252,9 @@ class BrushSpaceChangeHandler : public OctreeChangeHandler {
 
 struct ComputeShaderInfo {
 	public:
-	ComputeShader * computeShader;
+	GeometrySSBO * computeShader;
 
-	ComputeShaderInfo(ComputeShader * computeShader) {
+	ComputeShaderInfo(GeometrySSBO * computeShader) {
 		this->computeShader = computeShader;
 	}
 };
@@ -299,10 +319,10 @@ class Scene {
 	OctreeVisibilityChecker * shadowRenderer[SHADOW_MATRIX_COUNT];
 
 	Settings * settings;
-	ComputeShader &computeShader;
+	GeometrySSBO &geometrySSBO;
 	
 
-	Scene(Settings * settings, ComputeShader &computeShader);
+	Scene(Settings * settings, GeometrySSBO &geometrySSBO);
 
 	bool processSpace();
 	bool processLiquid(OctreeNodeData &data, Octree * tree);
@@ -517,14 +537,14 @@ template class BrushEventHandler<Axis3dEvent>;
 template class BrushEventHandler<FloatEvent>;
 
 #pragma pack(16)  // Ensure 16-byte alignment for UBO
-struct ComputeShaderResult {
+struct ComputeShaderOutput {
 	public:
 	glm::vec4 result4f;
 	GLuint vertexCount;
 	GLuint indexCount;
 
-	ComputeShaderResult();
-	ComputeShaderResult(GLuint vertexCount, GLuint indexCount, glm::vec4 result4f);
+	ComputeShaderOutput();
+	ComputeShaderOutput(GLuint vertexCount, GLuint indexCount, glm::vec4 result4f);
 	void reset();
 };
 #pragma pack()

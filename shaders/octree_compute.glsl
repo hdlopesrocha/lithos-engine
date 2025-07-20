@@ -9,7 +9,14 @@ struct OctreeSerialized {
     float length;
     float chunkSize;
 };
-
+struct OctreeNodeCubeSerialized {
+	float sdf[8];
+    uint children[8];
+    vec3 min;
+    int brushIndex;
+    vec3 length;
+    uint bits;
+};
 
 struct OctreeNodeSerialized {
 	float sdf[8];
@@ -25,11 +32,39 @@ struct Vertex {
     uint brushIndex;
 };
 
-struct ComputeShaderResult {
+struct ComputeShaderOutput {
     vec4 result4f; 
     uint vertexCount;
     uint indexCount;
 };
+
+struct ComputeShaderInput {
+    vec4 chunkMin;
+    vec4 chunkLength;
+};
+
+layout(local_size_x = 64) in;
+
+layout(std430, binding = 0) buffer VertexBuffer {
+    Vertex vertices[];
+};
+
+layout(std430, binding = 1) buffer IndexBuffer {
+    uint indices[];
+};
+
+layout(std140, binding = 2) buffer OutputBuffer {
+    ComputeShaderOutput shaderOutput;
+};
+
+layout(std430, binding = 4) readonly buffer NodesBuffer {
+    OctreeNodeCubeSerialized nodes[];
+};
+
+layout(std140, binding = 5) readonly buffer InputBuffer {
+    ComputeShaderInput shaderInput;
+};
+
 
 const ivec4 tessOrder[3] = ivec4[](
     ivec4(0, 1, 3, 2),
@@ -59,32 +94,6 @@ const ivec2 SDF_EDGES[12] = ivec2[](
     ivec2(3, 7)
 ); 
 
-
-
-layout(local_size_x = 64) in;
-
-layout(std430, binding = 0) buffer VertexBuffer {
-    Vertex vertices[];
-};
-
-layout(std430, binding = 1) buffer IndexBuffer {
-    uint indices[];
-};
-
-layout(std140, binding = 2) buffer ComputeShaderResultBuffer {
-    ComputeShaderResult result;
-};
-
-layout(std430, binding = 3) readonly buffer OctreeBuffer {
-    vec3 min;
-    float length;
-    float chunkSize;
-};
-
-layout(std430, binding = 4) readonly buffer NodesBuffer {
-    OctreeNodeSerialized nodes[];
-};
-
 vec2 triplanarMapping(vec3 position, int plane) {
     switch (plane) {
         case 0: return vec2(-position.z, -position.y);
@@ -104,13 +113,20 @@ vec3 getShift(int i) {
         (i & 1) != 0 ? 1.0 : 0.0
     );
 }
-bool contains(vec3 pos) {
-    vec3 max = min + vec3(length);
+
+bool contains(vec3 sourceMin, vec3 sourceLength, vec3 targetMin, vec3 targetLength) {
+    vec3 sourceMax = sourceMin + sourceLength;
+    vec3 targetMax = targetMin + targetLength;
+    return all(greaterThanEqual(targetMin, sourceMin)) && all(lessThanEqual(targetMax, sourceMax));
+}
+
+bool contains(vec3 min, vec3 length, vec3 pos) {
+    vec3 max = min + length;
     return all(greaterThanEqual(pos, min)) && all(lessThanEqual(pos, max));
 }
 
-int getNodeIndex(vec3 pos, vec3 cubeMin, float cubeLength) {
-    vec3 center = cubeMin + vec3(cubeLength * 0.5);
+int getNodeIndex(vec3 pos, vec3 cubeMin, vec3 cubeLength) {
+    vec3 center = cubeMin + cubeLength * 0.5;
     int idx = 0;
     if (pos.x >= center.x) idx |= 4;
     if (pos.y >= center.y) idx |= 2;
@@ -124,14 +140,15 @@ bool isSimplified(uint bits) {
 
 // Obtem o índice do nó que contém a posição
 int getNodeAt(vec3 pos, bool simplification) {
-    if (!contains(pos)) return -1; // Não está na octree
+    OctreeNodeCubeSerialized root = nodes[0];
+    if (!contains(root.min, root.length, pos)) return -1; // Não está na octree
 
     int nodeIdx = 0; // root
-    vec3 cubeMin = min;
-    float cubeLength = length;
+    vec3 cubeMin = root.min;
+    vec3 cubeLength = root.length;
 
     while (true) {
-        OctreeNodeSerialized node = nodes[nodeIdx];
+        OctreeNodeCubeSerialized node = nodes[nodeIdx];
         if (simplification && isSimplified(node.bits)) {
             break;
         }
@@ -143,16 +160,16 @@ int getNodeAt(vec3 pos, bool simplification) {
 
         nodeIdx = int(nextNodeIdx);
         cubeLength *= 0.5;
-        if ((childIdx & 4) != 0) cubeMin.x += cubeLength;
-        if ((childIdx & 2) != 0) cubeMin.y += cubeLength;
-        if ((childIdx & 1) != 0) cubeMin.z += cubeLength;
+        if ((childIdx & 4) != 0) cubeMin.x += cubeLength.x;
+        if ((childIdx & 2) != 0) cubeMin.y += cubeLength.y;
+        if ((childIdx & 1) != 0) cubeMin.z += cubeLength.z;
     }
 
     return nodeIdx;
 }
 
 // Simple helper to check if node is a leaf (no children)
-bool isLeaf(OctreeNodeSerialized node) {
+bool isLeaf(OctreeNodeCubeSerialized node) {
     for (int i = 0; i < 8; i++) {
         if (node.children[i] != 0)
             return false;
@@ -187,9 +204,9 @@ int evalSDF(float sdf[8]) {
     return hasNegative && hasPositive ? SpaceType_Surface : (hasPositive ? SpaceType_Empty : SpaceType_Solid);
 }
 
-vec3 estimatePosition(float sdf[8]) {
+vec3 estimatePosition(float sdf[8], vec3 min, vec3 length) {
     // Early exit if there's no surface inside this cube
-    vec3 center =min+ vec3(length*0.5f);
+    vec3 center =min+ length*0.5f;
     int eval = evalSDF(sdf);
     if(eval != SpaceType_Surface) {
         return center;  // or some fallback value
@@ -225,16 +242,13 @@ vec3 estimatePosition(float sdf[8]) {
 
 void createVertex(Vertex vertex) {
 // Generate vertex
-    uint vertexIdx = atomicAdd(result.vertexCount, 1);
+    uint vertexIdx = atomicAdd(shaderOutput.vertexCount, 1);
     vertices[vertexIdx] = vertex;
-    uint indexIdx = atomicAdd(result.indexCount, 1);
+    uint indexIdx = atomicAdd(shaderOutput.indexCount, 1);
     indices[indexIdx] = vertexIdx;
 }   
 
-bool mustSkip(OctreeNodeSerialized node) {
-    if (!isLeaf(node))
-        return true;
-
+bool mustSkip(OctreeNodeCubeSerialized node) {
     bool allPositive = true;
     bool allNegative = true;
     for (int i = 0; i < 8; i++) {
@@ -258,7 +272,7 @@ int triplanarPlane(vec3 position, vec3 normal) {
     }
 }
 
-void handleTriangle(OctreeNodeSerialized n0, OctreeNodeSerialized n1 , OctreeNodeSerialized n2, bool sign) {
+void handleTriangle(OctreeNodeCubeSerialized n0, OctreeNodeCubeSerialized n1 , OctreeNodeCubeSerialized n2, bool sign) {
     
     float triplanarScale = 1.0f;
     
@@ -266,14 +280,14 @@ void handleTriangle(OctreeNodeSerialized n0, OctreeNodeSerialized n1 , OctreeNod
         return;
     }
 
-    result.result4f= vec4(n0.sdf[0],n0.sdf[1],n0.sdf[2],n0.sdf[3]);
+    shaderOutput.result4f= vec4(n0.sdf[0],n0.sdf[1],n0.sdf[2],n0.sdf[3]);
 
     // uint indexIdx = atomicAdd(indexCount, 1);
 
 
-    vec3 p0 = estimatePosition(n0.sdf);
-    vec3 p1 = estimatePosition(n1.sdf);
-    vec3 p2 = estimatePosition(n2.sdf);
+    vec3 p0 = estimatePosition(n0.sdf, n0.min, n0.length);
+    vec3 p1 = estimatePosition(n1.sdf, n1.min, n1.length);
+    vec3 p2 = estimatePosition(n2.sdf, n2.min, n2.length);
 
     vec3 d1 = p1 - p0;
     vec3 d2 = p2 - p0;
@@ -309,9 +323,15 @@ void main() {
     uint nodeIdx = gl_GlobalInvocationID.x;
     if (nodeIdx >= nodes.length()) return;
     
-    OctreeNodeSerialized node = nodes[nodeIdx];
+    OctreeNodeCubeSerialized node = nodes[nodeIdx];
+    // TODO get node bounding box
 
     if(mustSkip(node)){
+        return;
+    }
+    if(contains(shaderInput.chunkMin.xyz, shaderInput.chunkLength.xyz, node.min, node.length)) {
+        // Node is fully contained in the chunk
+        shaderOutput.result4f = vec4(node.sdf[0], node.sdf[1], node.sdf[2], node.sdf[3]);
         return;
     }
 
@@ -326,11 +346,11 @@ void main() {
 
 		if(sign0 != sign1) {
 			ivec4 quad = tessOrder[k];
-            OctreeNodeSerialized quads[4];
+            OctreeNodeCubeSerialized quads[4];
             int direction = 1;
 			for(int i =0; i<4 ; ++i) {
-                vec3 cubeCenter = min + vec3(length*0.25);
-                vec3 pos = cubeCenter + direction * vec3(length*0.5) * getShift(i);
+                vec3 cubeCenter = node.min + node.length*0.25;
+                vec3 pos = cubeCenter + direction * node.length*0.5 * getShift(i);
 
 				int n = getNodeAt(pos, false);
                 if(n >= 0) {
@@ -346,4 +366,6 @@ void main() {
 		}
 
     }    
+
+    
 }

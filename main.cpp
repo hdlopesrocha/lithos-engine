@@ -31,7 +31,7 @@ class MainApplication : public LithosApplication {
 	GLuint programSwap;
 	GLuint program3d;
 	GLuint octreeComputeShader3d;
-	ComputeShader * computeShader;
+	GeometrySSBO * computeShader;
 	GLuint programBillboard;
 	GLuint programImpostor;
 	GLuint programDeferred;
@@ -152,7 +152,7 @@ public:
 		octreeComputeShader3d = createShaderProgram({
 			compileShader(GlslInclude::replaceIncludes(includes,readFile("shaders/octree_compute.glsl")), GL_COMPUTE_SHADER)
 		});
-		computeShader = new ComputeShader(octreeComputeShader3d);
+		computeShader = new GeometrySSBO(octreeComputeShader3d);
 		mainScene = new Scene(settings, *computeShader);
 
 		programAtlas = createShaderProgram({

@@ -109,43 +109,45 @@ void OctreeNode::setDirty(bool value){
 	this->bits = (this->bits & ~mask) | (value ? mask : 0x0);
 }
 
-uint OctreeNode::exportSerialization(OctreeAllocator * allocator, std::vector<OctreeNodeSerialized> * nodes, BoundingCube cube) {
-		OctreeNodeSerialized n;
-		n.brushIndex = this->vertex.brushIndex;
-		n.bits = this->bits;
-		for(int i=0 ; i < 8 ; ++i) {
-			n.sdf[i] = this->sdf[i];
-		}
+uint OctreeNode::exportSerialization(OctreeAllocator * allocator, std::vector<OctreeNodeCubeSerialized> * nodes, BoundingCube cube) {
+	OctreeNodeCubeSerialized n;
+
+	n.brushIndex = this->vertex.brushIndex;
+	n.bits = this->bits;
+	n.min = cube.getMin();
+	n.length = cube.getLength();
+	SDF::copySDF(this->sdf, n.sdf);
+
+	for(int i=0 ; i < 8 ; ++i) {
+		//std::cout << n.sdf[i] << ":";
+		n.children[i] = 0;
+	}
+	//std::cout << std::endl;
+	uint index = nodes->size(); 
+	nodes->push_back(n);
+
+	if(index == 0){
+		std::cout << "0x" << std::hex << n.bits << " # ";
+		std::cout << std::dec;
 
 		for(int i=0 ; i < 8 ; ++i) {
-			//std::cout << n.sdf[i] << ":";
-			n.children[i] = 0;
+			std::cout << std::to_string( n.sdf[i]) << " | ";
 		}
-		//std::cout << std::endl;
-		uint index = nodes->size(); 
-		nodes->push_back(n);
-	
-		if(index == 0){
-			std::cout << "0x" << std::hex << n.bits << " # ";
-			std::cout << std::dec;
-
-			for(int i=0 ; i < 8 ; ++i) {
-				std::cout << std::to_string( n.sdf[i]) << " | ";
-			}
-			std::cout << std::endl;
-		}
+		std::cout << std::endl;
+	}
 
 
-		ChildBlock * block = this->getBlock(allocator);
-		if(block != NULL) {
-			OctreeNodeSerialized * real = &(*nodes)[index];
-			for(int i=0; i < 8; ++i) {
-				OctreeNode * childNode = this->getChildNode(i, allocator,block);
-				if(childNode != NULL && !childNode->isSolid() && !childNode->isEmpty()) {
-					BoundingCube c = cube.getChild(i);
-					real->children[i] = childNode->exportSerialization(allocator, nodes, c);
-				}
+	ChildBlock * block = this->getBlock(allocator);
+	if(block != NULL) {
+		OctreeNodeCubeSerialized * real = &(*nodes)[index];
+		for(int i=0; i < 8; ++i) {
+			OctreeNode * childNode = this->getChildNode(i, allocator,block);
+			if(childNode != NULL && !childNode->isSolid() && !childNode->isEmpty()) {
+				BoundingCube c = cube.getChild(i);
+				real->children[i] = childNode->exportSerialization(allocator, nodes, c);
 			}
 		}
-		return index;
+	}
+	return index;
 }
+
