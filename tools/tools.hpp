@@ -21,17 +21,36 @@ enum Tab {
 	COUNT
 };
 
+
+
 #pragma pack(16)  // Ensure 16-byte alignment for UBO
 struct ComputeShaderInput {
     glm::vec4 chunkMin;
     glm::vec4 chunkLength;
+	ComputeShaderInput() : chunkMin(glm::vec4(0.0f)), chunkLength(glm::vec4(0.0f)) {}
+	ComputeShaderInput(glm::vec4 chunkMin, glm::vec4 chunkLength) : chunkMin(chunkMin), chunkLength(chunkLength) {}
 };
 #pragma pack()  // Reset to default packing
 
+#pragma pack(16)  // Ensure 16-byte alignment for UBO
+struct ComputeShaderOutput {
+	public:
+	glm::vec4 result4f;
+	GLuint vertexCount;
+	GLuint indexCount;
+
+	ComputeShaderOutput();
+	ComputeShaderOutput(GLuint vertexCount, GLuint indexCount, glm::vec4 result4f);
+	void reset();
+};
+#pragma pack()
+
+
+
 class OctreeSSBO {
 	public:
-    GLuint octreeSSBO;
-    GLuint nodesSSBO;
+    GLuint octreeSSBO = 0;
+    GLuint nodesSSBO = 0;
 
 	void allocateCopy(OctreeSerialized * octree, std::vector<OctreeNodeCubeSerialized> * nodes);
 };
@@ -40,21 +59,38 @@ class GeometrySSBO {
 	public:
 	GLuint vertexSSBO;
 	GLuint indexSSBO;
-	GLuint counterSSBO;
 
-
-	int nodesCount;
 	GeometrySSBO();
 	void allocate();
-	void dispatch(GLuint program);
 };
 
 class InputSSBO {
 	public:
 	GLuint inputSSBO; 	
+	
+	InputSSBO();
+	void allocate();
+	void copy(ComputeShaderInput &input);
+
 };
 
+class OutputSSBO {
+	public:
+	GLuint outputSSBO; 	
 
+	OutputSSBO();
+	void allocate();
+
+	ComputeShaderOutput read();
+};
+
+class ComputeShader {
+	public:
+	GLuint program;
+
+	ComputeShader(GLuint program);
+	void dispatch(size_t nodesCount);
+};
 
 class WaveSurface : public HeightFunction {
     float amplitude;
@@ -252,20 +288,21 @@ class BrushSpaceChangeHandler : public OctreeChangeHandler {
 
 struct ComputeShaderInfo {
 	public:
-	GeometrySSBO * computeShader;
+	ComputeShader * computeShader;
 
-	ComputeShaderInfo(GeometrySSBO * computeShader) {
+	ComputeShaderInfo(ComputeShader * computeShader) {
 		this->computeShader = computeShader;
 	}
 };
 
 class ComputeShaderInfoHandler : public OctreeChangeHandler {
-	std::unordered_map<OctreeNode*, ComputeShaderInfo> * info;
- 
+	std::unordered_map<OctreeNode*, GeometrySSBO> * info;
+	ComputeShader &computeShader;
+
 	public:
 	ComputeShaderInfoHandler(
-		std::unordered_map<OctreeNode*, ComputeShaderInfo> * info
-	);
+		std::unordered_map<OctreeNode*, GeometrySSBO> * info
+	, ComputeShader &computeShader);
 
 	void create(OctreeNode* nodeId) override;
 	void update(OctreeNode* nodeId) override;
@@ -305,7 +342,7 @@ class Scene {
 	std::unordered_map<OctreeNode*, NodeInfo<InstanceData>> liquidInfo;
 	std::unordered_map<OctreeNode*, NodeInfo<DebugInstanceData>> debugInfo;
 	std::unordered_map<OctreeNode*, NodeInfo<InstanceData>> vegetationInfo;
-	std::unordered_map<OctreeNode*, ComputeShaderInfo> computeInfo;
+	std::unordered_map<OctreeNode*, GeometrySSBO> computeInfo;
 
 
 	LiquidSpaceChangeHandler * liquidSpaceChangeHandler;
@@ -319,10 +356,10 @@ class Scene {
 	OctreeVisibilityChecker * shadowRenderer[SHADOW_MATRIX_COUNT];
 
 	Settings * settings;
-	GeometrySSBO &geometrySSBO;
+	ComputeShader &computeShader;
 	
 
-	Scene(Settings * settings, GeometrySSBO &geometrySSBO);
+	Scene(Settings * settings, ComputeShader &computeShader);
 
 	bool processSpace();
 	bool processLiquid(OctreeNodeData &data, Octree * tree);
@@ -346,7 +383,7 @@ class Scene {
 
 	void save(std::string folderPath, Camera &camera);
 	void load(std::string folderPath, Camera &camera);
-
+	bool computeGeometry(OctreeNodeData &data, Octree * tree, std::unordered_map<OctreeNode*, GeometrySSBO>* infos);
 
 };
 
@@ -536,17 +573,6 @@ template class BrushEventHandler<Event>;
 template class BrushEventHandler<Axis3dEvent>;
 template class BrushEventHandler<FloatEvent>;
 
-#pragma pack(16)  // Ensure 16-byte alignment for UBO
-struct ComputeShaderOutput {
-	public:
-	glm::vec4 result4f;
-	GLuint vertexCount;
-	GLuint indexCount;
 
-	ComputeShaderOutput();
-	ComputeShaderOutput(GLuint vertexCount, GLuint indexCount, glm::vec4 result4f);
-	void reset();
-};
-#pragma pack()
 
 #endif

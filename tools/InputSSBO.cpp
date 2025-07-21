@@ -1,10 +1,7 @@
 #include "tools.hpp"
 
-#define MAX_VERTS 10000000
-#define MAX_NODES 10000000
 
-
-GeometrySSBO::GeometrySSBO() {
+InputSSBO::InputSSBO() {
 
 }
 
@@ -20,10 +17,10 @@ void InputSSBO::allocate() {
     std::cout << "InputSSBO::allocateSSBO: Ok!" << std::endl;
 }
 
-void InputSSBO::copy(ComputeShaderInput * input) {
+void InputSSBO::copy(ComputeShaderInput &input) {
     std::cout << "InputSSBO::copy()" << std::endl;
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, inputSSBO);
-    glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, sizeof(ComputeShaderInput), input);
+    glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, sizeof(ComputeShaderInput), &input);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0); // Unbind the buffer
 
 

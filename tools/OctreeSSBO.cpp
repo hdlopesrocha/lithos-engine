@@ -6,9 +6,12 @@
 
 void OctreeSSBO::allocateCopy(OctreeSerialized * octree, std::vector<OctreeNodeCubeSerialized> * nodes) {
     std::cout << "OctreeSSBO::allocateSSBO: " << std::to_string(nodes->size()) << std::endl;
-    glGenBuffers(1, &nodesSSBO);
-    glGenBuffers(1, &octreeSSBO);
-
+    if(nodesSSBO == 0) {
+        glGenBuffers(1, &nodesSSBO);
+    }
+    if(octreeSSBO == 0) {
+        glGenBuffers(1, &octreeSSBO);
+    }
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, octreeSSBO);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, octreeSSBO); 
     glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(OctreeSerialized), octree, GL_DYNAMIC_DRAW);

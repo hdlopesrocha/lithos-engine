@@ -1,8 +1,8 @@
 
 #include "tools.hpp"
 
-Scene::Scene(Settings * settings, GeometrySSBO &geometrySSBO):
-    simplifier(0.99, 0.1, true), geometrySSBO(geometrySSBO)
+Scene::Scene(Settings * settings, ComputeShader &computeShader):
+    simplifier(0.99, 0.1, true), computeShader(computeShader)
 
  {
 	this->settings = settings;
@@ -38,7 +38,7 @@ Scene::Scene(Settings * settings, GeometrySSBO &geometrySSBO):
 	liquidSpaceChangeHandler = new LiquidSpaceChangeHandler(&liquidInfo);
 	solidSpaceChangeHandler = new SolidSpaceChangeHandler(&solidInfo, &vegetationInfo, &debugInfo);
 	brushSpaceChangeHandler = new BrushSpaceChangeHandler(&brushInfo);
-	computeShaderInfoHandler = new ComputeShaderInfoHandler(&computeInfo);
+	computeShaderInfoHandler = new ComputeShaderInfoHandler(&computeInfo, computeShader);
 }
 
 template <typename T> bool Scene::loadSpace(Octree* tree, OctreeNodeData& data, std::unordered_map<OctreeNode*, NodeInfo<T>>* infos, GeometryBuilder<T>* builder) {
@@ -81,9 +81,20 @@ bool Scene::processLiquid(OctreeNodeData &data, Octree * tree) {
 	return result;
 }
 
+bool Scene::computeGeometry(OctreeNodeData &data, Octree * tree, std::unordered_map<OctreeNode*, GeometrySSBO>* infos) {
+
+	BoundingCube chunkBox = data.cube;
+	//TODO computeShader.dispatch();
+	return false;
+}
+
+
 bool Scene::processSolid(OctreeNodeData &data, Octree * tree) {
 	bool result = false;
 	if(data.node->isDirty()) { 
+		if(computeGeometry(data, tree, &computeInfo)) {
+			result = true;
+		}
 		if(loadSpace(tree, data, &solidInfo, solidBuilder)) {
 			result = true;		
 		}
@@ -350,24 +361,35 @@ void Scene::generate(Camera &camera) {
 		solidSpace->add(wrappedFunction, model2, SimpleBrush(4), minSize, simplifier, unionChangeHandler);
 	}
 
-	geometrySSBO.allocate();
-
 	OctreeSerialized octreeSerialized;
 	solidSpace->exportOctreeSerialization(&octreeSerialized);
 	std::vector<OctreeNodeCubeSerialized> nodes;
 	solidSpace->exportNodesSerialization(&nodes);
 
-	OctreeSSBO octreeSSBO = OctreeSSBO(geometrySSBO.program);
+	OctreeSSBO octreeSSBO = OctreeSSBO();
 	octreeSSBO.allocateCopy(&octreeSerialized, &nodes);
-	InputSSBO inputSSBO = InputSSBO(geometrySSBO.program);
+
+	GeometrySSBO geometrySSBO = GeometrySSBO();
+	geometrySSBO.allocate();
+
+	OutputSSBO outputSSBO = OutputSSBO();
+	outputSSBO.allocate();
+
+	InputSSBO inputSSBO = InputSSBO();
 	inputSSBO.allocate();
+	ComputeShaderInput inputData = ComputeShaderInput(glm::vec4(1,2,3,0), glm::vec4(512,512,512,0));
+	inputSSBO.copy(inputData); 
 
-	ComputeShaderInput inputData = ComputeShaderInput();
-	inputData.chunkMin = glm::vec4(1,2,3,0);
-	inputData.chunkLength = glm::vec4(512,512,512,0);
-	inputSSBO.copy(&inputData); 
+	computeShader.dispatch(nodes.size());
+	ComputeShaderOutput result = outputSSBO.read();
 
-	geometrySSBO.dispatch(geometrySSBO.program);
+    std::cout << "\tresult4f.x = " << std::to_string(result.result4f.x) << std::endl;
+    std::cout << "\tresult4f.y = " << std::to_string(result.result4f.y) << std::endl;
+    std::cout << "\tresult4f.z = " << std::to_string(result.result4f.z) << std::endl;
+    std::cout << "\tresult4f.w = " << std::to_string(result.result4f.w) << std::endl;
+    std::cout << "\tvertexCount = " << std::to_string(result.vertexCount) <<std::endl;
+    std::cout << "\tindexCount = " << std::to_string(result.indexCount) <<std::endl;
+
 }
 
 void Scene::import(const std::string &filename, Camera &camera) {
@@ -398,25 +420,28 @@ void Scene::import(const std::string &filename, Camera &camera) {
 	waterBox.setMaxY(0);
 	
 	//liquidSpace->add(OctreeContainmentHandler(solidSpace, waterBox, WaterBrush(0)),  minSize, simplifier);
-
 	OctreeSerialized octreeSerialized;
 	solidSpace->exportOctreeSerialization(&octreeSerialized);
 	std::vector<OctreeNodeCubeSerialized> nodes;
 	solidSpace->exportNodesSerialization(&nodes);
 
-
-	OctreeSSBO octreeSSBO = OctreeSSBO(geometrySSBO.program);
+	OctreeSSBO octreeSSBO = OctreeSSBO();
 	octreeSSBO.allocateCopy(&octreeSerialized, &nodes);
-	InputSSBO inputSSBO = InputSSBO(geometrySSBO.program);
+
+	GeometrySSBO geometrySSBO = GeometrySSBO();
+	geometrySSBO.allocate();
+
+	OutputSSBO outputSSBO = OutputSSBO();
+	outputSSBO.allocate();
+
+	InputSSBO inputSSBO = InputSSBO();
 	inputSSBO.allocate();
+	ComputeShaderInput inputData = ComputeShaderInput(glm::vec4(1,2,3,0), glm::vec4(512,512,512,0));
+	inputSSBO.copy(inputData); 
 
-	ComputeShaderInput inputData = ComputeShaderInput();
-	inputData.chunkMin = glm::vec4(1,2,3,0);
-	inputData.chunkLength = glm::vec4(512,512,512,0);
-	inputSSBO.copy(&inputData); 
+	computeShader.dispatch(nodes.size());
+	ComputeShaderOutput result = outputSSBO.read();
 
-	
-	geometrySSBO.dispatch(geometrySSBO.program);
 }
 
 void Scene::save(std::string folderPath, Camera &camera) {
