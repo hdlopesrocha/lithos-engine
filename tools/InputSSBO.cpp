@@ -6,7 +6,7 @@ InputSSBO::InputSSBO() {
 }
 
 void InputSSBO::allocate() {
-    std::cout << "InputSSBO::allocateSSBO()" << std::endl;
+    std::cout << "InputSSBO::allocate()" << std::endl;
     glGenBuffers(1, &inputSSBO);
 
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, inputSSBO);
@@ -14,10 +14,9 @@ void InputSSBO::allocate() {
     glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(ComputeShaderInput), nullptr, GL_DYNAMIC_DRAW);
 
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0); // Unbind the buffer
-    std::cout << "InputSSBO::allocateSSBO: Ok!" << std::endl;
 }
 
-void InputSSBO::copy(ComputeShaderInput &input) {
+void InputSSBO::copy(const ComputeShaderInput &input) {
     std::cout << "InputSSBO::copy()" << std::endl;
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, inputSSBO);
     glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, sizeof(ComputeShaderInput), &input);

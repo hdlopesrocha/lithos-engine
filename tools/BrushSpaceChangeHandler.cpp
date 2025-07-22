@@ -20,7 +20,6 @@ template <typename T> void setUpdate(OctreeNode * node, std::unordered_map<Octre
 
 void BrushSpaceChangeHandler::update(OctreeNode* node) {
     setUpdate<InstanceData>(node, brushInfo , true);
-    node->setDirty(true);
 };
 
 void BrushSpaceChangeHandler::erase(OctreeNode* node) {

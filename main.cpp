@@ -126,7 +126,6 @@ public:
 		// Register all GDAL drivers
 		GDALAllRegister();
 
-		//mainScene->generate(camera);
 	
 		uniformBlockData = new ProgramData();
 		uniformBrushData = new ProgramData();
@@ -154,6 +153,7 @@ public:
 		});
 		computeShader = new ComputeShader(octreeComputeShader3d);
 		mainScene = new Scene(settings, *computeShader);
+		mainScene->generate(camera);
 
 		programAtlas = createShaderProgram({
 			compileShader(GlslInclude::replaceIncludes(includes,readFile("shaders/texture/atlas_vertex.glsl")),GL_VERTEX_SHADER), 

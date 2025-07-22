@@ -39,6 +39,11 @@ Scene::Scene(Settings * settings, ComputeShader &computeShader):
 	solidSpaceChangeHandler = new SolidSpaceChangeHandler(&solidInfo, &vegetationInfo, &debugInfo);
 	brushSpaceChangeHandler = new BrushSpaceChangeHandler(&brushInfo);
 	computeShaderInfoHandler = new ComputeShaderInfoHandler(&computeInfo, computeShader);
+
+	inputSSBO.allocate();
+	outputSSBO.allocate();
+	octreeSSBO.allocate();
+	exportOctree();
 }
 
 template <typename T> bool Scene::loadSpace(Octree* tree, OctreeNodeData& data, std::unordered_map<OctreeNode*, NodeInfo<T>>* infos, GeometryBuilder<T>* builder) {
@@ -81,20 +86,51 @@ bool Scene::processLiquid(OctreeNodeData &data, Octree * tree) {
 	return result;
 }
 
-bool Scene::computeGeometry(OctreeNodeData &data, Octree * tree, std::unordered_map<OctreeNode*, GeometrySSBO>* infos) {
+void Scene::exportOctree() {
 
+	std::vector<OctreeNodeCubeSerialized> nodes;
+	solidSpace->exportNodesSerialization(&nodes);
+
+	octreeSSBO.copy(&nodes);
+}
+
+
+bool Scene::computeGeometry(OctreeNodeData &data, Octree * tree, std::unordered_map<OctreeNode*, GeometrySSBO>* infos) {
 	BoundingCube chunkBox = data.cube;
-	//TODO computeShader.dispatch();
-	return false;
+    std::cout << "Scene::computeGeometry() " << "minX:" << chunkBox.getMinX() << ", minY:" << chunkBox.getMinY() << ", minZ:" << chunkBox.getMinZ() << ", len:" << chunkBox.getLengthX() << std::endl;
+
+	
+	
+	(*infos)[data.node] = GeometrySSBO();
+
+	GeometrySSBO * ssbo = &(*infos)[data.node];
+    ssbo->allocate();
+
+	inputSSBO.copy(ComputeShaderInput(chunkBox.getMin(), chunkBox.getLength())); 
+	outputSSBO.reset();
+	computeShader.dispatch(octreeSSBO.nodesCount);
+
+	ComputeShaderOutput result = outputSSBO.read();
+
+    std::cout << "\tresult4f = { " 
+		<< std::to_string(result.result4f.x) << ", " 
+		<< std::to_string(result.result4f.y) << ", " 
+		<< std::to_string(result.result4f.z) << ", " 
+		<< std::to_string(result.result4f.w) << " }"  << std::endl;
+    std::cout << "\tvertexCount = " << std::to_string(result.vertexCount) <<std::endl;
+    std::cout << "\tindexCount = " << std::to_string(result.indexCount) <<std::endl;
+
+
+	return true;
 }
 
 
 bool Scene::processSolid(OctreeNodeData &data, Octree * tree) {
 	bool result = false;
 	if(data.node->isDirty()) { 
-		if(computeGeometry(data, tree, &computeInfo)) {
+		/*if(computeGeometry(data, tree, &computeInfo)) {
 			result = true;
-		}
+		}*/
 		if(loadSpace(tree, data, &solidInfo, solidBuilder)) {
 			result = true;		
 		}
@@ -249,6 +285,9 @@ void Scene::draw3dOctree(glm::vec3 cameraPosition, const std::vector<OctreeNodeD
 }
 
 void Scene::generate(Camera &camera) {
+	std::cout << "Scene::generate() " << std::endl;
+	double startTime = glfwGetTime(); // Get elapsed time in seconds
+
 	int sizePerTile = 30;
 	int tiles= 256;
 	int height = 2048;
@@ -360,37 +399,13 @@ void Scene::generate(Camera &camera) {
 		WrappedPyramid wrappedFunction = WrappedPyramid(&function, minSize, model2);
 		solidSpace->add(wrappedFunction, model2, SimpleBrush(4), minSize, simplifier, unionChangeHandler);
 	}
+	exportOctree();
 
-	OctreeSerialized octreeSerialized;
-	solidSpace->exportOctreeSerialization(&octreeSerialized);
-	std::vector<OctreeNodeCubeSerialized> nodes;
-	solidSpace->exportNodesSerialization(&nodes);
+	double endTime = glfwGetTime(); // Get elapsed time in seconds
 
-	OctreeSSBO octreeSSBO = OctreeSSBO();
-	octreeSSBO.allocateCopy(&octreeSerialized, &nodes);
-
-	GeometrySSBO geometrySSBO = GeometrySSBO();
-	geometrySSBO.allocate();
-
-	OutputSSBO outputSSBO = OutputSSBO();
-	outputSSBO.allocate();
-
-	InputSSBO inputSSBO = InputSSBO();
-	inputSSBO.allocate();
-	ComputeShaderInput inputData = ComputeShaderInput(glm::vec4(1,2,3,0), glm::vec4(512,512,512,0));
-	inputSSBO.copy(inputData); 
-
-	computeShader.dispatch(nodes.size());
-	ComputeShaderOutput result = outputSSBO.read();
-
-    std::cout << "\tresult4f.x = " << std::to_string(result.result4f.x) << std::endl;
-    std::cout << "\tresult4f.y = " << std::to_string(result.result4f.y) << std::endl;
-    std::cout << "\tresult4f.z = " << std::to_string(result.result4f.z) << std::endl;
-    std::cout << "\tresult4f.w = " << std::to_string(result.result4f.w) << std::endl;
-    std::cout << "\tvertexCount = " << std::to_string(result.vertexCount) <<std::endl;
-    std::cout << "\tindexCount = " << std::to_string(result.indexCount) <<std::endl;
-
+	std::cout << "Scene::generate Ok! " << std::to_string(endTime-startTime) << "s"  << std::endl;
 }
+
 
 void Scene::import(const std::string &filename, Camera &camera) {
 	int sizePerTile = 30;
@@ -419,29 +434,7 @@ void Scene::import(const std::string &filename, Camera &camera) {
 	BoundingBox waterBox = mapBox;
 	waterBox.setMaxY(0);
 	
-	//liquidSpace->add(OctreeContainmentHandler(solidSpace, waterBox, WaterBrush(0)),  minSize, simplifier);
-	OctreeSerialized octreeSerialized;
-	solidSpace->exportOctreeSerialization(&octreeSerialized);
-	std::vector<OctreeNodeCubeSerialized> nodes;
-	solidSpace->exportNodesSerialization(&nodes);
-
-	OctreeSSBO octreeSSBO = OctreeSSBO();
-	octreeSSBO.allocateCopy(&octreeSerialized, &nodes);
-
-	GeometrySSBO geometrySSBO = GeometrySSBO();
-	geometrySSBO.allocate();
-
-	OutputSSBO outputSSBO = OutputSSBO();
-	outputSSBO.allocate();
-
-	InputSSBO inputSSBO = InputSSBO();
-	inputSSBO.allocate();
-	ComputeShaderInput inputData = ComputeShaderInput(glm::vec4(1,2,3,0), glm::vec4(512,512,512,0));
-	inputSSBO.copy(inputData); 
-
-	computeShader.dispatch(nodes.size());
-	ComputeShaderOutput result = outputSSBO.read();
-
+	exportOctree();
 }
 
 void Scene::save(std::string folderPath, Camera &camera) {

@@ -4,24 +4,12 @@
 #define SpaceType_Surface 1
 #define SpaceType_Solid 2
 
-struct OctreeSerialized {
-    vec3 min;
-    float length;
-    float chunkSize;
-};
 struct OctreeNodeCubeSerialized {
 	float sdf[8];
     uint children[8];
     vec3 min;
     int brushIndex;
     vec3 length;
-    uint bits;
-};
-
-struct OctreeNodeSerialized {
-	float sdf[8];
-    uint children[8];
-    int brushIndex;
     uint bits;
 };
 
@@ -77,7 +65,6 @@ const ivec2 tessEdge[3] = ivec2[](
     ivec2(6, 7),
     ivec2(5, 7)
 );
-
 
 const ivec2 SDF_EDGES[12] = ivec2[](
     ivec2(0, 1), 
@@ -280,7 +267,6 @@ void handleTriangle(OctreeNodeCubeSerialized n0, OctreeNodeCubeSerialized n1 , O
         return;
     }
 
-    shaderOutput.result4f= vec4(n0.sdf[0],n0.sdf[1],n0.sdf[2],n0.sdf[3]);
 
     // uint indexIdx = atomicAdd(indexCount, 1);
 
@@ -320,20 +306,34 @@ void handleTriangle(OctreeNodeCubeSerialized n0, OctreeNodeCubeSerialized n1 , O
 
 
 void main() {
+    //shaderOutput.result4f = vec4(nodes.length());
+   
     uint nodeIdx = gl_GlobalInvocationID.x;
     if (nodeIdx >= nodes.length()) return;
-    
+   
+    //shaderOutput.result4f= vec4(nodes.length(), nodeIdx, 0.0f, root.length.x);
+
+
+    OctreeNodeCubeSerialized root = nodes[0];
+
     OctreeNodeCubeSerialized node = nodes[nodeIdx];
-    // TODO get node bounding box
+  // TODO get node bounding box
+
+
 
     if(mustSkip(node)){
         return;
     }
-    if(contains(shaderInput.chunkMin.xyz, shaderInput.chunkLength.xyz, node.min, node.length)) {
-        // Node is fully contained in the chunk
-        shaderOutput.result4f = vec4(node.sdf[0], node.sdf[1], node.sdf[2], node.sdf[3]);
+    if(!isLeaf(node)) {
         return;
     }
+    if(!contains(shaderInput.chunkMin.xyz, shaderInput.chunkLength.xyz, node.min, node.length)) {
+        return;
+    }
+    
+    
+
+   shaderOutput.result4f = vec4(root.min.x,root.min.y,root.min.z,root.length.x);
 
     for(int k =0 ; k < tessEdge.length(); ++k) {
 		ivec2 edge = tessEdge[k];
@@ -366,6 +366,4 @@ void main() {
 		}
 
     }    
-
-    
 }

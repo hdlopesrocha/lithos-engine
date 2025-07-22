@@ -17,7 +17,6 @@ void OutputSSBO::allocate() {
     glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(ComputeShaderOutput), nullptr, GL_DYNAMIC_DRAW);
 
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0); // Unbind the buffer
-    std::cout << "OutputSSBO::allocateSSBO: Ok!" << std::endl;
 }
 
 ComputeShaderOutput OutputSSBO::read() {
@@ -27,4 +26,12 @@ ComputeShaderOutput OutputSSBO::read() {
     glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, sizeof(ComputeShaderOutput), &result);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0); // Unbind the buffer
     return result;
+}
+
+void OutputSSBO::reset() {
+    std::cout << "OutputSSBO::reset()" << std::endl;
+    ComputeShaderOutput result;
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, outputSSBO);
+    glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, sizeof(ComputeShaderOutput), &result);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0); // Unbind the buffer
 }

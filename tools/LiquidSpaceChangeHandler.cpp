@@ -16,7 +16,6 @@ template <typename T> void setUpdate(OctreeNode * node, std::unordered_map<Octre
 
 void LiquidSpaceChangeHandler::create(OctreeNode* node) {
     setUpdate<InstanceData>(node, liquidInfo , true);
-    node->setDirty(true);
 };
 
 void LiquidSpaceChangeHandler::update(OctreeNode* node) {

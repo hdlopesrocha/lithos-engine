@@ -12,7 +12,6 @@ void GeometrySSBO::allocate() {
     glGenBuffers(1, &vertexSSBO);
     glGenBuffers(1, &indexSSBO);
 
-    
     int vertexCount = MAX_NODES * 18; // 18 vertices per node (6 faces * 3 vertices per face)
     // Allocate big enough buffers
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, vertexSSBO);
@@ -24,5 +23,4 @@ void GeometrySSBO::allocate() {
     glBufferData(GL_SHADER_STORAGE_BUFFER, vertexCount * sizeof(uint), nullptr, GL_DYNAMIC_DRAW);
 
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0); // Unbind the buffer
-    std::cout << "GeometrySSBO::allocate: Ok!" << std::endl;
 }

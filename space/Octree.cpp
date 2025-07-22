@@ -262,7 +262,7 @@ NodeOperationResult Octree::shape(
     OctreeNode * node  = frame.node;
     bool chunkNode = false;
     if(check == ContainmentType::Disjoint) {
-        return NodeOperationResult(frame.cube, node, SpaceType::Empty, frame.type, frame.sdf, false);  // Skip this node
+        return NodeOperationResult(frame.cube, node, SpaceType::Empty, frame.type, frame.sdf, frame.sdf, false);  // Skip this node
     }
     if(chunk == NULL && frame.cube.getLengthX() < chunkSize){
         chunk = &frame.cube;
@@ -275,6 +275,7 @@ NodeOperationResult Octree::shape(
     bool childShapeSolid = true;
     bool childShapeEmpty = true;
     bool childProcess = false;
+    float parentBrushSDF[8];
 
     ChildBlock * block = NULL;
     if (!isLeaf) {
@@ -296,11 +297,11 @@ NodeOperationResult Octree::shape(
                 SDF::getChildSDF(frame.sdf, i, childSDF);
                 childType = SDF::eval(childSDF);
             }
-  
             NodeOperationResult child = shape(operation, function, painter, 
                 model, OctreeNodeFrame(childNode, frame.cube.getChild(i), frame.minSize, frame.level + 1, childSDF, childType), 
                 chunk, simplifier, changeHandler);
-        
+
+            parentBrushSDF[i] = child.shapeSDF[i];
             children[i] = child;
             childResultEmpty &= child.resultType == SpaceType::Empty;
             childResultSolid &= child.resultType == SpaceType::Solid;
@@ -312,7 +313,13 @@ NodeOperationResult Octree::shape(
 
     // Process Shape
     float shapeSDF[8];
-    buildSDF(function, model, frame.cube, shapeSDF);
+    if(isLeaf) {
+        buildSDF(function, model, frame.cube, shapeSDF);
+    }       
+    else {
+        SDF::copySDF(parentBrushSDF, shapeSDF);
+    }
+
     SpaceType shapeType = isLeaf ? SDF::eval(shapeSDF) : childToParent(childShapeSolid, childShapeEmpty);
 
     // Process Result
@@ -373,7 +380,7 @@ NodeOperationResult Octree::shape(
             simplifier.simplify(*chunk, OctreeNodeData(frame.level, chunkSize, node, frame.cube, NULL, &allocator));  
         }
     }
-    return NodeOperationResult(frame.cube, node, shapeType, resultType, resultSDF, true);
+    return NodeOperationResult(frame.cube, node, shapeType, resultType, resultSDF, shapeSDF, true);
 }
 
 void Octree::iterate(IteratorHandler &handler) {
@@ -404,5 +411,6 @@ void Octree::exportNodesSerialization(std::vector<OctreeNodeCubeSerialized> * no
     nodes->clear();
     nodes->reserve(10000000);
     root->exportSerialization(&allocator, nodes, *this);
+	std::cout << "exportNodesSerialization Ok!" << std::endl;
 }
 

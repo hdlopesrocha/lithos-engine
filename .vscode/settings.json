@@ -94,7 +94,21 @@
         "filesystem": "cpp",
         "*.glsl": "cpp",
         "*.ipp": "cpp",
-        "strstream": "cpp"
+        "strstream": "cpp",
+        "cassert": "cpp",
+        "ccomplex": "cpp",
+        "cerrno": "cpp",
+        "cfloat": "cpp",
+        "ciso646": "cpp",
+        "climits": "cpp",
+        "cstdalign": "cpp",
+        "cstdbool": "cpp",
+        "ctgmath": "cpp",
+        "ios": "cpp",
+        "locale": "cpp",
+        "queue": "cpp",
+        "stack": "cpp",
+        "version": "cpp"
     },
     "cmake.sourceDirectory": "/home/hdlrocha/lithos/dependencies/rapidjson"
 }

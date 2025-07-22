@@ -163,17 +163,19 @@ struct NodeOperationResult {
 	SpaceType shapeType;
 	bool process;
     float sdf[8];
+    float shapeSDF[8];
 
 
 	NodeOperationResult() : node(NULL), cube(glm::vec3(0.0f), 0.0f), resultType(SpaceType::Empty), shapeType(SpaceType::Empty), process(false) {
 	};
 
-    NodeOperationResult(BoundingCube cube, OctreeNode * node, SpaceType shapeType, SpaceType resultType, float * sdf, bool process) 
+    NodeOperationResult(BoundingCube cube, OctreeNode * node, SpaceType shapeType, SpaceType resultType, float * sdf, float * shapeSDF, bool process) 
         : node(node), cube(cube), resultType(resultType), shapeType(shapeType), process(process){
 		if(sdf != NULL) {
-			for(int i = 0; i < 8; ++i) {
-				this->sdf[i] = sdf[i];
-			}	
+			SDF::copySDF(sdf, this->sdf);	
+		}
+		if(shapeSDF != NULL) {
+			SDF::copySDF(shapeSDF, this->shapeSDF);	
 		}					
     };
 };

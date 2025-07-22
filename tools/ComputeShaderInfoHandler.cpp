@@ -12,13 +12,7 @@ void ComputeShaderInfoHandler::create(OctreeNode* node) {
 
 void ComputeShaderInfoHandler::update(OctreeNode* node) {
    // setUpdate<InstanceData>(node, info , true);
-    auto it = info->find(node);
-    if (it == info->end()) {
-        GeometrySSBO ssbo;
-        ssbo.allocate();
-        (*info)[node] = ssbo;
-    }
-    node->setDirty(true);
+    //std::cout << "ComputeShaderInfoHandler::update() for node: " << node->id << std::endl;
 };
 
 void ComputeShaderInfoHandler::erase(OctreeNode* node) {

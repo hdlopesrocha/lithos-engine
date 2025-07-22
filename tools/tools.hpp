@@ -28,7 +28,7 @@ struct ComputeShaderInput {
     glm::vec4 chunkMin;
     glm::vec4 chunkLength;
 	ComputeShaderInput() : chunkMin(glm::vec4(0.0f)), chunkLength(glm::vec4(0.0f)) {}
-	ComputeShaderInput(glm::vec4 chunkMin, glm::vec4 chunkLength) : chunkMin(chunkMin), chunkLength(chunkLength) {}
+	ComputeShaderInput(glm::vec3 chunkMin, glm::vec3 chunkLength) : chunkMin(glm::vec4(chunkMin, 0.0f)), chunkLength(glm::vec4(chunkLength, 0.0f)) {}
 };
 #pragma pack()  // Reset to default packing
 
@@ -49,10 +49,10 @@ struct ComputeShaderOutput {
 
 class OctreeSSBO {
 	public:
-    GLuint octreeSSBO = 0;
     GLuint nodesSSBO = 0;
-
-	void allocateCopy(OctreeSerialized * octree, std::vector<OctreeNodeCubeSerialized> * nodes);
+	size_t nodesCount = 0;
+	void allocate();
+	void copy(std::vector<OctreeNodeCubeSerialized> * nodes);
 };
 
 class GeometrySSBO {
@@ -70,7 +70,7 @@ class InputSSBO {
 	
 	InputSSBO();
 	void allocate();
-	void copy(ComputeShaderInput &input);
+	void copy(const ComputeShaderInput &input);
 
 };
 
@@ -82,6 +82,7 @@ class OutputSSBO {
 	void allocate();
 
 	ComputeShaderOutput read();
+	void reset();
 };
 
 class ComputeShader {
@@ -344,6 +345,10 @@ class Scene {
 	std::unordered_map<OctreeNode*, NodeInfo<InstanceData>> vegetationInfo;
 	std::unordered_map<OctreeNode*, GeometrySSBO> computeInfo;
 
+	OctreeSSBO octreeSSBO;
+	InputSSBO inputSSBO;
+	OutputSSBO outputSSBO;
+
 
 	LiquidSpaceChangeHandler * liquidSpaceChangeHandler;
 	SolidSpaceChangeHandler * solidSpaceChangeHandler;
@@ -384,6 +389,7 @@ class Scene {
 	void save(std::string folderPath, Camera &camera);
 	void load(std::string folderPath, Camera &camera);
 	bool computeGeometry(OctreeNodeData &data, Octree * tree, std::unordered_map<OctreeNode*, GeometrySSBO>* infos);
+	void exportOctree();
 
 };
 
