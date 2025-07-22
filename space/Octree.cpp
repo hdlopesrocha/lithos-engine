@@ -12,15 +12,26 @@ static std::vector<glm::ivec4> tessOrder;
 static std::vector<glm::ivec2> tessEdge;
 static bool initialized = false;
 
+
+static void initialize() {
+    if(!initialized) {
+        tessOrder.push_back(glm::ivec4(0,1,3,2));tessEdge.push_back(glm::ivec2(3,7));
+        tessOrder.push_back(glm::ivec4(0,2,6,4));tessEdge.push_back(glm::ivec2(6,7));
+        tessOrder.push_back(glm::ivec4(0,4,5,1));tessEdge.push_back(glm::ivec2(5,7));
+        initialized = true;
+    }
+}
+
+Octree::Octree() : BoundingCube(glm::vec3(0.0f), 1.0f) {
+    this->chunkSize = 1.0f;
+    this->root = NULL;
+    initialize();
+}
+
 Octree::Octree(BoundingCube minCube, float chunkSize) : BoundingCube(minCube){
     this->chunkSize = chunkSize;
 	this->root = allocator.allocateOctreeNode(minCube)->init(glm::vec3(minCube.getCenter()));
-	if(!initialized) {
-		tessOrder.push_back(glm::ivec4(0,1,3,2));tessEdge.push_back(glm::ivec2(3,7));
-		tessOrder.push_back(glm::ivec4(0,2,6,4));tessEdge.push_back(glm::ivec2(6,7));
-		tessOrder.push_back(glm::ivec4(0,4,5,1));tessEdge.push_back(glm::ivec2(5,7));
-		initialized = true;
-	}
+	initialize();
 }
 
 int getNodeIndex(const glm::vec3 &vec, const BoundingCube &cube) {
@@ -196,13 +207,16 @@ glm::vec3 sdf_rotated(glm::vec3 p, glm::quat q, glm::vec3 pivot) {
     return rotated + pivot;
 }
 
-
-void buildSDF(const SignedDistanceFunction &function, Transformation model, BoundingCube &cube, float * resultSDF) {
+void Octree::buildSDF(SignedDistanceFunction &function, Transformation model, BoundingCube &cube, float * resultSDF, float * existingSDF) {
     const glm::vec3 min = cube.getMin();
     const glm::vec3 length = cube.getLength();
     for (int i = 0; i < 8; ++i) {
-        glm::vec3 p = min + length * Octree::getShift(i);
-        resultSDF[i] = function.distance(p, model);
+        if(existingSDF != NULL && existingSDF[i] != INFINITY) {
+            resultSDF[i] = existingSDF[i];
+        } else {
+            glm::vec3 p = min + length * Octree::getShift(i);
+            resultSDF[i] = function.distance(p, model);
+        }
     }
 }
 
@@ -254,7 +268,7 @@ SpaceType childToParent(bool childSolid, bool childEmpty) {
 
 NodeOperationResult Octree::shape(
     float (*operation)(float, float),
-    const WrappedSignedDistanceFunction &function, 
+    WrappedSignedDistanceFunction &function, 
     const TexturePainter &painter,
     const Transformation model,
     OctreeNodeFrame frame, BoundingCube * chunk, Simplifier &simplifier, OctreeChangeHandler * changeHandler) {
@@ -275,7 +289,7 @@ NodeOperationResult Octree::shape(
     bool childShapeSolid = true;
     bool childShapeEmpty = true;
     bool childProcess = false;
-    float parentBrushSDF[8];
+    float parentShapeSDF[8] ={INFINITY,INFINITY,INFINITY,INFINITY,INFINITY,INFINITY,INFINITY,INFINITY};
 
     ChildBlock * block = NULL;
     if (!isLeaf) {
@@ -301,7 +315,7 @@ NodeOperationResult Octree::shape(
                 model, OctreeNodeFrame(childNode, frame.cube.getChild(i), frame.minSize, frame.level + 1, childSDF, childType), 
                 chunk, simplifier, changeHandler);
 
-            parentBrushSDF[i] = child.shapeSDF[i];
+            parentShapeSDF[i] = childNode != NULL? child.shapeSDF[i] : INFINITY;
             children[i] = child;
             childResultEmpty &= child.resultType == SpaceType::Empty;
             childResultSolid &= child.resultType == SpaceType::Solid;
@@ -313,12 +327,8 @@ NodeOperationResult Octree::shape(
 
     // Process Shape
     float shapeSDF[8];
-    if(isLeaf) {
-        buildSDF(function, model, frame.cube, shapeSDF);
-    }       
-    else {
-        SDF::copySDF(parentBrushSDF, shapeSDF);
-    }
+    buildSDF(function, model, frame.cube, shapeSDF, parentShapeSDF);
+
 
     SpaceType shapeType = isLeaf ? SDF::eval(shapeSDF) : childToParent(childShapeSolid, childShapeEmpty);
 

@@ -99,7 +99,6 @@ namespace std {
     };
 }
 
-
 struct VertexHasher {
     std::size_t operator()(const Vertex &v) const {
         std::size_t hash = 0;

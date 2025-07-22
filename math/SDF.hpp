@@ -100,7 +100,7 @@ public:
 class SignedDistanceFunction {
     public:
     virtual SdfType getType() const = 0; 
-	virtual float distance(const glm::vec3 p, Transformation model) const = 0;
+	virtual float distance(const glm::vec3 p, Transformation model) = 0;
     virtual glm::vec3 getCenter(Transformation model) const = 0;
 };
 
@@ -111,7 +111,7 @@ class SphereDistanceFunction : public SignedDistanceFunction {
     float radius;	
 
 	SphereDistanceFunction(glm::vec3 pos, float radius);
-	float distance(const glm::vec3 p, Transformation model) const override;
+	float distance(const glm::vec3 p, Transformation model) override;
     SdfType getType() const override; 
     glm::vec3 getCenter(Transformation model) const override;
 
@@ -123,7 +123,7 @@ class BoxDistanceFunction : public SignedDistanceFunction {
     glm::vec3 length;
 
 	BoxDistanceFunction(glm::vec3 center, glm::vec3 length);
-	float distance(const glm::vec3 p, Transformation model) const override;
+	float distance(const glm::vec3 p, Transformation model) override;
     SdfType getType() const override; 
     glm::vec3 getCenter(Transformation model) const override;
 
@@ -136,7 +136,7 @@ class CapsuleDistanceFunction : public SignedDistanceFunction {
     float radius;
 
     CapsuleDistanceFunction(glm::vec3 a, glm::vec3 b, float r);
-	float distance(const glm::vec3 p, Transformation model) const override;
+	float distance(const glm::vec3 p, Transformation model) override;
     SdfType getType() const override; 
     glm::vec3 getCenter(Transformation model) const override;
 
@@ -146,7 +146,7 @@ class HeightMapDistanceFunction : public SignedDistanceFunction {
 	public:
 	const HeightMap &map;
 	HeightMapDistanceFunction(const HeightMap &map);
-	float distance(const glm::vec3 p, Transformation model) const override;
+	float distance(const glm::vec3 p, Transformation model) override;
     SdfType getType() const override; 
     glm::vec3 getCenter(Transformation model) const override;
 
@@ -158,7 +158,7 @@ class OctahedronDistanceFunction : public SignedDistanceFunction {
     float radius;	
 
 	OctahedronDistanceFunction(glm::vec3 center, float radius);
-	float distance(const glm::vec3 p, Transformation model) const override;
+	float distance(const glm::vec3 p, Transformation model) override;
     SdfType getType() const override; 
     glm::vec3 getCenter(Transformation model) const override;
 
@@ -170,11 +170,12 @@ class PyramidDistanceFunction : public SignedDistanceFunction {
     float height;
 
 	PyramidDistanceFunction(glm::vec3 base, float height);
-	float distance(const glm::vec3 p, Transformation model) const override;
+	float distance(const glm::vec3 p, Transformation model) override;
     SdfType getType() const override; 
     glm::vec3 getCenter(Transformation model) const override;
 
 };
+
 
 
 class WrappedSignedDistanceFunction : public SignedDistanceFunction {
@@ -182,7 +183,10 @@ class WrappedSignedDistanceFunction : public SignedDistanceFunction {
     SignedDistanceFunction * function;
     float bias;
     Transformation &model;
+    std::unordered_map<glm::vec3, float> cacheSDF;
     public:
+    bool cacheEnabled = false;
+
     WrappedSignedDistanceFunction(SignedDistanceFunction * function, float bias, Transformation &model) : function(function), bias(bias), model(model) {
 
     }
@@ -194,8 +198,17 @@ class WrappedSignedDistanceFunction : public SignedDistanceFunction {
         return function->getType();
     }    
 
-	float distance(const glm::vec3 p, Transformation model) const override {
-        return function->distance(p, model);
+	float distance(const glm::vec3 p, Transformation model) override {
+        if(cacheEnabled){
+            auto it = cacheSDF.find(p);
+            if (it != cacheSDF.end()) {
+                float value = it->second;
+                return value;
+            }
+            return cacheSDF[p] = function->distance(p, model);
+        } else {
+           return function->distance(p, model);
+        }
     }
 
     glm::vec3 getCenter(Transformation model) const override {

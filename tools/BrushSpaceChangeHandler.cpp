@@ -14,8 +14,6 @@ void BrushSpaceChangeHandler::create(OctreeNode* node) {
     
 };
 
-
-
 void BrushSpaceChangeHandler::update(OctreeNode* node) {
 
 };

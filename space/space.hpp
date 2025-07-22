@@ -61,6 +61,7 @@ class OctreeNode {
 		Vertex vertex;
 		uint8_t bits;
 		uint id;
+		
 		float sdf[8];
 
 		OctreeNode(Vertex vertex);
@@ -198,12 +199,13 @@ class Octree: public BoundingCube {
 		OctreeNode * root;
 		OctreeAllocator allocator;
 
+		Octree();
 		Octree(BoundingCube minCube, float chunkSize);
 		
 		void expand(const WrappedSignedDistanceFunction &function, Transformation model);
 		void add(WrappedSignedDistanceFunction &function, const Transformation model, const TexturePainter &painter, float minSize, Simplifier &simplifier, OctreeChangeHandler * changeHandler);
 		void del(WrappedSignedDistanceFunction &function, const Transformation model, const TexturePainter &painter, float minSize, Simplifier &simplifier, OctreeChangeHandler * changeHandler);
-		NodeOperationResult shape(float (*operation)(float, float), const WrappedSignedDistanceFunction &function, const TexturePainter &painter, const Transformation model, OctreeNodeFrame frame, BoundingCube * chunk, Simplifier &simplifier, OctreeChangeHandler *changeHandler);
+		NodeOperationResult shape(float (*operation)(float, float), WrappedSignedDistanceFunction &function, const TexturePainter &painter, const Transformation model, OctreeNodeFrame frame, BoundingCube * chunk, Simplifier &simplifier, OctreeChangeHandler *changeHandler);
 
 		void iterate(IteratorHandler &handler);
 		void iterateFlat(IteratorHandler &handler);
@@ -223,7 +225,10 @@ class Octree: public BoundingCube {
 
 		void exportOctreeSerialization(OctreeSerialized * octree);
 		void exportNodesSerialization(std::vector<OctreeNodeCubeSerialized> * nodes);
-};
+	private:
+		void buildSDF(SignedDistanceFunction &function, Transformation model, BoundingCube &cube, float * resultSDF, float * existingSDF);
+
+	};
 
 class Simplifier {
 	float angle;

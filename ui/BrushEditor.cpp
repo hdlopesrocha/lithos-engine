@@ -195,7 +195,7 @@ void BrushEditor::draw2d(float time){
     }  
 
     if(changed) {
-        Octree * space = scene->brushSpace;
+        Octree * space = &scene->brushSpace;
         space->root->clear(&space->allocator, *space);
         scene->brushInfo.clear();
         brushContext->apply(*space, &scene->brushSpaceChangeHandler, true);

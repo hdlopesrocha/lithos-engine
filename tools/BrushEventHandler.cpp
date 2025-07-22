@@ -148,7 +148,7 @@ template<typename T> void BrushEventHandler<T>::handle(T * event) {
     
     if(event->getType() == EVENT_PAINT_BRUSH) {
         std::cout << "EVENT_PAINT_BRUSH" << std::endl;
-        context.apply(*scene.solidSpace, &scene.solidSpaceChangeHandler, false);
+        context.apply(scene.solidSpace, &scene.solidSpaceChangeHandler, false);
     }
 
     if(event->getType() == EVENT_NEXT_TAB) {
@@ -160,7 +160,7 @@ template<typename T> void BrushEventHandler<T>::handle(T * event) {
     }
 
     if(changed) {
-        Octree * space = scene.brushSpace;
+        Octree * space = &scene.brushSpace;
         space->root->clear(&space->allocator, *space);
         scene.brushInfo.clear();
         context.apply(*space, &scene.brushSpaceChangeHandler, true);

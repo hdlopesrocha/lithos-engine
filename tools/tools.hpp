@@ -249,13 +249,15 @@ class SolidSpaceChangeHandler : public OctreeChangeHandler {
 	std::unordered_map<OctreeNode*, NodeInfo<InstanceData>> * solidInfo;
 	std::unordered_map<OctreeNode*, NodeInfo<InstanceData>> * vegetationInfo;
 	std::unordered_map<OctreeNode*, NodeInfo<DebugInstanceData>> * debugInfo;
+	std::unordered_map<OctreeNode*, GeometrySSBO> * computeInfo;
  
 	public:
 	SolidSpaceChangeHandler();
 	SolidSpaceChangeHandler(
 		std::unordered_map<OctreeNode*, NodeInfo<InstanceData>> * solidInfo,
 		std::unordered_map<OctreeNode*, NodeInfo<InstanceData>> * vegetationInfo,
-		std::unordered_map<OctreeNode*, NodeInfo<DebugInstanceData>> * debugInfo
+		std::unordered_map<OctreeNode*, NodeInfo<DebugInstanceData>> * debugInfo,
+		std::unordered_map<OctreeNode*, GeometrySSBO> * computeInfo
 	);
 
 	void create(OctreeNode* nodeId) override;
@@ -263,15 +265,7 @@ class SolidSpaceChangeHandler : public OctreeChangeHandler {
 	void erase(OctreeNode* nodeId) override;
 };
 
-class UnionChangeHandler : public OctreeChangeHandler {
- 	std::vector<OctreeChangeHandler*> handlers;
-	public:
-	UnionChangeHandler(std::initializer_list<OctreeChangeHandler*> shaders);
 
-	void create(OctreeNode* nodeId) override;
-	void update(OctreeNode* nodeId) override;
-	void erase(OctreeNode* nodeId) override;
-};
 
 
 class BrushSpaceChangeHandler : public OctreeChangeHandler {
@@ -300,13 +294,11 @@ struct ComputeShaderInfo {
 
 class ComputeShaderInfoHandler : public OctreeChangeHandler {
 	std::unordered_map<OctreeNode*, GeometrySSBO> * info;
-	ComputeShader * computeShader;
 
 	public:
 	ComputeShaderInfoHandler();
 	ComputeShaderInfoHandler(
-		std::unordered_map<OctreeNode*, GeometrySSBO> * info
-	, ComputeShader *computeShader);
+		std::unordered_map<OctreeNode*, GeometrySSBO> * info);
 
 	void create(OctreeNode* nodeId) override;
 	void update(OctreeNode* nodeId) override;
@@ -315,9 +307,9 @@ class ComputeShaderInfoHandler : public OctreeChangeHandler {
 
 class Scene {
     public: 
-	Octree * solidSpace;
-	Octree * liquidSpace;
-	Octree * brushSpace;
+	Octree solidSpace;
+	Octree liquidSpace;
+	Octree brushSpace;
 
 	long brushTrianglesCount;
 	long solidTrianglesCount;
@@ -356,7 +348,6 @@ class Scene {
 	LiquidSpaceChangeHandler liquidSpaceChangeHandler;
 	SolidSpaceChangeHandler solidSpaceChangeHandler;
 	BrushSpaceChangeHandler brushSpaceChangeHandler;
-	ComputeShaderInfoHandler computeShaderInfoHandler;
 	
 	OctreeVisibilityChecker * solidRenderer;
 	OctreeVisibilityChecker * brushRenderer;
@@ -478,7 +469,7 @@ class OctreeDifferenceFunction : public SignedDistanceFunction {
     Octree * tree;
     BoundingBox box;
     OctreeDifferenceFunction(Octree * tree, BoundingBox box);
-    float distance(const glm::vec3 p, Transformation model) const override;
+    float distance(const glm::vec3 p, Transformation model) override;
 	SdfType getType() const override;
 	glm::vec3 getCenter(Transformation model) const override;
 

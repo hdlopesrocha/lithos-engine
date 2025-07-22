@@ -210,7 +210,7 @@ BoxDistanceFunction::BoxDistanceFunction(glm::vec3 center, glm::vec3 length): ce
 
 }
 
-float BoxDistanceFunction::distance(const glm::vec3 p, Transformation model) const {
+float BoxDistanceFunction::distance(const glm::vec3 p, Transformation model) {
     glm::vec3 pos = p - getCenter(model); // Move point into model space
     pos = glm::inverse(model.quaternion) * pos;
     return SDF::box(pos/model.scale, length);
@@ -229,7 +229,7 @@ SphereDistanceFunction::SphereDistanceFunction(glm::vec3 pos, float radius): cen
     
 }
 
-float SphereDistanceFunction::distance(const glm::vec3 p, Transformation model) const {
+float SphereDistanceFunction::distance(const glm::vec3 p, Transformation model) {
     glm::vec3 pos = p - getCenter(model); // Move point into model space
     pos = glm::inverse(model.quaternion) * pos;
     return SDF::sphere(pos/model.scale, radius);
@@ -250,7 +250,7 @@ CapsuleDistanceFunction::CapsuleDistanceFunction(glm::vec3 a, glm::vec3 b, float
     this->radius = r;
 }
 
-float CapsuleDistanceFunction::distance(const glm::vec3 p, Transformation model) const {
+float CapsuleDistanceFunction::distance(const glm::vec3 p, Transformation model) {
     glm::vec3 pos = p - model.translate; // Move point into model space
     pos = glm::inverse(model.quaternion) * pos;
     return SDF::capsule(pos/model.scale, a, b, radius);
@@ -267,15 +267,19 @@ glm::vec3 CapsuleDistanceFunction::getCenter(Transformation model) const {
 HeightMapDistanceFunction::HeightMapDistanceFunction(const HeightMap &map):map(map) {
 }
 
-float HeightMapDistanceFunction::distance(const glm::vec3 p, Transformation model) const {
+float HeightMapDistanceFunction::distance(const glm::vec3 p, Transformation model)  {
     glm::vec3 len = map.getLength()*0.5f;
     glm::vec3 pos = p - map.getCenter();
 
-    float heightMapSDF = map.distance(p);
-    return SDF::opIntersection(
+    float sdf = map.distance(p);
+
+
+    float d = SDF::opIntersection(
         SDF::box(pos+model.translate, len),
-        heightMapSDF
+        sdf
     );
+
+    return d;
 }
 
 SdfType HeightMapDistanceFunction::getType() const {
@@ -290,7 +294,7 @@ OctahedronDistanceFunction::OctahedronDistanceFunction(glm::vec3 center, float r
     
 }
 
-float OctahedronDistanceFunction::distance(const glm::vec3 p, Transformation model) const {
+float OctahedronDistanceFunction::distance(const glm::vec3 p, Transformation model) {
     glm::vec3 pos = p - getCenter(model); // Move point into model space
     pos = glm::inverse(model.quaternion) * pos;
     return SDF::octahedron(pos/model.scale, radius);
@@ -309,7 +313,7 @@ PyramidDistanceFunction::PyramidDistanceFunction(glm::vec3 base, float height): 
     
 }
 
-float PyramidDistanceFunction::distance(const glm::vec3 p, Transformation model) const {
+float PyramidDistanceFunction::distance(const glm::vec3 p, Transformation model)  {
     glm::vec3 pos = p - getCenter(model); // Move point into model space
     pos = glm::inverse(model.quaternion) * pos;
     return SDF::pyramid(pos/model.scale, height);

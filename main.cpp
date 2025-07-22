@@ -982,15 +982,15 @@ public:
 			ImGui::Text("%ld/%ld vegetation instances", mainScene->vegetationInstancesVisible, mainScene->vegetationInfo.size());
 			ImGui::Text("%ld solid triangles", mainScene->solidTrianglesCount);
 			ImGui::Text("%ld liquid triangles", mainScene->liquidTrianglesCount);
-			ImGui::Text("%ld solid datas", mainScene->solidSpace->allocator.getAllocatedBlocksCount());
-			ImGui::Text("%ld liquid datas", mainScene->liquidSpace->allocator.getAllocatedBlocksCount());
+			ImGui::Text("%ld solid datas", mainScene->solidSpace.allocator.getAllocatedBlocksCount());
+			ImGui::Text("%ld liquid datas", mainScene->liquidSpace.allocator.getAllocatedBlocksCount());
 			ImGui::Text("%f process time", processTime);
 
-			size_t allocatedBlocks = mainScene->solidSpace->allocator.getAllocatedBlocksCount();
-			size_t blockSize = mainScene->solidSpace->allocator.getBlockSize();
+			size_t allocatedBlocks = mainScene->solidSpace.allocator.getAllocatedBlocksCount();
+			size_t blockSize = mainScene->solidSpace.allocator.getBlockSize();
 
-			size_t allocatedChildren = mainScene->solidSpace->allocator.childAllocator.getAllocatedBlocksCount();
-			size_t childrenSize = mainScene->solidSpace->allocator.childAllocator.getBlockSize();
+			size_t allocatedChildren = mainScene->solidSpace.allocator.childAllocator.getAllocatedBlocksCount();
+			size_t childrenSize = mainScene->solidSpace.allocator.childAllocator.getBlockSize();
 
 			ImGui::Text("%ld (%ld KB) allocatted nodes",  allocatedBlocks*blockSize, allocatedBlocks*blockSize* sizeof(OctreeNode)/1024);
 			ImGui::Text("%ld (%ld KB) allocatted children",  allocatedChildren*childrenSize, allocatedChildren*childrenSize* sizeof(ChildBlock)/1024);
