@@ -1,7 +1,7 @@
 
 #include "tools.hpp"
 
-Scene::Scene(Settings * settings, ComputeShader &computeShader):
+Scene::Scene(Settings * settings, ComputeShader * computeShader):
     simplifier(0.99, 0.1, true), computeShader(computeShader)
 
  {
@@ -35,10 +35,10 @@ Scene::Scene(Settings * settings, ComputeShader &computeShader):
 
 
 
-	liquidSpaceChangeHandler = new LiquidSpaceChangeHandler(&liquidInfo);
-	solidSpaceChangeHandler = new SolidSpaceChangeHandler(&solidInfo, &vegetationInfo, &debugInfo);
-	brushSpaceChangeHandler = new BrushSpaceChangeHandler(&brushInfo);
-	computeShaderInfoHandler = new ComputeShaderInfoHandler(&computeInfo, computeShader);
+	liquidSpaceChangeHandler = LiquidSpaceChangeHandler(&liquidInfo);
+	solidSpaceChangeHandler = SolidSpaceChangeHandler(&solidInfo, &vegetationInfo, &debugInfo);
+	brushSpaceChangeHandler = BrushSpaceChangeHandler(&brushInfo);
+	computeShaderInfoHandler = ComputeShaderInfoHandler(&computeInfo, computeShader);
 
 	inputSSBO.allocate();
 	outputSSBO.allocate();
@@ -47,16 +47,6 @@ Scene::Scene(Settings * settings, ComputeShader &computeShader):
 }
 
 template <typename T> bool Scene::loadSpace(Octree* tree, OctreeNodeData& data, std::unordered_map<OctreeNode*, NodeInfo<T>>* infos, GeometryBuilder<T>* builder) {
-	auto infoIter = infos->find(data.node);
-	if(infoIter != infos->end()) {
-        NodeInfo<T>& info = infoIter->second;
-		if(info.update) {
-			info.update = false;
-		} else {
-			return false;
-		}
-	}
-	
 	InstanceGeometry<T>* loadable = builder->build(data);
 	if (loadable == NULL) {
 		// No geometry to load — erase entry if it exists
@@ -108,7 +98,7 @@ bool Scene::computeGeometry(OctreeNodeData &data, Octree * tree, std::unordered_
 
 	inputSSBO.copy(ComputeShaderInput(chunkBox.getMin(), chunkBox.getLength())); 
 	outputSSBO.reset();
-	computeShader.dispatch(octreeSSBO.nodesCount);
+	computeShader->dispatch(octreeSSBO.nodesCount);
 
 	ComputeShaderOutput result = outputSSBO.read();
 
@@ -301,8 +291,8 @@ void Scene::generate(Camera &camera) {
 	camera.position.z = mapBox.getCenter().z;
 
 	UnionChangeHandler unionChangeHandler = UnionChangeHandler({
-		solidSpaceChangeHandler,
-		computeShaderInfoHandler
+		&solidSpaceChangeHandler,
+		&computeShaderInfoHandler
 	});
 
 	{
@@ -311,13 +301,13 @@ void Scene::generate(Camera &camera) {
 		HeightMap heightMap = HeightMap(cache, mapBox, sizePerTile);
 		HeightMapDistanceFunction function(heightMap);
 		WrappedHeightMap wrappedFunction = WrappedHeightMap(&function, minSize, model);
-		solidSpace->add(wrappedFunction, model, LandBrush(), minSize, simplifier, unionChangeHandler);
+		solidSpace->add(wrappedFunction, model, LandBrush(), minSize, simplifier, &unionChangeHandler);
 	}
 	{
 		BoundingSphere sphere = BoundingSphere(glm::vec3(0,768,0),1024);
 		SphereDistanceFunction function(sphere.center, sphere.radius);
 		WrappedSphere wrappedFunction = WrappedSphere(&function, minSize, model);
-		solidSpace->del(wrappedFunction, model, SimpleBrush(14), minSize, simplifier, unionChangeHandler);
+		solidSpace->del(wrappedFunction, model, SimpleBrush(14), minSize, simplifier, &unionChangeHandler);
 	}
 
 	{
@@ -326,7 +316,7 @@ void Scene::generate(Camera &camera) {
 		BoundingBox box = BoundingBox(min,min+len);
 		BoxDistanceFunction function(box.getCenter(), box.getLength()*0.5f);
 		WrappedBox wrappedFunction = WrappedBox(&function, minSize, model);
-		solidSpace->add(wrappedFunction, model, SimpleBrush(8), minSize, simplifier, unionChangeHandler);
+		solidSpace->add(wrappedFunction, model, SimpleBrush(8), minSize, simplifier, &unionChangeHandler);
 	}
 
 	{
@@ -335,7 +325,7 @@ void Scene::generate(Camera &camera) {
 		BoundingSphere sphere = BoundingSphere(min+3.0f*len/4.0f, 256);
 		SphereDistanceFunction function(sphere.center, sphere.radius);
 		WrappedSphere wrappedFunction = WrappedSphere(&function, minSize, model);
-		solidSpace->add(wrappedFunction, model, SimpleBrush(6), minSize, simplifier, unionChangeHandler);
+		solidSpace->add(wrappedFunction, model, SimpleBrush(6), minSize, simplifier, &unionChangeHandler);
 	}
 
 	{
@@ -344,7 +334,7 @@ void Scene::generate(Camera &camera) {
 		BoundingSphere sphere = BoundingSphere(min+len, 128);
 		SphereDistanceFunction function(sphere.center, sphere.radius);
 		WrappedSphere wrappedFunction = WrappedSphere(&function, minSize, model);
-		solidSpace->del(wrappedFunction, model, SimpleBrush(4), minSize, simplifier, unionChangeHandler);
+		solidSpace->del(wrappedFunction, model, SimpleBrush(4), minSize, simplifier, &unionChangeHandler);
 	}
 
 	{
@@ -353,7 +343,7 @@ void Scene::generate(Camera &camera) {
 		BoundingSphere sphere = BoundingSphere(min+3.0f*len/4.0f, 128);
 		SphereDistanceFunction function(sphere.center, sphere.radius);
 		WrappedSphere wrappedFunction = WrappedSphere(&function, minSize, model);
-		solidSpace->del(wrappedFunction, model, SimpleBrush(1), minSize, simplifier, unionChangeHandler);
+		solidSpace->del(wrappedFunction, model, SimpleBrush(1), minSize, simplifier, &unionChangeHandler);
 	}
 
 	{
@@ -361,7 +351,7 @@ void Scene::generate(Camera &camera) {
 		waterBox.setMaxY(0);
 		OctreeDifferenceFunction function(solidSpace, waterBox);
 		WrappedOctreeDifference wrappedFunction = WrappedOctreeDifference(&function, minSize, model);
-		liquidSpace->add(wrappedFunction, model, WaterBrush(0), minSize, simplifier, *liquidSpaceChangeHandler);
+		liquidSpace->add(wrappedFunction, model, WaterBrush(0), minSize, simplifier, &liquidSpaceChangeHandler);
 	}
 
 	{
@@ -370,7 +360,7 @@ void Scene::generate(Camera &camera) {
 		float r = 256.0f;
 		CapsuleDistanceFunction function(a, b, r);
 		WrappedCapsule wrappedFunction = WrappedCapsule(&function, minSize, model);
-		solidSpace->del(wrappedFunction, model, SimpleBrush(4), minSize, simplifier, unionChangeHandler);
+		solidSpace->del(wrappedFunction, model, SimpleBrush(4), minSize, simplifier, &unionChangeHandler);
 	}
 
 	{
@@ -379,7 +369,7 @@ void Scene::generate(Camera &camera) {
 		BoundingSphere sphere = BoundingSphere(min+len, 64);
 		SphereDistanceFunction function(sphere.center, sphere.radius);
 		WrappedSphere wrappedFunction = WrappedSphere(&function, minSize, model);
-		liquidSpace->add(wrappedFunction, model, SimpleBrush(0), minSize, simplifier, unionChangeHandler);
+		liquidSpace->add(wrappedFunction, model, SimpleBrush(0), minSize, simplifier, &unionChangeHandler);
 	}
 
 	{
@@ -387,7 +377,7 @@ void Scene::generate(Camera &camera) {
 		float radius = 256.0f;
 		OctahedronDistanceFunction function(center, radius);
 		WrappedOctahedron wrappedFunction = WrappedOctahedron(&function, minSize, model);
-		solidSpace->add(wrappedFunction, model, SimpleBrush(4), minSize, simplifier, unionChangeHandler);
+		solidSpace->add(wrappedFunction, model, SimpleBrush(4), minSize, simplifier, &unionChangeHandler);
 	}
 
 	{
@@ -397,7 +387,7 @@ void Scene::generate(Camera &camera) {
 		Transformation model2(glm::vec3(radius), center, 0,0,0);
 
 		WrappedPyramid wrappedFunction = WrappedPyramid(&function, minSize, model2);
-		solidSpace->add(wrappedFunction, model2, SimpleBrush(4), minSize, simplifier, unionChangeHandler);
+		solidSpace->add(wrappedFunction, model2, SimpleBrush(4), minSize, simplifier, &unionChangeHandler);
 	}
 	exportOctree();
 
@@ -415,8 +405,8 @@ void Scene::import(const std::string &filename, Camera &camera) {
 	Transformation model = Transformation(glm::vec3(1.0f),glm::vec3(0.0f), 0.0f, 0.0f, 0.0f);
 
 	UnionChangeHandler unionChangeHandler = UnionChangeHandler({
-		solidSpaceChangeHandler,
-		computeShaderInfoHandler
+		&solidSpaceChangeHandler,
+		&computeShaderInfoHandler
 	});
 
 	BoundingBox mapBox = BoundingBox(glm::vec3(-sizePerTile*tiles*0.5,-height*0.5,-sizePerTile*tiles*0.5), glm::vec3(sizePerTile*tiles*0.5,height*0.5,sizePerTile*tiles*0.5));
@@ -429,7 +419,7 @@ void Scene::import(const std::string &filename, Camera &camera) {
 	HeightMap heightMap = HeightMap(cache, mapBox, sizePerTile);
 	HeightMapDistanceFunction function(heightMap);
 	WrappedHeightMap wrappedFunction = WrappedHeightMap(&function, minSize, model);
-	solidSpace->add(wrappedFunction, model, DerivativeLandBrush(), minSize, simplifier, unionChangeHandler);
+	solidSpace->add(wrappedFunction, model, DerivativeLandBrush(), minSize, simplifier, &unionChangeHandler);
 
 	BoundingBox waterBox = mapBox;
 	waterBox.setMaxY(0);

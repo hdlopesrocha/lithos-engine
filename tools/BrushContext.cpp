@@ -42,7 +42,7 @@ WrappedSignedDistanceFunction * BrushContext::getWrapped() {
 }
 
 
-void BrushContext::apply(Octree &space, OctreeChangeHandler &handler, bool preview) {
+void BrushContext::apply(Octree &space, OctreeChangeHandler * handler, bool preview) {
     WrappedSignedDistanceFunction * wrapped = getWrapped();
     if(wrapped) {
         if(preview  || mode == BrushMode::ADD) {

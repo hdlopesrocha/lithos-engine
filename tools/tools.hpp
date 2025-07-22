@@ -89,6 +89,7 @@ class ComputeShader {
 	public:
 	GLuint program;
 
+	ComputeShader();
 	ComputeShader(GLuint program);
 	void dispatch(size_t nodesCount);
 };
@@ -210,13 +211,11 @@ class VegetationInstanceBuilder : public OctreeNodeTriangleHandler {
 
 
 template <typename T> struct NodeInfo {
-	bool update;
 
 	InstanceGeometry<T> * loadable;
 	DrawableInstanceGeometry<T> * drawable;
 
 	NodeInfo(InstanceGeometry<T> * loadable){
-		this->update = false;
 		this->drawable = NULL;
 		this->loadable = loadable;
 	}
@@ -236,6 +235,7 @@ class LiquidSpaceChangeHandler : public OctreeChangeHandler {
 	std::unordered_map<OctreeNode*, NodeInfo<InstanceData>> * liquidInfo;
  
 	public:
+	LiquidSpaceChangeHandler();
 	LiquidSpaceChangeHandler(
 		std::unordered_map<OctreeNode*, NodeInfo<InstanceData>> * liquidInfo
 	);
@@ -251,6 +251,7 @@ class SolidSpaceChangeHandler : public OctreeChangeHandler {
 	std::unordered_map<OctreeNode*, NodeInfo<DebugInstanceData>> * debugInfo;
  
 	public:
+	SolidSpaceChangeHandler();
 	SolidSpaceChangeHandler(
 		std::unordered_map<OctreeNode*, NodeInfo<InstanceData>> * solidInfo,
 		std::unordered_map<OctreeNode*, NodeInfo<InstanceData>> * vegetationInfo,
@@ -277,6 +278,7 @@ class BrushSpaceChangeHandler : public OctreeChangeHandler {
 	std::unordered_map<OctreeNode*, NodeInfo<InstanceData>> * brushInfo;
  
 	public:
+	BrushSpaceChangeHandler();
 	BrushSpaceChangeHandler(
 		std::unordered_map<OctreeNode*, NodeInfo<InstanceData>> * brushInfo
 	);
@@ -298,12 +300,13 @@ struct ComputeShaderInfo {
 
 class ComputeShaderInfoHandler : public OctreeChangeHandler {
 	std::unordered_map<OctreeNode*, GeometrySSBO> * info;
-	ComputeShader &computeShader;
+	ComputeShader * computeShader;
 
 	public:
+	ComputeShaderInfoHandler();
 	ComputeShaderInfoHandler(
 		std::unordered_map<OctreeNode*, GeometrySSBO> * info
-	, ComputeShader &computeShader);
+	, ComputeShader *computeShader);
 
 	void create(OctreeNode* nodeId) override;
 	void update(OctreeNode* nodeId) override;
@@ -350,10 +353,10 @@ class Scene {
 	OutputSSBO outputSSBO;
 
 
-	LiquidSpaceChangeHandler * liquidSpaceChangeHandler;
-	SolidSpaceChangeHandler * solidSpaceChangeHandler;
-	BrushSpaceChangeHandler * brushSpaceChangeHandler;
-	ComputeShaderInfoHandler * computeShaderInfoHandler;
+	LiquidSpaceChangeHandler liquidSpaceChangeHandler;
+	SolidSpaceChangeHandler solidSpaceChangeHandler;
+	BrushSpaceChangeHandler brushSpaceChangeHandler;
+	ComputeShaderInfoHandler computeShaderInfoHandler;
 	
 	OctreeVisibilityChecker * solidRenderer;
 	OctreeVisibilityChecker * brushRenderer;
@@ -361,10 +364,10 @@ class Scene {
 	OctreeVisibilityChecker * shadowRenderer[SHADOW_MATRIX_COUNT];
 
 	Settings * settings;
-	ComputeShader &computeShader;
+	ComputeShader * computeShader;
 	
 
-	Scene(Settings * settings, ComputeShader &computeShader);
+	Scene(Settings * settings, ComputeShader *computeShader);
 
 	bool processSpace();
 	bool processLiquid(OctreeNodeData &data, Octree * tree);
@@ -409,7 +412,7 @@ class BrushContext {
 	Transformation model;
 
 	BrushContext(Camera *camera, Scene &scene);
-	void apply(Octree &space, OctreeChangeHandler &handler, bool preview);
+	void apply(Octree &space, OctreeChangeHandler * handler, bool preview);
 	WrappedSignedDistanceFunction * getWrapped();
 };
 

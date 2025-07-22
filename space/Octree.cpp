@@ -229,7 +229,7 @@ void Octree::add(
     WrappedSignedDistanceFunction &function, 
     const Transformation model, 
     const TexturePainter &painter,
-    float minSize, Simplifier &simplifier, OctreeChangeHandler &changeHandler) {
+    float minSize, Simplifier &simplifier, OctreeChangeHandler * changeHandler) {
 	expand(function, model);	
     shape(SDF::opUnion, function, painter, model, OctreeNodeFrame(root, *this, minSize, 0, root->sdf, SpaceType::Surface ), NULL, simplifier, changeHandler);
 }
@@ -238,7 +238,7 @@ void Octree::del(
     WrappedSignedDistanceFunction &function, 
     const Transformation model, 
     const TexturePainter &painter,
-    float minSize, Simplifier &simplifier, OctreeChangeHandler &changeHandler) {
+    float minSize, Simplifier &simplifier, OctreeChangeHandler  * changeHandler) {
     shape(SDF::opSubtraction, function, painter, model, OctreeNodeFrame(root, *this, minSize, 0, root->sdf, SpaceType::Surface), NULL, simplifier, changeHandler);
 }
 
@@ -257,7 +257,7 @@ NodeOperationResult Octree::shape(
     const WrappedSignedDistanceFunction &function, 
     const TexturePainter &painter,
     const Transformation model,
-    OctreeNodeFrame frame, BoundingCube * chunk, Simplifier &simplifier, OctreeChangeHandler &changeHandler) {
+    OctreeNodeFrame frame, BoundingCube * chunk, Simplifier &simplifier, OctreeChangeHandler * changeHandler) {
     ContainmentType check = function.check(frame.cube);
     OctreeNode * node  = frame.node;
     bool chunkNode = false;
@@ -366,12 +366,16 @@ NodeOperationResult Octree::shape(
 
         if(resultType != SpaceType::Surface) {
             if(chunkNode) {
-                changeHandler.erase(node);
+                if(changeHandler != NULL) {
+                    changeHandler->erase(node);
+                }
             }
             node->clear(&allocator, frame.cube);
         } else {
             if(chunkNode) {
-                changeHandler.update(node);
+                if(changeHandler != NULL) {
+                    changeHandler->update(node);
+                }
                 node->setDirty(true);
             }
         }

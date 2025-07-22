@@ -1,7 +1,10 @@
 #include "tools.hpp"
 
+ComputeShaderInfoHandler::ComputeShaderInfoHandler() : info(NULL), computeShader(NULL) {}
+
+
 ComputeShaderInfoHandler::ComputeShaderInfoHandler(
-    std::unordered_map<OctreeNode*, GeometrySSBO> * info, ComputeShader &computeShader
+    std::unordered_map<OctreeNode*, GeometrySSBO> * info, ComputeShader * computeShader
 ) : computeShader(computeShader) {
     this->info = info;
 };

@@ -2,6 +2,8 @@
 
 #define MAX_NODES 1000000
 
+ComputeShader::ComputeShader() : program(0) {
+}
 
 ComputeShader::ComputeShader(GLuint program) {
     this->program = program;
