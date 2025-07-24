@@ -18,8 +18,9 @@ void Geometry::setCenter(){
         glm::vec3 max = vertices[0].position;
 
         for(Vertex vertex : vertices) {
-            min = glm::min(min, vertex.position);
-            max = glm::min(max, vertex.position);
+            glm::vec3 pos = vertex.position;
+            min = glm::min(min, pos);
+            max = glm::min(max, pos);
         }
         center = (min+max)*0.5f;
     }

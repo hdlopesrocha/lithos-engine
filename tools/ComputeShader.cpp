@@ -20,7 +20,8 @@ void ComputeShader::dispatch(size_t nodesCount) {
     std::cout << "\tnumWorkgroups = " << std::to_string(numWorkgroups) << std::endl;
     glUseProgram(program);
     glDispatchCompute(numWorkgroups, 1, 1);
-    glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+    glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT);
+
     GLenum err = glGetError();
     if (err != GL_NO_ERROR) {
         std::cerr << "\tglDispatchCompute Error!" << std::endl;

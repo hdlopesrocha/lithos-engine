@@ -22,7 +22,6 @@ struct OctreeSerialized {
 
 
 
-#pragma pack(16)
 struct OctreeNodeCubeSerialized {
 	float sdf[8];
     uint children[8];
@@ -31,7 +30,6 @@ struct OctreeNodeCubeSerialized {
     glm::vec3 length;
     uint bits;
 };
-#pragma pack()
 
 
 #pragma pack(16)  // Ensure 16-byte alignment for UBO
@@ -102,7 +100,7 @@ class OctreeNodeTriangleHandler {
 	public: 
 	long * count;
 	OctreeNodeTriangleHandler(long * count);
-	virtual void handle(OctreeNode* c0,OctreeNode* c1,OctreeNode* c2, bool sign) = 0;
+	virtual void handle(Vertex &v0, Vertex &v1, Vertex &v2, bool sign) = 0;
 };
 
 
@@ -259,11 +257,18 @@ struct StackFrameOut : public OctreeNodeData  {
 	}
 };
 
+#pragma pack(16)
 struct InstanceData {
     public:
     float shift;
 	uint animation;
     glm::mat4 matrix;
+    
+	InstanceData() {
+        this->matrix = glm::mat4(1.0f);
+        this->shift = 0.0f;
+		this->animation = 0u;
+    }
 
     InstanceData(uint animation, glm::mat4 matrix, float shift) {
         this->matrix = matrix;
@@ -271,6 +276,7 @@ struct InstanceData {
 		this->animation = animation;
     }
 };
+#pragma pack()
 
 struct DebugInstanceData {
     public:
@@ -357,7 +363,7 @@ class Tesselator : public IteratorHandler, OctreeNodeTriangleHandler{
 		void after(OctreeNodeData &params) override;
 		bool test(OctreeNodeData &params) override;
 		void getOrder(OctreeNodeData &params, uint8_t * order) override;
-		void handle(OctreeNode* c0,OctreeNode* c1,OctreeNode* c2, bool sign) override;
+		void handle(Vertex &v0, Vertex &v1, Vertex &v2, bool sign) override;
 		void virtualize(OctreeNodeData &params, int levels);
 
 };

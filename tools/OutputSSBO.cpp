@@ -9,11 +9,11 @@ OutputSSBO::OutputSSBO() {
 }
 
 void OutputSSBO::allocate() {
-    std::cout << "OutputSSBO::allocateSSBO()" << std::endl;
+    std::cout << "OutputSSBO::allocate()" << std::endl;
     glGenBuffers(1, &outputSSBO);
 
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, outputSSBO);
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, outputSSBO); 
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, outputSSBO); 
     glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(ComputeShaderOutput), nullptr, GL_DYNAMIC_DRAW);
 
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0); // Unbind the buffer

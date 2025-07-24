@@ -151,9 +151,6 @@ public:
 		octreeComputeShader3d = createShaderProgram({
 			compileShader(GlslInclude::replaceIncludes(includes,readFile("shaders/octree_compute.glsl")), GL_COMPUTE_SHADER)
 		});
-		computeShader = ComputeShader(octreeComputeShader3d);
-		mainScene = new Scene(settings, &computeShader);
-		mainScene->generate(camera);
 
 		programAtlas = createShaderProgram({
 			compileShader(GlslInclude::replaceIncludes(includes,readFile("shaders/texture/atlas_vertex.glsl")),GL_VERTEX_SHADER), 
@@ -222,6 +219,9 @@ public:
 			compileShader(GlslInclude::replaceIncludes(includes,readFile("shaders/deferred_fragment.glsl")),GL_FRAGMENT_SHADER) 
 		});
 
+		computeShader = ComputeShader(octreeComputeShader3d);
+		mainScene = new Scene(settings, &computeShader);
+		mainScene->generate(camera);
 
 		textureLayers.textures[0] = createTextureArray(1024, 1024, 20, GL_RGB8);
 		textureLayers.textures[1] = createTextureArray(1024, 1024, 20, GL_RGB8);

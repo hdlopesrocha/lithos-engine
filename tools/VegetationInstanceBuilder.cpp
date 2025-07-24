@@ -47,47 +47,41 @@ VegetationInstanceBuilder::VegetationInstanceBuilder(long * count,std::vector<In
     this->scale = scale;
 }
 
-void VegetationInstanceBuilder::handle(OctreeNode* c0,OctreeNode* c1,OctreeNode* c2, bool sign){    
-    if(c0 != NULL && c1 != NULL && c2!=NULL) {
-        Vertex v0 = c0->vertex;
-        Vertex v1 = c1->vertex;
-        Vertex v2 = c2->vertex;
+void VegetationInstanceBuilder::handle(Vertex &v0, Vertex &v1, Vertex &v2, bool sign){    
+    if(v0!= v1 && v1 != v2 && v0!=v2) {
         float area = Math::triangleArea(v0.position, v1.position, v2.position);
+        glm::vec3 d1 = v1.position-v0.position;
+        glm::vec3 d2 = v2.position-v0.position;
+        glm::vec3 n = glm::normalize(glm::cross(d1,d2));
+        glm::vec3 up = glm::vec3(0,1,0);
+        float p = glm::dot(up, n);
 
-        if(c0!= c1 && c1 != c2 && c0!=c2) {
-            glm::vec3 d1 = v1.position-v0.position;
-            glm::vec3 d2 = v2.position-v0.position;
-            glm::vec3 n = glm::normalize(glm::cross(d1,d2));
-            glm::vec3 up = glm::vec3(0,1,0);
-            float p = glm::dot(up, n);
+        for (int i = 0; i < pointsPerArea*area; i++) {
+            glm::vec3 point = randomPointInTriangle(v0.position, v1.position, v2.position);
+            
+            float force = 2.0;
+            //p = 1.0- glm::pow(1-p, 3);
 
+            if(p > 0.0) {
+                float height = p*force;
+                float deepness = (1.0f-p);
 
-            for (int i = 0; i < pointsPerArea*area; i++) {
-                glm::vec3 point = randomPointInTriangle(v0.position, v1.position, v2.position);
+                glm::mat4 model(1.0);
                 
-                float force = 2.0;
-                //p = 1.0- glm::pow(1-p, 3);
-
-                if(p > 0.0) {
-                    float height = p*force;
-                    float deepness = (1.0f-p);
-
-                    glm::mat4 model(1.0);
-                    
-                    if(deepness  < 1.0f) {
-                        point.y -= deepness;
-                    }
-
-                    model = glm::translate(model, point);
-                    if(height > 1.0) {
-                        model = glm::scale(model, scale*glm::vec3(1.0, height, 1.0));
-                    }     
-                   // model *=  Math::getRotationMatrixFromNormal(n, up);
-
-                    instances->push_back(InstanceData(0, model, deepness));
-                    ++*count;
+                if(deepness  < 1.0f) {
+                    point.y -= deepness;
                 }
+
+                model = glm::translate(model, point);
+                if(height > 1.0) {
+                    model = glm::scale(model, scale*glm::vec3(1.0, height, 1.0));
+                }     
+                // model *=  Math::getRotationMatrixFromNormal(n, up);
+
+                instances->push_back(InstanceData(0, model, deepness));
+                ++*count;
             }
         }
     }
+
 }

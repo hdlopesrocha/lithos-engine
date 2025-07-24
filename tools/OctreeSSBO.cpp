@@ -5,7 +5,7 @@
 
 
 void OctreeSSBO::allocate() {
-    std::cout << "OctreeSSBO::allocateSSBO()" << std::endl;
+    std::cout << "OctreeSSBO::allocate()" << std::endl;
     glGenBuffers(1, &nodesSSBO);
 
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, nodesSSBO);

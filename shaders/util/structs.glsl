@@ -16,3 +16,16 @@ struct ShadowProperties {
     float shadowAmount;
 };
 
+struct Vertex {
+    vec4 position;
+    vec4 normal;
+    vec2 texCoord;
+    uint brushIndex;
+    int _pad0;
+};
+
+struct InstanceData {
+    float shift;
+	uint animation;
+    mat4 matrix;
+};

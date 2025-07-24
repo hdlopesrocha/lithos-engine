@@ -35,12 +35,13 @@ struct ComputeShaderInput {
 #pragma pack(16)  // Ensure 16-byte alignment for UBO
 struct ComputeShaderOutput {
 	public:
-	glm::vec4 result4f;
+	glm::vec4 result4f0;
+	glm::vec4 result4f1;
 	GLuint vertexCount;
 	GLuint indexCount;
 
 	ComputeShaderOutput();
-	ComputeShaderOutput(GLuint vertexCount, GLuint indexCount, glm::vec4 result4f);
+	ComputeShaderOutput(GLuint vertexCount, GLuint indexCount, glm::vec4 result4f0, glm::vec4 result4f1);
 	void reset();
 };
 #pragma pack()
@@ -59,7 +60,10 @@ class GeometrySSBO {
 	public:
 	GLuint vertexSSBO;
 	GLuint indexSSBO;
-
+	GLuint vertexArrayObject;
+	GLuint vertexCount;
+	GLuint indexCount;
+	GLuint instanceBuffer;
 	GeometrySSBO();
 	void allocate();
 };
@@ -205,7 +209,7 @@ class VegetationInstanceBuilder : public OctreeNodeTriangleHandler {
 	
 	using OctreeNodeTriangleHandler::OctreeNodeTriangleHandler;
 	VegetationInstanceBuilder(long * count,std::vector<InstanceData> * instances, float pointsPerArea, float scale);
-	void handle(OctreeNode* c0,OctreeNode* c1,OctreeNode* c2, bool sign) override;
+	void handle(Vertex &v0, Vertex &v1, Vertex &v2, bool signn) override;
 };
 
 

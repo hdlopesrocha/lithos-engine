@@ -41,35 +41,45 @@ enum ContainmentType {
 };
 
 struct Vertex {
-    glm::vec3 position;
-    glm::vec3 normal;
+    glm::vec4 position;
+    glm::vec4 normal;
     glm::vec2 texCoord;
     int brushIndex;
+    int _pad0;
 
-
-    Vertex(glm::vec3 pos,glm::vec3 normal,glm::vec2 texCoord, uint texIndex) {
+    Vertex(glm::vec4 pos,glm::vec4 normal,glm::vec2 texCoord, uint brushIndex) {
     	this->position = pos;
     	this->normal = normal;
     	this->texCoord = texCoord;
-    	this->brushIndex = texIndex;
+    	this->brushIndex = brushIndex;
+		this->_pad0 = 0; // Padding to ensure alignment
     }
 
-    Vertex() : Vertex(glm::vec3(0), glm::vec3(0), glm::vec2(0), 0) {
-    	this->normal = glm::vec3(0);
-    	this->texCoord = glm::vec2(0);
-    	this->brushIndex = 0;
+    Vertex(glm::vec3 pos,glm::vec3 normal,glm::vec2 texCoord, uint brushIndex) : 
+		Vertex(glm::vec4(pos, 0.0f), glm::vec4(normal, 0.0f), texCoord, brushIndex) {
     }
 
-    Vertex(glm::vec3 pos) : Vertex(pos, glm::vec3(0), glm::vec2(0), 0) {
+    Vertex() : 
+		Vertex(glm::vec4(0), glm::vec4(0), glm::vec2(0), 0) {
+    }
 
+    Vertex(glm::vec3 pos) : 
+		Vertex(glm::vec4(pos, 0.0f), glm::vec4(0), glm::vec2(0), 0) {
     }
 
 	bool operator<(const Vertex& other) const {
         return std::tie(position.x, position.y, position.z, normal.x, normal.y, normal.z, texCoord.x, texCoord.y, brushIndex) 
              < std::tie(other.position.x, other.position.y, other.position.z, other.normal.x, other.normal.y, other.normal.z, other.texCoord.x, other.texCoord.y, other.brushIndex);
     }
+
 	bool operator==(const Vertex &other) const {
-        return position.x == other.position.x && position.y == other.position.y && position.z == other.position.z;
+        return position.x == other.position.x && position.y == other.position.y && position.z == other.position.z
+		&& normal.x == other.normal.x && normal.y == other.normal.y && normal.z == other.normal.z
+		&& texCoord.x == other.texCoord.x && texCoord.y == other.texCoord.y && brushIndex == other.brushIndex;
+    }
+
+    bool operator!=(const Vertex& other) const {
+        return !(*this == other);
     }
 };
 

@@ -47,24 +47,28 @@ Scene::Scene(Settings * settings, ComputeShader * computeShader):
 }
 
 template <typename T> bool Scene::loadSpace(Octree* tree, OctreeNodeData& data, std::unordered_map<OctreeNode*, NodeInfo<T>>* infos, GeometryBuilder<T>* builder) {
-	InstanceGeometry<T>* loadable = builder->build(data);
-	if (loadable == NULL) {
-		// No geometry to load — erase entry if it exists
-		infos->erase(data.node);
-		return false;
-	}
-
-	// Try to insert a new NodeInfo with loadable
-	auto [it, inserted] = infos->try_emplace(data.node, loadable);
-	if (!inserted) {
-		// Already existed — replace existing loadable
-		if (it->second.loadable) {
-			delete it->second.loadable;
+	bool emptyChunk = data.node->isEmpty() || data.node->isSolid();
+	if(!emptyChunk){
+		InstanceGeometry<T>* loadable = builder->build(data);
+		if (loadable == NULL) {
+			// No geometry to load — erase entry if it exists
+			infos->erase(data.node);
+			return false;
 		}
-		it->second.loadable = loadable;
-	}
 
-	return true;
+		// Try to insert a new NodeInfo with loadable
+		auto [it, inserted] = infos->try_emplace(data.node, loadable);
+		if (!inserted) {
+			// Already existed — replace existing loadable
+			if (it->second.loadable) {
+				delete it->second.loadable;
+			}
+			it->second.loadable = loadable;
+		}
+
+		return true;
+	}
+	return false;
 }
 
 bool Scene::processLiquid(OctreeNodeData &data, Octree * tree) {
@@ -87,31 +91,41 @@ void Scene::exportOctree() {
 
 bool Scene::computeGeometry(OctreeNodeData &data, Octree * tree, std::unordered_map<OctreeNode*, GeometrySSBO>* infos) {
 	BoundingCube chunkBox = data.cube;
+	bool emptyChunk = data.node->isEmpty() || data.node->isSolid();
     std::cout << "Scene::computeGeometry() " << "minX:" << chunkBox.getMinX() << ", minY:" << chunkBox.getMinY() << ", minZ:" << chunkBox.getMinZ() << ", len:" << chunkBox.getLengthX() << std::endl;
+	if (!emptyChunk)	{
 
-	
-	
-	(*infos)[data.node] = GeometrySSBO();
+		(*infos)[data.node] = GeometrySSBO();
 
-	GeometrySSBO * ssbo = &(*infos)[data.node];
-    ssbo->allocate();
+		GeometrySSBO &ssbo = (*infos)[data.node];
+		ssbo.allocate();
 
-	inputSSBO.copy(ComputeShaderInput(chunkBox.getMin(), chunkBox.getLength())); 
-	outputSSBO.reset();
-	computeShader->dispatch(octreeSSBO.nodesCount);
+		inputSSBO.copy(ComputeShaderInput(chunkBox.getMin(), chunkBox.getLength())); 
+		outputSSBO.reset();
+		computeShader->dispatch(octreeSSBO.nodesCount);
 
-	ComputeShaderOutput result = outputSSBO.read();
+		ComputeShaderOutput result = outputSSBO.read();
+		ssbo.vertexCount = result.vertexCount;
+		ssbo.indexCount = result.indexCount;
 
-    std::cout << "\tresult4f = { " 
-		<< std::to_string(result.result4f.x) << ", " 
-		<< std::to_string(result.result4f.y) << ", " 
-		<< std::to_string(result.result4f.z) << ", " 
-		<< std::to_string(result.result4f.w) << " }"  << std::endl;
-    std::cout << "\tvertexCount = " << std::to_string(result.vertexCount) <<std::endl;
-    std::cout << "\tindexCount = " << std::to_string(result.indexCount) <<std::endl;
+		std::cout << "\tresult4f0 = { " 
+			<< std::to_string(result.result4f0.x) << ", " 
+			<< std::to_string(result.result4f0.y) << ", " 
+			<< std::to_string(result.result4f0.z) << ", " 
+			<< std::to_string(result.result4f0.w) << " }"  << std::endl;
+		std::cout << "\tresult4f1 = { " 
+			<< std::to_string(result.result4f1.x) << ", " 
+			<< std::to_string(result.result4f1.y) << ", " 
+			<< std::to_string(result.result4f1.z) << ", " 
+			<< std::to_string(result.result4f1.w) << " }"  << std::endl;
+
+		std::cout << "\tvertexCount = " << std::to_string(result.vertexCount) <<std::endl;
+		std::cout << "\tindexCount = " << std::to_string(result.indexCount) <<std::endl;
 
 
-	return true;
+		return true;
+	}
+	return false;
 }
 
 
@@ -262,6 +276,23 @@ void Scene::draw3dSolid(glm::vec3 cameraPosition, const std::vector<OctreeNodeDa
 	draw<InstanceData, InstanceDataHandler>(TYPE_INSTANCE_FULL_DRAWABLE, GL_PATCHES, cameraPosition, list, &solidInfo, &solidInstancesVisible);
 }
 
+/*
+void Scene::draw3dSolid(glm::vec3 cameraPosition, const std::vector<OctreeNodeData> &list) {
+	for(const OctreeNodeData &data : list) {
+		OctreeNode * node = data.node;
+		GeometrySSBO * geo = &computeInfo[node];
+		if(geo != NULL && geo->vertexCount > 0 && geo->indexCount > 0 && geo->vertexArrayObject > 0) {
+			//std::cout << "Scene::draw3dSolid() " << std::to_string(geo->vertexCount) << " vertices, " << std::to_string(geo->indexCount) << " indices, " << std::to_string(geo->vertexArrayObject) << " vao" << std::endl;
+			//glBindBuffer(GL_ARRAY_BUFFER, instanceBuffer);
+			//glBufferData(GL_ARRAY_BUFFER, instances->size() * sizeof(InstanceData), instances->data(), GL_STATIC_DRAW);
+
+			glBindVertexArray(geo->vertexArrayObject);
+			glDrawElementsInstanced(GL_PATCHES, geo->indexCount, GL_UNSIGNED_INT, nullptr, 1);
+		    glBindVertexArray(0);
+		}
+	} 
+}*/
+
 void Scene::draw3dBrush(glm::vec3 cameraPosition, const std::vector<OctreeNodeData> &list) {
 	draw<InstanceData, InstanceDataHandler>(TYPE_INSTANCE_FULL_DRAWABLE, GL_PATCHES, cameraPosition, list, &brushInfo, &brushInstancesVisible);
 }
@@ -305,10 +336,11 @@ void Scene::generate(Camera &camera) {
 		WrappedHeightMap wrappedFunction = WrappedHeightMap(&function, minSize, model);
 		//wrappedFunction.cacheEnabled = true;
 		
-		std::cout << "\tsolidSpace.add"<< std::endl;
+		std::cout << "\tsolidSpace.add(heightmap)"<< std::endl;
 		solidSpace.add(wrappedFunction, model, LandBrush(), minSize, simplifier, &solidSpaceChangeHandler);
 	}
 	{
+		std::cout << "\tsolidSpace.del(sphere)"<< std::endl;
 		BoundingSphere sphere = BoundingSphere(glm::vec3(0,768,0),1024);
 		SphereDistanceFunction function(sphere.center, sphere.radius);
 		WrappedSphere wrappedFunction = WrappedSphere(&function, minSize, model);
@@ -316,6 +348,7 @@ void Scene::generate(Camera &camera) {
 	}
 
 	{
+		std::cout << "\tsolidSpace.add(box)"<< std::endl;
 		glm::vec3 min = glm::vec3(1500,0,500);
 		glm::vec3 len = glm::vec3(512.0f);
 		BoundingBox box = BoundingBox(min,min+len);
@@ -325,6 +358,7 @@ void Scene::generate(Camera &camera) {
 	}
 
 	{
+		std::cout << "\tsolidSpace.add(sphere)"<< std::endl;
 		glm::vec3 min = glm::vec3(1500,0,500);
 		glm::vec3 len = glm::vec3(512.0f);
 		BoundingSphere sphere = BoundingSphere(min+3.0f*len/4.0f, 256);
@@ -334,6 +368,7 @@ void Scene::generate(Camera &camera) {
 	}
 
 	{
+		std::cout << "\tsolidSpace.del(sphere)"<< std::endl;
 		glm::vec3 min = glm::vec3(1500,0,500);
 		glm::vec3 len = glm::vec3(512.0f);
 		BoundingSphere sphere = BoundingSphere(min+len, 128);
@@ -343,6 +378,7 @@ void Scene::generate(Camera &camera) {
 	}
 
 	{
+		std::cout << "\tsolidSpace.del(sphere)"<< std::endl;
 		glm::vec3 min = glm::vec3(1500,0,500);
 		glm::vec3 len = glm::vec3(512.0f);
 		BoundingSphere sphere = BoundingSphere(min+3.0f*len/4.0f, 128);
@@ -352,6 +388,7 @@ void Scene::generate(Camera &camera) {
 	}
 
 	{
+		std::cout << "\tsolidSpace.del(capsule)"<< std::endl;
 		glm::vec3 a = glm::vec3(0,0, -3000);
 		glm::vec3 b = glm::vec3(0,500,0);
 		float r = 256.0f;
@@ -361,6 +398,7 @@ void Scene::generate(Camera &camera) {
 	}
 
 	{
+		std::cout << "\tsolidSpace.add(sphere)"<< std::endl;
 		glm::vec3 min = glm::vec3(1500,0,500);
 		glm::vec3 len = glm::vec3(512.0f);
 		BoundingSphere sphere = BoundingSphere(min+len, 64);
@@ -370,6 +408,7 @@ void Scene::generate(Camera &camera) {
 	}
 
 	{
+		std::cout << "\tsolidSpace.add(octahedron)"<< std::endl;
 		glm::vec3 center = glm::vec3(0,400,-600);
 		float radius = 256.0f;
 		OctahedronDistanceFunction function(center, radius);
@@ -378,6 +417,7 @@ void Scene::generate(Camera &camera) {
 	}
 
 	{
+		std::cout << "\tsolidSpace.add(pyramid)"<< std::endl;
 		glm::vec3 center = glm::vec3(0,500,0);
 		float radius = 256.0f;
 		PyramidDistanceFunction function(glm::vec3(0.0f), 1.0f);
@@ -388,6 +428,7 @@ void Scene::generate(Camera &camera) {
 	}
 
 	{
+		std::cout << "\tsolidSpace.add(water)"<< std::endl;
 		BoundingBox waterBox = mapBox;
 		waterBox.setMaxY(0);
 		OctreeDifferenceFunction function(&solidSpace, waterBox);
@@ -396,7 +437,7 @@ void Scene::generate(Camera &camera) {
 		liquidSpace.add(wrappedFunction, model, WaterBrush(0), minSize, simplifier, &liquidSpaceChangeHandler);
 	}
 
-	//exportOctree();
+	exportOctree();
 
 	double endTime = glfwGetTime(); // Get elapsed time in seconds
 	//std::cout << "Scene::callsToSDF " << std::to_string(WrappedSignedDistanceFunction::_calls)   << std::endl;

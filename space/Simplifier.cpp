@@ -51,7 +51,8 @@ void Simplifier::simplify(BoundingCube chunkCube, const OctreeNodeData &params){
 					return;	
 				}
 				
-				float d = parentPlane.distance(child->vertex.position);
+				glm::vec3 p0 = child->vertex.position;
+				float d = parentPlane.distance(p0);
 				if( d > distance*cube.getLengthX() ) {
 					return;
 				}

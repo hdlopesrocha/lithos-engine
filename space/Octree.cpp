@@ -166,8 +166,10 @@ OctreeNode * Octree::fetch(OctreeNodeData &data, OctreeNode ** out, int i) {
     return out[i];
 }
 
+
 void Octree::handleQuadNodes(OctreeNodeData &data, OctreeNodeTriangleHandler * handler, bool simplification) {
-	OctreeNode * neighbors[8] = {NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL};
+
+    OctreeNode * neighbors[8] = {NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL};
 	
     for(size_t k =0 ; k < tessOrder.size(); ++k) {
 		glm::ivec2 edge = tessEdge[k];
@@ -181,17 +183,18 @@ void Octree::handleQuadNodes(OctreeNodeData &data, OctreeNodeTriangleHandler * h
 
 		if(sign0 != sign1) {
 			glm::ivec4 quad = tessOrder[k];
-			OctreeNode * quads[4] = {NULL, NULL, NULL, NULL};
+            Vertex vertices[4] = { Vertex(), Vertex(), Vertex(), Vertex() };
 			for(int i =0; i<4 ; ++i) {
 				OctreeNode * n = fetch(data, neighbors, quad[i]);
-				quads[i] = (n != NULL && !n->isSolid()) ? n : NULL;
-                if(n == NULL) {
-                    break;
+                if(n != NULL && !n->isSolid() && !n->isEmpty()) {
+                    vertices[i] = n->vertex;
+                }else {
+                    vertices[i].brushIndex = DISCARD_BRUSH_INDEX;
                 }
 			}
-
-			handler->handle(quads[0],quads[2],quads[1],sign1);
-			handler->handle(quads[0],quads[3],quads[2],sign1);
+	
+			handler->handle(vertices[0], vertices[2], vertices[1], sign1);
+			handler->handle(vertices[0], vertices[3], vertices[2], sign1);
 		}
 	}
 }
@@ -349,8 +352,8 @@ NodeOperationResult Octree::shape(
         node->setEmpty(resultType == SpaceType::Empty);
         if(resultType == SpaceType::Surface) {
             //node->vertex.normal = SDF::getNormalFromPosition(node->sdf, frame.cube, node->vertex.position);
-            node->vertex.position = SDF::getPosition(node->sdf, frame.cube);
-            node->vertex.normal = SDF::getNormal(node->sdf, frame.cube);       
+            node->vertex.position = glm::vec4(SDF::getPosition(node->sdf, frame.cube) ,0.0f);
+            node->vertex.normal = glm::vec4(SDF::getNormal(node->sdf, frame.cube), 0.0f);       
         }
         if(shapeType != SpaceType::Empty) {
             painter.paint(node->vertex);

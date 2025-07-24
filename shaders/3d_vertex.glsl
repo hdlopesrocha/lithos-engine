@@ -3,8 +3,8 @@
 #include<uniforms.glsl>
 
 // Input from the vertex array
-layout(location = 0) in vec3 position; 
-layout(location = 1) in vec3 normal;    
+layout(location = 0) in vec4 position; 
+layout(location = 1) in vec4 normal;    
 layout(location = 2) in vec2 textureCoord;    
 layout(location = 3) in uint brushIndex;     
 layout(location = 4) in float shift; 
@@ -31,13 +31,13 @@ void main() {
     vTextureCoord.y -= shift;
 
     vModel = world*model;
-    vPosition = (vModel*vec4(position, 1.0)).xyz;
+    vPosition = (vModel*vec4(position.xyz, 1.0)).xyz;
 
 
 
  
     mat3 normalMatrix = transpose(inverse(mat3(vModel)));
-    vNormal = normalize(normalMatrix * normal);
+    vNormal = normalize(normalMatrix * normal.xyz);
     
     if(overrideEnabled){
         vTextureIndex = brushTextures[overrideBrush];

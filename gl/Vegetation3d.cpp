@@ -26,10 +26,10 @@ Vegetation3d::Vegetation3d(int brushIndex) : Geometry(true){
         Vertex d = Vertex(rotate(glm::vec3(0.5,1,0), axis1, angle), glm::vec3(0), glm::vec2(0,0),brushIndex);
 
         glm::vec3 n = Geometry::getNormal(&a, &b, &c);
-        a.normal = n;
-        b.normal = n;
-        c.normal = n;
-        d.normal = n;
+        a.normal = glm::vec4(n, 0.0f);
+        b.normal = glm::vec4(n, 0.0f);
+        c.normal = glm::vec4(n, 0.0f);
+        d.normal = glm::vec4(n, 0.0f);
         
         addVertex(a);
         addVertex(b);
@@ -49,10 +49,10 @@ Vegetation3d::Vegetation3d(int brushIndex) : Geometry(true){
         Vertex d = Vertex(rotate2(glm::vec3(0.5,1,0), axis1, angle, axis2, PI/4), glm::vec3(0,1,0), glm::vec2(0,0),brushIndex);
 
         glm::vec3 n = Geometry::getNormal(&a, &b, &c);
-        a.normal = n;
-        b.normal = n;
-        c.normal = n;
-        d.normal = n;
+        a.normal = glm::vec4(n, 0.0f);
+        b.normal = glm::vec4(n, 0.0f);
+        c.normal = glm::vec4(n, 0.0f);
+        d.normal = glm::vec4(n, 0.0f);
         
         addVertex(a);
         addVertex(b);

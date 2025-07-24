@@ -50,7 +50,8 @@ void Tesselator::getOrder(OctreeNodeData &params, uint8_t * order){
 	}
 }
 
-int triplanarPlane(glm::vec3 position, glm::vec3 normal) {
+
+int triplanarPlane(glm::vec3 normal) {
     glm::vec3 absNormal = glm::abs(normal);
     if (absNormal.x > absNormal.y && absNormal.x > absNormal.z) {
         return normal.x > 0 ? 0 : 1;
@@ -73,39 +74,32 @@ glm::vec2 triplanarMapping(glm::vec3 position, int plane) {
     }
 }
 
-int addTriangle(OctreeNode* c0, OctreeNode* c1, OctreeNode* c2, Geometry * chunk, bool reverse, bool triplanar, float triplanarScale) {
-    int count = 0;
-    if(c0 != NULL && c1 != NULL && c2!=NULL) {
-        Vertex v0 = c0->vertex;
-        Vertex v1 = c1->vertex;
-        Vertex v2 = c2->vertex;
+void Tesselator::handle(Vertex &v0, Vertex &v1, Vertex &v2, bool reverse) {
+    bool triplanar = true;
+    float triplanarScale = 0.1f;
 
-        if(c0!= c1 && c1 != c2 && c0!=c2 && 
-            c0->vertex.brushIndex>DISCARD_BRUSH_INDEX && 
-            c1->vertex.brushIndex>DISCARD_BRUSH_INDEX && 
-            c2->vertex.brushIndex>DISCARD_BRUSH_INDEX){
-            glm::vec3 d1 = v1.position-v0.position;
-            glm::vec3 d2 = v2.position-v0.position;
+  
+    if(v0.brushIndex>DISCARD_BRUSH_INDEX && 
+        v1.brushIndex>DISCARD_BRUSH_INDEX && 
+        v2.brushIndex>DISCARD_BRUSH_INDEX && 
+        v0 != v1 && v1 != v2 && v0!=v2) {
+
+    
+            glm::vec3 d1 = v1.position -v0.position;
+            glm::vec3 d2 = v2.position -v0.position;
             glm::vec3 n = glm::cross(d2,d1);
 
+
             if(triplanar) {
-                int plane = triplanarPlane(v0.position, n);
+                int plane = triplanarPlane(n);
                 v0.texCoord = triplanarMapping(v0.position, plane)*triplanarScale;
                 v1.texCoord = triplanarMapping(v1.position, plane)*triplanarScale;
                 v2.texCoord = triplanarMapping(v2.position, plane)*triplanarScale;
             }
+
             chunk->addVertex(reverse ? v2 : v0);
             chunk->addVertex(reverse ? v1 : v1);
             chunk->addVertex(reverse ? v0 : v2);
-            ++count;
-        }
-    }
-    return count;
-}
-
-
-void Tesselator::handle(OctreeNode* c0,OctreeNode* c1,OctreeNode* c2, bool sign) {
-    if(c0 != NULL && c1 != NULL && c2!=NULL) {
-	    *count += addTriangle(c0,c1,c2, chunk, sign, true, 0.2f); //triplanar in GPU
+            ++(*count);
     }
 }
