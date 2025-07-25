@@ -230,12 +230,12 @@ template <typename T> struct NodeInfo {
 
 
 class LiquidSpaceChangeHandler : public OctreeChangeHandler {
-	std::unordered_map<OctreeNode*, NodeInfo<InstanceData>> * liquidInfo;
+	std::unordered_map<OctreeNode*, GeometrySSBO> * liquidInfo;
  
 	public:
 	LiquidSpaceChangeHandler();
 	LiquidSpaceChangeHandler(
-		std::unordered_map<OctreeNode*, NodeInfo<InstanceData>> * liquidInfo
+		std::unordered_map<OctreeNode*, GeometrySSBO> * liquidInfo
 	);
 
 	void create(OctreeNode* nodeId) override;
@@ -244,7 +244,6 @@ class LiquidSpaceChangeHandler : public OctreeChangeHandler {
 };
 
 class SolidSpaceChangeHandler : public OctreeChangeHandler {
-	std::unordered_map<OctreeNode*, NodeInfo<InstanceData>> * solidInfo;
 	std::unordered_map<OctreeNode*, NodeInfo<InstanceData>> * vegetationInfo;
 	std::unordered_map<OctreeNode*, NodeInfo<DebugInstanceData>> * debugInfo;
 	std::unordered_map<OctreeNode*, GeometrySSBO> * computeInfo;
@@ -252,7 +251,6 @@ class SolidSpaceChangeHandler : public OctreeChangeHandler {
 	public:
 	SolidSpaceChangeHandler();
 	SolidSpaceChangeHandler(
-		std::unordered_map<OctreeNode*, NodeInfo<InstanceData>> * solidInfo,
 		std::unordered_map<OctreeNode*, NodeInfo<InstanceData>> * vegetationInfo,
 		std::unordered_map<OctreeNode*, NodeInfo<DebugInstanceData>> * debugInfo,
 		std::unordered_map<OctreeNode*, GeometrySSBO> * computeInfo
@@ -331,12 +329,11 @@ class Scene {
 	VegetationGeometryBuilder * vegetationBuilder;
 	OctreeGeometryBuilder * debugBuilder;
 
-	std::unordered_map<OctreeNode*, NodeInfo<InstanceData>> solidInfo;
 	std::unordered_map<OctreeNode*, NodeInfo<InstanceData>> brushInfo;
-	std::unordered_map<OctreeNode*, NodeInfo<InstanceData>> liquidInfo;
+	std::unordered_map<OctreeNode*, GeometrySSBO> liquidInfo;
+	std::unordered_map<OctreeNode*, GeometrySSBO> computeInfo;
 	std::unordered_map<OctreeNode*, NodeInfo<DebugInstanceData>> debugInfo;
 	std::unordered_map<OctreeNode*, NodeInfo<InstanceData>> vegetationInfo;
-	std::unordered_map<OctreeNode*, GeometrySSBO> computeInfo;
 
 	OctreeSSBO octreeSSBO;
 	InputSSBO inputSSBO;
@@ -380,7 +377,6 @@ class Scene {
 	void save(std::string folderPath, Camera &camera);
 	void load(std::string folderPath, Camera &camera);
 	bool computeGeometry(OctreeNodeData &data, Octree * tree, std::unordered_map<OctreeNode*, GeometrySSBO>* infos);
-	void exportOctree();
 
 };
 
