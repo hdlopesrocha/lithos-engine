@@ -980,7 +980,7 @@ public:
 										ImGuiWindowFlags_NoNav);
 			
 			ImGui::Text("%d FPS", framesPerSecond);
-			ImGui::Text("%ld/%ld solid instances", mainScene->solidInstancesVisible, mainScene->computeInfo.size());
+			ImGui::Text("%ld/%ld solid instances", mainScene->solidInstancesVisible, mainScene->solidInfo.size());
 			ImGui::Text("%ld/%ld liquid instances", mainScene->liquidInstancesVisible, mainScene->liquidInfo.size());
 			ImGui::Text("%ld/%ld vegetation instances", mainScene->vegetationInstancesVisible, mainScene->vegetationInfo.size());
 			ImGui::Text("%ld solid triangles", mainScene->solidTrianglesCount);

@@ -265,12 +265,12 @@ class SolidSpaceChangeHandler : public OctreeChangeHandler {
 
 
 class BrushSpaceChangeHandler : public OctreeChangeHandler {
-	std::unordered_map<OctreeNode*, NodeInfo<InstanceData>> * brushInfo;
+	std::unordered_map<OctreeNode*, GeometrySSBO> * brushInfo;
  
 	public:
 	BrushSpaceChangeHandler();
 	BrushSpaceChangeHandler(
-		std::unordered_map<OctreeNode*, NodeInfo<InstanceData>> * brushInfo
+		std::unordered_map<OctreeNode*, GeometrySSBO> * brushInfo
 	);
 
 	void create(OctreeNode* nodeId) override;
@@ -329,9 +329,9 @@ class Scene {
 	VegetationGeometryBuilder * vegetationBuilder;
 	OctreeGeometryBuilder * debugBuilder;
 
-	std::unordered_map<OctreeNode*, NodeInfo<InstanceData>> brushInfo;
+	std::unordered_map<OctreeNode*, GeometrySSBO> brushInfo;
 	std::unordered_map<OctreeNode*, GeometrySSBO> liquidInfo;
-	std::unordered_map<OctreeNode*, GeometrySSBO> computeInfo;
+	std::unordered_map<OctreeNode*, GeometrySSBO> solidInfo;
 	std::unordered_map<OctreeNode*, NodeInfo<DebugInstanceData>> debugInfo;
 	std::unordered_map<OctreeNode*, NodeInfo<InstanceData>> vegetationInfo;
 

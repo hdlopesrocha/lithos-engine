@@ -5,7 +5,7 @@ BrushSpaceChangeHandler::BrushSpaceChangeHandler() : brushInfo(NULL) {
 };
 
 BrushSpaceChangeHandler::BrushSpaceChangeHandler(
-    std::unordered_map<OctreeNode*, NodeInfo<InstanceData>> * brushInfo
+    std::unordered_map<OctreeNode*, GeometrySSBO> * brushInfo
 ) {
     this->brushInfo = brushInfo;
 };

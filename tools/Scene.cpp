@@ -37,7 +37,7 @@ Scene::Scene(Settings * settings, ComputeShader * computeShader):
 
 
 	liquidSpaceChangeHandler = LiquidSpaceChangeHandler(&liquidInfo);
-	solidSpaceChangeHandler = SolidSpaceChangeHandler(&vegetationInfo, &debugInfo, &computeInfo);
+	solidSpaceChangeHandler = SolidSpaceChangeHandler(&vegetationInfo, &debugInfo, &solidInfo);
 	brushSpaceChangeHandler = BrushSpaceChangeHandler(&brushInfo);
 
 	inputSSBO.allocate();
@@ -68,17 +68,6 @@ template <typename T> bool Scene::loadSpace(Octree* tree, OctreeNodeData& data, 
 		return true;
 	}
 	return false;
-}
-
-bool Scene::processLiquid(OctreeNodeData &data, Octree * tree) {
-	bool result = false;
-	if(data.node->isDirty()) {
-		if(computeGeometry(data, tree, &liquidInfo)) {
-			result = true;
-		}
-		data.node->setDirty(false);
-	}
-	return result;
 }
 
 bool Scene::computeGeometry(OctreeNodeData &data, Octree * tree, std::unordered_map<OctreeNode*, GeometrySSBO>* infos) {
@@ -131,11 +120,21 @@ bool Scene::computeGeometry(OctreeNodeData &data, Octree * tree, std::unordered_
 	return false;
 }
 
+bool Scene::processLiquid(OctreeNodeData &data, Octree * tree) {
+	bool result = false;
+	if(data.node->isDirty()) {
+		if(computeGeometry(data, tree, &liquidInfo)) {
+			result = true;
+		}
+		data.node->setDirty(false);
+	}
+	return result;
+}
 
 bool Scene::processSolid(OctreeNodeData &data, Octree * tree) {
 	bool result = false;
 	if(data.node->isDirty()) { 
-		if(computeGeometry(data, tree, &computeInfo)) {
+		if(computeGeometry(data, tree, &solidInfo)) {
 			result = true;
 		}
 		if(loadSpace(tree, data, &vegetationInfo, vegetationBuilder)) {
@@ -151,8 +150,11 @@ bool Scene::processSolid(OctreeNodeData &data, Octree * tree) {
 
 bool Scene::processBrush(OctreeNodeData &data, Octree * tree) {
 	bool result = false;
-	if(loadSpace(tree, data, &brushInfo, brushBuilder)) {
-		result = true;			
+	if(data.node->isDirty()) { 
+		if(computeGeometry(data, tree, &brushInfo)) {
+			result = true;
+		}
+		data.node->setDirty(false);	
 	}
 	return result;
 }
@@ -289,11 +291,11 @@ void drawGeometry(const std::vector<OctreeNodeData> &list, std::unordered_map<Oc
 
 
 void Scene::draw3dSolid(glm::vec3 cameraPosition, const std::vector<OctreeNodeData> &list) {
-	drawGeometry(list, &computeInfo);
+	drawGeometry(list, &solidInfo);
 }
 
 void Scene::draw3dBrush(glm::vec3 cameraPosition, const std::vector<OctreeNodeData> &list) {
-	draw<InstanceData, InstanceDataHandler>(TYPE_INSTANCE_FULL_DRAWABLE, GL_PATCHES, cameraPosition, list, &brushInfo, &brushInstancesVisible);
+	drawGeometry(list, &brushInfo);
 }
 
 void Scene::draw3dLiquid(glm::vec3 cameraPosition, const std::vector<OctreeNodeData> &list) {
