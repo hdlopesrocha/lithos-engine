@@ -159,9 +159,14 @@ template<typename T> void BrushEventHandler<T>::handle(T * event) {
         std::cout << "EVENT_PREVIOUS_TAB:" << std::to_string(context.currentTab) << std::endl;
     }
 
+    if(event->getType() == EVENT_BRUSH_CHANGED) {
+        std::cout << "EVENT_BRUSH_CHANGED" << std::endl;
+        changed = true;
+    }
+
     if(changed) {
         Octree * space = &scene.brushSpace;
-        space->root->clear(&space->allocator, *space);
+        space->root->clear(&space->allocator, *space, &scene.brushSpaceChangeHandler);
         scene.brushInfo.clear();
         context.apply(*space, &scene.brushSpaceChangeHandler, true);
     }

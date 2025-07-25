@@ -378,14 +378,14 @@ NodeOperationResult Octree::shape(
         }
 
         if(resultType != SpaceType::Surface) {
-            if(chunkNode) {
+            if(chunkNode || chunk == NULL) {
                 if(changeHandler != NULL) {
                     changeHandler->erase(node);
                 }
             }
-            node->clear(&allocator, frame.cube);
+            node->clear(&allocator, frame.cube, changeHandler);
         } else {
-            if(chunkNode) {
+            if(chunkNode || chunk == NULL) {
                 if(changeHandler != NULL) {
                     changeHandler->update(node);
                 }

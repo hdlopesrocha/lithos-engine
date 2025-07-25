@@ -1,6 +1,6 @@
 #include "tools.hpp"
 
-BrushContext::BrushContext(Camera *camera, Scene &scene) : camera(camera) , scene(scene), model(glm::vec3(1.0f),glm::vec3(0.0f), 0.0f, 0.0f, 0.0f) {
+BrushContext::BrushContext(Settings * settings, Camera * camera) : settings(settings), camera(camera), model(glm::vec3(1.0f),glm::vec3(0.0f), 0.0f, 0.0f, 0.0f) {
     this->simplifier = new Simplifier(0.99f, 0.01f, true);
     this->boundingVolume = BoundingSphere(glm::vec3(0), 3.0f);
     
@@ -45,6 +45,11 @@ WrappedSignedDistanceFunction * BrushContext::getWrapped() {
 void BrushContext::apply(Octree &space, OctreeChangeHandler * handler, bool preview) {
     WrappedSignedDistanceFunction * wrapped = getWrapped();
     if(wrapped) {
+        float safeDetail = glm::ceil(wrapped->getLength() * settings->safetyDetailRatio);
+        if(detail < safeDetail) {
+            detail = safeDetail;
+            std::cout << "BrushContext::apply: detail increased to " << std::to_string(detail) << std::endl;
+        }
         if(preview  || mode == BrushMode::ADD) {
             space.add(*wrapped, this->model, SimpleBrush(brushIndex), detail, *simplifier, handler);
         } else {

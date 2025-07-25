@@ -192,6 +192,8 @@ class WrappedSignedDistanceFunction : public SignedDistanceFunction {
     }
 
     virtual ContainmentType check(const BoundingCube &cube) const = 0;
+    virtual float getLength() const = 0;
+
     virtual bool isContained(const BoundingCube &cube) const = 0;
 
     SdfType getType() const override {
@@ -238,6 +240,11 @@ class WrappedSphere : public WrappedSignedDistanceFunction {
         return cube.contains(sphere);
     };
 
+    float getLength() const override {
+        SphereDistanceFunction * f = (SphereDistanceFunction*) function;
+        return f->radius*glm::length(model.scale) + bias;
+    };
+
 };
 
 class WrappedBox : public WrappedSignedDistanceFunction {
@@ -261,6 +268,10 @@ class WrappedBox : public WrappedSignedDistanceFunction {
         return cube.contains(sphere);
     };
 
+    float getLength() const override {
+        BoxDistanceFunction * f = (BoxDistanceFunction*) function;
+        return glm::length(f->length*model.scale) + bias;
+    };
 };
 
 class WrappedCapsule : public WrappedSignedDistanceFunction {
@@ -283,7 +294,10 @@ class WrappedCapsule : public WrappedSignedDistanceFunction {
         BoundingSphere sphere = getSphere();
         return cube.contains(sphere);
     };
-
+    float getLength() const override {
+        CapsuleDistanceFunction * f = (CapsuleDistanceFunction*) function;
+        return (2.0f*f->radius+glm::distance(f->a, f->b))*glm::length(model.scale) + bias;
+    };
 };
 
 class WrappedHeightMap : public WrappedSignedDistanceFunction {
@@ -306,6 +320,10 @@ class WrappedHeightMap : public WrappedSignedDistanceFunction {
         BoundingBox box = getBox();
         return cube.contains(box);
     };
+    float getLength() const override {
+        HeightMapDistanceFunction * f = (HeightMapDistanceFunction*) function;
+        return glm::length(f->map.getMax() - f->map.getMin()) + bias;
+    };
 };
 
 class WrappedOctahedron : public WrappedSignedDistanceFunction {
@@ -327,6 +345,10 @@ class WrappedOctahedron : public WrappedSignedDistanceFunction {
     bool isContained(const BoundingCube &cube) const override {
         BoundingSphere sphere = getSphere();
         return cube.contains(sphere);
+    };
+    float getLength() const override {
+        OctahedronDistanceFunction * f = (OctahedronDistanceFunction*) function;
+        return f->radius*glm::length(model.scale) + bias;
     };
 
 };
@@ -355,7 +377,10 @@ class WrappedPyramid : public WrappedSignedDistanceFunction {
         BoundingSphere sphere = getSphere();
         return cube.contains(sphere);
     };
-
+    float getLength() const override {
+        PyramidDistanceFunction * f = (PyramidDistanceFunction*) function;
+        return f->height*glm::length(model.scale) + bias;
+    };
 };
 
 #endif

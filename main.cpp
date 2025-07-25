@@ -475,29 +475,15 @@ public:
 		glUseProgram(0);
 		//tesselator->normalize();
 
-
-		brushContext = new BrushContext(&camera, *mainScene);
+		brushContext = new BrushContext(settings, &camera);
 		uniformBlockViewer = new UniformBlockViewer(&viewerBlock);
-		atlasPainter = new AtlasPainter(&atlasParams, &atlasTextures, atlasDrawer, programAtlas, programTexture, 256,256, &billboardLayers);
-		atlasViewer = new AtlasViewer(&atlasTextures, atlasDrawer, programAtlas, programTexture, 256,256, &atlasLayers, programCopy);
-		brushEditor = new BrushEditor(brush3d, &camera, &brushes, program3d, programTexture, &textureLayers, mainScene, brushContext);
-		cameraEditor = new CameraEditor(&camera);
-		gamepadEditor = new GamepadEditor(gamepadTexture);
-		shadowMapViewer = new ShadowMapViewer(&shadowFrameBuffers, 512, 512);
-		textureMixerEditor = new TextureMixerEditor(textureMixer, &mixers, programTexture, &textureLayers);
-		animatedTextureEditor = new AnimatedTextureEditor(&animations, programTexture, 256,256, &textureLayers);
-		depthBufferViewer = new DepthBufferViewer(programDepth,depthFrameBuffer.depthTexture,512,512, &camera);
-		settingsEditor = new SettingsEditor(settings);
-		textureViewer = new TextureViewer(programTexture, &textureLayers);
-		impostorViewer = new ImpostorViewer(impostorDrawer, &impostors , programTexture, 256, 256, &impostorLayers);
 
 		// Events
 		eventManager.subscribe(EVENT_CLOSE_WINDOW, new CloseWindowHandler(this));
 		eventManager.subscribe(EVENT_NEXT_PAGE, new ControlEventManagerGroupHandler(&eventManagerGroup));
 		eventManager.subscribe(EVENT_PREVIOUS_PAGE, new ControlEventManagerGroupHandler(&eventManagerGroup));
+		eventManager.subscribe(EVENT_BRUSH_CHANGED, new BrushEventHandler<Event>(*brushContext, *mainScene));
 
-		
-	
 		EventManager * cameraEventManager = new EventManager();
 		cameraEventManager->subscribe(EVENT_VECTOR_3D_0, new TranslateHandler(&camera, &camera.position));
 		cameraEventManager->subscribe(EVENT_VECTOR_3D_1, new RotateHandler(&camera, &camera.quaternion));
@@ -523,6 +509,19 @@ public:
 		eventManager.addArea(brushEventManager);
 		eventManagerGroup.addEventManager(brushEventManager);
 
+		// UI
+		atlasPainter = new AtlasPainter(&atlasParams, &atlasTextures, atlasDrawer, programAtlas, programTexture, 256,256, &billboardLayers);
+		atlasViewer = new AtlasViewer(&atlasTextures, atlasDrawer, programAtlas, programTexture, 256,256, &atlasLayers, programCopy);
+		brushEditor = new BrushEditor(brush3d, &camera, &brushes, program3d, programTexture, &textureLayers, mainScene, brushContext, &eventManager);
+		cameraEditor = new CameraEditor(&camera);
+		gamepadEditor = new GamepadEditor(gamepadTexture);
+		shadowMapViewer = new ShadowMapViewer(&shadowFrameBuffers, 512, 512);
+		textureMixerEditor = new TextureMixerEditor(textureMixer, &mixers, programTexture, &textureLayers);
+		animatedTextureEditor = new AnimatedTextureEditor(&animations, programTexture, 256,256, &textureLayers);
+		depthBufferViewer = new DepthBufferViewer(programDepth,depthFrameBuffer.depthTexture,512,512, &camera);
+		settingsEditor = new SettingsEditor(settings);
+		textureViewer = new TextureViewer(programTexture, &textureLayers);
+		impostorViewer = new ImpostorViewer(impostorDrawer, &impostors , programTexture, 256, 256, &impostorLayers);
 
 		// ImGui
 		IMGUI_CHECKVERSION();
@@ -758,7 +757,7 @@ public:
 		if(settings->octreeWireframe) {
 			glUseProgram(programDebug);
 			UniformBlock::uniform(0, &uniformBlock, sizeof(UniformBlock), uniformBlockData);
-			mainScene->draw3dOctree(camera.position, mainScene->visibleSolidNodes);
+			mainScene->draw3dOctree(camera.position, mainScene->visibleBrushNodes);
 		}
 
 		if(settings->wireFrameEnabled) {

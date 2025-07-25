@@ -13,11 +13,11 @@ ChildBlock * ChildBlock::init() {
     return this;
 }
 
-void ChildBlock::clear(OctreeAllocator * allocator, BoundingCube &cube) {
+void ChildBlock::clear(OctreeAllocator * allocator, BoundingCube &cube, OctreeChangeHandler * handler) {
     for(int i=0; i < 8 ; ++i) {
         OctreeNode * child = allocator->getOctreeNode(this->children[i]);
         if(child != NULL) {
-            child->clear(allocator, cube);
+            child->clear(allocator, cube, handler);
             BoundingCube subCube = cube.getChild(i);
             allocator->deallocateOctreeNode(child, subCube);
             children[i] = UINT_MAX;

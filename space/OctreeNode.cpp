@@ -52,10 +52,11 @@ OctreeNode::~OctreeNode() {
 
 }
 
-void OctreeNode::clear(OctreeAllocator * allocator, BoundingCube &cube) {
+void OctreeNode::clear(OctreeAllocator * allocator, BoundingCube &cube, OctreeChangeHandler * handler) {
+	handler->erase(this);
 	if(this->id != UINT_MAX) {
 		ChildBlock * block = allocator->childAllocator.getFromIndex(this->id);
-		block->clear(allocator, cube);
+		block->clear(allocator, cube, handler);
 		allocator->childAllocator.deallocate(block);
 		this->id = UINT_MAX;
 	}

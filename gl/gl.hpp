@@ -355,6 +355,7 @@ class Settings {
         float parallaxDistance;
         float parallaxPower;
         bool octreeWireframe;
+        float safetyDetailRatio;
         Settings();
 
 };

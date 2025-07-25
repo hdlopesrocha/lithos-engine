@@ -1,13 +1,14 @@
 #include "ui.hpp"
 
 
-BrushEditor::BrushEditor( Brush3d * brush, Camera * camera, std::vector<UniformBlockBrush> * brushes, GLuint program, GLuint previewProgram, TextureLayers * layers, Scene * scene, BrushContext * brushContext) {
+BrushEditor::BrushEditor( Brush3d * brush, Camera * camera, std::vector<UniformBlockBrush> * brushes, GLuint program, GLuint previewProgram, TextureLayers * layers, Scene * scene, BrushContext * brushContext, EventManager * eventManager) {
     this->program = program;
     this->camera = camera;
     this->brush = brush;
     this->scene = scene;
     this->brushes = brushes;
     this->brushContext = brushContext;
+    this->eventManager = eventManager;    
     this->previewer = new TexturePreviewer(previewProgram, 256, 256, {"Color", "Normal", "Bump" }, layers);
 }
 
@@ -195,16 +196,8 @@ void BrushEditor::draw2d(float time){
     }  
 
     if(changed) {
-        Octree * space = &scene->brushSpace;
-        space->root->clear(&space->allocator, *space);
-        scene->brushInfo.clear();
-        brushContext->apply(*space, &scene->brushSpaceChangeHandler, true);
+        eventManager->publish<Event>(Event(EVENT_BRUSH_CHANGED));
     }
-
-
-
-
-
 
     ImGui::Separator();
 

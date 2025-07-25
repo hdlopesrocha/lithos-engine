@@ -101,9 +101,10 @@ class BrushEditor: public Closable {
     TexturePreviewer * previewer;
     BrushContext * brushContext;
     float yaw, pitch, roll;
-    
+    EventManager * eventManager;
+
     public:
-    BrushEditor(Brush3d * brush, Camera * camera, std::vector<UniformBlockBrush> * brushes, GLuint program3d, GLuint previewProgram, TextureLayers * layers, Scene * scene, BrushContext * brushContext);
+    BrushEditor(Brush3d * brush, Camera * camera, std::vector<UniformBlockBrush> * brushes, GLuint program3d, GLuint previewProgram, TextureLayers * layers, Scene * scene, BrushContext * brushContext, EventManager * eventManager);
     void draw2d(float time) override;
     int getSelectedBrush();
     void resetPosition();

@@ -97,5 +97,7 @@ void SettingsEditor::draw2d(float time){
     ImGui::Checkbox("Tesselation", &settings->tesselationEnabled);
     ImGui::Checkbox("Mesh WireFrame", &settings->wireFrameEnabled);
     ImGui::Checkbox("Octree Wireframe", &settings->octreeWireframe);
+    ImGui::DragFloat("Safety Detail Ratio", &settings->safetyDetailRatio, 0.000001f, 0.0f, 1.0f, "%.6f");
+
 	ImGui::End();
 }

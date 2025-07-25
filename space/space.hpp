@@ -7,6 +7,7 @@
 #define SQRT_3_OVER_2 0.866025404f
 
 class Octree;
+class OctreeNode;
 class OctreeAllocator;
 class Simplifier;
 struct ChildBlock;
@@ -64,6 +65,12 @@ struct OctreeNodeSerialized {
 };
 #pragma pack()  // Reset to default packing
 
+class OctreeChangeHandler {
+	public:
+	virtual void create(OctreeNode* nodeId) = 0;
+	virtual void update(OctreeNode* nodeId) = 0;
+	virtual void erase(OctreeNode* nodeId) = 0;
+};
 
 class OctreeNode {
 
@@ -77,7 +84,7 @@ class OctreeNode {
 		OctreeNode(Vertex vertex);
 		~OctreeNode();
 		OctreeNode * init(Vertex vertex);
-		void clear(OctreeAllocator * allocator, BoundingCube &cube);
+		void clear(OctreeAllocator * allocator, BoundingCube &cube, OctreeChangeHandler * handler);
 		void setChildNode(int i, OctreeNode * node, OctreeAllocator * allocator, ChildBlock * block);
 		ChildBlock * getBlock(OctreeAllocator * allocator);
 		ChildBlock * createBlock(OctreeAllocator * allocator);
@@ -101,7 +108,7 @@ struct ChildBlock {
 	public:
 	ChildBlock();
 	ChildBlock * init();
-	void clear(OctreeAllocator * allocator, BoundingCube &cube);
+	void clear(OctreeAllocator * allocator, BoundingCube &cube, OctreeChangeHandler * handler);
 
 	void set(int i, OctreeNode * node, OctreeAllocator * allocator);
 	OctreeNode * get(int i, OctreeAllocator * allocator);
@@ -189,14 +196,6 @@ struct NodeOperationResult {
 			SDF::copySDF(shapeSDF, this->shapeSDF);	
 		}					
     };
-};
-
-
-class OctreeChangeHandler {
-	public:
-	virtual void create(OctreeNode* nodeId) = 0;
-	virtual void update(OctreeNode* nodeId) = 0;
-	virtual void erase(OctreeNode* nodeId) = 0;
 };
 
 

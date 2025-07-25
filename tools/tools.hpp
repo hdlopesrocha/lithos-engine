@@ -266,11 +266,13 @@ class SolidSpaceChangeHandler : public OctreeChangeHandler {
 
 class BrushSpaceChangeHandler : public OctreeChangeHandler {
 	std::unordered_map<OctreeNode*, GeometrySSBO> * brushInfo;
- 
+	std::unordered_map<OctreeNode*, NodeInfo<DebugInstanceData>> * debugInfo;
+
 	public:
 	BrushSpaceChangeHandler();
 	BrushSpaceChangeHandler(
-		std::unordered_map<OctreeNode*, GeometrySSBO> * brushInfo
+		std::unordered_map<OctreeNode*, GeometrySSBO> * brushInfo,
+		std::unordered_map<OctreeNode*, NodeInfo<DebugInstanceData>> * debugInfo
 	);
 
 	void create(OctreeNode* nodeId) override;
@@ -323,9 +325,6 @@ class Scene {
 	std::vector<OctreeNodeData> visibleShadowNodes[SHADOW_MATRIX_COUNT];
 	
 	Simplifier simplifier;
-	MeshGeometryBuilder * brushBuilder;
-	MeshGeometryBuilder * solidBuilder;
-	MeshGeometryBuilder * liquidBuilder;
 	VegetationGeometryBuilder * vegetationBuilder;
 	OctreeGeometryBuilder * debugBuilder;
 
@@ -390,12 +389,12 @@ class BrushContext {
 	Tab currentTab;
 
 	float detail;
-	Camera * camera;
 	int brushIndex;
-	Scene &scene;
+	Settings * settings;
+	Camera * camera;	
 	Transformation model;
 
-	BrushContext(Camera *camera, Scene &scene);
+	BrushContext(Settings * settings, Camera * camera);
 	void apply(Octree &space, OctreeChangeHandler * handler, bool preview);
 	WrappedSignedDistanceFunction * getWrapped();
 };
@@ -493,6 +492,10 @@ class WrappedOctreeDifference : public WrappedSignedDistanceFunction {
         BoundingBox box = getBox();
         return box.getCenter();
     };
+	float getLength() const override {
+		BoundingBox box = getBox();
+		return glm::length(box.getLength()) + bias;
+	};
 };
 
 

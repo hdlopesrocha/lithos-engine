@@ -21,9 +21,6 @@ Scene::Scene(Settings * settings, ComputeShader * computeShader):
 	brushInstancesVisible = 0;
 	debugInstancesVisible = 0;
 
-	solidBuilder = new MeshGeometryBuilder(&solidTrianglesCount, &solidSpace);
-	brushBuilder = new MeshGeometryBuilder(&brushTrianglesCount, &brushSpace);
-	liquidBuilder = new MeshGeometryBuilder(&liquidTrianglesCount, &liquidSpace);
 	vegetationBuilder = new VegetationGeometryBuilder(&solidSpace, new VegetationInstanceBuilderHandler(&solidSpace, 0.1, 4));
 	debugBuilder = new OctreeGeometryBuilder(new OctreeInstanceBuilderHandler());
 
@@ -34,11 +31,9 @@ Scene::Scene(Settings * settings, ComputeShader * computeShader):
 		shadowRenderer[i]= new OctreeVisibilityChecker(&visibleShadowNodes[i]);
 	}
 
-
-
 	liquidSpaceChangeHandler = LiquidSpaceChangeHandler(&liquidInfo);
 	solidSpaceChangeHandler = SolidSpaceChangeHandler(&vegetationInfo, &debugInfo, &solidInfo);
-	brushSpaceChangeHandler = BrushSpaceChangeHandler(&brushInfo);
+	brushSpaceChangeHandler = BrushSpaceChangeHandler(&brushInfo, &debugInfo);
 
 	inputSSBO.allocate();
 	outputSSBO.allocate();
@@ -140,9 +135,6 @@ bool Scene::processSolid(OctreeNodeData &data, Octree * tree) {
 		if(loadSpace(tree, data, &vegetationInfo, vegetationBuilder)) {
 			result = true;			
 		}
-		if(loadSpace(tree, data, &debugInfo, debugBuilder)) {
-			result = true;			
-		}
 		data.node->setDirty(false);	
 	}
 	return result;
@@ -153,6 +145,9 @@ bool Scene::processBrush(OctreeNodeData &data, Octree * tree) {
 	if(data.node->isDirty()) { 
 		if(computeGeometry(data, tree, &brushInfo)) {
 			result = true;
+		}
+		if(loadSpace(tree, data, &debugInfo, debugBuilder)) {
+			result = true;			
 		}
 		data.node->setDirty(false);	
 	}

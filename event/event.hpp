@@ -27,7 +27,8 @@ enum EventType {
     EVENT_FLOAT_1_Z,
     EVENT_FLOAT_2_X,
     EVENT_FLOAT_2_Y,
-    EVENT_FLOAT_2_Z
+    EVENT_FLOAT_2_Z,
+    EVENT_BRUSH_CHANGED
 };
 
 
