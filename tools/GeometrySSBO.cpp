@@ -1,6 +1,5 @@
 #include "tools.hpp"
 
-#define MAX_NODES 20000
 
 
 GeometrySSBO::GeometrySSBO() : vertexSSBO(0), indexSSBO(0), vertexArrayObject(0), vertexCount(0), indexCount(0), instanceSSBO(0) {
@@ -8,7 +7,7 @@ GeometrySSBO::GeometrySSBO() : vertexSSBO(0), indexSSBO(0), vertexArrayObject(0)
 
 }
 
-void GeometrySSBO::allocate() {
+void GeometrySSBO::allocate(size_t nodesCount) {
     //std::cout << "GeometrySSBO::allocate()" << std::endl;
     InstanceData instanceData = InstanceData();
 
@@ -21,7 +20,7 @@ void GeometrySSBO::allocate() {
     glBindVertexArray(vertexArrayObject);
     //std::cout << "Generated VAO ID: " << vertexArrayObject << std::endl;
 
-    int vertexCount = MAX_NODES * 18; // 18 vertices per node (6 faces * 3 vertices per face)
+    int vertexCount = nodesCount * 18; // 18 vertices per node (6 faces * 3 vertices per face)
     // Allocate big enough buffers
     glBindBuffer(GL_ARRAY_BUFFER, vertexSSBO);
     glBufferData(GL_ARRAY_BUFFER, vertexCount * sizeof(Vertex), nullptr, GL_DYNAMIC_DRAW);

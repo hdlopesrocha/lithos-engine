@@ -43,7 +43,6 @@ Scene::Scene(Settings * settings, ComputeShader * computeShader):
 	inputSSBO.allocate();
 	outputSSBO.allocate();
 	octreeSSBO.allocate();
-	octreeSSBO.allocate();
 
 	exportOctree();
 }
@@ -108,7 +107,7 @@ bool Scene::computeGeometry(OctreeNodeData &data, Octree * tree, std::unordered_
 		octreeSSBO.copy(&nodes);
 
 		GeometrySSBO &ssbo = (*infos)[data.node];
-		ssbo.allocate();
+		ssbo.allocate(nodes.size());
 
 		inputSSBO.copy(ComputeShaderInput(chunkBox.getMin(), chunkBox.getLength())); 
 		outputSSBO.reset();

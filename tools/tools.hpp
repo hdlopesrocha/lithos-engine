@@ -59,7 +59,7 @@ class GeometrySSBO {
 	GLuint indexCount;
 	GLuint instanceSSBO;
 	GeometrySSBO();
-	void allocate();
+	void allocate(size_t nodesCount);
 };
 
 class InputSSBO {
@@ -341,7 +341,6 @@ class Scene {
 	OctreeSSBO octreeSSBO;
 	InputSSBO inputSSBO;
 	OutputSSBO outputSSBO;
-
 
 	LiquidSpaceChangeHandler liquidSpaceChangeHandler;
 	SolidSpaceChangeHandler solidSpaceChangeHandler;
