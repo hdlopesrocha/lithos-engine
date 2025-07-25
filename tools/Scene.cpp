@@ -43,6 +43,8 @@ Scene::Scene(Settings * settings, ComputeShader * computeShader):
 	inputSSBO.allocate();
 	outputSSBO.allocate();
 	octreeSSBO.allocate();
+	octreeSSBO.allocate();
+
 	exportOctree();
 }
 
@@ -95,7 +97,15 @@ bool Scene::computeGeometry(OctreeNodeData &data, Octree * tree, std::unordered_
     //std::cout << "Scene::computeGeometry() " << "minX:" << chunkBox.getMinX() << ", minY:" << chunkBox.getMinY() << ", minZ:" << chunkBox.getMinZ() << ", len:" << chunkBox.getLengthX() << std::endl;
 	if (!emptyChunk)	{
 
+		std::vector<OctreeNodeCubeSerialized> nodes;
+		nodes.reserve(2000);
+		BoundingCube chunkOverlap = data.cube;
+		//chunkOverlap.setLength(chunkOverlap.getLengthX()*1.5f);
+		tree->root->exportSerialization(&tree->allocator, &nodes, *tree, chunkOverlap, true);
+
+
 		(*infos)[data.node] = GeometrySSBO();
+		octreeSSBO.copy(&nodes);
 
 		GeometrySSBO &ssbo = (*infos)[data.node];
 		ssbo.allocate();
@@ -111,7 +121,7 @@ bool Scene::computeGeometry(OctreeNodeData &data, Octree * tree, std::unordered_
 		if (result.vertexCount == 0 || result.indexCount == 0) {
 			return false;
 		}
-	/*	
+		/*
 		std::cout << "\tresult4f0 = { " 
 			<< std::to_string(result.result4f0.x) << ", " 
 			<< std::to_string(result.result4f0.y) << ", " 
@@ -125,8 +135,7 @@ bool Scene::computeGeometry(OctreeNodeData &data, Octree * tree, std::unordered_
 
 		std::cout << "\tvertexCount = " << std::to_string(result.vertexCount) <<std::endl;
 		std::cout << "\tindexCount = " << std::to_string(result.indexCount) <<std::endl;
-*/
-
+		*/
 		return true;
 	}
 	return false;
@@ -168,7 +177,7 @@ bool Scene::processSpace() {
 	vegetationInstancesVisible = 0;
 	brushInstancesVisible = 0;
 	debugInstancesVisible = 0;
-	int loadCountSolid = 1;
+	int loadCountSolid = 10;
 	int loadCountLiquid = 1;
 
 	for(OctreeNodeData &data : visibleSolidNodes) {
@@ -207,7 +216,6 @@ bool Scene::processSpace() {
 			}
 		}
 	}
-
 	return loadCountSolid <=0 || loadCountLiquid <=0;
 }
 
@@ -444,7 +452,7 @@ void Scene::generate(Camera &camera) {
 		liquidSpace.add(wrappedFunction, model, WaterBrush(0), minSize, simplifier, &liquidSpaceChangeHandler);
 	}
 
-	exportOctree();
+	//exportOctree();
 
 	double endTime = glfwGetTime(); // Get elapsed time in seconds
 	//std::cout << "Scene::callsToSDF " << std::to_string(WrappedSignedDistanceFunction::_calls)   << std::endl;
@@ -476,7 +484,7 @@ void Scene::import(const std::string &filename, Camera &camera) {
 	BoundingBox waterBox = mapBox;
 	waterBox.setMaxY(0);
 	
-	exportOctree();
+	//exportOctree();
 }
 
 void Scene::save(std::string folderPath, Camera &camera) {

@@ -427,7 +427,7 @@ void Octree::exportNodesSerialization(std::vector<OctreeNodeCubeSerialized> * no
 	std::cout << "exportNodesSerialization()" << std::endl;
     nodes->clear();
     nodes->reserve(10000000);
-    root->exportSerialization(&allocator, nodes, *this);
+    root->exportSerialization(&allocator, nodes, *this, *this, true);
 	std::cout << "exportNodesSerialization Ok!" << std::endl;
 }
 

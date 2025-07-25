@@ -285,7 +285,6 @@ void handleTriangle(Vertex v0, Vertex v1 , Vertex v2, bool sign) {
 
 
 void main() {
-    //shaderOutput.result4f = vec4(nodes.length());
     uint nodeIdx = gl_GlobalInvocationID.x;
     if (nodeIdx >= nodes.length()) return;
    
@@ -297,8 +296,8 @@ void main() {
         return;
     }
 
-    shaderOutput.result4f0= instance.matrix[0];
-    shaderOutput.result4f1= instance.matrix[1];
+    shaderOutput.result4f0= vec4(nodes[0].min, 0.0f);
+    shaderOutput.result4f1= vec4(nodes[0].length, 0.0f);
 
     for(int k =0 ; k < tessEdge.length(); ++k) {
 		ivec2 edge = tessEdge[k];

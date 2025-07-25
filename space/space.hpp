@@ -22,13 +22,25 @@ struct OctreeSerialized {
 
 
 
-struct OctreeNodeCubeSerialized {
+struct alignas(16) OctreeNodeCubeSerialized {
 	float sdf[8];
     uint children[8];
     glm::vec3 min;
     int brushIndex;
     glm::vec3 length;
     uint bits;
+
+	OctreeNodeCubeSerialized();
+	OctreeNodeCubeSerialized(float * sdf, BoundingCube cube, int brushIndex, uint bits) {
+		SDF::copySDF(sdf, this->sdf);
+		for(int i = 0; i < 8; ++i) {
+			this->children[i] = 0;
+		}
+		this->min = cube.getMin();
+		this->brushIndex = brushIndex;
+		this->length = cube.getLength();
+		this->bits = bits;
+	};
 };
 
 
@@ -80,7 +92,7 @@ class OctreeNode {
 		bool isDirty();
 		void setDirty(bool value);
 		void setSdf(float * value);
-		uint exportSerialization(OctreeAllocator * allocator, std::vector<OctreeNodeCubeSerialized> * nodes, BoundingCube cube);
+		uint exportSerialization(OctreeAllocator * allocator, std::vector<OctreeNodeCubeSerialized> * nodes, BoundingCube cube, BoundingCube chunk, bool isRoot);
 	};
 
 struct ChildBlock {
