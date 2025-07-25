@@ -257,12 +257,11 @@ struct StackFrameOut : public OctreeNodeData  {
 	}
 };
 
-#pragma pack(16)
-struct InstanceData {
+struct alignas(16) InstanceData {
     public:
+    glm::mat4 matrix;
     float shift;
 	uint animation;
-    glm::mat4 matrix;
     
 	InstanceData() {
         this->matrix = glm::mat4(1.0f);
@@ -276,7 +275,6 @@ struct InstanceData {
 		this->animation = animation;
     }
 };
-#pragma pack()
 
 struct DebugInstanceData {
     public:

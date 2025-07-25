@@ -23,17 +23,14 @@ enum Tab {
 
 
 
-#pragma pack(16)  // Ensure 16-byte alignment for UBO
-struct ComputeShaderInput {
+struct alignas(16) ComputeShaderInput {
     glm::vec4 chunkMin;
     glm::vec4 chunkLength;
 	ComputeShaderInput() : chunkMin(glm::vec4(0.0f)), chunkLength(glm::vec4(0.0f)) {}
 	ComputeShaderInput(glm::vec3 chunkMin, glm::vec3 chunkLength) : chunkMin(glm::vec4(chunkMin, 0.0f)), chunkLength(glm::vec4(chunkLength, 0.0f)) {}
 };
-#pragma pack()  // Reset to default packing
 
-#pragma pack(16)  // Ensure 16-byte alignment for UBO
-struct ComputeShaderOutput {
+struct alignas(16) ComputeShaderOutput {
 	public:
 	glm::vec4 result4f0;
 	glm::vec4 result4f1;
@@ -44,9 +41,6 @@ struct ComputeShaderOutput {
 	ComputeShaderOutput(GLuint vertexCount, GLuint indexCount, glm::vec4 result4f0, glm::vec4 result4f1);
 	void reset();
 };
-#pragma pack()
-
-
 
 class OctreeSSBO {
 	public:
@@ -63,7 +57,7 @@ class GeometrySSBO {
 	GLuint vertexArrayObject;
 	GLuint vertexCount;
 	GLuint indexCount;
-	GLuint instanceBuffer;
+	GLuint instanceSSBO;
 	GeometrySSBO();
 	void allocate();
 };

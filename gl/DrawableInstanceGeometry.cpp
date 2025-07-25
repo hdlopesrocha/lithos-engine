@@ -45,7 +45,7 @@ template <typename T> DrawableInstanceGeometry<T>::DrawableInstanceGeometry(Geom
 		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) offsetof(Vertex, texCoord));
 
 		glEnableVertexAttribArray(3);
-		glVertexAttribIPointer(3, 1, GL_UNSIGNED_INT, sizeof(Vertex), (void*) offsetof(Vertex, brushIndex));
+		glVertexAttribIPointer(3, 1, GL_INT, sizeof(Vertex), (void*) offsetof(Vertex, brushIndex));
 
 		
 		// Instance data (matrices for instancing)

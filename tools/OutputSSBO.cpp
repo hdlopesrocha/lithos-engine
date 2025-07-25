@@ -9,7 +9,7 @@ OutputSSBO::OutputSSBO() {
 }
 
 void OutputSSBO::allocate() {
-    std::cout << "OutputSSBO::allocate()" << std::endl;
+    //std::cout << "OutputSSBO::allocate()" << std::endl;
     glGenBuffers(1, &outputSSBO);
 
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, outputSSBO);
@@ -20,7 +20,7 @@ void OutputSSBO::allocate() {
 }
 
 ComputeShaderOutput OutputSSBO::read() {
-    std::cout << "OutputSSBO::read()" << std::endl;
+    //std::cout << "OutputSSBO::read()" << std::endl;
     ComputeShaderOutput result;
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, outputSSBO);
     glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, sizeof(ComputeShaderOutput), &result);
@@ -29,7 +29,7 @@ ComputeShaderOutput OutputSSBO::read() {
 }
 
 void OutputSSBO::reset() {
-    std::cout << "OutputSSBO::reset()" << std::endl;
+    //std::cout << "OutputSSBO::reset()" << std::endl;
     ComputeShaderOutput result;
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, outputSSBO);
     glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, sizeof(ComputeShaderOutput), &result);

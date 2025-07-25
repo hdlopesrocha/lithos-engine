@@ -92,7 +92,7 @@ void Scene::exportOctree() {
 bool Scene::computeGeometry(OctreeNodeData &data, Octree * tree, std::unordered_map<OctreeNode*, GeometrySSBO>* infos) {
 	BoundingCube chunkBox = data.cube;
 	bool emptyChunk = data.node->isEmpty() || data.node->isSolid();
-    std::cout << "Scene::computeGeometry() " << "minX:" << chunkBox.getMinX() << ", minY:" << chunkBox.getMinY() << ", minZ:" << chunkBox.getMinZ() << ", len:" << chunkBox.getLengthX() << std::endl;
+    //std::cout << "Scene::computeGeometry() " << "minX:" << chunkBox.getMinX() << ", minY:" << chunkBox.getMinY() << ", minZ:" << chunkBox.getMinZ() << ", len:" << chunkBox.getLengthX() << std::endl;
 	if (!emptyChunk)	{
 
 		(*infos)[data.node] = GeometrySSBO();
@@ -108,6 +108,10 @@ bool Scene::computeGeometry(OctreeNodeData &data, Octree * tree, std::unordered_
 		ssbo.vertexCount = result.vertexCount;
 		ssbo.indexCount = result.indexCount;
 
+		if (result.vertexCount == 0 || result.indexCount == 0) {
+			return false;
+		}
+	/*	
 		std::cout << "\tresult4f0 = { " 
 			<< std::to_string(result.result4f0.x) << ", " 
 			<< std::to_string(result.result4f0.y) << ", " 
@@ -121,7 +125,7 @@ bool Scene::computeGeometry(OctreeNodeData &data, Octree * tree, std::unordered_
 
 		std::cout << "\tvertexCount = " << std::to_string(result.vertexCount) <<std::endl;
 		std::cout << "\tindexCount = " << std::to_string(result.indexCount) <<std::endl;
-
+*/
 
 		return true;
 	}
@@ -132,9 +136,9 @@ bool Scene::computeGeometry(OctreeNodeData &data, Octree * tree, std::unordered_
 bool Scene::processSolid(OctreeNodeData &data, Octree * tree) {
 	bool result = false;
 	if(data.node->isDirty()) { 
-		/*if(computeGeometry(data, tree, &computeInfo)) {
+		if(computeGeometry(data, tree, &computeInfo)) {
 			result = true;
-		}*/
+		}
 		if(loadSpace(tree, data, &solidInfo, solidBuilder)) {
 			result = true;		
 		}
@@ -271,27 +275,30 @@ void Scene::drawVegetation(glm::vec3 cameraPosition, const std::vector<OctreeNod
 	draw<InstanceData, InstanceDataHandler>(TYPE_INSTANCE_AMOUNT_DRAWABLE, GL_PATCHES, cameraPosition, list, &vegetationInfo, &vegetationInstancesVisible);
 	glEnable(GL_CULL_FACE);
 }
-
+/*
 void Scene::draw3dSolid(glm::vec3 cameraPosition, const std::vector<OctreeNodeData> &list) {
 	draw<InstanceData, InstanceDataHandler>(TYPE_INSTANCE_FULL_DRAWABLE, GL_PATCHES, cameraPosition, list, &solidInfo, &solidInstancesVisible);
 }
+*/
 
-/*
 void Scene::draw3dSolid(glm::vec3 cameraPosition, const std::vector<OctreeNodeData> &list) {
 	for(const OctreeNodeData &data : list) {
 		OctreeNode * node = data.node;
-		GeometrySSBO * geo = &computeInfo[node];
-		if(geo != NULL && geo->vertexCount > 0 && geo->indexCount > 0 && geo->vertexArrayObject > 0) {
-			//std::cout << "Scene::draw3dSolid() " << std::to_string(geo->vertexCount) << " vertices, " << std::to_string(geo->indexCount) << " indices, " << std::to_string(geo->vertexArrayObject) << " vao" << std::endl;
-			//glBindBuffer(GL_ARRAY_BUFFER, instanceBuffer);
-			//glBufferData(GL_ARRAY_BUFFER, instances->size() * sizeof(InstanceData), instances->data(), GL_STATIC_DRAW);
-
-			glBindVertexArray(geo->vertexArrayObject);
-			glDrawElementsInstanced(GL_PATCHES, geo->indexCount, GL_UNSIGNED_INT, nullptr, 1);
-		    glBindVertexArray(0);
+		auto it = computeInfo.find(node);
+		if (it != computeInfo.end()) {
+			GeometrySSBO* geo = &it->second;
+			if(geo != NULL && geo->vertexCount > 0 && geo->indexCount > 0 && geo->vertexArrayObject > 0) {
+				//std::cout << "Scene::draw3dSolid() " << std::to_string(geo->vertexCount) << " vertices, " << std::to_string(geo->indexCount) << " indices, " << std::to_string(geo->vertexArrayObject) << " vao" << std::endl;
+				//glBindBuffer(GL_ARRAY_BUFFER, instanceBuffer);
+				//glBufferData(GL_ARRAY_BUFFER, instances->size() * sizeof(InstanceData), instances->data(), GL_STATIC_DRAW);
+	
+				glBindVertexArray(geo->vertexArrayObject);
+				glDrawElementsInstanced(GL_PATCHES, geo->indexCount, GL_UNSIGNED_INT, nullptr, 1);
+				glBindVertexArray(0);
+			}
 		}
 	} 
-}*/
+}
 
 void Scene::draw3dBrush(glm::vec3 cameraPosition, const std::vector<OctreeNodeData> &list) {
 	draw<InstanceData, InstanceDataHandler>(TYPE_INSTANCE_FULL_DRAWABLE, GL_PATCHES, cameraPosition, list, &brushInfo, &brushInstancesVisible);

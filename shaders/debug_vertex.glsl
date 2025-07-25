@@ -8,15 +8,16 @@ layout(location = 0) in vec3 position;
 layout(location = 1) in vec3 normal;    
 layout(location = 2) in vec2 textureCoord;    
 layout(location = 3) in uint brushIndex;     
-layout(location = 4) in float sdf0;
-layout(location = 5) in float sdf1;
-layout(location = 6) in float sdf2;
-layout(location = 7) in float sdf3;
-layout(location = 8) in float sdf4;
-layout(location = 9) in float sdf5;
-layout(location = 10) in float sdf6;
-layout(location = 11) in float sdf7;
-layout(location = 12) in mat4 model; 
+layout(location = 4) in mat4 model; 
+
+layout(location = 8) in float sdf0;
+layout(location = 9) in float sdf1;
+layout(location = 10) in float sdf2;
+layout(location = 11) in float sdf3;
+layout(location = 12) in float sdf4;
+layout(location = 13) in float sdf5;
+layout(location = 14) in float sdf6;
+layout(location = 15) in float sdf7;
 out float distance;
 
 

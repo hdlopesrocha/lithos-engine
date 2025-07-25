@@ -122,6 +122,9 @@ public:
 		std::cout << "sizeof(OctreeNode) = " << sizeof(OctreeNode) << std::endl; 
 		std::cout << "sizeof(ChildBlock) = " << sizeof(ChildBlock) << std::endl; 
 		std::cout << "sizeof(OctreeNodeSerialized) = " << sizeof(OctreeNodeSerialized) << std::endl; 
+		std::cout << "sizeof(OctreeNodeCubeSerialized) = " << sizeof(OctreeNodeCubeSerialized) << std::endl; 
+		std::cout << "sizeof(ComputeShaderInput) = " << sizeof(ComputeShaderInput) << std::endl; 
+		std::cout << "sizeof(ComputeShaderOutput) = " << sizeof(ComputeShaderOutput) << std::endl; 
 
 		// Register all GDAL drivers
 		GDALAllRegister();

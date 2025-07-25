@@ -5,7 +5,7 @@
 
 
 void OctreeSSBO::allocate() {
-    std::cout << "OctreeSSBO::allocate()" << std::endl;
+    //std::cout << "OctreeSSBO::allocate()" << std::endl;
     glGenBuffers(1, &nodesSSBO);
 
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, nodesSSBO);
@@ -20,7 +20,7 @@ void OctreeSSBO::copy(std::vector<OctreeNodeCubeSerialized> * nodes) {
         std::cerr << "Error: Too many nodes for allocated buffer!" << std::endl;
         return;
     }
-    std::cout << "OctreeSSBO::copy() : " << nodesCount << std::endl;
+    //std::cout << "OctreeSSBO::copy() : " << nodesCount << std::endl;
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, nodesSSBO);
     glBufferData(GL_SHADER_STORAGE_BUFFER, nodes->size()*sizeof(OctreeNodeCubeSerialized), nodes->data(), GL_DYNAMIC_DRAW);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0); // Unbind the buffer

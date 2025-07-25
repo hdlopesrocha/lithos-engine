@@ -40,14 +40,14 @@ enum ContainmentType {
 	Disjoint
 };
 
-struct Vertex {
+struct alignas(16)  Vertex {
     glm::vec4 position;
     glm::vec4 normal;
     glm::vec2 texCoord;
     int brushIndex;
     int _pad0;
 
-    Vertex(glm::vec4 pos,glm::vec4 normal,glm::vec2 texCoord, uint brushIndex) {
+    Vertex(glm::vec4 pos,glm::vec4 normal,glm::vec2 texCoord, int brushIndex) {
     	this->position = pos;
     	this->normal = normal;
     	this->texCoord = texCoord;
@@ -55,7 +55,7 @@ struct Vertex {
 		this->_pad0 = 0; // Padding to ensure alignment
     }
 
-    Vertex(glm::vec3 pos,glm::vec3 normal,glm::vec2 texCoord, uint brushIndex) : 
+    Vertex(glm::vec3 pos,glm::vec3 normal,glm::vec2 texCoord, int brushIndex) : 
 		Vertex(glm::vec4(pos, 0.0f), glm::vec4(normal, 0.0f), texCoord, brushIndex) {
     }
 
@@ -82,7 +82,6 @@ struct Vertex {
         return !(*this == other);
     }
 };
-
 
 // Custom hash function for glm::vec3
 namespace std {

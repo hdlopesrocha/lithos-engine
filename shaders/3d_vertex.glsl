@@ -6,10 +6,10 @@
 layout(location = 0) in vec4 position; 
 layout(location = 1) in vec4 normal;    
 layout(location = 2) in vec2 textureCoord;    
-layout(location = 3) in uint brushIndex;     
-layout(location = 4) in float shift; 
-layout(location = 5) in uint animation; 
-layout(location = 6) in mat4 model; 
+layout(location = 3) in int brushIndex;     
+layout(location = 4) in mat4 model; 
+layout(location = 8) in float shift; 
+layout(location = 9) in uint animation; 
 
 
 #include<functions.glsl>
@@ -42,8 +42,8 @@ void main() {
     if(overrideEnabled){
         vTextureIndex = brushTextures[overrideBrush];
     }else {
-        vTextureIndex = brushTextures[brushIndex];
-        vProps = brushes[brushIndex];
+        vTextureIndex = brushTextures[uint(brushIndex)];
+        vProps = brushes[uint(brushIndex)];
     }
 
 
