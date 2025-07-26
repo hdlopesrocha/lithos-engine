@@ -74,7 +74,7 @@ bool Scene::computeGeometry(OctreeNodeData &data, Octree * tree, std::unordered_
 		std::vector<OctreeNodeCubeSerialized> nodes;
 		nodes.reserve(2000);
 		BoundingCube chunkOverlap = data.cube;
-		//chunkOverlap.setLength(chunkOverlap.getLengthX()*1.5f);
+		chunkOverlap.setLength(chunkOverlap.getLengthX()*1.1f);
 		tree->root->exportSerialization(&tree->allocator, &nodes, *tree, chunkOverlap, true);
 
 
@@ -400,7 +400,7 @@ void Scene::generate(Camera &camera) {
 		BoundingSphere sphere = BoundingSphere(min+len, 64);
 		SphereDistanceFunction function(sphere.center, sphere.radius);
 		WrappedSphere wrappedFunction = WrappedSphere(&function, minSize, model);
-		liquidSpace.add(wrappedFunction, model, SimpleBrush(0), minSize, simplifier, &solidSpaceChangeHandler);
+		liquidSpace.add(wrappedFunction, model, SimpleBrush(0), minSize, simplifier, &liquidSpaceChangeHandler);
 	}
 
 	{

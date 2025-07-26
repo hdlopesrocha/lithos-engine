@@ -70,6 +70,12 @@ void Simplifier::simplify(BoundingCube chunkCube, const OctreeNodeData &params){
 		if(nodeCount > 0) {	
 			//std::cout << "Simplifying node " << node->id << " with " << nodeCount << " children." << std::endl;
 			node->setSimplified(true);
+			for(int i=0; i < 8 ; ++i) {
+				OctreeNode * child = node->getChildNode(i, params.allocator, block);
+				if(child!=NULL) {
+					child->setSimplified(false);
+				}
+			}
 		}
 	}
 	return;

@@ -5,6 +5,13 @@ InputSSBO::InputSSBO() {
 
 }
 
+InputSSBO::~InputSSBO() {
+    //std::cout << "InputSSBO::~InputSSBO()" << std::endl;
+    if (inputSSBO) {
+        glDeleteBuffers(1, &inputSSBO);
+    }
+}
+
 void InputSSBO::allocate() {
     //std::cout << "InputSSBO::allocate()" << std::endl;
     glGenBuffers(1, &inputSSBO);

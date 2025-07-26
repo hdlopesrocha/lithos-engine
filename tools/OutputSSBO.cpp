@@ -8,6 +8,13 @@ OutputSSBO::OutputSSBO() {
 
 }
 
+OutputSSBO::~OutputSSBO() {
+    //std::cout << "OutputSSBO::~OutputSSBO()" << std::endl;
+    if (outputSSBO) {
+        glDeleteBuffers(1, &outputSSBO);
+    }
+}
+
 void OutputSSBO::allocate() {
     //std::cout << "OutputSSBO::allocate()" << std::endl;
     glGenBuffers(1, &outputSSBO);

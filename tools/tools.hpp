@@ -46,6 +46,8 @@ class OctreeSSBO {
 	public:
     GLuint nodesSSBO = 0;
 	size_t nodesCount = 0;
+	OctreeSSBO();
+	~OctreeSSBO();
 	void allocate();
 	void copy(std::vector<OctreeNodeCubeSerialized> * nodes);
 };
@@ -59,6 +61,7 @@ class GeometrySSBO {
 	GLuint indexCount;
 	GLuint instanceSSBO;
 	GeometrySSBO();
+	~GeometrySSBO();
 	void allocate(size_t nodesCount);
 };
 
@@ -67,6 +70,7 @@ class InputSSBO {
 	GLuint inputSSBO; 	
 	
 	InputSSBO();
+	~InputSSBO();
 	void allocate();
 	void copy(const ComputeShaderInput &input);
 
@@ -77,6 +81,7 @@ class OutputSSBO {
 	GLuint outputSSBO; 	
 
 	OutputSSBO();
+	~OutputSSBO();
 	void allocate();
 
 	ComputeShaderOutput read();

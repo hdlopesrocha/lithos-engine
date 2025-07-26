@@ -7,6 +7,22 @@ GeometrySSBO::GeometrySSBO() : vertexSSBO(0), indexSSBO(0), vertexArrayObject(0)
 
 }
 
+GeometrySSBO::~GeometrySSBO() {
+    std::cout << "GeometrySSBO::~GeometrySSBO()" << std::endl;
+    if (vertexArrayObject) {
+        glDeleteVertexArrays(1, &vertexArrayObject);
+    }
+    if (vertexSSBO) {
+        glDeleteBuffers(1, &vertexSSBO);
+    }
+    if (indexSSBO) {
+        glDeleteBuffers(1, &indexSSBO);
+    }
+    if (instanceSSBO) {
+        glDeleteBuffers(1, &instanceSSBO);
+    }
+}
+
 void GeometrySSBO::allocate(size_t nodesCount) {
     //std::cout << "GeometrySSBO::allocate()" << std::endl;
     InstanceData instanceData = InstanceData();

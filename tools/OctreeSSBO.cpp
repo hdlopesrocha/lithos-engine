@@ -2,6 +2,15 @@
 
 #define MAX_NODES 10000
 
+OctreeSSBO::OctreeSSBO() : nodesSSBO(0), nodesCount(0) {
+    //std::cout << "OctreeSSBO::OctreeSSBO()" << std::endl;
+}
+OctreeSSBO::~OctreeSSBO() {
+    //std::cout << "OctreeSSBO::~OctreeSSBO()" << std::endl;
+    if (nodesSSBO) {
+        glDeleteBuffers(1, &nodesSSBO);
+    }
+}
 
 void OctreeSSBO::allocate() {
     //std::cout << "OctreeSSBO::allocate()" << std::endl;

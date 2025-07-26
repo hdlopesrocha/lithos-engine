@@ -112,7 +112,7 @@ void OctreeNode::setDirty(bool value){
 
 uint OctreeNode::exportSerialization(OctreeAllocator * allocator, std::vector<OctreeNodeCubeSerialized> * nodes, BoundingCube cube, BoundingCube chunk, bool isRoot) {
 
-	if(!chunk.intersects(cube)) {
+	if( this->isEmpty() || this->isSolid() || !chunk.intersects(cube)) {
 		return 0; // Skip this node
 	}
 
@@ -132,7 +132,7 @@ uint OctreeNode::exportSerialization(OctreeAllocator * allocator, std::vector<Oc
 	if(isRoot && intersectingChildCount == 1) {
 		if(block != NULL) {
 			OctreeNode * childNode = this->getChildNode(intersectingIndex, allocator, block);
-			if(childNode != NULL && !childNode->isSolid() && !childNode->isEmpty()) {
+			if(childNode != NULL) {
 				BoundingCube c = cube.getChild(intersectingIndex);
 				return childNode->exportSerialization(allocator, nodes, c, chunk, isRoot);
 			}
@@ -148,7 +148,7 @@ uint OctreeNode::exportSerialization(OctreeAllocator * allocator, std::vector<Oc
 			OctreeNodeCubeSerialized * real = &(*nodes)[index];
 			for(int i=0; i < 8; ++i) {
 				OctreeNode * childNode = this->getChildNode(i, allocator,block);
-				if(childNode != NULL && !childNode->isSolid() && !childNode->isEmpty()) {
+				if(childNode != NULL) {
 					BoundingCube c = cube.getChild(i);
 					real->children[i] = childNode->exportSerialization(allocator, nodes, c, chunk, false);
 				}

@@ -115,7 +115,7 @@ int getNodeIndex(vec3 pos, vec3 cubeMin, vec3 cubeLength) {
 }
 
 bool isSimplified(uint bits) {
-    return (bits & (0x1u << 3)) != 0u;  // exemplo: simplification flag no bit 0
+    return (bits & (0x1u << 2)) != 0u;  // exemplo: simplification flag no bit 0
 }
 
 bool isSolid(uint bits) {
@@ -276,7 +276,6 @@ void handleTriangle(Vertex v0, Vertex v1 , Vertex v2, bool sign) {
     uint vertexIdx = atomicAdd(shaderOutput.vertexCount, 3);
     uint indexIdx = atomicAdd(shaderOutput.indexCount, 3);
 
-    // CASE 1: This shows nothing
     createVertex(sign ? v2 : v0,    vertexIdx+0, indexIdx+0);
     createVertex(v1,                vertexIdx+1, indexIdx+1);
     createVertex(sign ? v0 : v2,    vertexIdx+2, indexIdx+2);
@@ -316,7 +315,7 @@ void main() {
                 vec3 cubeCenter = node.min + node.length*0.5;
                 vec3 pos = cubeCenter + direction * node.length* getShift(order[i]);
 
-				int n = getNodeAt(pos, false);
+				int n = getNodeAt(pos, true);
                 OctreeNodeCubeSerialized quadNode;
                 
                 if(n >= 0) {
