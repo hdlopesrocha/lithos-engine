@@ -89,15 +89,25 @@ class OctreeNode {
 		ChildBlock * getBlock(OctreeAllocator * allocator);
 		ChildBlock * createBlock(OctreeAllocator * allocator);
 		OctreeNode * getChildNode(int i, OctreeAllocator * allocator, ChildBlock * block);
-		bool isLeaf();
+		
 		bool isSolid();
 		void setSolid(bool value);
+		
 		bool isEmpty();
 		void setEmpty(bool value);
+		
 		bool isSimplified();
 		void setSimplified(bool value);
+		
 		bool isDirty();
 		void setDirty(bool value);
+		
+		bool isChunk();
+		void setChunk(bool value);
+		
+		bool isLeaf();
+		void setLeaf(bool value);
+
 		void setSdf(float * value);
 		uint exportSerialization(OctreeAllocator * allocator, std::vector<OctreeNodeCubeSerialized> * nodes, BoundingCube cube, BoundingCube chunk, bool isRoot);
 	};
@@ -126,14 +136,12 @@ class OctreeNodeTriangleHandler {
 struct OctreeNodeData {
 	public:
 	uint level;
-	float chunkSize;
 	OctreeNode * node;
 	BoundingCube cube;
 	void * context;
 	OctreeAllocator * allocator;
-	OctreeNodeData(uint level, float chunkSize, OctreeNode * node, BoundingCube cube, void * context, OctreeAllocator * allocator) {
+	OctreeNodeData(uint level, OctreeNode * node, BoundingCube cube, void * context, OctreeAllocator * allocator) {
 		this->level = level;
-		this->chunkSize = chunkSize;
 		this->node = node;
 		this->cube = cube;
 		this->context = context;
@@ -182,13 +190,17 @@ struct NodeOperationResult {
 	bool process;
     float sdf[8];
     float shapeSDF[8];
+	bool isLeaf;
 
-
-	NodeOperationResult() : node(NULL), cube(glm::vec3(0.0f), 0.0f), resultType(SpaceType::Empty), shapeType(SpaceType::Empty), process(false) {
+	NodeOperationResult() : node(NULL), cube(glm::vec3(0.0f), 0.0f), resultType(SpaceType::Empty), shapeType(SpaceType::Empty), process(false), isLeaf(false) {
+		for(int i = 0; i < 8; ++i) {
+			this->sdf[i] = INFINITY;
+			this->shapeSDF[i] = INFINITY;
+		}
 	};
 
-    NodeOperationResult(BoundingCube cube, OctreeNode * node, SpaceType shapeType, SpaceType resultType, float * sdf, float * shapeSDF, bool process) 
-        : node(node), cube(cube), resultType(resultType), shapeType(shapeType), process(process){
+    NodeOperationResult(BoundingCube cube, OctreeNode * node, SpaceType shapeType, SpaceType resultType, float * sdf, float * shapeSDF, bool isLeaf, bool process) 
+        : node(node), cube(cube), resultType(resultType), shapeType(shapeType), process(process), isLeaf(isLeaf) {
 		if(sdf != NULL) {
 			SDF::copySDF(sdf, this->sdf);	
 		}

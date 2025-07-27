@@ -1,8 +1,4 @@
-#include "tools.hpp"
-
-#define MAX_VERTS 10000000
-#define MAX_NODES 10000000
-
+#include "gl.hpp"
 
 OutputSSBO::OutputSSBO() {
 

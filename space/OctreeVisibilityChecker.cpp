@@ -10,8 +10,8 @@ void OctreeVisibilityChecker::update(glm::mat4 m) {
 }
 
 void OctreeVisibilityChecker::before(OctreeNodeData &params) {		
-	if(params.cube.getLengthX() <= params.chunkSize){
-		visibleNodes->push_back({params.level, params.chunkSize, params.node, params.cube, params.context, params.allocator});
+	if(params.node->isChunk()){
+		visibleNodes->push_back({params.level, params.node, params.cube, params.context, params.allocator});
 	}
 }
 
@@ -20,22 +20,20 @@ void OctreeVisibilityChecker::after(OctreeNodeData &params) {
 }
 
 bool OctreeVisibilityChecker::test(OctreeNodeData &params) {
-	if(params.cube.getLengthX() >= params.chunkSize) {
-		if(params.context == NULL) {
-			ContainmentType containmentType = frustum.test(params.cube);
-			if(containmentType == ContainmentType::Contains) {
-				params.context = params.node;
-				return true;
-			}
-			else if(containmentType == ContainmentType::Intersects) {
-				return true;
-			}
-		}else {
-			return true;
-		}
+	if(params.context != NULL) {
+		return false;
 	}
 
-	return false;
+	ContainmentType containmentType = frustum.test(params.cube);
+	if(containmentType == ContainmentType::Disjoint) {
+		return false;
+	}
+
+	if(params.node->isChunk()) {
+		params.context = params.node;
+	}
+
+	return true;
 }
 
 

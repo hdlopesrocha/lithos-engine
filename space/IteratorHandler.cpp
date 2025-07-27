@@ -12,7 +12,7 @@ void IteratorHandler::iterate(OctreeNodeData params) {
                 uint8_t j = internalOrder[i];
                 OctreeNode * child = params.node->getChildNode(j, params.allocator, block);
                 if(child != NULL) {
-                    this->iterate(OctreeNodeData( params.level+1, params.chunkSize, child, params.cube.getChild(j) , params.context, params.allocator));
+                    this->iterate(OctreeNodeData( params.level+1, child, params.cube.getChild(j) , params.context, params.allocator));
                 }
             }
             after(params);
@@ -38,7 +38,7 @@ void IteratorHandler::iterateFlatIn(OctreeNodeData params) {
                 uint8_t j = internalOrder[i];
                 OctreeNode * child = node->getChildNode(j, params.allocator, block);
                 if(child != NULL) {
-                    flatData.push(OctreeNodeData(data.level + 1, data.chunkSize,child, data.cube.getChild(j), data.context, data.allocator));
+                    flatData.push(OctreeNodeData(data.level + 1,child, data.cube.getChild(j), data.context, data.allocator));
                 }
             }
             after(data);
@@ -77,7 +77,7 @@ void IteratorHandler::iterateFlat(OctreeNodeData params) {
             OctreeNode* child = node->getChildNode(j, params.allocator, block);
 
             if (child) {
-                OctreeNodeData data(frame.level+1, frame.chunkSize, child, frame.cube.getChild(j), frame.context, frame.allocator);
+                OctreeNodeData data(frame.level+1, child, frame.cube.getChild(j), frame.context, frame.allocator);
                 stack.push(StackFrame(data, 0, false));
             }
         } else {
@@ -123,7 +123,7 @@ void IteratorHandler::iterateFlatOut(OctreeNodeData params) {
                 ChildBlock * block = node->getBlock(params.allocator);
                 OctreeNode* child = node->getChildNode(j, params.allocator, block);
                 if (child) {
-                    stackOut.push(StackFrameOut(OctreeNodeData(frame.level + 1, frame.chunkSize, child, frame.cube.getChild(j), frame.context, params.allocator), false));
+                    stackOut.push(StackFrameOut(OctreeNodeData(frame.level + 1, child, frame.cube.getChild(j), frame.context, params.allocator), false));
                 }
             }
         } else {

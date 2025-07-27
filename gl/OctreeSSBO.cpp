@@ -1,4 +1,4 @@
-#include "tools.hpp"
+#include "gl.hpp"
 
 #define MAX_NODES 10000
 
@@ -28,8 +28,10 @@ void OctreeSSBO::copy(std::vector<OctreeNodeCubeSerialized> * nodes) {
         std::cerr << "Error: Too many nodes for allocated buffer!" << std::endl;
         return;
     }
-    //std::cout << "OctreeSSBO::copy() : " << nodesCount << std::endl;
+
+    std::cout << "OctreeSSBO::copy() : " << nodesCount << std::endl;
+    OctreeNodeCubeSerialized * data = nodes->data();
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, nodesSSBO);
-    glBufferData(GL_SHADER_STORAGE_BUFFER, nodes->size()*sizeof(OctreeNodeCubeSerialized), nodes->data(), GL_DYNAMIC_DRAW);
+    glBufferData(GL_SHADER_STORAGE_BUFFER, nodes->size()*sizeof(OctreeNodeCubeSerialized), data, GL_DYNAMIC_DRAW);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0); // Unbind the buffer
 }

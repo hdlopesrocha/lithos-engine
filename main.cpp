@@ -523,6 +523,7 @@ public:
 		textureViewer = new TextureViewer(programTexture, &textureLayers);
 		impostorViewer = new ImpostorViewer(impostorDrawer, &impostors , programTexture, 256, 256, &impostorLayers);
 
+		eventManager.publish<Event>(Event(EVENT_BRUSH_CHANGED));
 		// ImGui
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();

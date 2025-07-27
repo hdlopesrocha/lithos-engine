@@ -68,34 +68,40 @@ template <typename T> bool Scene::loadSpace(Octree* tree, OctreeNodeData& data, 
 bool Scene::computeGeometry(OctreeNodeData &data, Octree * tree, std::unordered_map<OctreeNode*, GeometrySSBO>* infos) {
 	BoundingCube chunkBox = data.cube;
 	bool emptyChunk = data.node->isEmpty() || data.node->isSolid();
-    //std::cout << "Scene::computeGeometry() " << "minX:" << chunkBox.getMinX() << ", minY:" << chunkBox.getMinY() << ", minZ:" << chunkBox.getMinZ() << ", len:" << chunkBox.getLengthX() << std::endl;
+    std::cout << "Scene::computeGeometry() " << "minX:" << chunkBox.getMinX() << ", minY:" << chunkBox.getMinY() << ", minZ:" << chunkBox.getMinZ() << ", len:" << chunkBox.getLengthX() << std::endl;
 	if (!emptyChunk)	{
 
 		std::vector<OctreeNodeCubeSerialized> nodes;
 		nodes.reserve(2000);
 		BoundingCube chunkOverlap = data.cube;
-		chunkOverlap.setLength(chunkOverlap.getLengthX()*1.1f);
+		chunkOverlap.setLength(chunkOverlap.getLengthX()*1.0f);
 		tree->root->exportSerialization(&tree->allocator, &nodes, *tree, chunkOverlap, true);
 
+		GeometrySSBO * ssbo = NULL;
+		auto it = infos->find(data.node);
+		if (it != infos->end()) {
+			ssbo = &it->second;
+		}
 
-		(*infos)[data.node] = GeometrySSBO();
+		if(ssbo == NULL) {
+			(*infos)[data.node] = GeometrySSBO();
+			ssbo = &(*infos)[data.node];
+			ssbo->allocate(nodes.size());
+		}
+		else {
+			ssbo->reset(nodes.size());
+		}
+		
 		octreeSSBO.copy(&nodes);
-
-		GeometrySSBO &ssbo = (*infos)[data.node];
-		ssbo.allocate(nodes.size());
 
 		inputSSBO.copy(ComputeShaderInput(chunkBox.getMin(), chunkBox.getLength())); 
 		outputSSBO.reset();
 		computeShader->dispatch(octreeSSBO.nodesCount);
 
 		ComputeShaderOutput result = outputSSBO.read();
-		ssbo.vertexCount = result.vertexCount;
-		ssbo.indexCount = result.indexCount;
-
-		if (result.vertexCount == 0 || result.indexCount == 0) {
-			return false;
-		}
-		/*
+		ssbo->vertexCount = result.vertexCount;
+		ssbo->indexCount = result.indexCount;
+/*
 		std::cout << "\tresult4f0 = { " 
 			<< std::to_string(result.result4f0.x) << ", " 
 			<< std::to_string(result.result4f0.y) << ", " 
@@ -106,10 +112,14 @@ bool Scene::computeGeometry(OctreeNodeData &data, Octree * tree, std::unordered_
 			<< std::to_string(result.result4f1.y) << ", " 
 			<< std::to_string(result.result4f1.z) << ", " 
 			<< std::to_string(result.result4f1.w) << " }"  << std::endl;
-
+		
 		std::cout << "\tvertexCount = " << std::to_string(result.vertexCount) <<std::endl;
 		std::cout << "\tindexCount = " << std::to_string(result.indexCount) <<std::endl;
-		*/
+*/
+		if (result.vertexCount == 0 || result.indexCount == 0) {
+			return false;
+		}
+
 		return true;
 	}
 	return false;

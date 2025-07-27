@@ -82,6 +82,17 @@ const ivec2 SDF_EDGES[12] = ivec2[](
     ivec2(3, 7)
 ); 
 
+int triplanarPlane(vec3 normal) {
+    vec3 absNormal = abs(normal);
+    if (absNormal.x > absNormal.y && absNormal.x > absNormal.z) {
+        return normal.x > 0.0f ? 0 : 1;
+    } else if (absNormal.y > absNormal.x && absNormal.y > absNormal.z) {
+        return normal.y > 0.0f ? 2 : 3;
+    } else {
+        return normal.z > 0.0f ? 4 : 5;
+    }
+}
+
 vec2 triplanarMapping(vec3 position, int plane) {
     switch (plane) {
         case 0: return vec2(-position.z, -position.y);
@@ -114,10 +125,6 @@ int getNodeIndex(vec3 pos, vec3 cubeMin, vec3 cubeLength) {
     return (pos.x >= c.x ? 4 : 0) + (pos.y >= c.y ? 2 : 0) + (pos.z >= c.z ? 1 : 0);
 }
 
-bool isSimplified(uint bits) {
-    return (bits & (0x1u << 2)) != 0u;  // exemplo: simplification flag no bit 0
-}
-
 bool isSolid(uint bits) {
     return (bits & (0x1u << 0)) != 0u;  // exemplo: simplification flag no bit 0
 }
@@ -126,6 +133,26 @@ bool isEmpty(uint bits) {
     return (bits & (0x1u << 1)) != 0u;  // exemplo: simplification flag no bit 0
 }
 
+bool isSimplified(uint bits) {
+    return (bits & (0x1u << 2)) != 0u;  // exemplo: simplification flag no bit 0
+}
+bool isLeaf(uint bits) {
+    return (bits & (0x1u << 5)) != 0u;  // exemplo: simplification flag no bit 0
+}
+
+bool isSurface(OctreeNodeCubeSerialized node) {
+    bool hasPositive = false;
+    bool hasNegative = false;
+    for (int i = 0; i < 8; i++) {
+        if (node.sdf[i] >= 0.0) {
+            hasPositive = true;
+        }else {
+            hasNegative = true;
+        }
+    }
+    // If all are positive or all are negative, skip (no surface)
+    return (hasPositive && hasNegative);
+}
 
 // Obtem o índice do nó que contém a posição
 int getNodeAt(vec3 pos, bool simplification) {
@@ -155,26 +182,6 @@ int getNodeAt(vec3 pos, bool simplification) {
     return int(nodeIdx);
 }
 
-// Simple helper to check if node is a leaf (no children)
-bool isLeaf(OctreeNodeCubeSerialized node) {
-    for (int i = 0; i < 8; i++) {
-        if (node.children[i] != 0)
-            return false;
-    }
-    return true;
-}
-
-// Estimate normal from SDF
-vec3 estimateNormal(float sdf[8]) {
-    // Central differences across cube edges
-    vec3 grad = vec3(
-        sdf[1] - sdf[0] + sdf[3] - sdf[2] + sdf[5] - sdf[4] + sdf[7] - sdf[6],
-        sdf[2] - sdf[0] + sdf[3] - sdf[1] + sdf[6] - sdf[4] + sdf[7] - sdf[5],
-        sdf[4] - sdf[0] + sdf[5] - sdf[1] + sdf[6] - sdf[2] + sdf[7] - sdf[3]
-    );
-    return normalize(grad);
-}
-
 int evalSDF(float sdf[8]) {
     bool hasPositive = false;
     bool hasNegative = false;
@@ -189,6 +196,17 @@ int evalSDF(float sdf[8]) {
         }
     }
     return hasNegative && hasPositive ? SpaceType_Surface : (hasPositive ? SpaceType_Empty : SpaceType_Solid);
+}
+
+// Estimate normal from SDF
+vec3 estimateNormal(float sdf[8]) {
+    // Central differences across cube edges
+    vec3 grad = vec3(
+        sdf[1] - sdf[0] + sdf[3] - sdf[2] + sdf[5] - sdf[4] + sdf[7] - sdf[6],
+        sdf[2] - sdf[0] + sdf[3] - sdf[1] + sdf[6] - sdf[4] + sdf[7] - sdf[5],
+        sdf[4] - sdf[0] + sdf[5] - sdf[1] + sdf[6] - sdf[2] + sdf[7] - sdf[3]
+    );
+    return normalize(grad);
 }
 
 vec3 estimatePosition(float sdf[8], vec3 min, vec3 length) {
@@ -232,31 +250,6 @@ void createVertex(Vertex vertex, uint vertexIdx, uint indexIdx) {
     indices[indexIdx] = vertexIdx;
 }   
 
-bool isSurface(OctreeNodeCubeSerialized node) {
-    bool hasPositive = false;
-    bool hasNegative = false;
-    for (int i = 0; i < 8; i++) {
-        if (node.sdf[i] >= 0.0) {
-            hasPositive = true;
-        }else {
-            hasNegative = true;
-        }
-    }
-    // If all are positive or all are negative, skip (no surface)
-    return (hasPositive && hasNegative);
-}
-
-int triplanarPlane(vec3 normal) {
-    vec3 absNormal = abs(normal);
-    if (absNormal.x > absNormal.y && absNormal.x > absNormal.z) {
-        return normal.x > 0.0f ? 0 : 1;
-    } else if (absNormal.y > absNormal.x && absNormal.y > absNormal.z) {
-        return normal.y > 0.0f ? 2 : 3;
-    } else {
-        return normal.z > 0.0f ? 4 : 5;
-    }
-}
-
 void handleTriangle(Vertex v0, Vertex v1 , Vertex v2, bool sign) { 
     if(v0.brushIndex < 0 || v1.brushIndex < 0 || v2.brushIndex < 0) {
         return; // Skip if any vertex is empty or solid
@@ -290,13 +283,12 @@ void main() {
     OctreeNodeCubeSerialized node = nodes[nodeIdx];
 
     if(!contains(shaderInput.chunkMin.xyz, shaderInput.chunkLength.xyz, node.min, node.length) 
-        || !isLeaf(node)
-        || !isSurface(node)) {
+        || !isLeaf(node.bits)) {
         return;
     }
 
-    shaderOutput.result4f0= vec4(nodes[0].min, 0.0f);
-    shaderOutput.result4f1= vec4(nodes[0].length, 0.0f);
+    shaderOutput.result4f0 = shaderInput.chunkMin;
+    shaderOutput.result4f1 = shaderInput.chunkLength;
 
     for(int k =0 ; k < tessEdge.length(); ++k) {
 		ivec2 edge = tessEdge[k];
@@ -322,7 +314,7 @@ void main() {
                     quadNode = nodes[n];
                 }
 
-                if(n >= 0 && !isSolid(quadNode.bits) && !isEmpty(quadNode.bits)) {
+                if(n >= 0) {
                     Vertex vertex;
                     vertex.brushIndex = quadNode.brushIndex;
                     vertex.position = vec4(estimatePosition(quadNode.sdf, quadNode.min, quadNode.length), 0.0f);

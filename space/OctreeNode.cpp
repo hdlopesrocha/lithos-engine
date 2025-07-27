@@ -13,6 +13,8 @@ OctreeNode * OctreeNode::init(Vertex vertex) {
 	this->setEmpty(false);
 	this->setSimplified(false);
 	this->setDirty(true);
+	this->setChunk(false);
+	this->setLeaf(false);
 	this->vertex = vertex;
 	this->id = UINT_MAX;
 	return this;
@@ -68,12 +70,6 @@ void OctreeNode::setSdf(float * value) {
 	}
 }
 
-bool OctreeNode::isLeaf() {
-	// TODO: might be empty if not cleared properly
-	return this->id == UINT_MAX;
-}
-
-
 bool OctreeNode::isSolid(){
 	return this->bits & (0x1 << 0);
 }
@@ -110,6 +106,23 @@ void OctreeNode::setDirty(bool value){
 	this->bits = (this->bits & ~mask) | (value ? mask : 0x0);
 }
 
+bool OctreeNode::isChunk() {
+	return this->bits & (0x1 << 4);
+}
+void OctreeNode::setChunk(bool value) {
+	uint8_t mask = (0x1 << 4);
+	this->bits = (this->bits & ~mask) | (value ? mask : 0x0);
+}
+
+bool OctreeNode::isLeaf() {
+	return this->bits & (0x1 << 5);
+}
+void OctreeNode::setLeaf(bool value) {
+	uint8_t mask = (0x1 << 5);
+	this->bits = (this->bits & ~mask) | (value ? mask : 0x0);
+}
+
+
 uint OctreeNode::exportSerialization(OctreeAllocator * allocator, std::vector<OctreeNodeCubeSerialized> * nodes, BoundingCube cube, BoundingCube chunk, bool isRoot) {
 
 	if( this->isEmpty() || this->isSolid() || !chunk.intersects(cube)) {
@@ -129,6 +142,8 @@ uint OctreeNode::exportSerialization(OctreeAllocator * allocator, std::vector<Oc
 	}
 	ChildBlock * block = this->getBlock(allocator);
 
+	uint index = nodes->size(); 
+
 	if(isRoot && intersectingChildCount == 1) {
 		if(block != NULL) {
 			OctreeNode * childNode = this->getChildNode(intersectingIndex, allocator, block);
@@ -137,13 +152,10 @@ uint OctreeNode::exportSerialization(OctreeAllocator * allocator, std::vector<Oc
 				return childNode->exportSerialization(allocator, nodes, c, chunk, isRoot);
 			}
 		}
-		return 0;
 	}
 	else {
 		OctreeNodeCubeSerialized n(this->sdf, cube, this->vertex.brushIndex, this->bits);
-		uint index = nodes->size(); 
 		nodes->push_back(n);
-
 		if(block != NULL) {
 			OctreeNodeCubeSerialized * real = &(*nodes)[index];
 			for(int i=0; i < 8; ++i) {
@@ -154,7 +166,7 @@ uint OctreeNode::exportSerialization(OctreeAllocator * allocator, std::vector<Oc
 				}
 			}
 		}
-		return index;
 	}
+	return index;
 }
 

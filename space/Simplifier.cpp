@@ -9,7 +9,6 @@ Simplifier::Simplifier(float angle, float distance, bool texturing) {
 
 
 void Simplifier::simplify(BoundingCube chunkCube, const OctreeNodeData &params){
-
 	if(params.node->isLeaf()) {
 		params.node->setSimplified(true);
 		return;

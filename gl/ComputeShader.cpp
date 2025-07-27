@@ -1,6 +1,5 @@
-#include "tools.hpp"
+#include "gl.hpp"
 
-#define MAX_NODES 1000000
 
 ComputeShader::ComputeShader() : program(0) {
 }

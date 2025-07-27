@@ -279,9 +279,9 @@ NodeOperationResult Octree::shape(
     OctreeNode * node  = frame.node;
     bool chunkNode = false;
     if(check == ContainmentType::Disjoint) {
-        return NodeOperationResult(frame.cube, node, SpaceType::Empty, frame.type, frame.sdf, frame.sdf, false);  // Skip this node
+        return NodeOperationResult(frame.cube, node, SpaceType::Empty, frame.type, frame.sdf, frame.sdf, false, false);  // Skip this node
     }
-    if(chunk == NULL && frame.cube.getLengthX() < chunkSize){
+    if(chunk == NULL && frame.cube.getLengthX() <= chunkSize){
         chunk = &frame.cube;
         chunkNode = true;
     }
@@ -350,13 +350,12 @@ NodeOperationResult Octree::shape(
         node->setSdf(resultSDF);
         node->setSolid(resultType == SpaceType::Solid);
         node->setEmpty(resultType == SpaceType::Empty);
+        node->setChunk(chunkNode);
+        node->setLeaf(isLeaf);
         if(resultType == SpaceType::Surface) {
             //node->vertex.normal = SDF::getNormalFromPosition(node->sdf, frame.cube, node->vertex.position);
             node->vertex.position = glm::vec4(SDF::getPosition(node->sdf, frame.cube) ,0.0f);
             node->vertex.normal = glm::vec4(SDF::getNormal(node->sdf, frame.cube), 0.0f);       
-        }
-        if(shapeType != SpaceType::Empty) {
-            painter.paint(node->vertex);
         }
         if(!isLeaf) {
             if(block == NULL) {
@@ -371,6 +370,7 @@ NodeOperationResult Octree::shape(
                         childNode->setSolid(child.resultType == SpaceType::Solid);
                         childNode->setEmpty(child.resultType == SpaceType::Empty);
                         childNode->setSdf(child.sdf);
+                        childNode->setLeaf(false);
                     }
                     node->setChildNode(i, childNode, &allocator, block);
                 }
@@ -394,20 +394,25 @@ NodeOperationResult Octree::shape(
         }
 
         if(chunk != NULL) {
-            simplifier.simplify(*chunk, OctreeNodeData(frame.level, chunkSize, node, frame.cube, NULL, &allocator));  
+            simplifier.simplify(*chunk, OctreeNodeData(frame.level, node, frame.cube, NULL, &allocator));
+            if(node->isSimplified()) {
+                if(shapeType != SpaceType::Empty) {
+                    painter.paint(node->vertex);
+                }
+            }
         }
     }
-    return NodeOperationResult(frame.cube, node, shapeType, resultType, resultSDF, shapeSDF, true);
+    return NodeOperationResult(frame.cube, node, shapeType, resultType, resultSDF, shapeSDF, isLeaf, true);
 }
 
 void Octree::iterate(IteratorHandler &handler) {
 	BoundingCube cube(glm::vec3(getMinX(),getMinY(),getMinZ()),getLengthX());
-	handler.iterate(OctreeNodeData(0, chunkSize, root, cube, NULL, &this->allocator));
+	handler.iterate(OctreeNodeData(0, root, cube, NULL, &this->allocator));
 }
 
 void Octree::iterateFlat(IteratorHandler &handler) {
 	BoundingCube cube(glm::vec3(getMinX(),getMinY(),getMinZ()),getLengthX());
-    handler.iterateFlatIn(OctreeNodeData(0, chunkSize,root, cube, NULL, &this->allocator));
+    handler.iterateFlatIn(OctreeNodeData(0,root, cube, NULL, &this->allocator));
 }
 
 void Octree::exportOctreeSerialization(OctreeSerialized * node) {

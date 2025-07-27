@@ -422,6 +422,83 @@ class ImpostorDrawer {
     void draw(ImpostorParams &params, float time);
 };
 
+
+struct alignas(16) ComputeShaderInput {
+    glm::vec4 chunkMin;
+    glm::vec4 chunkLength;
+	ComputeShaderInput() : chunkMin(glm::vec4(0.0f)), chunkLength(glm::vec4(0.0f)) {}
+	ComputeShaderInput(glm::vec3 chunkMin, glm::vec3 chunkLength) : chunkMin(glm::vec4(chunkMin, 0.0f)), chunkLength(glm::vec4(chunkLength, 0.0f)) {}
+};
+
+struct alignas(16) ComputeShaderOutput {
+	public:
+	glm::vec4 result4f0;
+	glm::vec4 result4f1;
+	GLuint vertexCount;
+	GLuint indexCount;
+
+	ComputeShaderOutput();
+	ComputeShaderOutput(GLuint vertexCount, GLuint indexCount, glm::vec4 result4f0, glm::vec4 result4f1);
+	void reset();
+};
+
+class OctreeSSBO {
+	public:
+    GLuint nodesSSBO = 0;
+	size_t nodesCount = 0;
+	OctreeSSBO();
+	~OctreeSSBO();
+	void allocate();
+	void copy(std::vector<OctreeNodeCubeSerialized> * nodes);
+};
+
+class GeometrySSBO {
+	public:
+	GLuint vertexSSBO;
+	GLuint indexSSBO;
+	GLuint vertexArrayObject;
+	GLuint vertexCount;
+	GLuint indexCount;
+	GLuint instanceSSBO;
+	GeometrySSBO();
+	~GeometrySSBO();
+	void allocate(size_t nodesCount);
+	void reset(size_t nodesCount);
+};
+
+class InputSSBO {
+	public:
+	GLuint inputSSBO; 	
+	
+	InputSSBO();
+	~InputSSBO();
+	void allocate();
+	void copy(const ComputeShaderInput &input);
+
+};
+
+class OutputSSBO {
+	public:
+	GLuint outputSSBO; 	
+
+	OutputSSBO();
+	~OutputSSBO();
+	void allocate();
+
+	ComputeShaderOutput read();
+	void reset();
+};
+
+class ComputeShader {
+	public:
+	GLuint program;
+
+	ComputeShader();
+	ComputeShader(GLuint program);
+	void dispatch(size_t nodesCount);
+};
+
+
 class GlslInclude {
 	public:
 	std::string line;

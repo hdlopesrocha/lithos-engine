@@ -1,4 +1,4 @@
-#include "tools.hpp"
+#include "gl.hpp"
 
 
 
@@ -8,7 +8,7 @@ GeometrySSBO::GeometrySSBO() : vertexSSBO(0), indexSSBO(0), vertexArrayObject(0)
 }
 
 GeometrySSBO::~GeometrySSBO() {
-    std::cout << "GeometrySSBO::~GeometrySSBO()" << std::endl;
+    //std::cout << "GeometrySSBO::~GeometrySSBO()" << std::endl;
     if (vertexArrayObject) {
         glDeleteVertexArrays(1, &vertexArrayObject);
     }
@@ -24,8 +24,7 @@ GeometrySSBO::~GeometrySSBO() {
 }
 
 void GeometrySSBO::allocate(size_t nodesCount) {
-    //std::cout << "GeometrySSBO::allocate()" << std::endl;
-    InstanceData instanceData = InstanceData();
+    //std::cout << "GeometrySSBO::allocate("  << std::to_string(nodesCount) << ")" << std::endl;
 
     glGenVertexArrays(1, &vertexArrayObject);
     glGenBuffers(1, &vertexSSBO);
@@ -36,20 +35,15 @@ void GeometrySSBO::allocate(size_t nodesCount) {
     glBindVertexArray(vertexArrayObject);
     //std::cout << "Generated VAO ID: " << vertexArrayObject << std::endl;
 
-    int vertexCount = nodesCount * 18; // 18 vertices per node (6 faces * 3 vertices per face)
+    reset(nodesCount);
+
     // Allocate big enough buffers
-    glBindBuffer(GL_ARRAY_BUFFER, vertexSSBO);
-    glBufferData(GL_ARRAY_BUFFER, vertexCount * sizeof(Vertex), nullptr, GL_DYNAMIC_DRAW);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, vertexSSBO);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, vertexSSBO); 
 
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexSSBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, vertexCount * sizeof(uint), nullptr, GL_DYNAMIC_DRAW);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, indexSSBO);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, indexSSBO); 
 
-    glBindBuffer(GL_ARRAY_BUFFER, instanceSSBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(InstanceData), &instanceData, GL_STATIC_DRAW);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, instanceSSBO);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, instanceSSBO); 
 
@@ -92,4 +86,26 @@ void GeometrySSBO::allocate(size_t nodesCount) {
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0); 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
+}
+
+
+void GeometrySSBO::reset(size_t nodesCount) {
+    //std::cout << "GeometrySSBO::reset("  << std::to_string(nodesCount) << ")" << std::endl;
+    InstanceData instanceData = InstanceData();
+    int vertexCount = nodesCount * 18; // 18 vertices per node (6 faces * 3 vertices per face)
+    // Allocate big enough buffers
+    glBindBuffer(GL_ARRAY_BUFFER, vertexSSBO);
+    glBufferData(GL_ARRAY_BUFFER, vertexCount * sizeof(Vertex), nullptr, GL_DYNAMIC_DRAW);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, vertexSSBO);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, vertexSSBO); 
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexSSBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, vertexCount * sizeof(uint), nullptr, GL_DYNAMIC_DRAW);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, indexSSBO);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, indexSSBO); 
+
+    glBindBuffer(GL_ARRAY_BUFFER, instanceSSBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(InstanceData), &instanceData, GL_STATIC_DRAW);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, instanceSSBO);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, instanceSSBO); 
 }
