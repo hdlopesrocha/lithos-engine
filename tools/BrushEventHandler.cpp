@@ -167,7 +167,6 @@ template<typename T> void BrushEventHandler<T>::handle(T * event) {
     if(changed) {
         Octree * space = &scene.brushSpace;
         space->root->clear(&space->allocator, *space, &scene.brushSpaceChangeHandler);
-        scene.brushInfo.clear();
         context.apply(*space, &scene.brushSpaceChangeHandler, true);
     }
 };

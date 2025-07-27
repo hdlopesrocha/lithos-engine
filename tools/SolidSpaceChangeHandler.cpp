@@ -27,5 +27,4 @@ void SolidSpaceChangeHandler::update(OctreeNode* node) {
 void SolidSpaceChangeHandler::erase(OctreeNode* node) {
 	debugInfo->erase(node);
 	vegetationInfo->erase(node);
-    computeInfo->erase(node);
 };

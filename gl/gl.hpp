@@ -462,7 +462,7 @@ class GeometrySSBO {
 	GLuint instanceSSBO;
 	GeometrySSBO();
 	~GeometrySSBO();
-	void allocate(size_t nodesCount);
+	void allocate();
 	void reset(size_t nodesCount);
 };
 

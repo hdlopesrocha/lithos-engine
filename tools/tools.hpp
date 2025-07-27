@@ -160,7 +160,7 @@ template <typename T> struct NodeInfo {
 
 class LiquidSpaceChangeHandler : public OctreeChangeHandler {
 	std::unordered_map<OctreeNode*, GeometrySSBO> * liquidInfo;
- 
+
 	public:
 	LiquidSpaceChangeHandler();
 	LiquidSpaceChangeHandler(

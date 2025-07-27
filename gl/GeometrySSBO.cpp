@@ -8,7 +8,7 @@ GeometrySSBO::GeometrySSBO() : vertexSSBO(0), indexSSBO(0), vertexArrayObject(0)
 }
 
 GeometrySSBO::~GeometrySSBO() {
-    //std::cout << "GeometrySSBO::~GeometrySSBO()" << std::endl;
+    std::cout << "GeometrySSBO::~GeometrySSBO()" << std::endl;
     if (vertexArrayObject) {
         glDeleteVertexArrays(1, &vertexArrayObject);
     }
@@ -23,7 +23,7 @@ GeometrySSBO::~GeometrySSBO() {
     }
 }
 
-void GeometrySSBO::allocate(size_t nodesCount) {
+void GeometrySSBO::allocate() {
     //std::cout << "GeometrySSBO::allocate("  << std::to_string(nodesCount) << ")" << std::endl;
 
     glGenVertexArrays(1, &vertexArrayObject);
@@ -35,7 +35,7 @@ void GeometrySSBO::allocate(size_t nodesCount) {
     glBindVertexArray(vertexArrayObject);
     //std::cout << "Generated VAO ID: " << vertexArrayObject << std::endl;
 
-    reset(nodesCount);
+    reset(20000);
 
     // Allocate big enough buffers
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, vertexSSBO);
@@ -89,10 +89,10 @@ void GeometrySSBO::allocate(size_t nodesCount) {
 }
 
 
-void GeometrySSBO::reset(size_t nodesCount) {
+void GeometrySSBO::reset(size_t maxVerts) {
     //std::cout << "GeometrySSBO::reset("  << std::to_string(nodesCount) << ")" << std::endl;
     InstanceData instanceData = InstanceData();
-    int vertexCount = nodesCount * 18; // 18 vertices per node (6 faces * 3 vertices per face)
+    int vertexCount = maxVerts; 
     // Allocate big enough buffers
     glBindBuffer(GL_ARRAY_BUFFER, vertexSSBO);
     glBufferData(GL_ARRAY_BUFFER, vertexCount * sizeof(Vertex), nullptr, GL_DYNAMIC_DRAW);

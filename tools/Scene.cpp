@@ -86,14 +86,10 @@ bool Scene::computeGeometry(OctreeNodeData &data, Octree * tree, std::unordered_
 		if(ssbo == NULL) {
 			(*infos)[data.node] = GeometrySSBO();
 			ssbo = &(*infos)[data.node];
-			ssbo->allocate(nodes.size());
-		}
-		else {
-			ssbo->reset(nodes.size());
+			ssbo->allocate();
 		}
 		
 		octreeSSBO.copy(&nodes);
-
 		inputSSBO.copy(ComputeShaderInput(chunkBox.getMin(), chunkBox.getLength())); 
 		outputSSBO.reset();
 		computeShader->dispatch(octreeSSBO.nodesCount);
@@ -112,10 +108,10 @@ bool Scene::computeGeometry(OctreeNodeData &data, Octree * tree, std::unordered_
 			<< std::to_string(result.result4f1.y) << ", " 
 			<< std::to_string(result.result4f1.z) << ", " 
 			<< std::to_string(result.result4f1.w) << " }"  << std::endl;
-		
+*/
 		std::cout << "\tvertexCount = " << std::to_string(result.vertexCount) <<std::endl;
 		std::cout << "\tindexCount = " << std::to_string(result.indexCount) <<std::endl;
-*/
+
 		if (result.vertexCount == 0 || result.indexCount == 0) {
 			return false;
 		}
@@ -145,6 +141,9 @@ bool Scene::processSolid(OctreeNodeData &data, Octree * tree) {
 		if(loadSpace(tree, data, &vegetationInfo, vegetationBuilder)) {
 			result = true;			
 		}
+		if(loadSpace(tree, data, &debugInfo, debugBuilder)) {
+			result = true;			
+		}
 		data.node->setDirty(false);	
 	}
 	return result;
@@ -155,9 +154,6 @@ bool Scene::processBrush(OctreeNodeData &data, Octree * tree) {
 	if(data.node->isDirty()) { 
 		if(computeGeometry(data, tree, &brushInfo)) {
 			result = true;
-		}
-		if(loadSpace(tree, data, &debugInfo, debugBuilder)) {
-			result = true;			
 		}
 		data.node->setDirty(false);	
 	}
