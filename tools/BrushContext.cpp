@@ -51,9 +51,9 @@ void BrushContext::apply(Octree &space, OctreeChangeHandler * handler, bool prev
             std::cout << "BrushContext::apply: detail increased to " << std::to_string(detail) << std::endl;
         }
         if(preview  || mode == BrushMode::ADD) {
-            space.add(*wrapped, this->model, SimpleBrush(brushIndex), detail, *simplifier, handler);
+            space.add(wrapped, this->model, SimpleBrush(brushIndex), detail, *simplifier, handler);
         } else {
-            space.del(*wrapped, this->model, SimpleBrush(brushIndex), detail, *simplifier, handler);
+            space.del(wrapped, this->model, SimpleBrush(brushIndex), detail, *simplifier, handler);
         }
         delete wrapped;
     }

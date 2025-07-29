@@ -144,8 +144,8 @@ class CapsuleDistanceFunction : public SignedDistanceFunction {
 
 class HeightMapDistanceFunction : public SignedDistanceFunction {
 	public:
-	const HeightMap &map;
-	HeightMapDistanceFunction(const HeightMap &map);
+	HeightMap * map;
+	HeightMapDistanceFunction(HeightMap * map);
 	float distance(const glm::vec3 p, Transformation model) override;
     SdfType getType() const override; 
     glm::vec3 getCenter(Transformation model) const override;
@@ -184,12 +184,16 @@ class WrappedSignedDistanceFunction : public SignedDistanceFunction {
     float bias;
     Transformation &model;
     std::unordered_map<glm::vec3, float> cacheSDF;
+    std::mutex mtx;
     public:
     bool cacheEnabled = false;
+
 
     WrappedSignedDistanceFunction(SignedDistanceFunction * function, float bias, Transformation &model) : function(function), bias(bias), model(model) {
 
     }
+    virtual ~WrappedSignedDistanceFunction() = default;
+
 
     virtual ContainmentType check(const BoundingCube &cube) const = 0;
     virtual float getLength() const = 0;
@@ -202,12 +206,23 @@ class WrappedSignedDistanceFunction : public SignedDistanceFunction {
 
 	float distance(const glm::vec3 p, Transformation model) override {
         if(cacheEnabled){
+            mtx.lock();
             auto it = cacheSDF.find(p);
             if (it != cacheSDF.end()) {
                 float value = it->second;
+                mtx.unlock();
                 return value;
             }
-            return cacheSDF[p] = function->distance(p, model);
+            mtx.unlock();
+            float result = function->distance(p, model);
+            
+
+            mtx.lock();
+            cacheSDF[p] = result;
+            mtx.unlock();
+
+
+            return result;
         } else {
            return function->distance(p, model);
         }
@@ -308,7 +323,7 @@ class WrappedHeightMap : public WrappedSignedDistanceFunction {
 
     BoundingBox getBox() const {
         HeightMapDistanceFunction * f = (HeightMapDistanceFunction*) function;
-        return BoundingBox(f->map.getMin()-glm::vec3(bias), f->map.getMax()+glm::vec3(bias));
+        return BoundingBox(f->map->getMin()-glm::vec3(bias), f->map->getMax()+glm::vec3(bias));
     }
         
     ContainmentType check(const BoundingCube &cube) const override {
@@ -322,7 +337,7 @@ class WrappedHeightMap : public WrappedSignedDistanceFunction {
     };
     float getLength() const override {
         HeightMapDistanceFunction * f = (HeightMapDistanceFunction*) function;
-        return glm::length(f->map.getMax() - f->map.getMin()) + bias;
+        return glm::length(f->map->getMax() - f->map->getMin()) + bias;
     };
 };
 

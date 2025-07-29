@@ -196,7 +196,8 @@ struct Plane {
 };
 
 class BoundingCube : public AbstractBoundingBox {
-	using AbstractBoundingBox::AbstractBoundingBox;
+	public:
+		using AbstractBoundingBox::AbstractBoundingBox;
 	protected: 
 		float length;
 	
@@ -245,7 +246,8 @@ class BoundingSphere {
 
 
 class BoundingBox : public AbstractBoundingBox {
-	using AbstractBoundingBox::AbstractBoundingBox;
+	public:
+		using AbstractBoundingBox::AbstractBoundingBox;
 	private: 
 		glm::vec3 max;
 
@@ -320,6 +322,8 @@ class GradientPerlinSurface : public PerlinSurface {
 };
 
 class HeightMap: public BoundingBox  {
+	public:
+		using BoundingBox::BoundingBox;
 	private: 
 		float step;
 		const HeightFunction &func;

@@ -21,6 +21,8 @@ void BrushSpaceChangeHandler::update(OctreeNode* node) {
 };
 
 void BrushSpaceChangeHandler::erase(OctreeNode* node) {
+    mtx.lock();
 	brushInfo->erase(node);
     debugInfo->erase(node);
+    mtx.unlock();
 };

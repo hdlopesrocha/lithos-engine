@@ -8,7 +8,7 @@ GeometrySSBO::GeometrySSBO() : vertexSSBO(0), indexSSBO(0), vertexArrayObject(0)
 }
 
 GeometrySSBO::~GeometrySSBO() {
-    std::cout << "GeometrySSBO::~GeometrySSBO()" << std::endl;
+    //std::cout << "GeometrySSBO::~GeometrySSBO()" << std::endl;
     if (vertexArrayObject) {
         glDeleteVertexArrays(1, &vertexArrayObject);
     }

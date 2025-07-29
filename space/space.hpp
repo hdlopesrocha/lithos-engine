@@ -1,6 +1,7 @@
 #ifndef SPACE_HPP
 #define SPACE_HPP
-
+#include <semaphore>
+#include <thread>
 #include "../math/math.hpp"
 #include "../math/SDF.hpp"
 #include "Allocator.hpp"
@@ -153,7 +154,8 @@ struct OctreeNodeData {
 class OctreeAllocator {
 	Allocator<OctreeNode> nodeAllocator;
 	std::unordered_map<BoundingCube, OctreeNode*, BoundingCubeKeyHash> compactMap;
-
+	std::mutex mtx;
+	
 	public: 
 	Allocator<ChildBlock> childAllocator;
 	OctreeNode * allocateOctreeNode(BoundingCube &cube);
@@ -162,7 +164,7 @@ class OctreeAllocator {
 	void deallocateOctreeNode(OctreeNode * node, BoundingCube &cube);
 	uint getIndex(OctreeNode * node);
     size_t getBlockSize() const;
-    size_t getAllocatedBlocksCount() const ;
+    size_t getAllocatedBlocksCount() ;
 
 };
 
@@ -173,7 +175,6 @@ struct OctreeNodeFrame {
 	uint level;
 	float sdf[8];
 	SpaceType type;
-
 	OctreeNodeFrame(OctreeNode* node, BoundingCube cube, float minSize, uint level, float * sdf, SpaceType type) 
 		: node(node), cube(cube), minSize(minSize), level(level), type(type) {
 			for(int i = 0; i < 8; ++i) {
@@ -211,23 +212,102 @@ struct NodeOperationResult {
 };
 
 
+struct ShapeChildArgs {
+    float (*operation)(float, float);
+    WrappedSignedDistanceFunction * function; 
+    const TexturePainter &painter;
+    const Transformation model;
+    OctreeNodeFrame frame;
+    BoundingCube * chunk;
+    Simplifier &simplifier; 
+    OctreeChangeHandler * changeHandler;
+    NodeOperationResult * children;
+    std::atomic<int> &childResultSolid;
+    std::atomic<int> &childResultEmpty;
+    std::atomic<int> &childShapeSolid;
+    std::atomic<int> &childShapeEmpty;
+    std::atomic<int> &childProcess;
+    float * parentShapeSDF;
+    ChildBlock * block;
+    int i;
+	bool count;
+	int threadId;
+    ShapeChildArgs(
+        float (*operation)(float, float),
+        WrappedSignedDistanceFunction * function, 
+        const TexturePainter &painter,
+        const Transformation model,
+        OctreeNodeFrame frame, 
+        BoundingCube * chunk, 
+        Simplifier &simplifier, 
+        OctreeChangeHandler * changeHandler,
+        NodeOperationResult * children,
+        std::atomic<int> &childResultSolid,
+        std::atomic<int> &childResultEmpty,
+        std::atomic<int> &childShapeSolid,
+        std::atomic<int> &childShapeEmpty,
+        std::atomic<int> &childProcess,
+        float * parentShapeSDF,
+        ChildBlock * block, 
+        int i,
+		bool count,
+		int threadId
+	) :
+        operation(operation),
+        function(function),
+        painter(painter),
+        model(model),
+        frame(frame),
+        chunk(chunk),
+        simplifier(simplifier),
+        changeHandler(changeHandler),
+        children(children),
+        childResultSolid(childResultSolid),
+        childResultEmpty(childResultEmpty),
+        childShapeSolid(childShapeSolid),
+        childShapeEmpty(childShapeEmpty),
+        childProcess(childProcess),
+        parentShapeSDF(parentShapeSDF),
+        block(block),
+        i(i), 
+		count(count),
+		threadId(threadId)
+
+		 {
+
+            
+        };
+
+
+};
+
 
 
 class Octree: public BoundingCube {
-	using BoundingCube::BoundingCube;
 	public: 
 		float chunkSize;
 		OctreeNode * root;
 		OctreeAllocator allocator;
-
-		Octree();
+		std::shared_ptr<std::atomic<int>> counter = std::make_shared<std::atomic<int>>(0);
+		const int MAX_CONCURRENCY = 64;
+		std::counting_semaphore<64> semaphore{0};
 		Octree(BoundingCube minCube, float chunkSize);
+		Octree();
 		
-		void expand(const WrappedSignedDistanceFunction &function, Transformation model);
-		void add(WrappedSignedDistanceFunction &function, const Transformation model, const TexturePainter &painter, float minSize, Simplifier &simplifier, OctreeChangeHandler * changeHandler);
-		void del(WrappedSignedDistanceFunction &function, const Transformation model, const TexturePainter &painter, float minSize, Simplifier &simplifier, OctreeChangeHandler * changeHandler);
-		NodeOperationResult shape(float (*operation)(float, float), WrappedSignedDistanceFunction &function, const TexturePainter &painter, const Transformation model, OctreeNodeFrame frame, BoundingCube * chunk, Simplifier &simplifier, OctreeChangeHandler *changeHandler);
-
+		void expand(const WrappedSignedDistanceFunction *function, Transformation model);
+		void add(WrappedSignedDistanceFunction *function, const Transformation model, const TexturePainter &painter, float minSize, Simplifier &simplifier, OctreeChangeHandler * changeHandler);
+		void del(WrappedSignedDistanceFunction *function, const Transformation model, const TexturePainter &painter, float minSize, Simplifier &simplifier, OctreeChangeHandler * changeHandler);
+		NodeOperationResult shape(
+			float (*operation)(float, float), 
+			WrappedSignedDistanceFunction *function, 
+			const TexturePainter &painter, 
+			const Transformation model, 
+			OctreeNodeFrame frame, 
+			BoundingCube * chunk, 
+			Simplifier &simplifier, 
+			OctreeChangeHandler *changeHandler
+		);
+		void shapeChild(ShapeChildArgs args);
 		void iterate(IteratorHandler &handler);
 		void iterateFlat(IteratorHandler &handler);
 
@@ -247,7 +327,7 @@ class Octree: public BoundingCube {
 		void exportOctreeSerialization(OctreeSerialized * octree);
 		void exportNodesSerialization(std::vector<OctreeNodeCubeSerialized> * nodes);
 	private:
-		void buildSDF(SignedDistanceFunction &function, Transformation model, BoundingCube &cube, float * resultSDF, float * existingSDF);
+		void buildSDF(SignedDistanceFunction * function, Transformation model, BoundingCube &cube, float * resultSDF, float * existingSDF);
 
 	};
 

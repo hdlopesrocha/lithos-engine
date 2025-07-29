@@ -264,14 +264,15 @@ glm::vec3 CapsuleDistanceFunction::getCenter(Transformation model) const {
     return 0.5f*(this->a+this->b)+model.translate;
 }
 
-HeightMapDistanceFunction::HeightMapDistanceFunction(const HeightMap &map):map(map) {
+HeightMapDistanceFunction::HeightMapDistanceFunction(HeightMap * map) {
+    this->map = map;
 }
 
 float HeightMapDistanceFunction::distance(const glm::vec3 p, Transformation model)  {
-    glm::vec3 len = map.getLength()*0.5f;
-    glm::vec3 pos = p - map.getCenter();
+    glm::vec3 len = map->getLength()*0.5f;
+    glm::vec3 pos = p - map->getCenter();
 
-    float sdf = map.distance(p);
+    float sdf = map->distance(p);
 
 
     float d = SDF::opIntersection(
@@ -287,7 +288,7 @@ SdfType HeightMapDistanceFunction::getType() const {
 }
 
 glm::vec3 HeightMapDistanceFunction::getCenter(Transformation model) const {
-    return this->map.getCenter();
+    return this->map->getCenter();
 }
 
 OctahedronDistanceFunction::OctahedronDistanceFunction(glm::vec3 center, float radius): center(center), radius(radius) {

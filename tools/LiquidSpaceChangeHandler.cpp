@@ -17,5 +17,7 @@ void LiquidSpaceChangeHandler::update(OctreeNode* node) {
 };
 
 void LiquidSpaceChangeHandler::erase(OctreeNode* node) {
+    mtx.lock();
     liquidInfo->erase(node);
+    mtx.unlock();
 };

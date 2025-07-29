@@ -29,7 +29,7 @@ void OctreeSSBO::copy(std::vector<OctreeNodeCubeSerialized> * nodes) {
         return;
     }
 
-    std::cout << "OctreeSSBO::copy() : " << nodesCount << std::endl;
+    //std::cout << "OctreeSSBO::copy() : " << nodesCount << std::endl;
     OctreeNodeCubeSerialized * data = nodes->data();
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, nodesSSBO);
     glBufferData(GL_SHADER_STORAGE_BUFFER, nodes->size()*sizeof(OctreeNodeCubeSerialized), data, GL_DYNAMIC_DRAW);

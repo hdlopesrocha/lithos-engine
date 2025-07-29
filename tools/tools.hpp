@@ -160,6 +160,7 @@ template <typename T> struct NodeInfo {
 
 class LiquidSpaceChangeHandler : public OctreeChangeHandler {
 	std::unordered_map<OctreeNode*, GeometrySSBO> * liquidInfo;
+	std::mutex mtx;
 
 	public:
 	LiquidSpaceChangeHandler();
@@ -174,14 +175,13 @@ class LiquidSpaceChangeHandler : public OctreeChangeHandler {
 
 class SolidSpaceChangeHandler : public OctreeChangeHandler {
 	std::unordered_map<OctreeNode*, NodeInfo<InstanceData>> * vegetationInfo;
-	std::unordered_map<OctreeNode*, NodeInfo<DebugInstanceData>> * debugInfo;
 	std::unordered_map<OctreeNode*, GeometrySSBO> * computeInfo;
- 
+ 	std::mutex mtx;
+
 	public:
 	SolidSpaceChangeHandler();
 	SolidSpaceChangeHandler(
 		std::unordered_map<OctreeNode*, NodeInfo<InstanceData>> * vegetationInfo,
-		std::unordered_map<OctreeNode*, NodeInfo<DebugInstanceData>> * debugInfo,
 		std::unordered_map<OctreeNode*, GeometrySSBO> * computeInfo
 	);
 
@@ -196,7 +196,7 @@ class SolidSpaceChangeHandler : public OctreeChangeHandler {
 class BrushSpaceChangeHandler : public OctreeChangeHandler {
 	std::unordered_map<OctreeNode*, GeometrySSBO> * brushInfo;
 	std::unordered_map<OctreeNode*, NodeInfo<DebugInstanceData>> * debugInfo;
-
+	std::mutex mtx;
 	public:
 	BrushSpaceChangeHandler();
 	BrushSpaceChangeHandler(
@@ -267,9 +267,9 @@ class Scene {
 	InputSSBO inputSSBO;
 	OutputSSBO outputSSBO;
 
-	LiquidSpaceChangeHandler liquidSpaceChangeHandler;
-	SolidSpaceChangeHandler solidSpaceChangeHandler;
-	BrushSpaceChangeHandler brushSpaceChangeHandler;
+	LiquidSpaceChangeHandler * liquidSpaceChangeHandler;
+	SolidSpaceChangeHandler * solidSpaceChangeHandler;
+	BrushSpaceChangeHandler * brushSpaceChangeHandler;
 	
 	OctreeVisibilityChecker * solidRenderer;
 	OctreeVisibilityChecker * brushRenderer;
