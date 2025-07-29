@@ -313,7 +313,6 @@ class BrushContext {
 	BrushMode mode;
 	std::vector<SignedDistanceFunction*> functions;
 	SignedDistanceFunction * currentFunction;
-	BoundingSphere boundingVolume;
 	Simplifier * simplifier;
 	Tab currentTab;
 

@@ -1,6 +1,6 @@
 #include "gl.hpp"
 
-#define MAX_NODES 10000
+#define MAX_NODES 100000
 
 OctreeSSBO::OctreeSSBO() : nodesSSBO(0), nodesCount(0) {
     //std::cout << "OctreeSSBO::OctreeSSBO()" << std::endl;

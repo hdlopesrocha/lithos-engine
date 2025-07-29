@@ -2,7 +2,6 @@
 
 BrushContext::BrushContext(Settings * settings, Camera * camera) : settings(settings), camera(camera), model(glm::vec3(1.0f),glm::vec3(0.0f), 0.0f, 0.0f, 0.0f) {
     this->simplifier = new Simplifier(0.99f, 0.01f, true);
-    this->boundingVolume = BoundingSphere(glm::vec3(0), 3.0f);
     
     this->functions.push_back(new SphereDistanceFunction(glm::vec3(0), 256));
     this->functions.push_back(new BoxDistanceFunction(glm::vec3(0), glm::vec3(1.0f)));
@@ -10,7 +9,7 @@ BrushContext::BrushContext(Settings * settings, Camera * camera) : settings(sett
     this->functions.push_back(new OctahedronDistanceFunction(glm::vec3(0), 1.0f));
     this->functions.push_back(new PyramidDistanceFunction(glm::vec3(0), 1.0f));
     this->currentFunction = this->functions[0];
-    this->detail = 29.0f;
+    this->detail = 1.0f;
     this->mode = BrushMode::ADD;
     this->brushIndex = 0;
     this->currentTab = Tab::PAGE_ROTATION;

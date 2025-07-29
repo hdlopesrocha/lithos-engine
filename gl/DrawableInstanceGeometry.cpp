@@ -63,7 +63,7 @@ template <typename T> DrawableInstanceGeometry<T>::~DrawableInstanceGeometry() {
 	glDeleteBuffers(1, &instanceBuffer);
 	glDeleteBuffers(1, &indexBuffer);
 	glDeleteVertexArrays(1, &vertexArrayObject);
-	std::cout << "delete DrawableInstanceGeometry()" << std::endl; 
+	//std::cout << "delete DrawableInstanceGeometry()" << std::endl; 
  }
 
 template <typename T> void DrawableInstanceGeometry<T>::draw(uint mode, float amount, long * count) {

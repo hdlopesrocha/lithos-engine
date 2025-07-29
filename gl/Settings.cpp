@@ -20,5 +20,5 @@ Settings::Settings() {
     this->parallaxDistance = 1024.0;
     this->parallaxPower = 100.0;
     this->octreeWireframe = false;
-    this->safetyDetailRatio = 0.05f;
+    this->safetyDetailRatio = 0.02f;
 }

@@ -289,8 +289,8 @@ class Octree: public BoundingCube {
 		OctreeNode * root;
 		OctreeAllocator allocator;
 		std::shared_ptr<std::atomic<int>> counter = std::make_shared<std::atomic<int>>(0);
-		const int MAX_CONCURRENCY = 64;
-		std::counting_semaphore<64> semaphore{0};
+		const int MAX_CONCURRENCY = 8;
+		std::counting_semaphore<8> semaphore{0};
 		Octree(BoundingCube minCube, float chunkSize);
 		Octree();
 		

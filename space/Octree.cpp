@@ -356,7 +356,7 @@ NodeOperationResult Octree::shape(
             if(currentCounter < MAX_CONCURRENCY){
                 args.count = true;
                 args.threadId = currentCounter;
-                std::cout << "Create thread(" << currentCounter << ")" << std::endl;
+                //std::cout << "Create thread(" << currentCounter << ")" << std::endl;
                 ++createdThreads;
 
                 threads.emplace_back([this, args]() {

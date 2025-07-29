@@ -141,9 +141,6 @@ bool Scene::processSolid(OctreeNodeData &data, Octree * tree) {
 		if(loadSpace(tree, data, &vegetationInfo, vegetationBuilder)) {
 			result = true;			
 		}
-		if(loadSpace(tree, data, &debugInfo, debugBuilder)) {
-			result = true;			
-		}
 		data.node->setDirty(false);	
 	}
 	return result;
@@ -154,6 +151,9 @@ bool Scene::processBrush(OctreeNodeData &data, Octree * tree) {
 	if(data.node->isDirty()) { 
 		if(computeGeometry(data, tree, &brushInfo)) {
 			result = true;
+		}
+		if(loadSpace(tree, data, &debugInfo, debugBuilder)) {
+			result = true;			
 		}
 		data.node->setDirty(false);	
 	}
