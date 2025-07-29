@@ -346,17 +346,16 @@ NodeOperationResult Octree::shape(
     std::vector<std::thread> threads;
     threads.reserve(MAX_CONCURRENCY);
     if (!isLeaf) {
-    
         block = node ? node->getBlock(&allocator) : NULL;
         for (int i = 7; i >= 0; --i) {
-            int currentCounter = (*counter)++;
-            
+            int currentCounter = (*counter);
             ShapeChildArgs args = ShapeChildArgs(operation, function, painter, model, frame, chunk, simplifier, changeHandler, children, childResultSolid, childResultEmpty, childShapeSolid, childShapeEmpty, childProcess, parentShapeSDF, block, i, false, currentCounter);
             
-            if(currentCounter < MAX_CONCURRENCY){
+            if(frame.level==0 && currentCounter < MAX_CONCURRENCY){
+                ++(*counter);
                 args.count = true;
                 args.threadId = currentCounter;
-                //std::cout << "Create thread(" << currentCounter << ")" << std::endl;
+                std::cout << "Create thread(" << currentCounter << "," << frame.level << ")" << std::endl;
                 ++createdThreads;
 
                 threads.emplace_back([this, args]() {
@@ -367,10 +366,10 @@ NodeOperationResult Octree::shape(
                 //std::cout << "Call method(" << currentCounter << ")" << std::endl;
                 shapeChild(args);
             }
-           /* if(currentCounter % 10000 == 0) {
+            if(currentCounter % 10000 == 0) {
                 std::cout << "\tcounter = " << currentCounter << std::endl;
-            }*/
-        }    
+            }
+        }
     }
     for (int i = 0; i < createdThreads; ++i) {
         //semaphore.acquire();  // bloqueia até release ser chamado
