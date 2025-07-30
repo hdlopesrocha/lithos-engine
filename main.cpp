@@ -224,7 +224,7 @@ public:
 
 		computeShader = ComputeShader(octreeComputeShader3d);
 		mainScene = new Scene(settings, &computeShader);
-		mainScene->generate(camera);
+		//mainScene->generate(camera);
 
 		textureLayers.textures[0] = createTextureArray(1024, 1024, 20, GL_RGB8);
 		textureLayers.textures[1] = createTextureArray(1024, 1024, 20, GL_RGB8);

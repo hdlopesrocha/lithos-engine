@@ -17,6 +17,9 @@ OctreeNode * loadRecursive2(OctreeAllocator * allocator, OctreeNode * node, int 
 	}
 	node->setSdf(serialized.sdf);
 	node->bits = serialized.bits;
+	if(node->isChunk()){
+		node->setDirty(true);
+	}
 	bool isLeaf = true;
 	for(int j=0; j < 8; ++j) {
 		if(serialized.children[j] != 0) {
