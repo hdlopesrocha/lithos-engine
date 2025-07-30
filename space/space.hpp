@@ -211,8 +211,15 @@ struct NodeOperationResult {
     };
 };
 
+struct ShapeContext {
+	int threadId;
 
-struct ShapeChildArgs {
+	ShapeContext(	int threadId) : threadId(threadId)  {
+
+	}
+};
+
+struct ShapeArgs {
     float (*operation)(float, float);
     WrappedSignedDistanceFunction * function; 
     const TexturePainter &painter;
@@ -221,6 +228,34 @@ struct ShapeChildArgs {
     BoundingCube * chunk;
     Simplifier &simplifier; 
     OctreeChangeHandler * changeHandler;
+    ShapeArgs(
+        float (*operation)(float, float),
+        WrappedSignedDistanceFunction * function, 
+        const TexturePainter &painter,
+        const Transformation model,
+        OctreeNodeFrame frame, 
+        BoundingCube * chunk, 
+        Simplifier &simplifier, 
+        OctreeChangeHandler * changeHandler
+	) :
+        operation(operation),
+        function(function),
+        painter(painter),
+        model(model),
+        frame(frame),
+        chunk(chunk),
+        simplifier(simplifier),
+        changeHandler(changeHandler)
+
+		 {
+
+            
+        };
+
+
+};
+
+struct ShapeChildArgs {
     NodeOperationResult * children;
     std::atomic<int> &childResultSolid;
     std::atomic<int> &childResultEmpty;
@@ -230,17 +265,8 @@ struct ShapeChildArgs {
     float * parentShapeSDF;
     ChildBlock * block;
     int i;
-	bool count;
-	int threadId;
+
     ShapeChildArgs(
-        float (*operation)(float, float),
-        WrappedSignedDistanceFunction * function, 
-        const TexturePainter &painter,
-        const Transformation model,
-        OctreeNodeFrame frame, 
-        BoundingCube * chunk, 
-        Simplifier &simplifier, 
-        OctreeChangeHandler * changeHandler,
         NodeOperationResult * children,
         std::atomic<int> &childResultSolid,
         std::atomic<int> &childResultEmpty,
@@ -249,19 +275,9 @@ struct ShapeChildArgs {
         std::atomic<int> &childProcess,
         float * parentShapeSDF,
         ChildBlock * block, 
-        int i,
-		bool count,
-		int threadId
+        int i
 	) :
-        operation(operation),
-        function(function),
-        painter(painter),
-        model(model),
-        frame(frame),
-        chunk(chunk),
-        simplifier(simplifier),
-        changeHandler(changeHandler),
-        children(children),
+	    children(children),
         childResultSolid(childResultSolid),
         childResultEmpty(childResultEmpty),
         childShapeSolid(childShapeSolid),
@@ -269,9 +285,7 @@ struct ShapeChildArgs {
         childProcess(childProcess),
         parentShapeSDF(parentShapeSDF),
         block(block),
-        i(i), 
-		count(count),
-		threadId(threadId)
+        i(i)
 
 		 {
 
@@ -289,8 +303,11 @@ class Octree: public BoundingCube {
 		OctreeNode * root;
 		OctreeAllocator allocator;
 		std::shared_ptr<std::atomic<int>> counter = std::make_shared<std::atomic<int>>(0);
+		std::shared_ptr<std::atomic<int>> threadId = std::make_shared<std::atomic<int>>(0);
+		
+		std::shared_ptr<std::atomic<int>> works = std::make_shared<std::atomic<int>>(0);
 		const int MAX_CONCURRENCY = 8;
-		std::counting_semaphore<8> semaphore{0};
+//		std::counting_semaphore<32> semaphore{0};
 		std::mutex mtx;
 		Octree(BoundingCube minCube, float chunkSize);
 		Octree();
@@ -298,17 +315,8 @@ class Octree: public BoundingCube {
 		void expand(const WrappedSignedDistanceFunction *function, Transformation model);
 		void add(WrappedSignedDistanceFunction *function, const Transformation model, const TexturePainter &painter, float minSize, Simplifier &simplifier, OctreeChangeHandler * changeHandler);
 		void del(WrappedSignedDistanceFunction *function, const Transformation model, const TexturePainter &painter, float minSize, Simplifier &simplifier, OctreeChangeHandler * changeHandler);
-		NodeOperationResult shape(
-			float (*operation)(float, float), 
-			WrappedSignedDistanceFunction *function, 
-			const TexturePainter &painter, 
-			const Transformation model, 
-			OctreeNodeFrame frame, 
-			BoundingCube * chunk, 
-			Simplifier &simplifier, 
-			OctreeChangeHandler *changeHandler
-		);
-		void shapeChild(ShapeChildArgs args);
+		NodeOperationResult shape(ShapeContext context, ShapeArgs args);
+		void shapeChild(ShapeContext context, ShapeArgs args, ShapeChildArgs childArgs);
 		void iterate(IteratorHandler &handler);
 		void iterateFlat(IteratorHandler &handler);
 
