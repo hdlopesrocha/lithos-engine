@@ -295,23 +295,28 @@ class WrappedCapsule : public WrappedSignedDistanceFunction {
 
     }
 
-    BoundingSphere getSphere() const {
+    BoundingBox getBox() const {
         CapsuleDistanceFunction * f = (CapsuleDistanceFunction*) function;
-        return BoundingSphere(f->getCenter(model), (2.0f*f->radius+glm::distance(f->a, f->b))*glm::length(model.scale) + bias);
+        glm::vec3 min = glm::min(f->a, f->b)*glm::length(model.scale)+model.translate;
+        glm::vec3 max = glm::max(f->a, f->b)*glm::length(model.scale)+model.translate;
+        glm::vec3 len = glm::vec3(f->radius  + bias);
+
+
+        return BoundingBox(min - len, max + len);
     };
 
     ContainmentType check(const BoundingCube &cube) const override {
-        BoundingSphere sphere = getSphere();
-        return sphere.test(cube);
+        BoundingBox box = getBox();
+        return box.test(cube);
     };
 
     bool isContained(const BoundingCube &cube) const override {
-        BoundingSphere sphere = getSphere();
-        return cube.contains(sphere);
+        BoundingBox box = getBox();
+        return cube.contains(box);
     };
     float getLength() const override {
-        CapsuleDistanceFunction * f = (CapsuleDistanceFunction*) function;
-        return (2.0f*f->radius+glm::distance(f->a, f->b))*glm::length(model.scale) + bias;
+        BoundingBox box = getBox();
+        return glm::distance(box.getMin(), box.getMax());
     };
 };
 
@@ -337,7 +342,7 @@ class WrappedHeightMap : public WrappedSignedDistanceFunction {
     };
     float getLength() const override {
         HeightMapDistanceFunction * f = (HeightMapDistanceFunction*) function;
-        return glm::length(f->map->getMax() - f->map->getMin()) + bias;
+        return glm::distance(f->map->getMin(), f->map->getMax()) + bias;
     };
 };
 
