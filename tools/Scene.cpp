@@ -73,30 +73,35 @@ bool Scene::computeGeometry(OctreeNodeData &data, Octree * tree, std::unordered_
 
 		std::vector<OctreeNodeCubeSerialized> nodes;
 		nodes.reserve(2000);
+		int leafNodes = 0;
 		BoundingCube chunkOverlap = data.cube;
 		chunkOverlap.setLength(chunkOverlap.getLengthX()*1.0f);
-		tree->root->exportSerialization(&tree->allocator, &nodes, *tree, chunkOverlap, true);
+		tree->root->exportSerialization(&tree->allocator, &nodes, &leafNodes, *tree, chunkOverlap, true);
 
-		GeometrySSBO * ssbo = NULL;
+		GeometrySSBO * geometrySSBO = NULL;
 		auto it = infos->find(data.node);
 		if (it != infos->end()) {
-			ssbo = &it->second;
+			geometrySSBO = &it->second;
 		}
 
-		if(ssbo == NULL) {
+		if(geometrySSBO == NULL) {
 			(*infos)[data.node] = GeometrySSBO();
-			ssbo = &(*infos)[data.node];
-			ssbo->allocate();
+			geometrySSBO = &(*infos)[data.node];
+			geometrySSBO->generate();
 		}
+		InstanceData instanceData = InstanceData();
+		geometrySSBO->allocate(leafNodes * 18, instanceData); // each node can generate 18 points (3 quads = 6 triangles * 3 points) 
+
 		
+
 		octreeSSBO.copy(&nodes);
 		inputSSBO.copy(ComputeShaderInput(chunkBox.getMin(), chunkBox.getLength())); 
 		outputSSBO.reset();
 		computeShader->dispatch(octreeSSBO.nodesCount);
 
 		ComputeShaderOutput result = outputSSBO.read();
-		ssbo->vertexCount = result.vertexCount;
-		ssbo->indexCount = result.indexCount;
+		geometrySSBO->vertexCount = result.vertexCount;
+		geometrySSBO->indexCount = result.indexCount;
 /*
 		std::cout << "\tresult4f0 = { " 
 			<< std::to_string(result.result4f0.x) << ", " 
@@ -108,10 +113,10 @@ bool Scene::computeGeometry(OctreeNodeData &data, Octree * tree, std::unordered_
 			<< std::to_string(result.result4f1.y) << ", " 
 			<< std::to_string(result.result4f1.z) << ", " 
 			<< std::to_string(result.result4f1.w) << " }"  << std::endl;
-
+*/
 		std::cout << "\tvertexCount = " << std::to_string(result.vertexCount) <<std::endl;
 		std::cout << "\tindexCount = " << std::to_string(result.indexCount) <<std::endl;
-*/
+
 		if (result.vertexCount == 0 || result.indexCount == 0) {
 			return false;
 		}

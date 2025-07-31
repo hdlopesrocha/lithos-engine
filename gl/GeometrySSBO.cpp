@@ -23,27 +23,34 @@ GeometrySSBO::~GeometrySSBO() {
     }
 }
 
-void GeometrySSBO::allocate() {
-    //std::cout << "GeometrySSBO::allocate("  << std::to_string(nodesCount) << ")" << std::endl;
-
+void GeometrySSBO::generate() {
     glGenVertexArrays(1, &vertexArrayObject);
     glGenBuffers(1, &vertexSSBO);
     glGenBuffers(1, &indexSSBO);
     glGenBuffers(1, &instanceSSBO);
+}
+
+void GeometrySSBO::allocate(size_t maxVerts, InstanceData instanceData) {
+    std::cout << "GeometrySSBO::allocate("  << std::to_string(maxVerts) << ")" << std::endl;
+
 
     // Bind VAO
     glBindVertexArray(vertexArrayObject);
     //std::cout << "Generated VAO ID: " << vertexArrayObject << std::endl;
 
-    reset(20000);
-
     // Allocate big enough buffers
+    glBindBuffer(GL_ARRAY_BUFFER, vertexSSBO);
+    glBufferData(GL_ARRAY_BUFFER, maxVerts * sizeof(Vertex), nullptr, GL_DYNAMIC_DRAW);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, vertexSSBO);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, vertexSSBO); 
 
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexSSBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, maxVerts * sizeof(uint), nullptr, GL_DYNAMIC_DRAW);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, indexSSBO);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, indexSSBO); 
 
+    glBindBuffer(GL_ARRAY_BUFFER, instanceSSBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(InstanceData), &instanceData, GL_STATIC_DRAW);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, instanceSSBO);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, instanceSSBO); 
 
@@ -89,23 +96,3 @@ void GeometrySSBO::allocate() {
 }
 
 
-void GeometrySSBO::reset(size_t maxVerts) {
-    //std::cout << "GeometrySSBO::reset("  << std::to_string(nodesCount) << ")" << std::endl;
-    InstanceData instanceData = InstanceData();
-    int vertexCount = maxVerts; 
-    // Allocate big enough buffers
-    glBindBuffer(GL_ARRAY_BUFFER, vertexSSBO);
-    glBufferData(GL_ARRAY_BUFFER, vertexCount * sizeof(Vertex), nullptr, GL_DYNAMIC_DRAW);
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, vertexSSBO);
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, vertexSSBO); 
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexSSBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, vertexCount * sizeof(uint), nullptr, GL_DYNAMIC_DRAW);
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, indexSSBO);
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, indexSSBO); 
-
-    glBindBuffer(GL_ARRAY_BUFFER, instanceSSBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(InstanceData), &instanceData, GL_STATIC_DRAW);
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, instanceSSBO);
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, instanceSSBO); 
-}

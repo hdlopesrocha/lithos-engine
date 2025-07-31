@@ -110,7 +110,7 @@ class OctreeNode {
 		void setLeaf(bool value);
 
 		void setSdf(float * value);
-		uint exportSerialization(OctreeAllocator * allocator, std::vector<OctreeNodeCubeSerialized> * nodes, BoundingCube cube, BoundingCube chunk, bool isRoot);
+		uint exportSerialization(OctreeAllocator * allocator, std::vector<OctreeNodeCubeSerialized> * nodes, int * leafNodes, BoundingCube cube, BoundingCube chunk, bool isRoot);
 	};
 
 struct ChildBlock {

@@ -22,7 +22,9 @@ OctreeNode * loadRecursive(OctreeAllocator * allocator, int i, std::vector<Octre
 	OctreeNode * node = allocator->allocateOctreeNode(cube)->init(vertex);
 	node->setSdf(serialized.sdf);
 	node->bits = serialized.bits;
-	node->setDirty(true);
+	if(node->isChunk()){
+		node->setDirty(true);
+	}
 	bool isLeaf = true;
 	for(int j=0; j < 8; ++j) {
 		if(serialized.children[j] != 0) {

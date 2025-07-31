@@ -462,8 +462,8 @@ class GeometrySSBO {
 	GLuint instanceSSBO;
 	GeometrySSBO();
 	~GeometrySSBO();
-	void allocate();
-	void reset(size_t nodesCount);
+	void generate();
+	void allocate(size_t vertexCount, InstanceData instanceData);
 };
 
 class InputSSBO {
