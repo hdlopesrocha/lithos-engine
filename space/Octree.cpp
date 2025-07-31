@@ -433,9 +433,9 @@ NodeOperationResult Octree::shape(ShapeContext context, ShapeArgs args) {
         node->setChunk(chunkNode);
         node->setLeaf(isLeaf);
         if(resultType == SpaceType::Surface) {
-            //node->vertex.normal = SDF::getNormalFromPosition(node->sdf, frame.cube, node->vertex.position);
             node->vertex.position = glm::vec4(SDF::getPosition(node->sdf, args.frame.cube) ,0.0f);
-            node->vertex.normal = glm::vec4(SDF::getNormal(node->sdf, args.frame.cube), 0.0f);       
+            //node->vertex.normal = glm::vec4(SDF::getNormal(node->sdf, args.frame.cube), 0.0f);       
+            node->vertex.normal = glm::vec4(SDF::getNormalFromPosition(node->sdf, args.frame.cube, node->vertex.position), 0.0f);
         }
         if(!isLeaf) {
             if(block == NULL) {

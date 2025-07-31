@@ -114,8 +114,8 @@ bool Scene::computeGeometry(OctreeNodeData &data, Octree * tree, std::unordered_
 			<< std::to_string(result.result4f1.z) << ", " 
 			<< std::to_string(result.result4f1.w) << " }"  << std::endl;
 */
-		std::cout << "\tvertexCount = " << std::to_string(result.vertexCount) <<std::endl;
-		std::cout << "\tindexCount = " << std::to_string(result.indexCount) <<std::endl;
+//		std::cout << "\tvertexCount = " << std::to_string(result.vertexCount) <<std::endl;
+//		std::cout << "\tindexCount = " << std::to_string(result.indexCount) <<std::endl;
 
 		if (result.vertexCount == 0 || result.indexCount == 0) {
 			return false;
