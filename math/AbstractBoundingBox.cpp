@@ -1,6 +1,7 @@
 #include "math.hpp"
 
 
+
 AbstractBoundingBox::AbstractBoundingBox(glm::vec3 min) : min(min) {
 }
 
@@ -120,7 +121,7 @@ bool AbstractBoundingBox::intersects(const AbstractBoundingBox& box) const {
 }
 
 glm::vec3 AbstractBoundingBox::getShift(int i) {
-    return glm::vec3(4 & i? 1:0, 2 & i? 1:0, 1 & i? 1:0);
+    return CUBE_CORNERS[i];
 }
 
 

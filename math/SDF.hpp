@@ -86,6 +86,7 @@ public:
     static float pyramid(glm::vec3 p, float h );
 
     static glm::vec3 getPosition(float *sdf, const BoundingCube &cube);
+    static glm::vec3 getAveragePosition(float *sdf, const BoundingCube &cube);
     static glm::vec3 getNormal(float* sdf, const BoundingCube& cube);
     static glm::vec3 getNormalFromPosition(float* sdf, const BoundingCube& cube, const glm::vec3& position);
     static void getChildSDF(float * sdf, int i , float * result);

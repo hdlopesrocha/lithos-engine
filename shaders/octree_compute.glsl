@@ -82,6 +82,17 @@ const ivec2 SDF_EDGES[12] = ivec2[](
     ivec2(3, 7)
 ); 
 
+const vec3 CUBE_CORNERS[8] = vec3[](
+    vec3(0,0,0),
+    vec3(0,0,1),
+    vec3(0,1,0),
+    vec3(0,1,1),
+    vec3(1,0,0),
+    vec3(1,0,1),
+    vec3(1,1,0),
+    vec3(1,1,1)
+);
+
 int triplanarPlane(vec3 normal) {
     vec3 absNormal = abs(normal);
     if (absNormal.x > absNormal.y && absNormal.x > absNormal.z) {
@@ -106,8 +117,13 @@ vec2 triplanarMapping(vec3 position, int plane) {
 }
 
 vec3 getShift(int i) {
-    return vec3(i >> 2 & 1, i >> 1 & 1, i & 1);
+    return CUBE_CORNERS[i];
 }
+
+vec3 getCorner(int i, vec3 min, vec3 length) {
+    return min + getShift(i) * length;
+}
+
 
 bool contains(vec3 sourceMin, vec3 sourceLength, vec3 targetMin, vec3 targetLength) {
     vec3 sourceMax = sourceMin + sourceLength;
@@ -209,7 +225,43 @@ vec3 estimateNormal(float sdf[8]) {
     return normalize(grad);
 }
 
-vec3 estimatePosition(float sdf[8], vec3 min, vec3 length) {
+vec3 getNormal(float sdf[8], float cubeLength) {
+    float dx = cubeLength;
+    float inv2dx = 1.0 / (2.0 * dx);
+
+    float gx = (sdf[1] + sdf[5] + sdf[3] + sdf[7] - sdf[0] - sdf[4] - sdf[2] - sdf[6]) * 0.25;
+    float gy = (sdf[2] + sdf[3] + sdf[6] + sdf[7] - sdf[0] - sdf[1] - sdf[4] - sdf[5]) * 0.25;
+    float gz = (sdf[4] + sdf[5] + sdf[6] + sdf[7] - sdf[0] - sdf[1] - sdf[2] - sdf[3]) * 0.25;
+
+    return normalize(vec3(gx, gy, gz) * inv2dx);
+}
+
+vec3 getNormalFromPosition(float sdf[8], vec3 cubeMin, vec3 cubeLength, vec3 position) {
+    vec3 local = (position - cubeMin) / cubeLength; // [0,1]^3
+
+    float dx = 
+        (1.0 - local.y) * (1.0 - local.z) * (sdf[1] - sdf[0]) +
+        local.y       * (1.0 - local.z) * (sdf[3] - sdf[2]) +
+        (1.0 - local.y) * local.z       * (sdf[5] - sdf[4]) +
+        local.y       * local.z       * (sdf[7] - sdf[6]);
+
+    float dy = 
+        (1.0 - local.x) * (1.0 - local.z) * (sdf[2] - sdf[0]) +
+        local.x       * (1.0 - local.z) * (sdf[3] - sdf[1]) +
+        (1.0 - local.x) * local.z       * (sdf[6] - sdf[4]) +
+        local.x       * local.z       * (sdf[7] - sdf[5]);
+
+    float dz = 
+        (1.0 - local.x) * (1.0 - local.y) * (sdf[4] - sdf[0]) +
+        local.x       * (1.0 - local.y) * (sdf[5] - sdf[1]) +
+        (1.0 - local.x) * local.y       * (sdf[6] - sdf[2]) +
+        local.x       * local.y       * (sdf[7] - sdf[3]);
+
+    return normalize(vec3(dx, dy, dz) / cubeLength);
+}
+
+
+vec3 getAveragePosition(float sdf[8], vec3 min, vec3 length) {
     // Early exit if there's no surface inside this cube
     vec3 center =min+ length*0.5f;
 //    return center;  // or some fallback value
@@ -244,6 +296,88 @@ vec3 estimatePosition(float sdf[8], vec3 min, vec3 length) {
         return center;
     }
 }
+
+vec3 interpolate(vec3 p0, vec3 p1, float v0, float v1) {
+    float t = v0 / (v0 - v1);  // Linear interpolation weight
+    return mix(p0, p1, t);     // Equivalent to: p0 + t * (p1 - p0)
+}
+
+
+// Solve AᵀA x = Aᵀb using inverse (safe fallback if singular)
+vec3 solveQEF(mat3 ATA, vec3 ATb, vec3 fallback) {
+    float det = determinant(ATA);
+
+    if (abs(det) < 1e-8) {
+        // Regularize
+        ATA += mat3(1e-4);
+        det = determinant(ATA);
+        if (abs(det) < 1e-8)
+            return fallback;
+    }
+
+    return inverse(ATA) * ATb;
+}
+
+
+// getShift(i): i is bit-coded as xyz (x=bit 2, y=bit 1, z=bit 0)
+vec3 getGradientFromCorners(vec3 localPos, float sdfs[8]) {
+    // central differences using your bit-based cube layout
+    float dx = (sdfs[4] - sdfs[0] + sdfs[5] - sdfs[1] + sdfs[6] - sdfs[2] + sdfs[7] - sdfs[3]) * 0.25;
+    float dy = (sdfs[2] - sdfs[0] + sdfs[3] - sdfs[1] + sdfs[6] - sdfs[4] + sdfs[7] - sdfs[5]) * 0.25;
+    float dz = (sdfs[1] - sdfs[0] + sdfs[3] - sdfs[2] + sdfs[5] - sdfs[4] + sdfs[7] - sdfs[6]) * 0.25;
+
+    return normalize(vec3(dx, dy, dz));
+}
+
+vec3 dualContouringQEF(vec3 min, vec3 length, float sdfs[8]) {
+
+    mat3 ATA = mat3(0.0);
+    vec3 ATb = vec3(0.0);
+    int count = 0;
+
+    vec3 cornerPos[8];
+    for (int i = 0; i < 8; ++i)
+        cornerPos[i] = min + vec3(getShift(i)) * length;
+
+    for (int e = 0; e < 12; ++e) {
+        int i0 = SDF_EDGES[e].x;
+        int i1 = SDF_EDGES[e].y;
+
+        float d0 = sdfs[i0];
+        float d1 = sdfs[i1];
+
+		bool sign0 = d0 < 0.0f;
+		bool sign1 = d1 < 0.0f;
+        if (sign0 != sign1) {
+            vec3 p0 = cornerPos[i0];
+            vec3 p1 = cornerPos[i1];
+            vec3 pos = interpolate(p0, p1, d0, d1);
+            vec3 normal = getGradientFromCorners((pos-min)/length, sdfs);
+            //vec3 normal = getNormalFromPosition(sdfs, min, length, pos); // crude gradient along the edge
+
+            ATA += outerProduct(normal, normal);       // AᵀA += n * nᵀ
+            ATb += dot(normal, pos) * normal;        // Aᵀb += (n·p) * n
+
+            count++;
+
+            shaderOutput.result4f0 = vec4(count, length.length(), determinant(ATA), 0.0f);
+    
+        }
+    }
+    vec3 center = getAveragePosition(sdfs, min, length);
+
+    if (count == 0) return center;
+
+    vec3 result = solveQEF(ATA, ATb, center);
+return result;
+    return clamp(result, min, min + length);
+}
+
+vec3 getPosition(float sdf[8], vec3 min, vec3 length) {
+    return dualContouringQEF(min, length, sdf);
+}
+
+
 
 void createVertex(Vertex vertex, uint vertexIdx, uint indexIdx) {
     vertices[vertexIdx] = vertex;
@@ -287,8 +421,8 @@ void main() {
         return;
     }
 
-    shaderOutput.result4f0 = shaderInput.chunkMin;
-    shaderOutput.result4f1 = shaderInput.chunkLength;
+    //shaderOutput.result4f0 = shaderInput.chunkMin;
+    //shaderOutput.result4f1 = shaderInput.chunkLength;
 
     for(int k =0 ; k < tessEdge.length(); ++k) {
 		ivec2 edge = tessEdge[k];
@@ -317,8 +451,8 @@ void main() {
                 if(n >= 0) {
                     Vertex vertex;
                     vertex.brushIndex = quadNode.brushIndex;
-                    vertex.position = vec4(estimatePosition(quadNode.sdf, quadNode.min, quadNode.length), 0.0f);
-                    vertex.normal = vec4(estimateNormal(quadNode.sdf), 0.0f);
+                    vertex.position = vec4(getAveragePosition(quadNode.sdf, quadNode.min, quadNode.length), 0.0f);
+                    vertex.normal = vec4(normalize(getNormalFromPosition(quadNode.sdf, quadNode.min, quadNode.length, vertex.position.xyz)), 0.0f);
                     vertices[i] = vertex;
                 } else {
                     vertices[i].brushIndex = -1; // Mark as empty and solid

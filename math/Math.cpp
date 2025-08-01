@@ -242,6 +242,27 @@ float Math::randomFloat() {
     return dis(gen);
 }
 
+glm::vec3 Math::solveLinearSystem(const glm::mat3& A, const glm::vec3& b) {
+    float detA = glm::determinant(A);
+    if (std::abs(detA) < 1e-6f) {
+        return glm::vec3(0.0f); // Or handle singular matrix
+    }
+
+    glm::mat3 A1 = A;
+    glm::mat3 A2 = A;
+    glm::mat3 A3 = A;
+
+    A1[0] = b;
+    A2[1] = b;
+    A3[2] = b;
+
+    float x = glm::determinant(A1) / detA;
+    float y = glm::determinant(A2) / detA;
+    float z = glm::determinant(A3) / detA;
+
+    return glm::vec3(x, y, z);
+}
+
 float Math::squaredDistPointAABB(glm::vec3 p, glm::vec3 min, glm::vec3 max){
     float sq = 0.0f;
 

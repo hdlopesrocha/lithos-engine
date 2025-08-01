@@ -6,6 +6,49 @@ glm::vec3 SDF::getPosition(float *sdf, const BoundingCube &cube) {
     if(eval != SpaceType::Surface) {
         return cube.getCenter();  // or some fallback value
     }
+    glm::vec3 normals[8];
+    for (int i = 0; i < 8; ++i) {
+        normals[i] = SDF::getNormalFromPosition(sdf, cube, cube.getCorner(i));
+    }
+
+    glm::mat3 ATA(0.0f);
+    glm::vec3 ATb(0.0f);
+
+    for (int i = 0; i < 12; ++i) {
+        glm::ivec2 edge = SDF_EDGES[i];
+        float d0 = sdf[edge[0]];
+        float d1 = sdf[edge[1]];
+
+		bool sign0 = d0 < 0.0f;
+		bool sign1 = d1 < 0.0f;
+
+        if (sign0 != sign1) {
+            glm::vec3 p0 = cube.getCorner(edge[0]);
+            glm::vec3 p1 = cube.getCorner(edge[1]);
+            float denom = d0 - d1;
+            float t = (denom != 0.0f) ? glm::clamp(d0 / denom, 0.0f, 1.0f) : 0.5f;
+            glm::vec3 p = glm::mix(p0, p1, t);
+            glm::vec3 n = glm::normalize(glm::mix(normals[edge[0]], normals[edge[1]], t));
+
+            float d = glm::dot(n, p);
+            ATA += glm::outerProduct(n, n);
+            ATb += n * d;
+        }
+    }
+
+    if (glm::determinant(ATA) > 1e-5f) {
+        return Math::solveLinearSystem(ATA, ATb);
+    } else {
+        return getAveragePosition(sdf, cube); // e.g., average of surface crossings
+    }
+}
+
+glm::vec3 SDF::getAveragePosition(float *sdf, const BoundingCube &cube) {
+    // Early exit if there's no surface inside this cube
+    SpaceType eval = SDF::eval(sdf);
+    if(eval != SpaceType::Surface) {
+        return cube.getCenter();  // or some fallback value
+    }
 
     std::vector<glm::vec3> positions;
     for (int i = 0; i < 12; ++i) {
@@ -35,6 +78,7 @@ glm::vec3 SDF::getPosition(float *sdf, const BoundingCube &cube) {
 
     return sum / static_cast<float>(positions.size());
 }
+
 
 glm::vec3 SDF::getNormal(float* sdf, const BoundingCube& cube) {
     const float dx = cube.getLengthX(); // or half size if your sdf spacing is half

@@ -30,6 +30,17 @@
 #define INFO_TYPE_REMOVE 0
 #define DISCARD_BRUSH_INDEX -1
 
+const std::array<glm::ivec3, 8> CUBE_CORNERS = {{
+    {0, 0, 0}, // 0
+    {0, 0, 1}, // 1
+    {0, 1, 0}, // 2
+    {0, 1, 1}, // 3
+    {1, 0, 0}, // 4
+    {1, 0, 1}, // 5
+    {1, 1, 0}, // 6
+    {1, 1, 1}  // 7
+}};
+
 class BoundingSphere;
 class BoundingBox;
 class IteratorHandler;
@@ -530,7 +541,7 @@ public:
 	static float squaredDistPointAABB(glm::vec3 p, glm::vec3 min, glm::vec3 max);
 	static float check(float p, float min, float max);
 	static float randomFloat();
-
+	static glm::vec3 solveLinearSystem(const glm::mat3& A, const glm::vec3& b);
 };
 void ensureFolderExists(const std::string& folder);
 
