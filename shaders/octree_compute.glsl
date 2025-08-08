@@ -96,22 +96,19 @@ const vec3 CUBE_CORNERS[8] = vec3[](
 int triplanarPlane(vec3 normal) {
     vec3 absNormal = abs(normal);
     if (absNormal.x > absNormal.y && absNormal.x > absNormal.z) {
-        return normal.x > 0.0f ? 0 : 1;
+        return 0;
     } else if (absNormal.y > absNormal.x && absNormal.y > absNormal.z) {
-        return normal.y > 0.0f ? 2 : 3;
+        return 1;
     } else {
-        return normal.z > 0.0f ? 4 : 5;
+        return 2;
     }
 }
 
 vec2 triplanarMapping(vec3 position, int plane) {
     switch (plane) {
         case 0: return vec2(-position.z, -position.y);
-        case 1: return vec2(position.z, -position.y);
-        case 2: return vec2(position.x, position.z);
-        case 3: return vec2(position.x, -position.z);
-        case 4: return vec2(position.x, -position.y);
-        case 5: return vec2(-position.x, -position.y);
+        case 1: return vec2(position.x, position.z);
+        case 2: return vec2(position.x, -position.y);
         default: return vec2(0.0,0.0);
     }
 }
@@ -377,16 +374,24 @@ vec3 getPosition(float sdf[8], vec3 min, vec3 length) {
     return dualContouringQEF(min, length, sdf);
 }
 
-
-
 void createVertex(Vertex vertex, uint vertexIdx, uint indexIdx) {
     vertices[vertexIdx] = vertex;
     indices[indexIdx] = vertexIdx;
 }   
 
-void handleTriangle(Vertex v0, Vertex v1 , Vertex v2, bool sign) { 
-    if(v0.brushIndex < 0 || v1.brushIndex < 0 || v2.brushIndex < 0) {
-        return; // Skip if any vertex is empty or solid
+float triangleArea(vec3 a, vec3 b, vec3 c) {
+    vec3 ab = b - a;
+    vec3 ac = c - a;
+    return length(cross(ab, ac)) * 0.5;
+}
+
+
+void handleTriangle(Vertex v0, uint i0, Vertex v1, uint i1, Vertex v2, uint i2, bool sign, uint nodeIdx) { 
+    if(v0.brushIndex < 0 
+        || v1.brushIndex < 0 
+        || v2.brushIndex < 0 
+        || triangleArea(v0.position.xyz, v1.position.xyz, v2.position.xyz) < 0.00001f) {
+        return; 
     }
     //shaderOutput.result4f1= vec4(v0.position.xyz, v0.brushIndex);
     float triplanarScale = 0.1f;
@@ -400,12 +405,29 @@ void handleTriangle(Vertex v0, Vertex v1 , Vertex v2, bool sign) {
     v2.texCoord = triplanarMapping(v2.position.xyz , plane)*triplanarScale;
 
     // Generate vertex
-    uint vertexIdx = atomicAdd(shaderOutput.vertexCount, 3);
+    uint vertexIdx = nodeIdx + plane;
     uint indexIdx = atomicAdd(shaderOutput.indexCount, 3);
 
-    createVertex(sign ? v2 : v0,    vertexIdx+0, indexIdx+0);
-    createVertex(v1,                vertexIdx+1, indexIdx+1);
-    createVertex(sign ? v0 : v2,    vertexIdx+2, indexIdx+2);
+    Vertex va, vb, vc;
+    uint ia, ib, ic;
+
+    vb = v1;
+    ib = i1;
+    if(sign) {
+        va = v2;
+        vc = v0;
+        ia = i2;
+        ic = i0;
+    } else {
+        va = v0;
+        vc = v2;
+        ia = i0;
+        ic = i2;
+    }
+
+    createVertex(va, 3*ia + plane, indexIdx+0);
+    createVertex(vb, 3*ib + plane, indexIdx+1);
+    createVertex(vc, 3*ic + plane, indexIdx+2);
 
 }
 
@@ -436,6 +458,9 @@ void main() {
 		if(sign0 != sign1) {
 			ivec4 order = tessOrder[k];
             Vertex vertices[4];
+            uint indices[4];
+
+
             int direction = 1;
 			for(int i =0; i<4 ; ++i) {
                 vec3 cubeCenter = node.min + node.length*0.5;
@@ -454,12 +479,14 @@ void main() {
                     vertex.position = vec4(getAveragePosition(quadNode.sdf, quadNode.min, quadNode.length), 0.0f);
                     vertex.normal = vec4(normalize(getNormalFromPosition(quadNode.sdf, quadNode.min, quadNode.length, vertex.position.xyz)), 0.0f);
                     vertices[i] = vertex;
+                    indices[i] = n;
                 } else {
                     vertices[i].brushIndex = -1; // Mark as empty and solid
+                    indices[i] = 0;
                 }
 			}
-            handleTriangle(vertices[0], vertices[2], vertices[1], sign1);
-            handleTriangle(vertices[0], vertices[3], vertices[2], sign1);
+            handleTriangle(vertices[0], indices[0], vertices[2], indices[2], vertices[1], indices[1], sign1, nodeIdx);
+            handleTriangle(vertices[0], indices[0], vertices[3], indices[3], vertices[2], indices[2], sign1, nodeIdx);
 		}
 
     }    

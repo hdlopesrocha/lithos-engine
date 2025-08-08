@@ -463,7 +463,7 @@ class GeometrySSBO {
 	GeometrySSBO();
 	~GeometrySSBO();
 	void generate();
-	void allocate(size_t vertexCount, InstanceData instanceData);
+	void allocate(size_t vertexCount, size_t maxInds, InstanceData instanceData);
 };
 
 class InputSSBO {

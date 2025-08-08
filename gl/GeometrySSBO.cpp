@@ -30,7 +30,7 @@ void GeometrySSBO::generate() {
     glGenBuffers(1, &instanceSSBO);
 }
 
-void GeometrySSBO::allocate(size_t maxVerts, InstanceData instanceData) {
+void GeometrySSBO::allocate(size_t maxVerts, size_t maxInds, InstanceData instanceData) {
     //std::cout << "GeometrySSBO::allocate("  << std::to_string(maxVerts) << ")" << std::endl;
 
 
@@ -45,7 +45,7 @@ void GeometrySSBO::allocate(size_t maxVerts, InstanceData instanceData) {
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, vertexSSBO); 
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexSSBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, maxVerts * sizeof(uint), nullptr, GL_DYNAMIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, maxInds * sizeof(uint), nullptr, GL_DYNAMIC_DRAW);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, indexSSBO);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, indexSSBO); 
 

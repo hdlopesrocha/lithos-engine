@@ -90,7 +90,7 @@ bool Scene::computeGeometry(OctreeNodeData &data, Octree * tree, std::unordered_
 			geometrySSBO->generate();
 		}
 		InstanceData instanceData = InstanceData();
-		geometrySSBO->allocate(leafNodes * 18, instanceData); // each node can generate 18 points (3 quads = 6 triangles * 3 points) 
+		geometrySSBO->allocate(nodes.size() * 3, leafNodes * 18, instanceData); // each node can generate 18 points (3 quads = 6 triangles * 3 points) 
 
 		
 
@@ -114,10 +114,10 @@ bool Scene::computeGeometry(OctreeNodeData &data, Octree * tree, std::unordered_
 			<< std::to_string(result.result4f1.z) << ", " 
 			<< std::to_string(result.result4f1.w) << " }"  << std::endl;
 */
-//		std::cout << "\tvertexCount = " << std::to_string(result.vertexCount) <<std::endl;
-//		std::cout << "\tindexCount = " << std::to_string(result.indexCount) <<std::endl;
+		//std::cout << "\tvertexCount = " << std::to_string(result.vertexCount) <<std::endl;
+		std::cout << "\tindexCount = " << std::to_string(result.indexCount) <<std::endl;
 
-		if (result.vertexCount == 0 || result.indexCount == 0) {
+		if (result.indexCount == 0) {
 			return false;
 		}
 
@@ -285,7 +285,7 @@ void drawGeometry(const std::vector<OctreeNodeData> &list, std::unordered_map<Oc
 		auto it = infos->find(node);
 		if (it != infos->end()) {
 			GeometrySSBO* geo = &it->second;
-			if(geo != NULL && geo->vertexCount > 0 && geo->indexCount > 0 && geo->vertexArrayObject > 0) {
+			if(geo != NULL && geo->indexCount > 0 && geo->vertexArrayObject > 0) {
 				//std::cout << "Scene::draw3dSolid() " << std::to_string(geo->vertexCount) << " vertices, " << std::to_string(geo->indexCount) << " indices, " << std::to_string(geo->vertexArrayObject) << " vao" << std::endl;
 				glBindVertexArray(geo->vertexArrayObject);
 				glDrawElementsInstanced(GL_PATCHES, geo->indexCount, GL_UNSIGNED_INT, nullptr, 1);
