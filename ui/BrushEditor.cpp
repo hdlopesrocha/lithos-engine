@@ -174,7 +174,7 @@ void BrushEditor::draw2d(float time){
         changed = true; 
         brushContext->model.quaternion = glm::quat(glm::radians(glm::vec3(pitch, yaw, roll)));
     }
-    if (ImGui::SliderFloat("Yaw", &yaw, -180.0f, 180.0f)) {
+    if (ImGui::SliderFloat("Yaw", &yaw, -90.0f, 90.0f)) {
         changed = true; 
         brushContext->model.quaternion = glm::quat(glm::radians(glm::vec3(pitch, yaw, roll)));
     }
