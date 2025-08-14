@@ -122,53 +122,51 @@ void OctreeNode::setLeaf(bool value) {
 	this->bits = (this->bits & ~mask) | (value ? mask : 0x0);
 }
 
-
-uint OctreeNode::exportSerialization(OctreeAllocator * allocator, std::vector<OctreeNodeCubeSerialized> * nodes, int * leafNodes, BoundingCube cube, BoundingCube chunk, bool isRoot) {
-
-	if( this->isEmpty() || this->isSolid() || !chunk.intersects(cube)) {
-		return 0; // Skip this node
-	}
-
+OctreeNode * OctreeNode::compress(OctreeAllocator * allocator, BoundingCube * cube, BoundingCube chunk) {
 	int intersectingChildCount = 0;
 	int intersectingIndex = -1;
 
-	if(isRoot) {
-		for (int i = 0; i < 8; ++i) {
-			if (cube.getChild(i).intersects(chunk)) {
-				intersectingChildCount++;
-				intersectingIndex = i;
-			}
+	for (int i = 0; i < 8; ++i) {
+		if (cube->getChild(i).intersects(chunk)) {
+			intersectingChildCount++;
+			intersectingIndex = i;
 		}
 	}
-	ChildBlock * block = this->getBlock(allocator);
 
-	uint index = nodes->size(); 
-
-	if(isRoot && intersectingChildCount == 1) {
+	if(intersectingChildCount == 1) {
+		ChildBlock * block = this->getBlock(allocator);
 		if(block != NULL) {
 			OctreeNode * childNode = this->getChildNode(intersectingIndex, allocator, block);
 			if(childNode != NULL) {
-				BoundingCube c = cube.getChild(intersectingIndex);
-				return childNode->exportSerialization(allocator, nodes, leafNodes, c, chunk, isRoot);
+				BoundingCube c = cube->getChild(intersectingIndex);
+				*cube = c;
+				return childNode->compress(allocator, cube, chunk);
 			}
 		}
 	}
-	else {
-		OctreeNodeCubeSerialized n(this->sdf, cube, this->vertex.brushIndex, this->bits);
-		nodes->push_back(n);
-		if(isLeaf()) {
-			++(*leafNodes);
-		}
+	return this;
+}
 
 
-		if(block != NULL) {
-			OctreeNodeCubeSerialized * real = &(*nodes)[index];
-			for(int i=0; i < 8; ++i) {
-				OctreeNode * childNode = this->getChildNode(i, allocator,block);
-				if(childNode != NULL) {
-					BoundingCube c = cube.getChild(i);
-					real->children[i] = childNode->exportSerialization(allocator, nodes, leafNodes, c, chunk, false);
-				}
+uint OctreeNode::exportSerialization(OctreeAllocator * allocator, std::vector<OctreeNodeCubeSerialized> * nodes, int * leafNodes, BoundingCube cube, BoundingCube chunk, uint level) {
+	if( this->isEmpty() || this->isSolid() || !chunk.intersects(cube)) {
+		return 0; // Skip this node
+	}
+	uint index = nodes->size(); 
+
+	OctreeNodeCubeSerialized n(this->sdf, cube, this->vertex.brushIndex, this->bits, level);
+	nodes->push_back(n);
+	if(isLeaf()) {
+		++(*leafNodes);
+	}
+
+	ChildBlock * block = this->getBlock(allocator);
+	if(block != NULL) {
+		for(int i=0; i < 8; ++i) {
+			OctreeNode * childNode = this->getChildNode(i, allocator,block);
+			if(childNode != NULL) {
+				BoundingCube c = cube.getChild(i);
+			    (*nodes)[index].children[i] = childNode->exportSerialization(allocator, nodes, leafNodes, c, chunk, level + 1);
 			}
 		}
 	}

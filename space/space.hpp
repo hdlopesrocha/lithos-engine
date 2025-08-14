@@ -2,6 +2,8 @@
 #define SPACE_HPP
 #include <semaphore>
 #include <thread>
+#include <unordered_set>
+#include <utility>
 #include "../math/math.hpp"
 #include "../math/SDF.hpp"
 #include "Allocator.hpp"
@@ -31,9 +33,10 @@ struct alignas(16) OctreeNodeCubeSerialized {
     int brushIndex;
     glm::vec3 length;
     uint bits;
+	uint level;
 
 	OctreeNodeCubeSerialized();
-	OctreeNodeCubeSerialized(float * sdf, BoundingCube cube, int brushIndex, uint bits) {
+	OctreeNodeCubeSerialized(float * sdf, BoundingCube cube, int brushIndex, uint bits, uint level) {
 		SDF::copySDF(sdf, this->sdf);
 		for(int i = 0; i < 8; ++i) {
 			this->children[i] = 0;
@@ -42,6 +45,7 @@ struct alignas(16) OctreeNodeCubeSerialized {
 		this->brushIndex = brushIndex;
 		this->length = cube.getLength();
 		this->bits = bits;
+		this->level = level;
 	};
 };
 
@@ -110,8 +114,9 @@ class OctreeNode {
 		void setLeaf(bool value);
 
 		void setSdf(float * value);
-		uint exportSerialization(OctreeAllocator * allocator, std::vector<OctreeNodeCubeSerialized> * nodes, int * leafNodes, BoundingCube cube, BoundingCube chunk, bool isRoot);
-	};
+		uint exportSerialization(OctreeAllocator * allocator, std::vector<OctreeNodeCubeSerialized> * nodes, int * leafNodes, BoundingCube cube, BoundingCube chunk, uint level);
+		OctreeNode * compress(OctreeAllocator * allocator, BoundingCube * cube, BoundingCube chunk);
+};
 
 struct ChildBlock {
 	uint children[8]; 

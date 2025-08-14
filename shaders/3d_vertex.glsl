@@ -24,17 +24,12 @@ out TextureBrush vProps;
 out mat4 vModel;
 out vec3 vNormal;
 
-
-
 void main() {
     vTextureCoord = textureCoord;
     vTextureCoord.y -= shift;
 
     vModel = world*model;
     vPosition = (vModel*vec4(position.xyz, 1.0)).xyz;
-
-
-
  
     mat3 normalMatrix = transpose(inverse(mat3(vModel)));
     vNormal = normalize(normalMatrix * normal.xyz);

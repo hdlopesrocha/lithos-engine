@@ -72,11 +72,14 @@ bool Scene::computeGeometry(OctreeNodeData &data, Octree * tree, std::unordered_
 	if (!emptyChunk)	{
 
 		std::vector<OctreeNodeCubeSerialized> nodes;
-		nodes.reserve(2000);
+		nodes.reserve(10000);
 		int leafNodes = 0;
 		BoundingCube chunkOverlap = data.cube;
-		chunkOverlap.setLength(chunkOverlap.getLengthX()*1.0f);
-		tree->root->exportSerialization(&tree->allocator, &nodes, &leafNodes, *tree, chunkOverlap, true);
+		//chunkOverlap.setLength(chunkOverlap.getLengthX()*1.0f);
+		BoundingCube compressedCube = *tree;
+
+		OctreeNode * compressedRoot = tree->root->compress(&tree->allocator, &compressedCube, chunkOverlap);
+		compressedRoot->exportSerialization(&tree->allocator, &nodes, &leafNodes, compressedCube, chunkOverlap, 0u);
 
 		GeometrySSBO * geometrySSBO = NULL;
 		auto it = infos->find(data.node);
@@ -91,8 +94,6 @@ bool Scene::computeGeometry(OctreeNodeData &data, Octree * tree, std::unordered_
 		}
 		InstanceData instanceData = InstanceData();
 		geometrySSBO->allocate(nodes.size() * 3, leafNodes * 18, instanceData); // each node can generate 18 points (3 quads = 6 triangles * 3 points) 
-
-		
 
 		octreeSSBO.copy(&nodes);
 		inputSSBO.copy(ComputeShaderInput(chunkBox.getMin(), chunkBox.getLength())); 
@@ -115,7 +116,7 @@ bool Scene::computeGeometry(OctreeNodeData &data, Octree * tree, std::unordered_
 			<< std::to_string(result.result4f1.w) << " }"  << std::endl;
 */
 		//std::cout << "\tvertexCount = " << std::to_string(result.vertexCount) <<std::endl;
-		std::cout << "\tindexCount = " << std::to_string(result.indexCount) <<std::endl;
+		//std::cout << "\tindexCount = " << std::to_string(result.indexCount) <<std::endl;
 
 		if (result.indexCount == 0) {
 			return false;

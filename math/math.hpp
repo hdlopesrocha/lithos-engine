@@ -52,6 +52,7 @@ enum ContainmentType {
 };
 
 struct alignas(16)  Vertex {
+	public:
     glm::vec4 position;
     glm::vec4 normal;
     glm::vec2 texCoord;
@@ -71,11 +72,11 @@ struct alignas(16)  Vertex {
     }
 
     Vertex() : 
-		Vertex(glm::vec4(0), glm::vec4(0), glm::vec2(0), 0) {
+		Vertex(glm::vec4(0), glm::vec4(0), glm::vec2(0), DISCARD_BRUSH_INDEX) {
     }
 
     Vertex(glm::vec3 pos) : 
-		Vertex(glm::vec4(pos, 0.0f), glm::vec4(0), glm::vec2(0), 0) {
+		Vertex(glm::vec4(pos, 0.0f), glm::vec4(0), glm::vec2(0), DISCARD_BRUSH_INDEX) {
     }
 
 	bool operator<(const Vertex& other) const {

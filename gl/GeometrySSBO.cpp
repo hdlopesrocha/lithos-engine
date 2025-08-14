@@ -31,7 +31,7 @@ void GeometrySSBO::generate() {
 }
 
 void GeometrySSBO::allocate(size_t maxVerts, size_t maxInds, InstanceData instanceData) {
-    //std::cout << "GeometrySSBO::allocate("  << std::to_string(maxVerts) << ")" << std::endl;
+   // std::cout << "GeometrySSBO::allocate("  << std::to_string(maxVerts) << ", " << std::to_string(maxInds) << ")" << std::endl;
 
 
     // Bind VAO

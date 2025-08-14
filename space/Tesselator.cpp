@@ -75,31 +75,27 @@ glm::vec2 triplanarMapping(glm::vec3 position, int plane) {
 }
 
 void Tesselator::handle(Vertex &v0, Vertex &v1, Vertex &v2, bool reverse) {
-    bool triplanar = true;
-    float triplanarScale = 0.1f;
-
-  
     if(v0.brushIndex>DISCARD_BRUSH_INDEX && 
         v1.brushIndex>DISCARD_BRUSH_INDEX && 
-        v2.brushIndex>DISCARD_BRUSH_INDEX && 
-        v0 != v1 && v1 != v2 && v0!=v2) {
+        v2.brushIndex>DISCARD_BRUSH_INDEX) {
 
-    
-            glm::vec3 d1 = v1.position -v0.position;
-            glm::vec3 d2 = v2.position -v0.position;
-            glm::vec3 n = glm::cross(d2,d1);
+        bool triplanar = true;
+        float triplanarScale = 0.1f;
+        glm::vec3 d1 = v1.position -v0.position;
+        glm::vec3 d2 = v2.position -v0.position;
+        glm::vec3 n = glm::cross(d2,d1);
 
 
-            if(triplanar) {
-                int plane = triplanarPlane(n);
-                v0.texCoord = triplanarMapping(v0.position, plane)*triplanarScale;
-                v1.texCoord = triplanarMapping(v1.position, plane)*triplanarScale;
-                v2.texCoord = triplanarMapping(v2.position, plane)*triplanarScale;
-            }
+        if(triplanar) {
+            int plane = triplanarPlane(n);
+            v0.texCoord = triplanarMapping(v0.position, plane)*triplanarScale;
+            v1.texCoord = triplanarMapping(v1.position, plane)*triplanarScale;
+            v2.texCoord = triplanarMapping(v2.position, plane)*triplanarScale;
+        }
 
-            chunk->addVertex(reverse ? v2 : v0);
-            chunk->addVertex(reverse ? v1 : v1);
-            chunk->addVertex(reverse ? v0 : v2);
-            ++(*count);
+        chunk->addVertex(reverse ? v2 : v0);
+        chunk->addVertex(reverse ? v1 : v1);
+        chunk->addVertex(reverse ? v0 : v2);
+        ++(*count);
     }
 }

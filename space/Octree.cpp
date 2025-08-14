@@ -168,6 +168,26 @@ OctreeNode * Octree::fetch(OctreeNodeData &data, OctreeNode ** out, int i) {
     return out[i];
 }
 
+template <typename T, std::size_t N> bool allDifferent(const T (&arr)[N]) {
+    for (std::size_t i = 0; i < N; ++i) {
+        for (std::size_t j = i + 1; j < N; ++j) {
+            if (arr[i] == arr[j]) return false;
+        }
+    }
+    return true;
+}
+
+template <typename T, typename... Args>
+bool allDifferent(const T& first, const Args&... args) {
+    std::array<T, sizeof...(args) + 1> arr { first, args... };
+
+    for (std::size_t i = 0; i < arr.size(); ++i) {
+        for (std::size_t j = i + 1; j < arr.size(); ++j) {
+            if (arr[i] == arr[j]) return false;
+        }
+    }
+    return true;
+}
 
 void Octree::handleQuadNodes(OctreeNodeData &data, OctreeNodeTriangleHandler * handler, bool simplification) {
 
@@ -195,8 +215,12 @@ void Octree::handleQuadNodes(OctreeNodeData &data, OctreeNodeTriangleHandler * h
                 }
 			}
 	
-			handler->handle(vertices[0], vertices[2], vertices[1], sign1);
-			handler->handle(vertices[0], vertices[3], vertices[2], sign1);
+            if(allDifferent(vertices[0], vertices[2], vertices[1])) {
+			    handler->handle(vertices[0], vertices[2], vertices[1], sign1);
+			}
+            if(allDifferent(vertices[0], vertices[3], vertices[2])) {
+                handler->handle(vertices[0], vertices[3], vertices[2], sign1);
+            }
 		}
 	}
 }
@@ -399,7 +423,6 @@ NodeOperationResult Octree::shape(ShapeContext context, ShapeArgs args) {
       
         }
     }
-
     int joinCount = 0;
     for(std::thread &t : threads){
         if(t.joinable()){
@@ -412,9 +435,7 @@ NodeOperationResult Octree::shape(ShapeContext context, ShapeArgs args) {
     float shapeSDF[8];
     buildSDF(args.function, args.model, args.frame.cube, shapeSDF, parentShapeSDF);
 
-
     SpaceType shapeType = isLeaf ? SDF::eval(shapeSDF) : childToParent(childShapeSolid, childShapeEmpty);
-
     // Process Result
     float resultSDF[8];
     for(int i = 0; i < 8; ++i) {
@@ -451,6 +472,7 @@ NodeOperationResult Octree::shape(ShapeContext context, ShapeArgs args) {
                         childNode->setEmpty(child.resultType == SpaceType::Empty);
                         childNode->setSdf(child.sdf);
                         childNode->setLeaf(false);
+                        childNode->setChunk(false);
                     }
                     node->setChildNode(i, childNode, &allocator, block);
                 }
@@ -483,8 +505,6 @@ NodeOperationResult Octree::shape(ShapeContext context, ShapeArgs args) {
         }
     }
 
-
-
     return NodeOperationResult(args.frame.cube, node, shapeType, resultType, resultSDF, shapeSDF, isLeaf, true);
 }
 
@@ -516,7 +536,7 @@ void Octree::exportNodesSerialization(std::vector<OctreeNodeCubeSerialized> * no
     nodes->clear();
     nodes->reserve(10000000);
     int leafNodes = 0;
-    root->exportSerialization(&allocator, nodes, &leafNodes, *this, *this, true);
+    root->exportSerialization(&allocator, nodes, &leafNodes, *this, *this, 0u);
 	std::cout << "exportNodesSerialization Ok!" << std::endl;
 }
 

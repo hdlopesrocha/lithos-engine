@@ -4,6 +4,7 @@
 #define SpaceType_Empty 0
 #define SpaceType_Surface 1
 #define SpaceType_Solid 2
+#define DISCARD_BRUSH_INDEX -1
 
 #include<structs.glsl>
 
@@ -14,6 +15,7 @@ struct OctreeNodeCubeSerialized {
     int brushIndex;
     vec3 length;
     uint bits;
+    uint level;
 };
 
 struct ComputeShaderOutput {
@@ -128,6 +130,12 @@ bool contains(vec3 sourceMin, vec3 sourceLength, vec3 targetMin, vec3 targetLeng
     return all(greaterThanEqual(targetMin, sourceMin)) && all(lessThanEqual(targetMax, sourceMax));
 }
 
+bool intersects(vec3 sourceMin, vec3 sourceLength, vec3 targetMin, vec3 targetLength) {
+    vec3 sourceMax = sourceMin + sourceLength;
+    vec3 targetMax = targetMin + targetLength;
+    return all(lessThanEqual(sourceMin, targetMax)) && all(greaterThanEqual(sourceMax, targetMin));
+}
+
 bool contains(vec3 min, vec3 length, vec3 pos) {
     vec3 max = min + length;
     return all(greaterThanEqual(pos, min)) && all(lessThanEqual(pos, max));
@@ -139,18 +147,18 @@ int getNodeIndex(vec3 pos, vec3 cubeMin, vec3 cubeLength) {
 }
 
 bool isSolid(uint bits) {
-    return (bits & (0x1u << 0)) != 0u;  // exemplo: simplification flag no bit 0
+    return (bits & (0x1u << 0)) != 0u; 
 }
 
 bool isEmpty(uint bits) {
-    return (bits & (0x1u << 1)) != 0u;  // exemplo: simplification flag no bit 0
+    return (bits & (0x1u << 1)) != 0u;  
 }
 
 bool isSimplified(uint bits) {
-    return (bits & (0x1u << 2)) != 0u;  // exemplo: simplification flag no bit 0
+    return (bits & (0x1u << 2)) != 0u; 
 }
 bool isLeaf(uint bits) {
-    return (bits & (0x1u << 5)) != 0u;  // exemplo: simplification flag no bit 0
+    return (bits & (0x1u << 5)) != 0u; 
 }
 
 bool isSurface(OctreeNodeCubeSerialized node) {
@@ -168,28 +176,33 @@ bool isSurface(OctreeNodeCubeSerialized node) {
 }
 
 // Obtem o índice do nó que contém a posição
-int getNodeAt(vec3 pos, bool simplification) {
-    OctreeNodeCubeSerialized root = nodes[0];
-    if (!contains(root.min, root.length, pos)) return -1; // Não está na octree
-
+int getNodeAt(vec3 pos, uint level, bool simplification) {
     uint nodeIdx = 0; // root
-    vec3 cubeMin = root.min;
-    vec3 cubeLength = root.length;
+    OctreeNodeCubeSerialized node = nodes[nodeIdx];
+    if (!contains(node.min, node.length, pos)){
+        return DISCARD_BRUSH_INDEX; // Não está na octree
+    } 
 
-    while (true) {
-        OctreeNodeCubeSerialized node = nodes[nodeIdx];
+    vec3 cubeMin = node.min;
+    vec3 cubeLength = node.length;
+
+    for (; level > 0u; --level) {
         if (simplification && isSimplified(node.bits)) {
             break;
         }
+        if(isSolid(node.bits) && isEmpty(node.bits)){
+            return DISCARD_BRUSH_INDEX;
+        }
 
-        int childIdx = getNodeIndex(pos, cubeMin, cubeLength);
-        uint nextNodeIdx = node.children[childIdx];
+        int i = getNodeIndex(pos, cubeMin, cubeLength);
+        cubeLength *= 0.5f;
+        cubeMin += cubeLength * getShift(i);
 
-        if (nextNodeIdx == 0u || nextNodeIdx >= nodes.length()) break;
-
-        nodeIdx = nextNodeIdx;
-        cubeLength *= 0.5;
-        cubeMin += getShift(childIdx) * cubeLength;
+        nodeIdx = node.children[i];
+        if (nodeIdx == 0u) {
+            return DISCARD_BRUSH_INDEX;
+        } 
+        node = nodes[nodeIdx];
     }
 
     return int(nodeIdx);
@@ -256,7 +269,6 @@ vec3 getNormalFromPosition(float sdf[8], vec3 cubeMin, vec3 cubeLength, vec3 pos
 
     return normalize(vec3(dx, dy, dz) / cubeLength);
 }
-
 
 vec3 getAveragePosition(float sdf[8], vec3 min, vec3 length) {
     // Early exit if there's no surface inside this cube
@@ -385,11 +397,10 @@ float triangleArea(vec3 a, vec3 b, vec3 c) {
     return length(cross(ab, ac)) * 0.5;
 }
 
-
-void handleTriangle(Vertex v0, uint i0, Vertex v1, uint i1, Vertex v2, uint i2, bool sign, uint nodeIdx) { 
-    if(v0.brushIndex < 0 
-        || v1.brushIndex < 0 
-        || v2.brushIndex < 0 
+void handleTriangle(Vertex v0, uint i0, Vertex v1, uint i1, Vertex v2, uint i2, bool sign) { 
+    if(v0.brushIndex == DISCARD_BRUSH_INDEX 
+        || v1.brushIndex == DISCARD_BRUSH_INDEX 
+        || v2.brushIndex == DISCARD_BRUSH_INDEX
         || triangleArea(v0.position.xyz, v1.position.xyz, v2.position.xyz) < 0.00001f) {
         return; 
     }
@@ -405,7 +416,6 @@ void handleTriangle(Vertex v0, uint i0, Vertex v1, uint i1, Vertex v2, uint i2, 
     v2.texCoord = triplanarMapping(v2.position.xyz , plane)*triplanarScale;
 
     // Generate vertex
-    uint vertexIdx = nodeIdx + plane;
     uint indexIdx = atomicAdd(shaderOutput.indexCount, 3);
 
     Vertex va, vb, vc;
@@ -428,9 +438,7 @@ void handleTriangle(Vertex v0, uint i0, Vertex v1, uint i1, Vertex v2, uint i2, 
     createVertex(va, 3*ia + plane, indexIdx+0);
     createVertex(vb, 3*ib + plane, indexIdx+1);
     createVertex(vc, 3*ic + plane, indexIdx+2);
-
 }
-
 
 void main() {
     uint nodeIdx = gl_GlobalInvocationID.x;
@@ -446,7 +454,14 @@ void main() {
     //shaderOutput.result4f0 = shaderInput.chunkMin;
     //shaderOutput.result4f1 = shaderInput.chunkLength;
 
-    for(int k =0 ; k < tessEdge.length(); ++k) {
+    vec3 cubeCenter = node.min + node.length*0.5f;    
+    int neighbors[8];
+    for(int i = 0 ; i < 8; ++i) {
+        vec3 pos = cubeCenter + node.length * getShift(i);
+        neighbors[i] = getNodeAt(pos, node.level, true);
+    }
+
+    for(int k = 0 ; k < tessEdge.length(); ++k) {
 		ivec2 edge = tessEdge[k];
 
         float d0 = node.sdf[edge[0]];
@@ -460,20 +475,12 @@ void main() {
             Vertex vertices[4];
             uint indices[4];
 
-
-            int direction = 1;
-			for(int i =0; i<4 ; ++i) {
-                vec3 cubeCenter = node.min + node.length*0.5;
-                vec3 pos = cubeCenter + direction * node.length* getShift(order[i]);
-
-				int n = getNodeAt(pos, true);
-                OctreeNodeCubeSerialized quadNode;
+			for(int i = 0; i < 4 ; ++i) {
+				int n = neighbors[order[i]];
                 
-                if(n >= 0) {
-                    quadNode = nodes[n];
-                }
+                if(n >= 0 ) {
+                    OctreeNodeCubeSerialized quadNode = nodes[n];
 
-                if(n >= 0) {
                     Vertex vertex;
                     vertex.brushIndex = quadNode.brushIndex;
                     vertex.position = vec4(getAveragePosition(quadNode.sdf, quadNode.min, quadNode.length), 0.0f);
@@ -481,13 +488,12 @@ void main() {
                     vertices[i] = vertex;
                     indices[i] = n;
                 } else {
-                    vertices[i].brushIndex = -1; // Mark as empty and solid
+                    vertices[i].brushIndex = DISCARD_BRUSH_INDEX;
                     indices[i] = 0;
                 }
 			}
-            handleTriangle(vertices[0], indices[0], vertices[2], indices[2], vertices[1], indices[1], sign1, nodeIdx);
-            handleTriangle(vertices[0], indices[0], vertices[3], indices[3], vertices[2], indices[2], sign1, nodeIdx);
+            handleTriangle(vertices[0], indices[0], vertices[2], indices[2], vertices[1], indices[1], sign1);
+            handleTriangle(vertices[0], indices[0], vertices[3], indices[3], vertices[2], indices[2], sign1);
 		}
-
     }    
 }
