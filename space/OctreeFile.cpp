@@ -88,12 +88,12 @@ void OctreeFile::load(std::string baseFolder, float chunkSize) {
 }
 
 
-uint saveRecursive(OctreeAllocator * allocator, OctreeNode * node, std::vector<OctreeNodeSerialized*> * nodes, float chunkSize, std::string filename, BoundingCube cube, std::string baseFolder) {
+uint saveRecursive(OctreeAllocator * allocator, OctreeNode * node, std::vector<OctreeNodeSerialized> * nodes, float chunkSize, std::string filename, BoundingCube cube, std::string baseFolder) {
 	if(node!=NULL) {
-		OctreeNodeSerialized * n = new OctreeNodeSerialized();
-		n->brushIndex = node->vertex.brushIndex;
-		n->bits = node->bits;
-		SDF::copySDF(node->sdf, n->sdf);
+		OctreeNodeSerialized n = OctreeNodeSerialized();
+		n.brushIndex = node->vertex.brushIndex;
+		n.bits = node->bits;
+		SDF::copySDF(node->sdf, n.sdf);
 
 		uint index = nodes->size(); 
 		nodes->push_back(n);
@@ -102,7 +102,7 @@ uint saveRecursive(OctreeAllocator * allocator, OctreeNode * node, std::vector<O
 			ChildBlock * block = node->getBlock(allocator);
 			for(int i=0; i < 8; ++i) {
 				BoundingCube c = cube.getChild(i);
-				n->children[i] = saveRecursive(allocator, node->getChildNode(i, allocator, block), nodes, chunkSize, filename, c, baseFolder);
+				(*nodes)[index].children[i] = saveRecursive(allocator, node->getChildNode(i, allocator, block), nodes, chunkSize, filename, c, baseFolder);
 			}
 		} else {
 			std::string chunkName = getChunkName(cube);
@@ -116,7 +116,7 @@ uint saveRecursive(OctreeAllocator * allocator, OctreeNode * node, std::vector<O
 
 void OctreeFile::save(std::string baseFolder, float chunkSize){
 	ensureFolderExists(baseFolder);
-    std::vector<OctreeNodeSerialized*> nodes;
+    std::vector<OctreeNodeSerialized> nodes;
 	std::string filePath = baseFolder + "/" + filename+".bin";
 	std::ofstream file = std::ofstream(filePath, std::ios::binary);
     if (!file) {
@@ -139,17 +139,12 @@ void OctreeFile::save(std::string baseFolder, float chunkSize){
 	//std::cout << std::to_string(sizeof(OctreeNodeSerialized)) << " bytes/node" << std::endl;
 
 	decompressed.write(reinterpret_cast<const char*>(&size), sizeof(size_t) );
-	for(OctreeNodeSerialized *n : nodes) {
-		decompressed.write(reinterpret_cast<const char*>(n), sizeof(OctreeNodeSerialized) );
-	}
-
+	decompressed.write(reinterpret_cast<const char*>(nodes.data()), nodes.size() * sizeof(OctreeNodeSerialized) );
+	
 	std::istringstream inputStream(decompressed.str());
  	gzipCompressToOfstream(inputStream, file);
 	file.close();
 
-	for(OctreeNodeSerialized * n : nodes) {
-		delete n;
-	}
 	nodes.clear();
 
 	std::cout << "OctreeFile::save('" << filePath <<"') Ok!" << std::endl;

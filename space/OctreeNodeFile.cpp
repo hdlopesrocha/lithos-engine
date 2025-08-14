@@ -62,18 +62,18 @@ void OctreeNodeFile::load(OctreeAllocator * allocator, std::string baseFolder, B
 }
 
 
-uint saveRecursive2(OctreeAllocator * allocator, OctreeNode * node, std::vector<OctreeNodeSerialized*> * nodes) {
+uint saveRecursive2(OctreeAllocator * allocator, OctreeNode * node, std::vector<OctreeNodeSerialized> * nodes) {
 	if(node!=NULL) {
-		OctreeNodeSerialized * n = new OctreeNodeSerialized();
-		n->brushIndex = node->vertex.brushIndex;
-		n->bits = node->bits;
-		SDF::copySDF(node->sdf, n->sdf);
+		OctreeNodeSerialized n = OctreeNodeSerialized();
+		n.brushIndex = node->vertex.brushIndex;
+		n.bits = node->bits;
+		SDF::copySDF(node->sdf, n.sdf);
 
 		uint index = nodes->size(); 
 		nodes->push_back(n);
 		ChildBlock * block = node->getBlock(allocator);
 		for(int i=0; i < 8; ++i) {
-            n->children[i] = saveRecursive2(allocator, node->getChildNode(i, allocator, block), nodes);
+            (*nodes)[index].children[i] = saveRecursive2(allocator, node->getChildNode(i, allocator, block), nodes);
 		}
 		return index;
 	}
@@ -81,7 +81,7 @@ uint saveRecursive2(OctreeAllocator * allocator, OctreeNode * node, std::vector<
 }
 
 void OctreeNodeFile::save(OctreeAllocator * allocator, std::string baseFolder){
-    std::vector<OctreeNodeSerialized*> nodes;
+    std::vector<OctreeNodeSerialized> nodes;
 
 	std::ofstream file = std::ofstream(filename, std::ios::binary);
     if (!file) {
@@ -96,17 +96,11 @@ void OctreeNodeFile::save(OctreeAllocator * allocator, std::string baseFolder){
 	//std::cout << std::to_string(sizeof(OctreeNodeSerialized)) << " bytes/node" << std::endl;
     std::ostringstream decompressed;
 	decompressed.write(reinterpret_cast<const char*>(&size), sizeof(size_t) );
-	for(size_t i=0; i < nodes.size(); ++i) {
-		OctreeNodeSerialized * n = nodes[i];
-		decompressed.write(reinterpret_cast<const char*>(n), sizeof(OctreeNodeSerialized) );
-	}
+	decompressed.write(reinterpret_cast<const char*>(nodes.data()), nodes.size() * sizeof(OctreeNodeSerialized) );
 	
 	std::istringstream inputStream(decompressed.str());
  	gzipCompressToOfstream(inputStream, file);
 	file.close();
 
-	for(OctreeNodeSerialized * n : nodes) {
-		delete n;
-	}
 	nodes.clear();
 }
