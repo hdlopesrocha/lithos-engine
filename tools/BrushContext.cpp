@@ -1,7 +1,7 @@
 #include "tools.hpp"
 
 BrushContext::BrushContext(Settings * settings, Camera * camera) : settings(settings), camera(camera), model(glm::vec3(1.0f),glm::vec3(0.0f), 0.0f, 0.0f, 0.0f) {
-    this->simplifier = new Simplifier(0.99f, 0.01f, true);
+    this->simplifier = new Simplifier(0.1f, true);
     
     this->functions.push_back(new SphereDistanceFunction(glm::vec3(0), 256));
     this->functions.push_back(new BoxDistanceFunction(glm::vec3(0), glm::vec3(1.0f)));

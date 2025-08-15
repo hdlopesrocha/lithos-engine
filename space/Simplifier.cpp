@@ -1,9 +1,8 @@
 #include "space.hpp"
 
 
-Simplifier::Simplifier(float angle, float distance, bool texturing) {
-	this->angle = angle;
-	this->distance = distance;
+Simplifier::Simplifier(float maxError, bool texturing) {
+	this->maxError = maxError;
 	this->texturing = texturing;
 }	
 
@@ -12,7 +11,7 @@ void Simplifier::simplify(BoundingCube chunkCube, const OctreeNodeData &params){
 	if(params.node->isLeaf()) {
 		params.node->setSimplified(true);
 		return;
-	}else {
+	} else {
 		params.node->setSimplified(false);
 	}
 	OctreeNode * node = params.node;
@@ -42,32 +41,34 @@ void Simplifier::simplify(BoundingCube chunkCube, const OctreeNodeData &params){
 		// for leaf nodes shouldn't loop
 		for(int i=0; i < 8 ; ++i) {
 			OctreeNode * child = node->getChildNode(i, params.allocator, block);
+			BoundingCube childCube = params.cube.getChild(i);
+
+
 			if(child!=NULL && !child->isSolid() && !child->isEmpty()) {
 				if(!child->isSimplified()) {
 					return;	
 				}
-				if(texturing && child->vertex.brushIndex != nodeVertex->brushIndex) {
-					return;	
-				}
-				
-				glm::vec3 p0 = child->vertex.position;
-				float d = parentPlane.distance(p0);
-				if( d > distance*cube.getLengthX() ) {
-					return;
+
+				for(int j = 0 ; j < 8 ; ++j) {
+					glm::vec3 corner = childCube.getCorner(j);
+					float d = SDF::interpolate(params.node->sdf, corner , params.cube);
+					float dif = glm::abs(d - child->sdf[j]);
+
+					if(dif > params.cube.getLengthX() * maxError) {
+						return;
+					}
 				}
 
-				float a = glm::dot(nodeVertex->normal, child->vertex.normal);
-				if(a < angle) {
-					return;
+				if(texturing && child->vertex.brushIndex != nodeVertex->brushIndex) {
+					return;	
 				}
 				
 				++nodeCount;
 			}
 		}
-		
 
 		if(nodeCount > 0) {	
-			//std::cout << "Simplifying node " << node->id << " with " << nodeCount << " children." << std::endl;
+			std::cout << "Simplifying node " << node->id << " with " << nodeCount << " children." << std::endl;
 			node->setSimplified(true);
 			for(int i=0; i < 8 ; ++i) {
 				OctreeNode * child = node->getChildNode(i, params.allocator, block);

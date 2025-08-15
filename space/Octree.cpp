@@ -12,7 +12,6 @@ static std::vector<glm::ivec4> tessOrder;
 static std::vector<glm::ivec2> tessEdge;
 static bool initialized = false;
 
-
 static void initialize() {
     if(!initialized) {
         tessOrder.push_back(glm::ivec4(0,1,3,2));tessEdge.push_back(glm::ivec2(3,7));
@@ -33,8 +32,6 @@ Octree::Octree() : Octree(glm::vec3(0.0f), 1.0f) {
     this->root = NULL;
     initialize();
 }
-
-
 
 int getNodeIndex(const glm::vec3 &vec, const BoundingCube &cube) {
 	glm::vec3 c = cube.getCenter();
@@ -130,7 +127,6 @@ int Octree::getMaxLevel(BoundingCube &cube) {
     return getMaxLevel(this->root, cube, *this, 0);
 }
 
-
 int Octree::getMaxLevel(OctreeNode *node, BoundingCube &cube, BoundingCube &nodeCube, int level) {
     int l = level;
     if(!node->isSimplified()) {
@@ -158,11 +154,9 @@ int Octree::getNeighborLevel(OctreeNodeData &data, bool simplification, int dire
     return level;
 }
 
-OctreeNode * Octree::fetch(OctreeNodeData &data, OctreeNode ** out, int i) {
-    int direction = 1;
-    bool simplification = true;
+OctreeNode * Octree::fetch(OctreeNodeData &data, OctreeNode ** out, int i, bool simplification) {
     if(out[i] == NULL) {
-        glm::vec3 pos = data.cube.getCenter() + direction * data.cube.getLengthX() * Octree::getShift(i);
+        glm::vec3 pos = data.cube.getCenter() + data.cube.getLengthX() * Octree::getShift(i);
         out[i] = getNodeAt(pos, data.level, simplification);
     }
     return out[i];
@@ -207,7 +201,7 @@ void Octree::handleQuadNodes(OctreeNodeData &data, OctreeNodeTriangleHandler * h
 			glm::ivec4 quad = tessOrder[k];
             Vertex vertices[4] = { Vertex(), Vertex(), Vertex(), Vertex() };
 			for(int i =0; i<4 ; ++i) {
-				OctreeNode * n = fetch(data, neighbors, quad[i]);
+				OctreeNode * n = fetch(data, neighbors, quad[i], simplification);
                 if(n != NULL && !n->isSolid() && !n->isEmpty()) {
                     vertices[i] = n->vertex;
                 }else {
@@ -368,10 +362,7 @@ void Octree::shapeChild(ShapeContext context, ShapeArgs args, ShapeChildArgs chi
     childArgs.childProcess.fetch_or(child.process);
 }
 
-NodeOperationResult Octree::shape(ShapeContext context, ShapeArgs args) {
-
-
-    
+NodeOperationResult Octree::shape(ShapeContext context, ShapeArgs args) {    
     ContainmentType check = args.function->check(args.frame.cube);
     OctreeNode * node  = args.frame.node;
     bool chunkNode = false;
@@ -454,8 +445,8 @@ NodeOperationResult Octree::shape(ShapeContext context, ShapeArgs args) {
         node->setChunk(chunkNode);
         node->setLeaf(isLeaf);
         if(resultType == SpaceType::Surface) {
-            node->vertex.position = glm::vec4(SDF::getPosition(node->sdf, args.frame.cube) ,0.0f);
-            //node->vertex.normal = glm::vec4(SDF::getNormal(node->sdf, args.frame.cube), 0.0f);       
+            node->vertex.position = glm::vec4(SDF::getAveragePosition(node->sdf, args.frame.cube) ,0.0f);
+            //node->vertex.normal = glm::vec4(SDF::getNormal(node->sdf, args.frame.cube), 0.0f);   
             node->vertex.normal = glm::vec4(SDF::getNormalFromPosition(node->sdf, args.frame.cube, node->vertex.position), 0.0f);
         }
         if(!isLeaf) {

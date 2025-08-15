@@ -332,7 +332,7 @@ class Octree: public BoundingCube {
 		bool hasFinerNode(const OctreeNode *node);
 		int getLevelAt(const glm::vec3 &pos, bool simplification);
 		int getNeighborLevel(OctreeNodeData &data, bool simplification, int direction);
-		OctreeNode * fetch(OctreeNodeData &data, OctreeNode ** out, int i);
+		OctreeNode * fetch(OctreeNodeData &data, OctreeNode ** out, int i, bool simplification);
 		int getMaxLevel(OctreeNode * node, int level);
 
 		int getMaxLevel(BoundingCube &cube);
@@ -346,11 +346,10 @@ class Octree: public BoundingCube {
 	};
 
 class Simplifier {
-	float angle;
-	float distance;
+	float maxError;
 	bool texturing;
 	public:
-		Simplifier(float angle, float distance, bool texturing);
+		Simplifier(float maxError, bool texturing);
 		void simplify(BoundingCube chunkCube, const OctreeNodeData &params);
 
 };
