@@ -9,7 +9,7 @@ Scene::Scene(Settings * settings, ComputeShader * computeShader):
   	brushTrianglesCount(0),
 	solidTrianglesCount(0),
 	liquidTrianglesCount(0),
-	simplifier(0.1, true), 
+	simplifier(0.1f, true), 
 	computeShader(computeShader)
 
  {
