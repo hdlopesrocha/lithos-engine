@@ -176,7 +176,7 @@ bool isSurface(OctreeNodeCubeSerialized node) {
 }
 
 // Obtem o índice do nó que contém a posição
-int getNodeAt(vec3 pos, bool simplification) {
+int getNodeAt(vec3 pos, uint level, bool simplification) {
     uint nodeIdx = 0; // root
     OctreeNodeCubeSerialized node = nodes[nodeIdx];
     if (!contains(node.min, node.length, pos)){
@@ -186,7 +186,7 @@ int getNodeAt(vec3 pos, bool simplification) {
     vec3 cubeMin = node.min;
     vec3 cubeLength = node.length;
 
-    while (true) {
+    for (; level > 0; --level) {
         if (simplification && isSimplified(node.bits)) {
             break;
         }
@@ -454,11 +454,11 @@ void main() {
     //shaderOutput.result4f0 = shaderInput.chunkMin;
     //shaderOutput.result4f1 = shaderInput.chunkLength;
 
-    vec3 cubeCenter = node.min + node.length*0.5f;    
+    vec3 cubeCenter = node.min + node.length * 0.5f;    
     int neighbors[8];
     for(int i = 0 ; i < 8; ++i) {
         vec3 pos = cubeCenter + node.length * getShift(i);
-        neighbors[i] = getNodeAt(pos, true);
+        neighbors[i] = getNodeAt(pos, node.level, true);
     }
 
     for(int k = 0 ; k < tessEdge.length(); ++k) {
