@@ -248,26 +248,22 @@ vec3 getNormal(float sdf[8], float cubeLength) {
 
 vec3 getNormalFromPosition(float sdf[8], vec3 cubeMin, vec3 cubeLength, vec3 position) {
     vec3 local = (position - cubeMin) / cubeLength; // [0,1]^3
+    float x = local.x, y = local.y, z = local.z;
 
-    float dx = 
-        (1.0 - local.y) * (1.0 - local.z) * (sdf[1] - sdf[0]) +
-        local.y       * (1.0 - local.z) * (sdf[3] - sdf[2]) +
-        (1.0 - local.y) * local.z       * (sdf[5] - sdf[4]) +
-        local.y       * local.z       * (sdf[7] - sdf[6]);
+    float dx = (1-y)*(1-z)*(sdf[4]-sdf[0]) + (1-y)*z*(sdf[5]-sdf[1])
+             + y*(1-z)*(sdf[6]-sdf[2]) + y*z*(sdf[7]-sdf[3]);
 
-    float dy = 
-        (1.0 - local.x) * (1.0 - local.z) * (sdf[2] - sdf[0]) +
-        local.x       * (1.0 - local.z) * (sdf[3] - sdf[1]) +
-        (1.0 - local.x) * local.z       * (sdf[6] - sdf[4]) +
-        local.x       * local.z       * (sdf[7] - sdf[5]);
+    float dy = (1-x)*(1-z)*(sdf[2]-sdf[0]) + (1-x)*z*(sdf[3]-sdf[1])
+             + x*(1-z)*(sdf[6]-sdf[4]) + x*z*(sdf[7]-sdf[5]);
 
-    float dz = 
-        (1.0 - local.x) * (1.0 - local.y) * (sdf[4] - sdf[0]) +
-        local.x       * (1.0 - local.y) * (sdf[5] - sdf[1]) +
-        (1.0 - local.x) * local.y       * (sdf[6] - sdf[2]) +
-        local.x       * local.y       * (sdf[7] - sdf[3]);
+    float dz = (1-x)*(1-y)*(sdf[1]-sdf[0]) + (1-x)*y*(sdf[3]-sdf[2])
+             + x*(1-y)*(sdf[5]-sdf[4]) + x*y*(sdf[7]-sdf[6]);
 
-    return normalize(vec3(dx, dy, dz) / cubeLength);
+    dx /= cubeLength.x;
+    dy /= cubeLength.y;
+    dz /= cubeLength.z;
+
+    return normalize(vec3(dx, dy, dz));
 }
 
 vec3 getAveragePosition(float sdf[8], vec3 min, vec3 length) {
@@ -312,21 +308,18 @@ vec3 interpolate(vec3 p0, vec3 p1, float v0, float v1) {
 }
 
 
-// Solve AᵀA x = Aᵀb using inverse (safe fallback if singular)
 vec3 solveQEF(mat3 ATA, vec3 ATb, vec3 fallback) {
-    float det = determinant(ATA);
+    // Add tiny regularization for numerical safety
+    ATA += mat3(1e-6);
 
-    if (abs(det) < 1e-8) {
-        // Regularize
-        ATA += mat3(1e-4);
-        det = determinant(ATA);
-        if (abs(det) < 1e-8)
-            return fallback;
+    float det = determinant(ATA);
+    if (abs(det) < 1e-12) {
+        return fallback; // degenerate case
     }
 
+    // GLSL's inverse() is okay here since it's just 3x3
     return inverse(ATA) * ATb;
 }
-
 
 // getShift(i): i is bit-coded as xyz (x=bit 2, y=bit 1, z=bit 0)
 vec3 getGradientFromCorners(vec3 localPos, float sdfs[8]) {
@@ -361,8 +354,8 @@ vec3 dualContouringQEF(vec3 min, vec3 length, float sdfs[8]) {
             vec3 p0 = cornerPos[i0];
             vec3 p1 = cornerPos[i1];
             vec3 pos = interpolate(p0, p1, d0, d1);
-            vec3 normal = getGradientFromCorners((pos-min)/length, sdfs);
-            //vec3 normal = getNormalFromPosition(sdfs, min, length, pos); // crude gradient along the edge
+            //vec3 normal = getGradientFromCorners((pos-min)/length, sdfs);
+            vec3 normal = getNormalFromPosition(sdfs, min, length, pos); // crude gradient along the edge
 
             ATA += outerProduct(normal, normal);       // AᵀA += n * nᵀ
             ATb += dot(normal, pos) * normal;        // Aᵀb += (n·p) * n
@@ -370,7 +363,6 @@ vec3 dualContouringQEF(vec3 min, vec3 length, float sdfs[8]) {
             count++;
 
             shaderOutput.result4f0 = vec4(count, length.length(), determinant(ATA), 0.0f);
-    
         }
     }
     vec3 center = getAveragePosition(sdfs, min, length);
@@ -378,12 +370,15 @@ vec3 dualContouringQEF(vec3 min, vec3 length, float sdfs[8]) {
     if (count == 0) return center;
 
     vec3 result = solveQEF(ATA, ATb, center);
-return result;
-    return clamp(result, min, min + length);
+    return result;
 }
 
 vec3 getPosition(float sdf[8], vec3 min, vec3 length) {
-    return dualContouringQEF(min, length, sdf);
+    vec3 estimate = dualContouringQEF(min, length, sdf);
+    if(!contains(min, length, estimate)) {
+        estimate = getAveragePosition(sdf, min, length);
+    }
+   return clamp(estimate, min, min + length);
 }
 
 void createVertex(Vertex vertex, uint vertexIdx, uint indexIdx) {
@@ -484,7 +479,7 @@ void main() {
                     Vertex vertex;
                     vertex.brushIndex = quadNode.brushIndex;
                     vertex.position = vec4(getAveragePosition(quadNode.sdf, quadNode.min, quadNode.length), 0.0f);
-                    vertex.normal = vec4(normalize(getNormalFromPosition(quadNode.sdf, quadNode.min, quadNode.length, vertex.position.xyz)), 0.0f);
+                    vertex.normal = vec4(getNormalFromPosition(quadNode.sdf, quadNode.min, quadNode.length, vertex.position.xyz), 0.0f);
                     vertices[i] = vertex;
                     indices[i] = n;
                 } else {

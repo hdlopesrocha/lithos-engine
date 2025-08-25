@@ -1,8 +1,9 @@
 #include "space.hpp"
 
 
-Simplifier::Simplifier(float maxError, bool texturing) {
-	this->maxError = maxError;
+Simplifier::Simplifier(float angle, float distance, bool texturing) {
+	this->angle = angle;
+	this->distance = distance;
 	this->texturing = texturing;
 }	
 
@@ -29,6 +30,8 @@ void Simplifier::simplify(BoundingCube chunkCube, const OctreeNodeData &params){
 	}
 	if(hasSimplifiedChildren) {
 		// The parentNode plane
+		Vertex * nodeVertex = &node->vertex;
+		Plane parentPlane(nodeVertex->normal, nodeVertex->position); 
 
 		BoundingCube cube(params.cube.getMin() - params.cube.getLength(), params.cube.getLengthX());
 		if(!chunkCube.contains(cube)){
@@ -50,15 +53,18 @@ void Simplifier::simplify(BoundingCube chunkCube, const OctreeNodeData &params){
 				}
 				BoundingCube childCube = params.cube.getChild(i);
 
-				for(int j = 0 ; j < 8 ; ++j) {
-					glm::vec3 corner = childCube.getCorner(j);
-					float d = SDF::interpolate(params.node->sdf, corner , params.cube);
-					float dif = glm::abs(d - child->sdf[j]);
+						glm::vec3 p0 = child->vertex.position;
+				float d = parentPlane.distance(p0);
+				if( d > distance*cube.getLengthX() ) {
+					return;
 
-					if(dif > params.cube.getLengthX() * maxError) {
-						return;
-					}
 				}
+
+				float a = glm::dot(nodeVertex->normal, child->vertex.normal);
+				if(a < angle) {
+					return;
+				}
+
 
 				
 				++nodeCount;

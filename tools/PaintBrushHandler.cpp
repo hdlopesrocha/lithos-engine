@@ -3,7 +3,7 @@
 PaintBrushHandler::PaintBrushHandler(Brush3d * brush3d, Octree * octree) : 
     brush3d(brush3d), 
     octree(octree),
-    simplifier(0.1, true)
+    simplifier(0.99, 0.1, true)
      {
 }
 

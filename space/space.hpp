@@ -346,10 +346,11 @@ class Octree: public BoundingCube {
 	};
 
 class Simplifier {
-	float maxError;
+	float angle;
+	float distance;
 	bool texturing;
 	public:
-		Simplifier(float maxError, bool texturing);
+		Simplifier(float angle, float distance, bool texturing);
 		void simplify(BoundingCube chunkCube, const OctreeNodeData &params);
 
 };
