@@ -9,17 +9,17 @@ void OctreeVisibilityChecker::update(glm::mat4 m) {
 	frustum = Frustum(m);
 }
 
-void OctreeVisibilityChecker::before(OctreeNodeData &params) {		
+void OctreeVisibilityChecker::before(Octree * tree, OctreeNodeData &params) {		
 	if(params.node->isChunk()){
-		visibleNodes->push_back({params.level, params.node, params.cube, params.context, params.allocator});
+		visibleNodes->push_back({params.level, params.node, params.cube, params.context});
 	}
 }
 
-void OctreeVisibilityChecker::after(OctreeNodeData &params) {			
+void OctreeVisibilityChecker::after(Octree * tree, OctreeNodeData &params) {			
 	return;
 }
 
-bool OctreeVisibilityChecker::test(OctreeNodeData &params) {
+bool OctreeVisibilityChecker::test(Octree * tree, OctreeNodeData &params) {
 	if(params.context != NULL) {
 		return false;
 	}
@@ -37,7 +37,7 @@ bool OctreeVisibilityChecker::test(OctreeNodeData &params) {
 }
 
 
-void OctreeVisibilityChecker::getOrder(OctreeNodeData &params, uint8_t * order){
+void OctreeVisibilityChecker::getOrder(Octree * tree, OctreeNodeData &params, uint8_t * order){
 	static std::pair<float, int> internalSortingVector[8]={};
 	
 	for(int i =0; i< 8; ++i){

@@ -487,7 +487,7 @@ NodeOperationResult Octree::shape(ShapeContext context, ShapeArgs args) {
         }
 
         if(args.chunk != NULL) {
-            args.simplifier.simplify(*args.chunk, OctreeNodeData(args.frame.level, node, args.frame.cube, NULL, &allocator));
+            args.simplifier.simplify(this, *args.chunk, OctreeNodeData(args.frame.level, node, args.frame.cube, NULL));
             if(node->isSimplified()) {
                 if(shapeType != SpaceType::Empty) {
                     args.painter.paint(node->vertex);
@@ -501,12 +501,12 @@ NodeOperationResult Octree::shape(ShapeContext context, ShapeArgs args) {
 
 void Octree::iterate(IteratorHandler &handler) {
 	BoundingCube cube(glm::vec3(getMinX(),getMinY(),getMinZ()),getLengthX());
-	handler.iterate(OctreeNodeData(0, root, cube, NULL, &this->allocator));
+	handler.iterate(this, OctreeNodeData(0, root, cube, NULL));
 }
 
 void Octree::iterateFlat(IteratorHandler &handler) {
 	BoundingCube cube(glm::vec3(getMinX(),getMinY(),getMinZ()),getLengthX());
-    handler.iterateFlatIn(OctreeNodeData(0,root, cube, NULL, &this->allocator));
+    handler.iterateFlatIn(this, OctreeNodeData(0,root, cube, NULL));
 }
 
 void Octree::exportOctreeSerialization(OctreeSerialized * node) {

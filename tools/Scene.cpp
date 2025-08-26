@@ -21,7 +21,7 @@ Scene::Scene(Settings * settings, ComputeShader * computeShader):
 	brushInstancesVisible = 0;
 	debugInstancesVisible = 0;
 
-	vegetationBuilder = new VegetationGeometryBuilder(&solidSpace, new VegetationInstanceBuilderHandler(&solidSpace, 0.1, 4));
+	vegetationBuilder = new VegetationGeometryBuilder(new VegetationInstanceBuilderHandler(0.1, 4));
 	debugBuilder = new OctreeGeometryBuilder(new OctreeInstanceBuilderHandler());
 
 	solidRenderer = new OctreeVisibilityChecker(&visibleSolidNodes);
@@ -43,7 +43,7 @@ Scene::Scene(Settings * settings, ComputeShader * computeShader):
 template <typename T> bool Scene::loadSpace(Octree* tree, OctreeNodeData& data, std::unordered_map<OctreeNode*, NodeInfo<T>>* infos, GeometryBuilder<T>* builder) {
 	bool emptyChunk = data.node->isEmpty() || data.node->isSolid();
 	if(!emptyChunk){
-		InstanceGeometry<T>* loadable = builder->build(data);
+		InstanceGeometry<T>* loadable = builder->build(tree, data);
 		if (loadable == NULL) {
 			// No geometry to load — erase entry if it exists
 			infos->erase(data.node);

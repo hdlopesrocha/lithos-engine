@@ -152,13 +152,11 @@ struct OctreeNodeData {
 	OctreeNode * node;
 	BoundingCube cube;
 	void * context;
-	OctreeAllocator * allocator;
-	OctreeNodeData(uint level, OctreeNode * node, BoundingCube cube, void * context, OctreeAllocator * allocator) {
+	OctreeNodeData(uint level, OctreeNode * node, BoundingCube cube, void * context) {
 		this->level = level;
 		this->node = node;
 		this->cube = cube;
 		this->context = context;
-		this->allocator = allocator;
 	}
 };
 
@@ -358,7 +356,7 @@ class Simplifier {
 	bool texturing;
 	public:
 		Simplifier(float angle, float distance, bool texturing);
-		void simplify(BoundingCube chunkCube, const OctreeNodeData &params);
+		void simplify(Octree * tree, BoundingCube chunkCube, const OctreeNodeData &params);
 
 };
 
@@ -415,16 +413,15 @@ struct DebugInstanceData {
 
 template <typename T> class GeometryBuilder {
     public:
-    virtual InstanceGeometry<T> * build(OctreeNodeData &params) = 0;
+    virtual InstanceGeometry<T> * build(Octree * tree, OctreeNodeData &params) = 0;
 };
 
 class MeshGeometryBuilder  : public GeometryBuilder<InstanceData> {
 	long * trianglesCount;
-    Octree * tree;
 	public:
-		MeshGeometryBuilder(long * trianglesCount, Octree * tree);
+		MeshGeometryBuilder(long * trianglesCount);
 		~MeshGeometryBuilder();
-		InstanceGeometry<InstanceData> * build(OctreeNodeData &params) override;
+		InstanceGeometry<InstanceData> * build(Octree * tree, OctreeNodeData &params) override;
 };
 
 class IteratorHandler {
@@ -432,19 +429,19 @@ class IteratorHandler {
     std::stack<StackFrame> stack;
     std::stack<StackFrameOut> stackOut;
 	public: 
-		virtual bool test(OctreeNodeData &params) = 0;
-		virtual void before(OctreeNodeData &params) = 0;
-		virtual void after(OctreeNodeData &params) = 0;
-		virtual void getOrder(OctreeNodeData &params, uint8_t * order) = 0;
-		void iterate(OctreeNodeData params);
-		void iterateFlatIn(OctreeNodeData params);
-		void iterateFlatOut(OctreeNodeData params);
-		void iterateFlat(OctreeNodeData params);
+		virtual bool test(Octree * tree, OctreeNodeData &params) = 0;
+		virtual void before(Octree * tree, OctreeNodeData &params) = 0;
+		virtual void after(Octree * tree, OctreeNodeData &params) = 0;
+		virtual void getOrder(Octree * tree, OctreeNodeData &params, uint8_t * order) = 0;
+		void iterate(Octree * tree, OctreeNodeData params);
+		void iterateFlatIn(Octree * tree, OctreeNodeData params);
+		void iterateFlatOut(Octree * tree, OctreeNodeData params);
+		void iterateFlat(Octree * tree, OctreeNodeData params);
 };
 
 template <typename T> class InstanceBuilderHandler {
 	public:
-		virtual void handle(OctreeNodeData &data, std::vector<T> * instances) = 0;
+		virtual void handle(Octree * tree, OctreeNodeData &data, std::vector<T> * instances) = 0;
 };
 
 template <typename T> class InstanceBuilder : public IteratorHandler{
@@ -457,19 +454,19 @@ template <typename T> class InstanceBuilder : public IteratorHandler{
 			this->handler = handler;
 		}
 		
-		void before(OctreeNodeData &params) {		
-			handler->handle(params, instances);
+		void before(Octree * tree, OctreeNodeData &params) {		
+			handler->handle(tree, params, instances);
 		}
 		
-		void after(OctreeNodeData &params) {			
+		void after(Octree * tree, OctreeNodeData &params) {			
 			return;
 		}
 		
-		bool test(OctreeNodeData &params) {	
+		bool test(Octree * tree, OctreeNodeData &params) {	
 			return true;
 		}
 		
-		void getOrder(OctreeNodeData &params, uint8_t * order){
+		void getOrder(Octree * tree, OctreeNodeData &params, uint8_t * order){
 			for(size_t i = 0 ; i < 8 ; ++i) {
 				order[i] = i;
 			}
@@ -477,16 +474,14 @@ template <typename T> class InstanceBuilder : public IteratorHandler{
 };
 
 class Tesselator : public IteratorHandler, OctreeNodeTriangleHandler{
-	Octree * tree;
 	Geometry * chunk;
 	public:
-		Tesselator(Octree * tree, Geometry * chunk, long * count);
-		void before(OctreeNodeData &params) override;
-		void after(OctreeNodeData &params) override;
-		bool test(OctreeNodeData &params) override;
-		void getOrder(OctreeNodeData &params, uint8_t * order) override;
+		Tesselator(Geometry * chunk, long * count);
+		void before(Octree * tree, OctreeNodeData &params) override;
+		void after(Octree * tree, OctreeNodeData &params) override;
+		bool test(Octree * tree, OctreeNodeData &params) override;
+		void getOrder(Octree * tree, OctreeNodeData &params, uint8_t * order) override;
 		void handle(Vertex &v0, Vertex &v1, Vertex &v2, bool sign) override;
-		void virtualize(OctreeNodeData &params, int levels);
 
 };
 
@@ -520,10 +515,10 @@ class OctreeVisibilityChecker : public IteratorHandler{
 		std::vector<OctreeNodeData> * visibleNodes;
 		OctreeVisibilityChecker(std::vector<OctreeNodeData> * visibleNodes);
 		void update(glm::mat4 m);
-		void before(OctreeNodeData &params) override;
-		void after(OctreeNodeData &params) override;
-		bool test(OctreeNodeData &params) override;
-		void getOrder(OctreeNodeData &params, uint8_t * order) override;
+		void before(Octree * tree, OctreeNodeData &params) override;
+		void after(Octree * tree, OctreeNodeData &params) override;
+		bool test(Octree * tree, OctreeNodeData &params) override;
+		void getOrder(Octree * tree, OctreeNodeData &params, uint8_t * order) override;
 
 };
 

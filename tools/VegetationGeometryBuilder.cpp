@@ -10,19 +10,18 @@ VegetationGeometryBuilder::~VegetationGeometryBuilder(){
 
 }
 
-VegetationGeometryBuilder::VegetationGeometryBuilder(Octree * tree, InstanceBuilderHandler<InstanceData> * handler) {
+VegetationGeometryBuilder::VegetationGeometryBuilder(InstanceBuilderHandler<InstanceData> * handler) {
     this->geometry = new Vegetation3d(1.0);
-    this->tree = tree;
     this->handler = handler;
 }
 
-InstanceGeometry<InstanceData> * VegetationGeometryBuilder::build(OctreeNodeData &params){
+InstanceGeometry<InstanceData> * VegetationGeometryBuilder::build(Octree * tree, OctreeNodeData &params){
     //std::cout << "VegetationGeometryBuilder::build" <<std::endl;
     
     std::vector<InstanceData> instances;
     InstanceBuilder instanceBuilder(handler, &instances);
 
-    instanceBuilder.iterateFlatIn(params);
+    instanceBuilder.iterateFlatIn(tree, params);
 
     // Shuffle the vector
     if(instances.size()) {

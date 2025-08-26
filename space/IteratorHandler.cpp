@@ -1,26 +1,26 @@
 #include "space.hpp"
 
-void IteratorHandler::iterate(OctreeNodeData params) {
+void IteratorHandler::iterate(Octree * tree, OctreeNodeData params) {
     if(params.node != NULL) {
-        before(params);
-        if(test(params)) {
+        before(tree, params);
+        if(test(tree, params)) {
             uint8_t internalOrder[8];
-            getOrder(params, internalOrder);
+            getOrder(tree, params, internalOrder);
 
-            ChildBlock * block = params.node->getBlock(params.allocator);
+            ChildBlock * block = params.node->getBlock(&tree->allocator);
             for(int i=0; i <8 ; ++i) {
                 uint8_t j = internalOrder[i];
-                OctreeNode * child = params.node->getChildNode(j, params.allocator, block);
+                OctreeNode * child = params.node->getChildNode(j, &tree->allocator, block);
                 if(child != NULL) {
-                    this->iterate(OctreeNodeData( params.level+1, child, params.cube.getChild(j) , params.context, params.allocator));
+                    this->iterate(tree, OctreeNodeData( params.level+1, child, params.cube.getChild(j) , params.context));
                 }
             }
-            after(params);
+            after(tree, params);
         }
     }
 }
 
-void IteratorHandler::iterateFlatIn(OctreeNodeData params) {
+void IteratorHandler::iterateFlatIn(Octree * tree, OctreeNodeData params) {
     params.context = NULL;
     uint8_t internalOrder[8];
  
@@ -29,24 +29,24 @@ void IteratorHandler::iterateFlatIn(OctreeNodeData params) {
         OctreeNodeData data = flatData.top();
         flatData.pop();
 
-        before(data);
-        if(test(data)) {
-            getOrder(data, internalOrder);
+        before(tree, data);
+        if(test(tree, data)) {
+            getOrder(tree, data, internalOrder);
             OctreeNode * node = data.node;
-            ChildBlock * block = node->getBlock(params.allocator);
+            ChildBlock * block = node->getBlock(&tree->allocator);
             for(int i=7; i >= 0 ; --i) {
                 uint8_t j = internalOrder[i];
-                OctreeNode * child = node->getChildNode(j, params.allocator, block);
+                OctreeNode * child = node->getChildNode(j, &tree->allocator, block);
                 if(child != NULL) {
-                    flatData.push(OctreeNodeData(data.level + 1,child, data.cube.getChild(j), data.context, data.allocator));
+                    flatData.push(OctreeNodeData(data.level + 1,child, data.cube.getChild(j), data.context));
                 }
             }
-            after(data);
+            after(tree, data);
         }
     }
 }
 
-void IteratorHandler::iterateFlat(OctreeNodeData params) {
+void IteratorHandler::iterateFlat(Octree * tree, OctreeNodeData params) {
     if (!params.node) return;
     params.context = NULL;
 
@@ -57,15 +57,15 @@ void IteratorHandler::iterateFlat(OctreeNodeData params) {
 
         if (!frame.secondVisit) {
             // First visit: Apply `before()`
-            before(frame);
+            before(tree, frame);
 
-            if (!test(frame)) {
+            if (!test(tree, frame)) {
                 stack.pop(); // Skip children, go back up
                 continue;
             }
 
             // Prepare to process children
-            getOrder(frame, frame.internalOrder);
+            getOrder(tree, frame, frame.internalOrder);
             frame.secondVisit = true; // Mark this node for a second visit
         }
 
@@ -73,22 +73,22 @@ void IteratorHandler::iterateFlat(OctreeNodeData params) {
         if (frame.childIndex < 8) {
             uint8_t j = frame.internalOrder[frame.childIndex++];
             OctreeNode * node = frame.node;
-            ChildBlock * block = node->getBlock(params.allocator);
-            OctreeNode* child = node->getChildNode(j, params.allocator, block);
+            ChildBlock * block = node->getBlock(&tree->allocator);
+            OctreeNode* child = node->getChildNode(j, &tree->allocator, block);
 
             if (child) {
-                OctreeNodeData data(frame.level+1, child, frame.cube.getChild(j), frame.context, frame.allocator);
+                OctreeNodeData data(frame.level+1, child, frame.cube.getChild(j), frame.context);
                 stack.push(StackFrame(data, 0, false));
             }
         } else {
             // After all children are processed, apply `after()`
-            after(frame);
+            after(tree, frame);
             stack.pop();
         }
     }
 }
 
-void IteratorHandler::iterateFlatOut(OctreeNodeData params) {
+void IteratorHandler::iterateFlatOut(Octree * tree, OctreeNodeData params) {
     if (!params.node) return;
     params.context = NULL;
 
@@ -103,32 +103,32 @@ void IteratorHandler::iterateFlatOut(OctreeNodeData params) {
         if (!frame.visited) {
             
             // First visit: execute before() and update context.
-            before(frame);
+            before(tree, frame);
             frame.visited = true;
 
             // Only process children if the test passes.
-            if (!test(frame)) {
+            if (!test(tree, frame)) {
                 stackOut.pop();
                 continue;
             }
 
             // Compute the child order for this node.
-            getOrder(frame, internalOrder);
+            getOrder(tree, frame, internalOrder);
 
             // Push all valid children in reverse order so that they are processed
             // in the original (correct) order when popped.
             for (int i = 7; i >= 0; --i) {
                 uint8_t j = internalOrder[i];
                 OctreeNode * node = frame.node;
-                ChildBlock * block = node->getBlock(params.allocator);
-                OctreeNode* child = node->getChildNode(j, params.allocator, block);
+                ChildBlock * block = node->getBlock(&tree->allocator);
+                OctreeNode* child = node->getChildNode(j, &tree->allocator, block);
                 if (child) {
-                    stackOut.push(StackFrameOut(OctreeNodeData(frame.level + 1, child, frame.cube.getChild(j), frame.context, params.allocator), false));
+                    stackOut.push(StackFrameOut(OctreeNodeData(frame.level + 1, child, frame.cube.getChild(j), frame.context), false));
                 }
             }
         } else {
             // Second visit: all children have been processed; now call after().
-            after(frame);
+            after(tree, frame);
             stackOut.pop();
         }
     }

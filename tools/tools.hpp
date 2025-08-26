@@ -89,29 +89,27 @@ class VegetationInstanceBuilderHandler : public InstanceBuilderHandler<InstanceD
 	public:
 	float pointsPerArea;
 	float scale;
-	Octree * tree;
-	VegetationInstanceBuilderHandler(Octree * tree, float pointsPerArea, float scale);
+	VegetationInstanceBuilderHandler(float pointsPerArea, float scale);
 
-	void handle(OctreeNodeData &data, std::vector<InstanceData> * instances) override;
+	void handle(Octree * tree, OctreeNodeData &data, std::vector<InstanceData> * instances) override;
 };
 
 class OctreeInstanceBuilderHandler : public InstanceBuilderHandler<DebugInstanceData>  {
 	public:
 	OctreeInstanceBuilderHandler();
 
-	void handle(OctreeNodeData &data, std::vector<DebugInstanceData> * instances) override;
+	void handle(Octree * tree, OctreeNodeData &data, std::vector<DebugInstanceData> * instances) override;
 };
 
 class VegetationGeometryBuilder : public GeometryBuilder<InstanceData> {
     public:
     Geometry * geometry;
-    Octree * tree;
     InstanceBuilderHandler<InstanceData>  * handler;
 	long * instancesCount;
-    VegetationGeometryBuilder(Octree * tree, InstanceBuilderHandler<InstanceData>  * handler);
+    VegetationGeometryBuilder(InstanceBuilderHandler<InstanceData>  * handler);
     ~VegetationGeometryBuilder();
 
-	InstanceGeometry<InstanceData> * build(OctreeNodeData &params) override;
+	InstanceGeometry<InstanceData> * build(Octree * tree, OctreeNodeData &params) override;
 };
 
 class OctreeGeometryBuilder : public GeometryBuilder<DebugInstanceData> {
@@ -121,7 +119,7 @@ class OctreeGeometryBuilder : public GeometryBuilder<DebugInstanceData> {
     OctreeGeometryBuilder(InstanceBuilderHandler<DebugInstanceData>  * handler);
     ~OctreeGeometryBuilder();
 
-    InstanceGeometry<DebugInstanceData> * build(OctreeNodeData &params) override;
+    InstanceGeometry<DebugInstanceData> * build(Octree * tree, OctreeNodeData &params) override;
 };
 
 class VegetationInstanceBuilder : public OctreeNodeTriangleHandler {

@@ -1,31 +1,13 @@
 #include "space.hpp"
 
 
-Tesselator::Tesselator(Octree * tree, Geometry * chunk, long * count): OctreeNodeTriangleHandler(count) {
-	this->tree = tree;
+Tesselator::Tesselator(Geometry * chunk, long * count): OctreeNodeTriangleHandler(count) {
     this->chunk = chunk;
 }
 
-void Tesselator::virtualize(OctreeNodeData &params, int levels) {
-    Vertex v = params.node->vertex;
-    Plane p(v.normal, v.position);
 
-    if(levels > 0) {
-        for(int i = 7 ; i >= 0 ; --i) {
-            BoundingCube c = params.cube.getChild(i);
-            //if(p.test(c) != ContainmentType::Disjoint) {
-                OctreeNodeData p(params);
-                p.cube = c;
-                p.level = params.level + 1;
-                virtualize(p, levels - 1);
-            //}
-        }
-    } else {
-		tree->handleQuadNodes(params , this, true);
-    }
-}
 
-void Tesselator::before(OctreeNodeData &params) {		
+void Tesselator::before(Octree * tree, OctreeNodeData &params) {		
 /*    if(params.node->isSimplified()) {
         int levels = tree->getMaxLevel(params.cube);
 		virtualize(params, levels- params.level);
@@ -36,15 +18,15 @@ void Tesselator::before(OctreeNodeData &params) {
     }
 }
 
-void Tesselator::after(OctreeNodeData &params) {
+void Tesselator::after(Octree * tree, OctreeNodeData &params) {
 	return;
 }
 
-bool Tesselator::test(OctreeNodeData &params) {			
+bool Tesselator::test(Octree * tree, OctreeNodeData &params) {			
 	return !params.node->isSolid() && !params.node->isLeaf();
 }
 
-void Tesselator::getOrder(OctreeNodeData &params, uint8_t * order){
+void Tesselator::getOrder(Octree * tree, OctreeNodeData &params, uint8_t * order){
 	for(int i = 7 ; i >= 0 ; --i) {
 		order[i] = i;
 	}
