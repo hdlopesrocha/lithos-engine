@@ -27,22 +27,29 @@ struct OctreeSerialized {
 
 
 struct alignas(16) OctreeNodeCubeSerialized {
-	float sdf[8];
+    glm::vec4 position;
+    glm::vec4 normal;
+    glm::vec2 texCoord;
+    int brushIndex;
+	uint sign;
     uint children[8];
     glm::vec3 min;
-    int brushIndex;
-    glm::vec3 length;
     uint bits;
+    glm::vec3 length;
 	uint level;
 
 	OctreeNodeCubeSerialized();
-	OctreeNodeCubeSerialized(float * sdf, BoundingCube cube, int brushIndex, uint bits, uint level) {
-		SDF::copySDF(sdf, this->sdf);
+	OctreeNodeCubeSerialized(float * sdf, BoundingCube cube, Vertex vertex, uint bits, uint level) {
+		this->sign = 0u;
 		for(int i = 0; i < 8; ++i) {
 			this->children[i] = 0;
+			this->sign |= sdf[i] < 0.0f ? (1u << i) : 0;
 		}
+		this->position = vertex.position;
+		this->normal = vertex.normal;
+		this->texCoord = vertex.texCoord;
+		this->brushIndex = vertex.brushIndex;
 		this->min = cube.getMin();
-		this->brushIndex = brushIndex;
 		this->length = cube.getLength();
 		this->bits = bits;
 		this->level = level;

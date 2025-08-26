@@ -8,15 +8,15 @@
 //    |/    |/
 //    0-----1x
 
-static std::vector<glm::ivec4> tessOrder;
-static std::vector<glm::ivec2> tessEdge;
+static std::vector<glm::ivec4> TESSELATION_ORDERS;
+static std::vector<glm::ivec2> TESSELATION_EDGES;
 static bool initialized = false;
 
 static void initialize() {
     if(!initialized) {
-        tessOrder.push_back(glm::ivec4(0,1,3,2));tessEdge.push_back(glm::ivec2(3,7));
-        tessOrder.push_back(glm::ivec4(0,2,6,4));tessEdge.push_back(glm::ivec2(6,7));
-        tessOrder.push_back(glm::ivec4(0,4,5,1));tessEdge.push_back(glm::ivec2(5,7));
+        TESSELATION_ORDERS.push_back(glm::ivec4(0,1,3,2));TESSELATION_EDGES.push_back(glm::ivec2(3,7));
+        TESSELATION_ORDERS.push_back(glm::ivec4(0,2,6,4));TESSELATION_EDGES.push_back(glm::ivec2(6,7));
+        TESSELATION_ORDERS.push_back(glm::ivec4(0,4,5,1));TESSELATION_EDGES.push_back(glm::ivec2(5,7));
         initialized = true;
     }
 }
@@ -187,8 +187,8 @@ void Octree::handleQuadNodes(OctreeNodeData &data, OctreeNodeTriangleHandler * h
 
     OctreeNode * neighbors[8] = {NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL};
 	
-    for(size_t k =0 ; k < tessOrder.size(); ++k) {
-		glm::ivec2 edge = tessEdge[k];
+    for(size_t k =0 ; k < TESSELATION_ORDERS.size(); ++k) {
+		glm::ivec2 edge = TESSELATION_EDGES[k];
         float * sdf = data.node->sdf;
 
         float d0 = sdf[edge[0]];
@@ -198,7 +198,7 @@ void Octree::handleQuadNodes(OctreeNodeData &data, OctreeNodeTriangleHandler * h
 		bool sign1 = d1 < 0.0f;
 
 		if(sign0 != sign1) {
-			glm::ivec4 quad = tessOrder[k];
+			glm::ivec4 quad = TESSELATION_ORDERS[k];
             Vertex vertices[4] = { Vertex(), Vertex(), Vertex(), Vertex() };
 			for(int i =0; i<4 ; ++i) {
 				OctreeNode * n = fetch(data, neighbors, quad[i], simplification);

@@ -154,7 +154,7 @@ uint OctreeNode::exportSerialization(OctreeAllocator * allocator, std::vector<Oc
 	}
 	uint index = nodes->size(); 
 
-	OctreeNodeCubeSerialized n(this->sdf, cube, this->vertex.brushIndex, this->bits, level);
+	OctreeNodeCubeSerialized n(this->sdf, cube, this->vertex, this->bits, level);
 	nodes->push_back(n);
 	if(isLeaf()) {
 		++(*leafNodes);
