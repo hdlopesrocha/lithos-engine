@@ -90,7 +90,7 @@ class OctreeNode {
 		Vertex vertex;
 		uint8_t bits;
 		uint id;
-		
+		uint mask;
 		float sdf[8];
 
 		OctreeNode(Vertex vertex);

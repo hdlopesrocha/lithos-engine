@@ -189,13 +189,9 @@ void Octree::handleQuadNodes(OctreeNodeData &data, OctreeNodeTriangleHandler * h
 	
     for(size_t k =0 ; k < TESSELATION_EDGES.size(); ++k) {
 		glm::ivec2 edge = TESSELATION_EDGES[k];
-        float * sdf = data.node->sdf;
-
-        float d0 = sdf[edge[0]];
-        float d1 = sdf[edge[1]];
-
-		bool sign0 = d0 < 0.0f;
-		bool sign1 = d1 < 0.0f;
+        uint mask = data.node->mask;
+		bool sign0 = (mask & (0x1 << edge[0])) != 0x0;
+		bool sign1 = (mask & (0x1 << edge[1])) != 0x0;
 
 		if(sign0 != sign1) {
 			glm::ivec4 quad = TESSELATION_ORDERS[k];

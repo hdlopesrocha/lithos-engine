@@ -5,7 +5,7 @@ Scene::Scene(Settings * settings, ComputeShader * computeShader, BrushContext * 
   
 	solidSpace(BoundingCube(glm::vec3(0,0,0), 30.0), glm::pow(2, 9)),
 	liquidSpace(BoundingCube(glm::vec3(0,0,0), 30.0), glm::pow(2, 9)),
-	brushSpace(BoundingCube(glm::vec3(0,0,0), 30), glm::pow(2, 9)),
+	brushSpace(BoundingCube(glm::vec3(0,0,0), 30.0), glm::pow(2, 9)),
   	brushTrianglesCount(0),
 	trianglesCount(0),
 	computeShader(computeShader),

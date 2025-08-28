@@ -1,6 +1,6 @@
 #include "SDF.hpp"
 
-glm::vec3 SDF::getPosition(float *sdf, const BoundingCube &cube) {
+glm::vec3 SDF::getPosition(float * sdf, const BoundingCube &cube) {
     // Early exit if there's no surface inside this cube
     SpaceType eval = SDF::eval(sdf);
     if(eval != SpaceType::Surface) {
@@ -79,8 +79,14 @@ glm::vec3 SDF::getAveragePosition(float *sdf, const BoundingCube &cube) {
     return sum / static_cast<float>(positions.size());
 }
 
+glm::vec3 SDF::getAveragePosition2(float * sdf, const BoundingCube &cube) {
+    glm::vec3 avg = getAveragePosition(sdf, cube);
+    glm::vec3 normal = getNormalFromPosition(sdf, cube, avg);
+    float d = interpolate(sdf, avg, cube);
+    return avg - normal * d;
+}
 
-glm::vec3 SDF::getNormal(float* sdf, const BoundingCube& cube) {
+glm::vec3 SDF::getNormal(float * sdf, const BoundingCube& cube) {
     const float dx = cube.getLengthX(); // or half size if your sdf spacing is half
     const float inv2dx = 1.0f / (2.0f * dx);
 
@@ -93,7 +99,7 @@ glm::vec3 SDF::getNormal(float* sdf, const BoundingCube& cube) {
     return glm::normalize(normal * inv2dx);
 }
 
-glm::vec3 SDF::getNormalFromPosition(float* sdf, const BoundingCube& cube, const glm::vec3& position) {
+glm::vec3 SDF::getNormalFromPosition(float * sdf, const BoundingCube& cube, const glm::vec3& position) {
     glm::vec3 local = (position - cube.getMin()) / cube.getLength(); // Convert to [0,1]^3 within cube
 
     // Trilinear interpolation gradient
@@ -122,19 +128,19 @@ glm::vec3 SDF::getNormalFromPosition(float* sdf, const BoundingCube& cube, const
 }
 
 
-float SDF::opUnion( float d1, float d2 ) {
+float SDF::opUnion(float d1, float d2) {
     return glm::min(d1,d2);
 }
 
-float SDF::opSubtraction( float d1, float d2 ) {
+float SDF::opSubtraction(float d1, float d2) {
     return glm::max(d1,-d2);
 }
 
-float SDF::opIntersection( float d1, float d2 ) {
+float SDF::opIntersection(float d1, float d2) {
     return glm::max(d1,d2);
 }
 
-float SDF::opXor(float d1, float d2 ) {
+float SDF::opXor(float d1, float d2) {
     return glm::max(glm::min(d1,d2),-glm::max(d1,d2));
 }
 
@@ -166,7 +172,7 @@ float SDF::octahedron(glm::vec3 p, float s ) {
   return glm::length(glm::vec3(q.x,q.y-s+k,q.z-k)); 
 }
 
-float SDF::pyramid(glm::vec3 p, float h ){
+float SDF::pyramid(glm::vec3 p, float h){
     float m2 = h*h + 0.25;
     
     // symmetry
@@ -196,17 +202,17 @@ float SDF::pyramid(glm::vec3 p, float h ){
 }
 
 
-float SDF::opSmoothUnion( float d1, float d2, float k ) {
+float SDF::opSmoothUnion(float d1, float d2, float k) {
     float h = glm::clamp( 0.5 + 0.5*(d2-d1)/k, 0.0, 1.0 );
     return glm::mix( d2, d1, h ) - k*h*(1.0-h);
 }
 
-float SDF::opSmoothSubtraction( float d1, float d2, float k ) {
+float SDF::opSmoothSubtraction(float d1, float d2, float k) {
     float h = glm::clamp( 0.5 - 0.5*(d2+d1)/k, 0.0, 1.0 );
     return glm::mix( d1, -d2, h ) + k*h*(1.0-h);
 }
 
-float SDF::opSmoothIntersection( float d1, float d2, float k ) {
+float SDF::opSmoothIntersection(float d1, float d2, float k) {
     float h = glm::clamp( 0.5 - 0.5*(d1-d2)/k, 0.0, 1.0 );
     return glm::mix( d1, d2, h ) + k*h*(1.0-h);
 }
