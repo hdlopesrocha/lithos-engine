@@ -1,15 +1,15 @@
 
 #include "tools.hpp"
 
-Scene::Scene(Settings * settings, ComputeShader * computeShader):
+Scene::Scene(Settings * settings, ComputeShader * computeShader, BrushContext * brushContext):
   
 	solidSpace(BoundingCube(glm::vec3(0,0,0), 30.0), glm::pow(2, 9)),
 	liquidSpace(BoundingCube(glm::vec3(0,0,0), 30.0), glm::pow(2, 9)),
 	brushSpace(BoundingCube(glm::vec3(0,0,0), 30), glm::pow(2, 9)),
   	brushTrianglesCount(0),
 	trianglesCount(0),
-	simplifier(0.99f, 0.1f, true), 
-	computeShader(computeShader)
+	computeShader(computeShader),
+	brushContext(brushContext)
 
  {
 	this->settings = settings;
@@ -345,14 +345,14 @@ void Scene::generate(Camera &camera) {
 		//wrappedFunction.cacheEnabled = true;
 		
 		std::cout << "\tsolidSpace.add(heightmap)"<< std::endl;
-		solidSpace.add(&wrappedFunction, model, LandBrush(), minSize, simplifier, solidSpaceChangeHandler);
+		solidSpace.add(&wrappedFunction, model, LandBrush(), minSize, *brushContext->simplifier, solidSpaceChangeHandler);
 	}
 	{
 		std::cout << "\tsolidSpace.del(sphere)"<< std::endl;
 		BoundingSphere sphere = BoundingSphere(glm::vec3(0,768,0),1024);
 		SphereDistanceFunction function(sphere.center, sphere.radius);
 		WrappedSphere wrappedFunction = WrappedSphere(&function, minSize, model);
-		solidSpace.del(&wrappedFunction, model, SimpleBrush(14), minSize, simplifier, solidSpaceChangeHandler);
+		solidSpace.del(&wrappedFunction, model, SimpleBrush(14), minSize, *brushContext->simplifier, solidSpaceChangeHandler);
 	}
 
 	{
@@ -362,7 +362,7 @@ void Scene::generate(Camera &camera) {
 		BoundingBox box = BoundingBox(min,min+len);
 		BoxDistanceFunction function(box.getCenter(), box.getLength()*0.5f);
 		WrappedBox wrappedFunction = WrappedBox(&function, minSize, model);
-		solidSpace.add(&wrappedFunction, model, SimpleBrush(8), minSize, simplifier, solidSpaceChangeHandler);
+		solidSpace.add(&wrappedFunction, model, SimpleBrush(8), minSize, *brushContext->simplifier, solidSpaceChangeHandler);
 	}
 
 	{
@@ -372,7 +372,7 @@ void Scene::generate(Camera &camera) {
 		BoundingSphere sphere = BoundingSphere(min+3.0f*len/4.0f, 256);
 		SphereDistanceFunction function(sphere.center, sphere.radius);
 		WrappedSphere wrappedFunction = WrappedSphere(&function, minSize, model);
-		solidSpace.add(&wrappedFunction, model, SimpleBrush(6), minSize, simplifier, solidSpaceChangeHandler);
+		solidSpace.add(&wrappedFunction, model, SimpleBrush(6), minSize, *brushContext->simplifier, solidSpaceChangeHandler);
 	}
 
 	{
@@ -382,7 +382,7 @@ void Scene::generate(Camera &camera) {
 		BoundingSphere sphere = BoundingSphere(min+len, 128);
 		SphereDistanceFunction function(sphere.center, sphere.radius);
 		WrappedSphere wrappedFunction = WrappedSphere(&function, minSize, model);
-		solidSpace.del(&wrappedFunction, model, SimpleBrush(4), minSize, simplifier, solidSpaceChangeHandler);
+		solidSpace.del(&wrappedFunction, model, SimpleBrush(4), minSize, *brushContext->simplifier, solidSpaceChangeHandler);
 	}
 
 	{
@@ -392,7 +392,7 @@ void Scene::generate(Camera &camera) {
 		BoundingSphere sphere = BoundingSphere(min+3.0f*len/4.0f, 128);
 		SphereDistanceFunction function(sphere.center, sphere.radius);
 		WrappedSphere wrappedFunction = WrappedSphere(&function, minSize, model);
-		solidSpace.del(&wrappedFunction, model, SimpleBrush(1), minSize, simplifier, solidSpaceChangeHandler);
+		solidSpace.del(&wrappedFunction, model, SimpleBrush(1), minSize, *brushContext->simplifier, solidSpaceChangeHandler);
 	}
 
 	{
@@ -402,7 +402,7 @@ void Scene::generate(Camera &camera) {
 		float r = 256.0f;
 		CapsuleDistanceFunction function(a, b, r);
 		WrappedCapsule wrappedFunction = WrappedCapsule(&function, minSize, model);
-		solidSpace.del(&wrappedFunction, model, SimpleBrush(4), minSize, simplifier, solidSpaceChangeHandler);
+		solidSpace.del(&wrappedFunction, model, SimpleBrush(4), minSize, *brushContext->simplifier, solidSpaceChangeHandler);
 	}
 
 	{
@@ -412,7 +412,7 @@ void Scene::generate(Camera &camera) {
 		BoundingSphere sphere = BoundingSphere(min+len, 64);
 		SphereDistanceFunction function(sphere.center, sphere.radius);
 		WrappedSphere wrappedFunction = WrappedSphere(&function, minSize, model);
-		liquidSpace.add(&wrappedFunction, model, SimpleBrush(0), minSize, simplifier, liquidSpaceChangeHandler);
+		liquidSpace.add(&wrappedFunction, model, SimpleBrush(0), minSize, *brushContext->simplifier, liquidSpaceChangeHandler);
 	}
 
 	{
@@ -421,7 +421,7 @@ void Scene::generate(Camera &camera) {
 		float radius = 256.0f;
 		OctahedronDistanceFunction function(center, radius);
 		WrappedOctahedron wrappedFunction = WrappedOctahedron(&function, minSize, model);
-		solidSpace.add(&wrappedFunction, model, SimpleBrush(4), minSize, simplifier, solidSpaceChangeHandler);
+		solidSpace.add(&wrappedFunction, model, SimpleBrush(4), minSize, *brushContext->simplifier, solidSpaceChangeHandler);
 	}
 
 	{
@@ -432,7 +432,7 @@ void Scene::generate(Camera &camera) {
 		Transformation model2(glm::vec3(radius), center, 0,0,0);
 
 		WrappedPyramid wrappedFunction = WrappedPyramid(&function, minSize, model2);
-		solidSpace.add(&wrappedFunction, model2, SimpleBrush(4), minSize, simplifier, solidSpaceChangeHandler);
+		solidSpace.add(&wrappedFunction, model2, SimpleBrush(4), minSize, *brushContext->simplifier, solidSpaceChangeHandler);
 	}
 
 	{
@@ -442,7 +442,7 @@ void Scene::generate(Camera &camera) {
 		OctreeDifferenceFunction function(&solidSpace, waterBox);
 		WrappedOctreeDifference wrappedFunction = WrappedOctreeDifference(&function, minSize, model);
 		wrappedFunction.cacheEnabled = true;
-		liquidSpace.add(&wrappedFunction, model, WaterBrush(0), minSize, simplifier, liquidSpaceChangeHandler);
+		liquidSpace.add(&wrappedFunction, model, WaterBrush(0), minSize, *brushContext->simplifier, liquidSpaceChangeHandler);
 	}
 
 	//exportOctree();
@@ -472,7 +472,7 @@ void Scene::import(const std::string &filename, Camera &camera) {
 	HeightMap heightMap = HeightMap(cache, mapBox, sizePerTile);
 	HeightMapDistanceFunction function = HeightMapDistanceFunction(&heightMap);
 	WrappedHeightMap wrappedFunction = WrappedHeightMap(&function, minSize, model);
-	solidSpace.add(&wrappedFunction, model, DerivativeLandBrush(), minSize, simplifier, solidSpaceChangeHandler);
+	solidSpace.add(&wrappedFunction, model, DerivativeLandBrush(), minSize, *brushContext->simplifier, solidSpaceChangeHandler);
 
 	BoundingBox waterBox = mapBox;
 	waterBox.setMaxY(0);

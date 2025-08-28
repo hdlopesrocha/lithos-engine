@@ -230,6 +230,25 @@ class ComputeShaderInfoHandler : public OctreeChangeHandler {
 	void erase(OctreeNode* nodeId) override;
 };
 
+class BrushContext {
+	public:
+	BrushMode mode;
+	std::vector<SignedDistanceFunction*> functions;
+	SignedDistanceFunction * currentFunction;
+	Simplifier * simplifier;
+	Tab currentTab;
+
+	float detail;
+	int brushIndex;
+	Settings * settings;
+	Camera * camera;	
+	Transformation model;
+
+	BrushContext(Settings * settings, Camera * camera);
+	void apply(Octree &space, OctreeChangeHandler * handler, bool preview);
+	WrappedSignedDistanceFunction * getWrapped();
+};
+
 class Scene {
     public: 
 	Octree solidSpace;
@@ -250,7 +269,6 @@ class Scene {
 	std::vector<OctreeNodeData> visibleLiquidNodes;
 	std::vector<OctreeNodeData> visibleShadowNodes[SHADOW_MATRIX_COUNT];
 	
-	Simplifier simplifier;
 	VegetationGeometryBuilder * vegetationBuilder;
 	MeshGeometryBuilder * meshBuilder;
 	OctreeGeometryBuilder * debugBuilder;
@@ -276,9 +294,10 @@ class Scene {
 
 	Settings * settings;
 	ComputeShader * computeShader;
+	BrushContext * brushContext;
 	
 
-	Scene(Settings * settings, ComputeShader *computeShader);
+	Scene(Settings * settings, ComputeShader *computeShader, BrushContext * brushContext);
 
 	bool processSpace();
 	bool processLiquid(OctreeNodeData &data, Octree * tree);
@@ -305,26 +324,6 @@ class Scene {
 	bool computeGeometry(OctreeNodeData &data, Octree * tree, std::unordered_map<OctreeNode*, GeometrySSBO>* infos);
 
 };
-
-class BrushContext {
-	public:
-	BrushMode mode;
-	std::vector<SignedDistanceFunction*> functions;
-	SignedDistanceFunction * currentFunction;
-	Simplifier * simplifier;
-	Tab currentTab;
-
-	float detail;
-	int brushIndex;
-	Settings * settings;
-	Camera * camera;	
-	Transformation model;
-
-	BrushContext(Settings * settings, Camera * camera);
-	void apply(Octree &space, OctreeChangeHandler * handler, bool preview);
-	WrappedSignedDistanceFunction * getWrapped();
-};
-
 
 template <typename T> class Seriallizer {
 	public:
@@ -462,16 +461,6 @@ template<typename T> class TimedAttribute {
     T value;
     TimedAttribute(float deltaTime, T value) : deltaTime(deltaTime), value(value) {}
 
-};
-
-
-class PaintBrushHandler : public EventHandler<Event>{
-    Brush3d * brush3d;
-    Octree * octree;
-    Simplifier simplifier;
-    public:
-    PaintBrushHandler(Brush3d * brush3d, Octree * octree);
-    void handle(Event * event) override ;
 };
 
 class CloseWindowHandler : public EventHandler<Event>{

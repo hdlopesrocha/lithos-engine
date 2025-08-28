@@ -223,7 +223,8 @@ public:
 		});
 
 		computeShader = ComputeShader(octreeComputeShader3d);
-		mainScene = new Scene(settings, &computeShader);
+		brushContext = new BrushContext(settings, &camera);
+		mainScene = new Scene(settings, &computeShader, brushContext);
 		//mainScene->generate(camera);
 
 		textureLayers.textures[0] = createTextureArray(1024, 1024, 20, GL_RGB8);
@@ -475,7 +476,6 @@ public:
 		glUseProgram(0);
 		//tesselator->normalize();
 
-		brushContext = new BrushContext(settings, &camera);
 		uniformBlockViewer = new UniformBlockViewer(&viewerBlock);
 
 		// Events
