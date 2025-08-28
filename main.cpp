@@ -983,8 +983,7 @@ public:
 			ImGui::Text("%ld/%ld solid instances", mainScene->solidInstancesVisible, mainScene->solidInfo.size());
 			ImGui::Text("%ld/%ld liquid instances", mainScene->liquidInstancesVisible, mainScene->liquidInfo.size());
 			ImGui::Text("%ld/%ld vegetation instances", mainScene->vegetationInstancesVisible, mainScene->vegetationInfo.size());
-			ImGui::Text("%ld solid triangles", mainScene->solidTrianglesCount);
-			ImGui::Text("%ld liquid triangles", mainScene->liquidTrianglesCount);
+			ImGui::Text("%ld triangles", mainScene->trianglesCount);
 			ImGui::Text("%ld solid datas", mainScene->solidSpace.allocator.getAllocatedBlocksCount());
 			ImGui::Text("%ld liquid datas", mainScene->liquidSpace.allocator.getAllocatedBlocksCount());
 			ImGui::Text("%f process time", processTime);

@@ -3,7 +3,7 @@
 LiquidSpaceChangeHandler::LiquidSpaceChangeHandler() : liquidInfo(NULL) {}
 
 LiquidSpaceChangeHandler::LiquidSpaceChangeHandler(
-    std::unordered_map<OctreeNode*, GeometrySSBO> * liquidInfo
+    std::unordered_map<OctreeNode*, NodeInfo<InstanceData>> * liquidInfo
 ) {
     this->liquidInfo = liquidInfo;
 };

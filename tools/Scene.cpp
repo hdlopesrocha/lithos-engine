@@ -7,8 +7,7 @@ Scene::Scene(Settings * settings, ComputeShader * computeShader):
 	liquidSpace(BoundingCube(glm::vec3(0,0,0), 30.0), glm::pow(2, 9)),
 	brushSpace(BoundingCube(glm::vec3(0,0,0), 30), glm::pow(2, 9)),
   	brushTrianglesCount(0),
-	solidTrianglesCount(0),
-	liquidTrianglesCount(0),
+	trianglesCount(0),
 	simplifier(0.99f, 0.1f, true), 
 	computeShader(computeShader)
 
@@ -23,6 +22,7 @@ Scene::Scene(Settings * settings, ComputeShader * computeShader):
 
 	vegetationBuilder = new VegetationGeometryBuilder(new VegetationInstanceBuilderHandler(0.1, 4));
 	debugBuilder = new OctreeGeometryBuilder(new OctreeInstanceBuilderHandler());
+	meshBuilder = new MeshGeometryBuilder(&trianglesCount);
 
 	solidRenderer = new OctreeVisibilityChecker(&visibleSolidNodes);
 	brushRenderer = new OctreeVisibilityChecker(&visibleBrushNodes);
@@ -130,7 +130,7 @@ bool Scene::computeGeometry(OctreeNodeData &data, Octree * tree, std::unordered_
 bool Scene::processLiquid(OctreeNodeData &data, Octree * tree) {
 	bool result = false;
 	if(data.node->isDirty()) {
-		if(computeGeometry(data, tree, &liquidInfo)) {
+		if(loadSpace(tree, data, &liquidInfo, meshBuilder)) {
 			result = true;
 		}
 		data.node->setDirty(false);
@@ -141,7 +141,7 @@ bool Scene::processLiquid(OctreeNodeData &data, Octree * tree) {
 bool Scene::processSolid(OctreeNodeData &data, Octree * tree) {
 	bool result = false;
 	if(data.node->isDirty()) { 
-		if(computeGeometry(data, tree, &solidInfo)) {
+		if(loadSpace(tree, data, &solidInfo, meshBuilder)) {
 			result = true;
 		}
 		if(loadSpace(tree, data, &vegetationInfo, vegetationBuilder)) {
@@ -158,7 +158,7 @@ bool Scene::processSolid(OctreeNodeData &data, Octree * tree) {
 bool Scene::processBrush(OctreeNodeData &data, Octree * tree) {
 	bool result = false;
 	if(data.node->isDirty()) { 
-		if(computeGeometry(data, tree, &brushInfo)) {
+		if(loadSpace(tree, data, &brushInfo, meshBuilder)) {
 			result = true;
 		}
 		data.node->setDirty(false);	
@@ -298,15 +298,15 @@ void drawGeometry(const std::vector<OctreeNodeData> &list, std::unordered_map<Oc
 
 
 void Scene::draw3dSolid(glm::vec3 cameraPosition, const std::vector<OctreeNodeData> &list) {
-	drawGeometry(list, &solidInfo);
+	draw<InstanceData, InstanceDataHandler>(TYPE_INSTANCE_FULL_DRAWABLE, GL_PATCHES, cameraPosition, list, &solidInfo, &solidInstancesVisible);
 }
 
 void Scene::draw3dBrush(glm::vec3 cameraPosition, const std::vector<OctreeNodeData> &list) {
-	drawGeometry(list, &brushInfo);
+	draw<InstanceData, InstanceDataHandler>(TYPE_INSTANCE_FULL_DRAWABLE, GL_PATCHES, cameraPosition, list, &brushInfo, &brushInstancesVisible);
 }
 
 void Scene::draw3dLiquid(glm::vec3 cameraPosition, const std::vector<OctreeNodeData> &list) {
-	drawGeometry(list, &liquidInfo);
+	draw<InstanceData, InstanceDataHandler>(TYPE_INSTANCE_FULL_DRAWABLE, GL_PATCHES, cameraPosition, list, &liquidInfo, &liquidInstancesVisible);
 }
 
 void Scene::draw3dOctree(glm::vec3 cameraPosition, const std::vector<OctreeNodeData> &list) {

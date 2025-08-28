@@ -6,7 +6,7 @@ SolidSpaceChangeHandler::SolidSpaceChangeHandler() :
 
 SolidSpaceChangeHandler::SolidSpaceChangeHandler(
     std::unordered_map<OctreeNode*, NodeInfo<InstanceData>> * vegetationInfo,
-    std::unordered_map<OctreeNode*, GeometrySSBO> * computeInfo
+    std::unordered_map<OctreeNode*, NodeInfo<InstanceData>> * computeInfo
 ) {
     this->vegetationInfo = vegetationInfo;
     this->computeInfo = computeInfo;

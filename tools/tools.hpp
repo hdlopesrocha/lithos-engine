@@ -157,13 +157,13 @@ template <typename T> struct NodeInfo {
 
 
 class LiquidSpaceChangeHandler : public OctreeChangeHandler {
-	std::unordered_map<OctreeNode*, GeometrySSBO> * liquidInfo;
+	std::unordered_map<OctreeNode*, NodeInfo<InstanceData>> * liquidInfo;
 	std::mutex mtx;
 
 	public:
 	LiquidSpaceChangeHandler();
 	LiquidSpaceChangeHandler(
-		std::unordered_map<OctreeNode*, GeometrySSBO> * liquidInfo
+		std::unordered_map<OctreeNode*, NodeInfo<InstanceData>> * liquidInfo
 	);
 
 	void create(OctreeNode* nodeId) override;
@@ -173,14 +173,14 @@ class LiquidSpaceChangeHandler : public OctreeChangeHandler {
 
 class SolidSpaceChangeHandler : public OctreeChangeHandler {
 	std::unordered_map<OctreeNode*, NodeInfo<InstanceData>> * vegetationInfo;
-	std::unordered_map<OctreeNode*, GeometrySSBO> * computeInfo;
+	std::unordered_map<OctreeNode*, NodeInfo<InstanceData>> * computeInfo;
  	std::mutex mtx;
 
 	public:
 	SolidSpaceChangeHandler();
 	SolidSpaceChangeHandler(
 		std::unordered_map<OctreeNode*, NodeInfo<InstanceData>> * vegetationInfo,
-		std::unordered_map<OctreeNode*, GeometrySSBO> * computeInfo
+		std::unordered_map<OctreeNode*, NodeInfo<InstanceData>> * computeInfo
 	);
 
 	void create(OctreeNode* nodeId) override;
@@ -192,13 +192,13 @@ class SolidSpaceChangeHandler : public OctreeChangeHandler {
 
 
 class BrushSpaceChangeHandler : public OctreeChangeHandler {
-	std::unordered_map<OctreeNode*, GeometrySSBO> * brushInfo;
+	std::unordered_map<OctreeNode*, NodeInfo<InstanceData>> * brushInfo;
 	std::unordered_map<OctreeNode*, NodeInfo<DebugInstanceData>> * debugInfo;
 	std::mutex mtx;
 	public:
 	BrushSpaceChangeHandler();
 	BrushSpaceChangeHandler(
-		std::unordered_map<OctreeNode*, GeometrySSBO> * brushInfo,
+		std::unordered_map<OctreeNode*, NodeInfo<InstanceData>> * brushInfo,
 		std::unordered_map<OctreeNode*, NodeInfo<DebugInstanceData>> * debugInfo
 	);
 
@@ -237,8 +237,7 @@ class Scene {
 	Octree brushSpace;
 
 	long brushTrianglesCount;
-	long solidTrianglesCount;
-	long liquidTrianglesCount;
+	long trianglesCount;
 
 	long brushInstancesVisible;
 	long solidInstancesVisible;
@@ -253,11 +252,12 @@ class Scene {
 	
 	Simplifier simplifier;
 	VegetationGeometryBuilder * vegetationBuilder;
+	MeshGeometryBuilder * meshBuilder;
 	OctreeGeometryBuilder * debugBuilder;
 
-	std::unordered_map<OctreeNode*, GeometrySSBO> brushInfo;
-	std::unordered_map<OctreeNode*, GeometrySSBO> liquidInfo;
-	std::unordered_map<OctreeNode*, GeometrySSBO> solidInfo;
+	std::unordered_map<OctreeNode*, NodeInfo<InstanceData>> brushInfo;
+	std::unordered_map<OctreeNode*, NodeInfo<InstanceData>> liquidInfo;
+	std::unordered_map<OctreeNode*, NodeInfo<InstanceData>> solidInfo;
 	std::unordered_map<OctreeNode*, NodeInfo<DebugInstanceData>> debugInfo;
 	std::unordered_map<OctreeNode*, NodeInfo<InstanceData>> vegetationInfo;
 
