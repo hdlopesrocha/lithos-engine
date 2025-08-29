@@ -276,7 +276,7 @@ void Octree::add(
     *counter = 0;
     *threadId = 0;
     *works = 0;
-    ShapeArgs args = ShapeArgs(SDF::opUnion, function, painter, model, OctreeNodeFrame(root, *this, minSize, 0, root->sdf, SpaceType::Surface), simplifier, changeHandler);
+    ShapeArgs args = ShapeArgs(SDF::opUnion, function, painter, model, OctreeNodeFrame(root, *this, minSize, 0, root->sdf), simplifier, changeHandler);
     ShapeContext context = ShapeContext(0);
     shape(context, args, NULL, NULL);
     std::cout << "\t\tOctree::add Ok! threads=" << *threadId << ", works=" << *works << std::endl; 
@@ -291,7 +291,7 @@ void Octree::del(
     *counter = 0;
     *threadId = 0;
     *works = 0;
-    ShapeArgs args = ShapeArgs(SDF::opSubtraction, function, painter, model, OctreeNodeFrame(root, *this, minSize, 0, root->sdf, SpaceType::Surface), simplifier, changeHandler);
+    ShapeArgs args = ShapeArgs(SDF::opSubtraction, function, painter, model, OctreeNodeFrame(root, *this, minSize, 0, root->sdf), simplifier, changeHandler);
     ShapeContext context = ShapeContext(0);
     shape(context, args, NULL, NULL);
     std::cout << "\t\tOctree::del Ok! threads=" << *threadId << ", works=" << *works << std::endl; 
@@ -307,7 +307,6 @@ SpaceType childToParent(bool childSolid, bool childEmpty) {
     }
 }
 
-
 NodeOperationResult Octree::shape(ShapeContext context, ShapeArgs args, ChunkContext * shapeChunkContext, ChunkContext * chunkContext) {    
     ContainmentType check = args.function->check(args.frame.cube);
     OctreeNode * node  = args.frame.node;
@@ -320,7 +319,13 @@ NodeOperationResult Octree::shape(ShapeContext context, ShapeArgs args, ChunkCon
     ChildBlock * block = NULL;
     
     if(check == ContainmentType::Disjoint) {
-        return NodeOperationResult(node, SpaceType::Empty, args.frame.type, NULL, NULL, false);  // Skip this node
+        SpaceType spaceType;
+        if(node) {
+            spaceType = node->getType();
+        } else {
+            spaceType = SDF::eval(args.frame.sdf);
+        }
+        return NodeOperationResult(node, SpaceType::Empty, spaceType, NULL, NULL, false);  // Skip this node
     }
     if(args.frame.cube.getLengthX() <= chunkSize){
         if(chunkContext == NULL){
@@ -347,19 +352,10 @@ NodeOperationResult Octree::shape(ShapeContext context, ShapeArgs args, ChunkCon
             int currentCounter = (*counter);
             float len = args.frame.cube.getLengthX();
             float childSDF[8];
-            SpaceType childType;
             if(childNode) {
                 SDF::copySDF(childNode->sdf, childSDF);
-                if(node->isSolid()) {
-                    childType = SpaceType::Solid;
-                } else if(childNode->isEmpty()) {
-                    childType = SpaceType::Empty;
-                } else {
-                    childType = SpaceType::Surface;
-                }
             } else {
                 SDF::getChildSDF(args.frame.sdf, i, childSDF);
-                childType = SDF::eval(childSDF);
             }
 
             ShapeArgs childShapeArgs(
@@ -372,13 +368,11 @@ NodeOperationResult Octree::shape(ShapeContext context, ShapeArgs args, ChunkCon
                     args.frame.cube.getChild(i), 
                     args.frame.minSize, 
                     args.frame.level + 1, 
-                    childSDF, 
-                    childType
+                    childSDF
                 ), 
                 args.simplifier, 
                 args.changeHandler
             );
-
 
             bool isChildChunk = len*0.5f <= chunkSize && len > chunkSize;
             (*works)++;

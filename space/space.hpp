@@ -120,6 +120,8 @@ class OctreeNode {
 		bool isLeaf();
 		void setLeaf(bool value);
 
+		SpaceType getType();
+		
 		void setSdf(float * value);
 		uint exportSerialization(OctreeAllocator * allocator, std::vector<OctreeNodeCubeSerialized> * nodes, int * leafNodes, BoundingCube cube, BoundingCube chunk, uint level);
 		OctreeNode * compress(OctreeAllocator * allocator, BoundingCube * cube, BoundingCube chunk);
@@ -184,9 +186,8 @@ struct OctreeNodeFrame {
     float minSize;
 	uint level;
 	float sdf[8];
-	SpaceType type;
-	OctreeNodeFrame(OctreeNode* node, BoundingCube cube, float minSize, uint level, float * sdf, SpaceType type) 
-		: node(node), cube(cube), minSize(minSize), level(level), type(type) {
+	OctreeNodeFrame(OctreeNode* node, BoundingCube cube, float minSize, uint level, float * sdf) 
+		: node(node), cube(cube), minSize(minSize), level(level) {
 			for(int i = 0; i < 8; ++i) {
 				this->sdf[i] = sdf!=NULL ? sdf[i] : 0.0f;
 			}	
@@ -294,7 +295,6 @@ class Octree: public BoundingCube {
 		void add(WrappedSignedDistanceFunction *function, const Transformation model, const TexturePainter &painter, float minSize, Simplifier &simplifier, OctreeChangeHandler * changeHandler);
 		void del(WrappedSignedDistanceFunction *function, const Transformation model, const TexturePainter &painter, float minSize, Simplifier &simplifier, OctreeChangeHandler * changeHandler);
 		NodeOperationResult shape(ShapeContext context, ShapeArgs args, ChunkContext * shapeChunkContext, ChunkContext * chunkContext);
-		void shapeChild(int i, ShapeContext context, ShapeArgs args, NodeOperationResult * childResults, ChunkContext * shapeChunkContext, ChunkContext * chunkContext);		
 		void iterate(IteratorHandler &handler);
 		void iterateFlat(IteratorHandler &handler);
 

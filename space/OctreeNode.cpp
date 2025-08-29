@@ -125,6 +125,16 @@ void OctreeNode::setLeaf(bool value) {
 	this->bits = (this->bits & ~mask) | (value ? mask : 0x0);
 }
 
+SpaceType OctreeNode::getType()  {
+	if(isSolid()) {
+		return SpaceType::Solid;
+	} else if(isEmpty()) {
+		return SpaceType::Empty;
+	} else {
+		return SpaceType::Surface;
+	}
+}
+
 OctreeNode * OctreeNode::compress(OctreeAllocator * allocator, BoundingCube * cube, BoundingCube chunk) {
 	int intersectingChildCount = 0;
 	int intersectingIndex = -1;
