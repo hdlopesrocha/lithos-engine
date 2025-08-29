@@ -195,23 +195,21 @@ struct OctreeNodeFrame {
 
 struct NodeOperationResult {
     OctreeNode * node;
-	BoundingCube cube;
-	SpaceType resultType;
 	SpaceType shapeType;
-    float sdf[8];
-    float shapeSDF[8];
-	bool isLeaf;
+	SpaceType resultType;
 	bool process;
+ 	float sdf[8];
+    float shapeSDF[8];
 
-	NodeOperationResult() : node(NULL), cube(glm::vec3(0.0f), 0.0f), resultType(SpaceType::Empty), shapeType(SpaceType::Empty), isLeaf(false), process(false) {
+	NodeOperationResult() : node(NULL), shapeType(SpaceType::Empty), resultType(SpaceType::Empty), process(false) {
 		for(int i = 0; i < 8; ++i) {
 			this->sdf[i] = INFINITY;
 			this->shapeSDF[i] = INFINITY;
 		}
 	};
 
-    NodeOperationResult(BoundingCube cube, OctreeNode * node, SpaceType shapeType, SpaceType resultType, float * sdf, float * shapeSDF, bool isLeaf, bool process) 
-        : node(node), cube(cube), resultType(resultType), shapeType(shapeType), isLeaf(isLeaf), process(process) {
+    NodeOperationResult(OctreeNode * node, SpaceType shapeType, SpaceType resultType, float * sdf, float * shapeSDF, bool process) 
+        : node(node), shapeType(shapeType), resultType(resultType), process(process) {
 		if(sdf != NULL) {
 			SDF::copySDF(sdf, this->sdf);	
 		}
