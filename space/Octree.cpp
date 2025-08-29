@@ -336,31 +336,35 @@ void Octree::shapeChild(ShapeContext context, ShapeArgs args, ShapeChildArgs chi
         childType = SDF::eval(childSDF);
     }
 
-    ShapeArgs newChildArgs = ShapeArgs(
-        args.operation, 
-        args.function, 
-        args.painter, 
-        args.model, 
-        OctreeNodeFrame(
-            childNode, 
-            args.frame.cube.getChild(childArgs.i), 
-            args.frame.minSize, 
-            args.frame.level + 1, 
-            childSDF, 
-            childType), 
-        args.simplifier, 
-        args.changeHandler);
-
-    NodeOperationResult child = shape(context, newChildArgs, shapeChunkContext, chunkContext);
-
-    childArgs.children[childArgs.i] = child;
+    childArgs.children[childArgs.i] = shape(
+        context, 
+        ShapeArgs(
+            args.operation, 
+            args.function, 
+            args.painter, 
+            args.model, 
+            OctreeNodeFrame(
+                childNode, 
+                args.frame.cube.getChild(childArgs.i), 
+                args.frame.minSize, 
+                args.frame.level + 1, 
+                childSDF, 
+                childType), 
+            args.simplifier, 
+            args.changeHandler), 
+        shapeChunkContext, 
+        chunkContext
+    );
 }
 
 NodeOperationResult Octree::shape(ShapeContext context, ShapeArgs args, ChunkContext * shapeChunkContext, ChunkContext * chunkContext) {    
     ContainmentType check = args.function->check(args.frame.cube);
     OctreeNode * node  = args.frame.node;
     ChunkContext localChunkContext(args.frame.cube);
-
+    bool childResultSolid(true);
+    bool childResultEmpty(true);
+    bool childShapeSolid(true);
+    bool childShapeEmpty(true);
     bool chunkNode = false;
     if(check == ContainmentType::Disjoint) {
         return NodeOperationResult(args.frame.cube, node, SpaceType::Empty, args.frame.type, args.frame.sdf, args.frame.sdf, false, false);  // Skip this node
@@ -381,10 +385,6 @@ NodeOperationResult Octree::shape(ShapeContext context, ShapeArgs args, ChunkCon
     }
     bool isLeaf = args.frame.cube.getLengthX() <= args.frame.minSize;
     NodeOperationResult children[8];
-    bool childResultSolid(true);
-    bool childResultEmpty(true);
-    bool childShapeSolid(true);
-    bool childShapeEmpty(true);
     ChildBlock * block = NULL;
     std::vector<std::thread> threads;
     threads.reserve(MAX_CONCURRENCY);
