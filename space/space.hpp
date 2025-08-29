@@ -235,7 +235,6 @@ struct ShapeArgs {
     const TexturePainter &painter;
     const Transformation model;
     OctreeNodeFrame frame;
-    BoundingCube * chunk;
     Simplifier &simplifier; 
     OctreeChangeHandler * changeHandler;
     ShapeArgs(
@@ -244,7 +243,6 @@ struct ShapeArgs {
         const TexturePainter &painter,
         const Transformation model,
         OctreeNodeFrame frame, 
-        BoundingCube * chunk, 
         Simplifier &simplifier, 
         OctreeChangeHandler * changeHandler
 	) :
@@ -253,7 +251,6 @@ struct ShapeArgs {
         painter(painter),
         model(model),
         frame(frame),
-        chunk(chunk),
         simplifier(simplifier),
         changeHandler(changeHandler)
 
@@ -305,6 +302,16 @@ struct ShapeChildArgs {
 
 };
 
+class ChunkContext {
+	public:
+	std::mutex mtx;
+	std::unordered_map<glm::vec3, float> sdfCache;
+    BoundingCube cube;
+
+	ChunkContext(BoundingCube cube) : cube(cube) {
+	}
+};
+
 
 
 class Octree: public BoundingCube {
@@ -314,19 +321,17 @@ class Octree: public BoundingCube {
 		OctreeAllocator allocator;
 		std::shared_ptr<std::atomic<int>> counter = std::make_shared<std::atomic<int>>(0);
 		std::shared_ptr<std::atomic<int>> threadId = std::make_shared<std::atomic<int>>(0);
-		
 		std::shared_ptr<std::atomic<int>> works = std::make_shared<std::atomic<int>>(0);
 		const int MAX_CONCURRENCY = 8;
 //		std::counting_semaphore<32> semaphore{0};
-		std::mutex mtx;
 		Octree(BoundingCube minCube, float chunkSize);
 		Octree();
 		
 		void expand(const WrappedSignedDistanceFunction *function, Transformation model);
 		void add(WrappedSignedDistanceFunction *function, const Transformation model, const TexturePainter &painter, float minSize, Simplifier &simplifier, OctreeChangeHandler * changeHandler);
 		void del(WrappedSignedDistanceFunction *function, const Transformation model, const TexturePainter &painter, float minSize, Simplifier &simplifier, OctreeChangeHandler * changeHandler);
-		NodeOperationResult shape(ShapeContext context, ShapeArgs args);
-		void shapeChild(ShapeContext context, ShapeArgs args, ShapeChildArgs childArgs);
+		NodeOperationResult shape(ShapeContext context, ShapeArgs args, ChunkContext * chunkContext);
+		void shapeChild(ShapeContext context, ShapeArgs args, ShapeChildArgs childArgs, ChunkContext * chunkContext);
 		void iterate(IteratorHandler &handler);
 		void iterateFlat(IteratorHandler &handler);
 
@@ -346,7 +351,7 @@ class Octree: public BoundingCube {
 		void exportOctreeSerialization(OctreeSerialized * octree);
 		void exportNodesSerialization(std::vector<OctreeNodeCubeSerialized> * nodes);
 	private:
-		void buildSDF(SignedDistanceFunction * function, Transformation model, BoundingCube &cube, float * resultSDF, float * existingSDF);
+		void buildSDF(SignedDistanceFunction * function, Transformation model, BoundingCube &cube, float * resultSDF, float * existingSDF, ChunkContext * chunkContext);
 
 	};
 
