@@ -226,21 +226,6 @@ glm::vec3 sdf_rotated(glm::vec3 p, glm::quat q, glm::vec3 pivot) {
     return rotated + pivot;
 }
 
-
-void Octree::inheritSDF(SignedDistanceFunction * function, Transformation model, BoundingCube &cube, float * resultSDF, float * existingSDF) {
-    for (int i = 0; i < 8; ++i) {
-        if(existingSDF != NULL && existingSDF[i] != INFINITY) {
-            resultSDF[i] = existingSDF[i];
-        } else {
-            const glm::vec3 min = cube.getMin();
-            const glm::vec3 length = cube.getLength();
-            glm::vec3 p = min + length * Octree::getShift(i);
-            resultSDF[i] = function->distance(p, model);
-        }
-    }
-}
-
-
 void Octree::buildSDF(SignedDistanceFunction * function, Transformation model, BoundingCube &cube, float * resultSDF, float * existingSDF, ChunkContext * chunkContext) {
     const glm::vec3 min = cube.getMin();
     const glm::vec3 length = cube.getLength();
@@ -248,7 +233,9 @@ void Octree::buildSDF(SignedDistanceFunction * function, Transformation model, B
 
     for (int i = 0; i < 8; ++i) {
         glm::vec3 p = min + length * Octree::getShift(i);
-        if(sdfCache->find(p) != sdfCache->end()) {
+        if(existingSDF != NULL && existingSDF[i] != INFINITY) {
+            resultSDF[i] = existingSDF[i];
+        } else if(sdfCache->find(p) != sdfCache->end()) {
             resultSDF[i] = (*sdfCache)[p];
         } else {
             float d = function->distance(p, model);
@@ -454,12 +441,8 @@ NodeOperationResult Octree::shape(ShapeContext context, ShapeArgs args, ChunkCon
 
     // Process Shape
     float shapeSDF[8];
-    if(isLeaf) {
-        buildSDF(args.function, args.model, args.frame.cube, shapeSDF, parentShapeSDF, shapeChunkContext != NULL ? shapeChunkContext : &localChunkContext);
-    } else {
-        inheritSDF(args.function, args.model, args.frame.cube, shapeSDF, parentShapeSDF);
-    }
-
+    buildSDF(args.function, args.model, args.frame.cube, shapeSDF, parentShapeSDF, shapeChunkContext != NULL ? shapeChunkContext : &localChunkContext);
+    
     SpaceType shapeType = isLeaf ? SDF::eval(shapeSDF) : childToParent(childShapeSolid, childShapeEmpty);
     // Process Result
     float resultSDF[8];

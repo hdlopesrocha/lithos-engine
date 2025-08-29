@@ -353,7 +353,7 @@ class Octree: public BoundingCube {
 		void exportNodesSerialization(std::vector<OctreeNodeCubeSerialized> * nodes);
 	private:
 		void buildSDF(SignedDistanceFunction * function, Transformation model, BoundingCube &cube, float * resultSDF, float * existingSDF, ChunkContext * chunkContext);
-		void inheritSDF(SignedDistanceFunction * function, Transformation model, BoundingCube &cube, float * resultSDF, float * existingSDF);
+
 	};
 
 class Simplifier {
