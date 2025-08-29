@@ -121,7 +121,7 @@ class OctreeNode {
 		void setLeaf(bool value);
 
 		SpaceType getType();
-		
+
 		void setSdf(float * value);
 		uint exportSerialization(OctreeAllocator * allocator, std::vector<OctreeNodeCubeSerialized> * nodes, int * leafNodes, BoundingCube cube, BoundingCube chunk, uint level);
 		OctreeNode * compress(OctreeAllocator * allocator, BoundingCube * cube, BoundingCube chunk);
@@ -233,7 +233,6 @@ struct ShapeArgs {
     WrappedSignedDistanceFunction * function; 
     const TexturePainter &painter;
     const Transformation model;
-    OctreeNodeFrame frame;
     Simplifier &simplifier; 
     OctreeChangeHandler * changeHandler;
     ShapeArgs(
@@ -241,7 +240,6 @@ struct ShapeArgs {
         WrappedSignedDistanceFunction * function, 
         const TexturePainter &painter,
         const Transformation model,
-        OctreeNodeFrame frame, 
         Simplifier &simplifier, 
         OctreeChangeHandler * changeHandler
 	) :
@@ -249,7 +247,6 @@ struct ShapeArgs {
         function(function),
         painter(painter),
         model(model),
-        frame(frame),
         simplifier(simplifier),
         changeHandler(changeHandler)
 
@@ -294,7 +291,7 @@ class Octree: public BoundingCube {
 		void expand(const WrappedSignedDistanceFunction *function, Transformation model);
 		void add(WrappedSignedDistanceFunction *function, const Transformation model, const TexturePainter &painter, float minSize, Simplifier &simplifier, OctreeChangeHandler * changeHandler);
 		void del(WrappedSignedDistanceFunction *function, const Transformation model, const TexturePainter &painter, float minSize, Simplifier &simplifier, OctreeChangeHandler * changeHandler);
-		NodeOperationResult shape(ShapeContext context, ShapeArgs args, ChunkContext * shapeChunkContext, ChunkContext * chunkContext);
+		NodeOperationResult shape(ShapeContext context, OctreeNodeFrame frame, ShapeArgs * args, ChunkContext * shapeChunkContext, ChunkContext * chunkContext);
 		void iterate(IteratorHandler &handler);
 		void iterateFlat(IteratorHandler &handler);
 
