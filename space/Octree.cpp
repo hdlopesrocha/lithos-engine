@@ -354,11 +354,6 @@ void Octree::shapeChild(ShapeContext context, ShapeArgs args, ShapeChildArgs chi
     NodeOperationResult child = shape(context, newChildArgs, shapeChunkContext, chunkContext);
 
     childArgs.children[childArgs.i] = child;
-    childArgs.childResultEmpty.fetch_and(child.resultType == SpaceType::Empty);
-    childArgs.childResultSolid.fetch_and(child.resultType == SpaceType::Solid);
-    childArgs.childShapeEmpty.fetch_and(child.shapeType == SpaceType::Empty);
-    childArgs.childShapeSolid.fetch_and(child.shapeType == SpaceType::Solid);
-    childArgs.childProcess.fetch_or(child.process);
 }
 
 NodeOperationResult Octree::shape(ShapeContext context, ShapeArgs args, ChunkContext * shapeChunkContext, ChunkContext * chunkContext) {    
@@ -386,11 +381,10 @@ NodeOperationResult Octree::shape(ShapeContext context, ShapeArgs args, ChunkCon
     }
     bool isLeaf = args.frame.cube.getLengthX() <= args.frame.minSize;
     NodeOperationResult children[8];
-    std::atomic<int> childResultSolid(true);
-    std::atomic<int> childResultEmpty(true);
-    std::atomic<int> childShapeSolid(true);
-    std::atomic<int> childShapeEmpty(true);
-    std::atomic<int> childProcess(false);
+    bool childResultSolid(true);
+    bool childResultEmpty(true);
+    bool childShapeSolid(true);
+    bool childShapeEmpty(true);
     ChildBlock * block = NULL;
     std::vector<std::thread> threads;
     threads.reserve(MAX_CONCURRENCY);
@@ -399,7 +393,7 @@ NodeOperationResult Octree::shape(ShapeContext context, ShapeArgs args, ChunkCon
         block = node ? node->getBlock(&allocator) : NULL;
         for (int i = 7; i >= 0; --i) {
         
-            ShapeChildArgs childArgs = ShapeChildArgs(children, childResultSolid, childResultEmpty, childShapeSolid, childShapeEmpty, childProcess, block, i);
+            ShapeChildArgs childArgs = ShapeChildArgs(children, block, i);
             int currentCounter = (*counter);
             float len = args.frame.cube.getLengthX();
 
@@ -432,11 +426,20 @@ NodeOperationResult Octree::shape(ShapeContext context, ShapeArgs args, ChunkCon
     }
     *counter -= joinCount;
 
+
     // build SDF from children
     float parentShapeSDF[8] ={INFINITY,INFINITY,INFINITY,INFINITY,INFINITY,INFINITY,INFINITY,INFINITY};
     for(int i = 0; i < 8; ++i) {
-        OctreeNode * childNode = children[i].node;
-        parentShapeSDF[i] = childNode != NULL? children[i].shapeSDF[i] : INFINITY;
+        NodeOperationResult & child = children[i];
+        if(child.process) {
+            OctreeNode * childNode = child.node;
+            parentShapeSDF[i] = childNode != NULL? child.shapeSDF[i] : INFINITY;
+        }
+
+        childResultEmpty &= child.resultType == SpaceType::Empty;
+        childResultSolid &= child.resultType == SpaceType::Solid;
+        childShapeEmpty &= child.shapeType == SpaceType::Empty;
+        childShapeSolid &= child.shapeType == SpaceType::Solid;
     }
 
     // Process Shape
@@ -470,9 +473,9 @@ NodeOperationResult Octree::shape(ShapeContext context, ShapeArgs args, ChunkCon
             if(block == NULL) {
                 block = node->createBlock(&allocator);
             }
-            if(childProcess) {
-                for(int i =0 ; i < 8 ; ++i) {
-                    NodeOperationResult child = children[i];
+            for(int i =0 ; i < 8 ; ++i) {
+                NodeOperationResult & child = children[i];
+                if(child.process) {
                     OctreeNode * childNode = child.node;
                     if(resultType==SpaceType::Surface && childNode == NULL && child.resultType != SpaceType::Surface) {
                         childNode = allocator.allocateOctreeNode(child.cube)->init(Vertex(child.cube.getCenter()));

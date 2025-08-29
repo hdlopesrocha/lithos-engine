@@ -198,12 +198,12 @@ struct NodeOperationResult {
 	BoundingCube cube;
 	SpaceType resultType;
 	SpaceType shapeType;
-	bool process;
     float sdf[8];
     float shapeSDF[8];
 	bool isLeaf;
+	bool process;
 
-	NodeOperationResult() : node(NULL), cube(glm::vec3(0.0f), 0.0f), resultType(SpaceType::Empty), shapeType(SpaceType::Empty), process(false), isLeaf(false) {
+	NodeOperationResult() : node(NULL), cube(glm::vec3(0.0f), 0.0f), resultType(SpaceType::Empty), shapeType(SpaceType::Empty), isLeaf(false), process(false) {
 		for(int i = 0; i < 8; ++i) {
 			this->sdf[i] = INFINITY;
 			this->shapeSDF[i] = INFINITY;
@@ -211,7 +211,7 @@ struct NodeOperationResult {
 	};
 
     NodeOperationResult(BoundingCube cube, OctreeNode * node, SpaceType shapeType, SpaceType resultType, float * sdf, float * shapeSDF, bool isLeaf, bool process) 
-        : node(node), cube(cube), resultType(resultType), shapeType(shapeType), process(process), isLeaf(isLeaf) {
+        : node(node), cube(cube), resultType(resultType), shapeType(shapeType), isLeaf(isLeaf), process(process) {
 		if(sdf != NULL) {
 			SDF::copySDF(sdf, this->sdf);	
 		}
@@ -264,30 +264,15 @@ struct ShapeArgs {
 
 struct ShapeChildArgs {
     NodeOperationResult * children;
-    std::atomic<int> &childResultSolid;
-    std::atomic<int> &childResultEmpty;
-    std::atomic<int> &childShapeSolid;
-    std::atomic<int> &childShapeEmpty;
-    std::atomic<int> &childProcess;
     ChildBlock * block;
     int i;
 
     ShapeChildArgs(
         NodeOperationResult * children,
-        std::atomic<int> &childResultSolid,
-        std::atomic<int> &childResultEmpty,
-        std::atomic<int> &childShapeSolid,
-        std::atomic<int> &childShapeEmpty,
-        std::atomic<int> &childProcess,
         ChildBlock * block, 
         int i
 	) :
 	    children(children),
-        childResultSolid(childResultSolid),
-        childResultEmpty(childResultEmpty),
-        childShapeSolid(childShapeSolid),
-        childShapeEmpty(childShapeEmpty),
-        childProcess(childProcess),
         block(block),
         i(i)
 
