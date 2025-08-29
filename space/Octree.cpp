@@ -308,49 +308,6 @@ SpaceType childToParent(bool childSolid, bool childEmpty) {
 }
 
 
-void Octree::shapeChild(ShapeContext context, ShapeArgs args, ShapeChildArgs childArgs, ChunkContext * shapeChunkContext, ChunkContext * chunkContext) {
-    (*works)++;
-    
-    OctreeNode * node  = args.frame.node;
-    OctreeNode * childNode = node ? node->getChildNode(childArgs.i, &allocator, childArgs.block) : NULL;
-    
-    float childSDF[8];
-    SpaceType childType;
-    if(childNode) {
-        SDF::copySDF(childNode->sdf, childSDF);
-        if(childNode->isSolid()) {
-            childType = SpaceType::Solid;
-        } else if(childNode->isEmpty()) {
-            childType = SpaceType::Empty;
-        } else {
-            childType = SpaceType::Surface;
-        }
-    } else {
-        SDF::getChildSDF(args.frame.sdf, childArgs.i, childSDF);
-        childType = SDF::eval(childSDF);
-    }
-
-    childArgs.children[childArgs.i] = shape(
-        context, 
-        ShapeArgs(
-            args.operation, 
-            args.function, 
-            args.painter, 
-            args.model, 
-            OctreeNodeFrame(
-                childNode, 
-                args.frame.cube.getChild(childArgs.i), 
-                args.frame.minSize, 
-                args.frame.level + 1, 
-                childSDF, 
-                childType), 
-            args.simplifier, 
-            args.changeHandler), 
-        shapeChunkContext, 
-        chunkContext
-    );
-}
-
 NodeOperationResult Octree::shape(ShapeContext context, ShapeArgs args, ChunkContext * shapeChunkContext, ChunkContext * chunkContext) {    
     ContainmentType check = args.function->check(args.frame.cube);
     OctreeNode * node  = args.frame.node;
@@ -363,7 +320,7 @@ NodeOperationResult Octree::shape(ShapeContext context, ShapeArgs args, ChunkCon
     ChildBlock * block = NULL;
     
     if(check == ContainmentType::Disjoint) {
-        return NodeOperationResult(node, SpaceType::Empty, args.frame.type, args.frame.sdf, args.frame.sdf, false);  // Skip this node
+        return NodeOperationResult(node, SpaceType::Empty, args.frame.type, NULL, NULL, false);  // Skip this node
     }
     if(args.frame.cube.getLengthX() <= chunkSize){
         if(chunkContext == NULL){
@@ -374,7 +331,7 @@ NodeOperationResult Octree::shape(ShapeContext context, ShapeArgs args, ChunkCon
             chunkContext = &chunks[chunkKey];
         }
 
-        if(shapeChunkContext == NULL){
+        if(shapeChunkContext == NULL) {
             shapeChunkContext = &localChunkContext;
             chunkNode = true;
         }
@@ -386,24 +343,60 @@ NodeOperationResult Octree::shape(ShapeContext context, ShapeArgs args, ChunkCon
     if (!isLeaf) {
         block = node ? node->getBlock(&allocator) : NULL;
         for (int i = 7; i >= 0; --i) {
-            ShapeChildArgs childArgs = ShapeChildArgs(children, block, i);
+            OctreeNode * childNode = node ? node->getChildNode(i, &allocator, block) : NULL;
             int currentCounter = (*counter);
             float len = args.frame.cube.getLengthX();
+            float childSDF[8];
+            SpaceType childType;
+            if(childNode) {
+                SDF::copySDF(childNode->sdf, childSDF);
+                if(node->isSolid()) {
+                    childType = SpaceType::Solid;
+                } else if(childNode->isEmpty()) {
+                    childType = SpaceType::Empty;
+                } else {
+                    childType = SpaceType::Surface;
+                }
+            } else {
+                SDF::getChildSDF(args.frame.sdf, i, childSDF);
+                childType = SDF::eval(childSDF);
+            }
+
+            ShapeArgs childShapeArgs(
+                args.operation, 
+                args.function, 
+                args.painter, 
+                args.model, 
+                OctreeNodeFrame(
+                    childNode, 
+                    args.frame.cube.getChild(i), 
+                    args.frame.minSize, 
+                    args.frame.level + 1, 
+                    childSDF, 
+                    childType
+                ), 
+                args.simplifier, 
+                args.changeHandler
+            );
+
 
             bool isChildChunk = len*0.5f <= chunkSize && len > chunkSize;
+            (*works)++;
+
             if(isChildChunk && (currentCounter=(*counter)++) < MAX_CONCURRENCY) {
                 context.threadId = (*threadId)++;
-                threads.emplace_back([this, context, args, childArgs, shapeChunkContext, chunkContext]() {
-                    shapeChild(context, args, childArgs, shapeChunkContext, chunkContext);
+                threads.emplace_back([this, i, context, childShapeArgs, &children, shapeChunkContext, chunkContext]() {
+                   NodeOperationResult * result = children+i;
+                   *result = shape(context, childShapeArgs, shapeChunkContext, chunkContext);
                 });
             } else {
-                shapeChild(context, args, childArgs, shapeChunkContext, chunkContext);
+                children[i] = shape(context, childShapeArgs, shapeChunkContext, chunkContext);
             }
         }
     }
     int joinCount = 0;
     for(std::thread &t : threads) {
-        if(t.joinable()){
+        if(t.joinable()) {
             t.join();
             ++joinCount;
         }
@@ -413,12 +406,14 @@ NodeOperationResult Octree::shape(ShapeContext context, ShapeArgs args, ChunkCon
     }
 
     // build SDF from children
-    float parentShapeSDF[8] = {INFINITY,INFINITY,INFINITY,INFINITY,INFINITY,INFINITY,INFINITY,INFINITY};
+    float parentShapeSDF[8];
     for(int i = 0; i < 8; ++i) {
         NodeOperationResult & child = children[i];
         if(child.process) {
             OctreeNode * childNode = child.node;
             parentShapeSDF[i] = childNode != NULL? child.shapeSDF[i] : INFINITY;
+        } else {
+            parentShapeSDF[i] = INFINITY;
         }
 
         childResultEmpty &= child.resultType == SpaceType::Empty;
@@ -477,14 +472,14 @@ NodeOperationResult Octree::shape(ShapeContext context, ShapeArgs args, ChunkCon
         }
 
         if(resultType != SpaceType::Surface) {
-            if(chunkNode || shapeChunkContext == NULL) {
+            if(chunkNode) {
                 if(args.changeHandler != NULL) {
                     args.changeHandler->erase(node);
                 }
             }
             node->clear(&allocator, args.frame.cube, args.changeHandler);
         } else {
-            if(chunkNode || shapeChunkContext == NULL) {
+            if(chunkNode) {
                 if(args.changeHandler != NULL) {
                     args.changeHandler->update(node);
                 }

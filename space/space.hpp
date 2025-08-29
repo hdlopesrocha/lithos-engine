@@ -260,27 +260,6 @@ struct ShapeArgs {
 
 };
 
-struct ShapeChildArgs {
-    NodeOperationResult * children;
-    ChildBlock * block;
-    int i;
-
-    ShapeChildArgs(
-        NodeOperationResult * children,
-        ChildBlock * block, 
-        int i
-	) :
-	    children(children),
-        block(block),
-        i(i)
-
-		 {
-
-            
-        };
-
-
-};
 
 class ChunkContext {
 	public:
@@ -315,7 +294,7 @@ class Octree: public BoundingCube {
 		void add(WrappedSignedDistanceFunction *function, const Transformation model, const TexturePainter &painter, float minSize, Simplifier &simplifier, OctreeChangeHandler * changeHandler);
 		void del(WrappedSignedDistanceFunction *function, const Transformation model, const TexturePainter &painter, float minSize, Simplifier &simplifier, OctreeChangeHandler * changeHandler);
 		NodeOperationResult shape(ShapeContext context, ShapeArgs args, ChunkContext * shapeChunkContext, ChunkContext * chunkContext);
-		void shapeChild(ShapeContext context, ShapeArgs args, ShapeChildArgs childArgs, ChunkContext * shapeChunkContext, ChunkContext * chunkContext);
+		void shapeChild(int i, ShapeContext context, ShapeArgs args, NodeOperationResult * childResults, ChunkContext * shapeChunkContext, ChunkContext * chunkContext);		
 		void iterate(IteratorHandler &handler);
 		void iterateFlat(IteratorHandler &handler);
 
