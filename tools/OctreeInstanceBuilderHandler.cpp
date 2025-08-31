@@ -10,6 +10,8 @@ void OctreeInstanceBuilderHandler::handle(Octree * tree, OctreeNodeData &data, s
 		glm::mat4 mat(1.0);
 		mat = glm::translate(mat, data.cube.getMin());
 		mat = glm::scale(mat, data.cube.getLength());
-		instances->push_back(DebugInstanceData(mat, data.node->sdf));
+		float sdf[8];
+		tree->getSdf(data.cube, data.chunkContext, sdf);
+		instances->push_back(DebugInstanceData(mat, sdf));
 	}
 }

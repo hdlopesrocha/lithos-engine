@@ -5,11 +5,8 @@ OctreeNode::OctreeNode(Vertex vertex) {
 }
 
 OctreeNode * OctreeNode::init(Vertex vertex) {
-	for(int i = 0; i < 8; ++i) {
-		this->sdf[i] = MAXFLOAT;
-	}
 	this->bits = 0x0;
-	this->mask = 0x0;
+	this->sign = 0x0;
 	this->setSolid(false);
 	this->setEmpty(false);
 	this->setSimplified(false);
@@ -66,10 +63,9 @@ void OctreeNode::clear(OctreeAllocator * allocator, BoundingCube &cube, OctreeCh
 }
 
 void OctreeNode::setSdf(float * value) {
-	this->mask = 0x0;
+	this->sign = 0x0;
 	for(int i = 0; i < 8; ++i) {
-		this->sdf[i] = value[i];
-		this->mask |= (value[i] < 0.0f ? (0x1 << i) : 0x0);
+		this->sign |= (value[i] < 0.0f ? (0x1 << i) : 0x0);
 	}
 }
 
@@ -167,7 +163,7 @@ uint OctreeNode::exportSerialization(OctreeAllocator * allocator, std::vector<Oc
 	}
 	uint index = nodes->size(); 
 
-	OctreeNodeCubeSerialized n(this->sdf, cube, this->vertex, this->bits, level);
+	OctreeNodeCubeSerialized n(this->sign, cube, this->vertex, this->bits, level);
 	nodes->push_back(n);
 	if(isLeaf()) {
 		++(*leafNodes);

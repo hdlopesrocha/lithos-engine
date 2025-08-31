@@ -11,7 +11,7 @@ void OctreeVisibilityChecker::update(glm::mat4 m) {
 
 void OctreeVisibilityChecker::before(Octree * tree, OctreeNodeData &params) {		
 	if(params.node->isChunk()){
-		visibleNodes->push_back({params.level, params.node, params.cube, params.context});
+		visibleNodes->push_back({params.level, params.node, params.cube, params.context, params.chunkContext});
 	}
 }
 

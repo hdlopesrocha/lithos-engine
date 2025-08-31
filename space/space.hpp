@@ -39,11 +39,10 @@ struct alignas(16) OctreeNodeCubeSerialized {
 	uint level;
 
 	OctreeNodeCubeSerialized();
-	OctreeNodeCubeSerialized(float * sdf, BoundingCube cube, Vertex vertex, uint bits, uint level) {
-		this->sign = 0u;
+	OctreeNodeCubeSerialized(uint mask, BoundingCube cube, Vertex vertex, uint bits, uint level) {
+		this->sign = mask;
 		for(int i = 0; i < 8; ++i) {
 			this->children[i] = 0;
-			this->sign |= sdf[i] < 0.0f ? (1u << i) : 0;
 		}
 		this->position = vertex.position;
 		this->normal = vertex.normal;
@@ -60,10 +59,10 @@ struct alignas(16) OctreeNodeCubeSerialized {
 #pragma pack(16)  // Ensure 16-byte alignment for UBO
 struct OctreeNodeSerialized {
     public:
-	float sdf[8];
     uint children[8] = {0,0,0,0,0,0,0,0};
-    int brushIndex;
     uint bits;
+    uint sign;
+	Vertex vertex;
 
 	bool isDirty(){
 		return this->bits & (0x1 << 3);
@@ -90,8 +89,7 @@ class OctreeNode {
 		Vertex vertex;
 		uint8_t bits;
 		uint id;
-		uint mask;
-		float sdf[8];
+		uint sign;
 
 		OctreeNode(Vertex vertex);
 		~OctreeNode();
@@ -147,6 +145,17 @@ class OctreeNodeTriangleHandler {
 	virtual void handle(Vertex &v0, Vertex &v1, Vertex &v2, bool sign) = 0;
 };
 
+class ChunkContext {
+	public:
+	std::unordered_map<glm::vec3, float> sdfCache;
+    BoundingCube cube;
+
+	ChunkContext() : cube(BoundingCube()) {
+	}
+	
+	ChunkContext(BoundingCube cube) : cube(cube) {
+	}
+};
 
 struct OctreeNodeData {
 	public:
@@ -154,11 +163,13 @@ struct OctreeNodeData {
 	OctreeNode * node;
 	BoundingCube cube;
 	void * context;
-	OctreeNodeData(uint level, OctreeNode * node, BoundingCube cube, void * context) {
+	ChunkContext * chunkContext;
+	OctreeNodeData(uint level, OctreeNode * node, BoundingCube cube, void * context, ChunkContext * chunkContext) {
 		this->level = level;
 		this->node = node;
 		this->cube = cube;
 		this->context = context;
+		this->chunkContext = chunkContext;
 	}
 };
 
@@ -185,12 +196,9 @@ struct OctreeNodeFrame {
     BoundingCube cube;
     float minSize;
 	uint level;
-	float sdf[8];
-	OctreeNodeFrame(OctreeNode* node, BoundingCube cube, float minSize, uint level, float * sdf) 
+	OctreeNodeFrame(OctreeNode* node, BoundingCube cube, float minSize, uint level) 
 		: node(node), cube(cube), minSize(minSize), level(level) {
-			for(int i = 0; i < 8; ++i) {
-				this->sdf[i] = sdf!=NULL ? sdf[i] : 0.0f;
-			}	
+		
 	}
 };
 
@@ -200,23 +208,18 @@ struct NodeOperationResult {
 	SpaceType resultType;
 	bool process;
  	float sdf[8];
-    float shapeSDF[8];
 
 	NodeOperationResult() : node(NULL), shapeType(SpaceType::Empty), resultType(SpaceType::Empty), process(false) {
 		for(int i = 0; i < 8; ++i) {
 			this->sdf[i] = INFINITY;
-			this->shapeSDF[i] = INFINITY;
 		}
 	};
 
-    NodeOperationResult(OctreeNode * node, SpaceType shapeType, SpaceType resultType, float * sdf, float * shapeSDF, bool process) 
+    NodeOperationResult(OctreeNode * node, SpaceType shapeType, SpaceType resultType, float * sdf, bool process) 
         : node(node), shapeType(shapeType), resultType(resultType), process(process) {
 		if(sdf != NULL) {
 			SDF::copySDF(sdf, this->sdf);	
-		}
-		if(shapeSDF != NULL) {
-			SDF::copySDF(shapeSDF, this->shapeSDF);	
-		}					
+		}			
     };
 };
 
@@ -259,18 +262,6 @@ struct ShapeArgs {
 };
 
 
-class ChunkContext {
-	public:
-	std::unordered_map<glm::vec3, float> sdfCache;
-    BoundingCube cube;
-
-	ChunkContext() : cube(BoundingCube()) {
-	}
-	
-	ChunkContext(BoundingCube cube) : cube(cube) {
-	}
-};
-
 
 
 class Octree: public BoundingCube {
@@ -310,8 +301,9 @@ class Octree: public BoundingCube {
 
 		void exportOctreeSerialization(OctreeSerialized * octree);
 		void exportNodesSerialization(std::vector<OctreeNodeCubeSerialized> * nodes);
+		void getSdf(BoundingCube cube, ChunkContext *chunk, float * resultSDF);
 	private:
-		void buildSDF(SignedDistanceFunction * function, Transformation model, BoundingCube &cube, float * resultSDF, float * existingSDF, ChunkContext * chunkContext);
+		void buildSDF(ShapeArgs * args, BoundingCube &cube, float * shapeSDF, float * resultSDF, ChunkContext * shapeChunkContext, ChunkContext * chunkContext);
 
 	};
 

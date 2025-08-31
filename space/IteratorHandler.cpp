@@ -2,6 +2,11 @@
 
 void IteratorHandler::iterate(Octree * tree, OctreeNodeData params) {
     if(params.node != NULL) {
+        ChunkContext * chunkContext = params.chunkContext;
+        if(chunkContext == NULL && params.cube.getLengthX() <= tree->chunkSize){
+            glm::vec3 chunkKey = params.cube.getMin();
+            params.chunkContext = &tree->chunks[chunkKey];
+        }
         before(tree, params);
         if(test(tree, params)) {
             uint8_t internalOrder[8];
@@ -12,7 +17,7 @@ void IteratorHandler::iterate(Octree * tree, OctreeNodeData params) {
                 uint8_t j = internalOrder[i];
                 OctreeNode * child = params.node->getChildNode(j, &tree->allocator, block);
                 if(child != NULL) {
-                    this->iterate(tree, OctreeNodeData( params.level+1, child, params.cube.getChild(j) , params.context));
+                    this->iterate(tree, OctreeNodeData( params.level+1, child, params.cube.getChild(j) , params.context, params.chunkContext));
                 }
             }
             after(tree, params);
@@ -29,6 +34,12 @@ void IteratorHandler::iterateFlatIn(Octree * tree, OctreeNodeData params) {
         OctreeNodeData data = flatData.top();
         flatData.pop();
 
+        ChunkContext * chunkContext = data.chunkContext;
+        if(chunkContext == NULL && data.cube.getLengthX() <= tree->chunkSize){
+            glm::vec3 chunkKey = data.cube.getMin();
+            data.chunkContext = &tree->chunks[chunkKey];
+        }
+
         before(tree, data);
         if(test(tree, data)) {
             getOrder(tree, data, internalOrder);
@@ -38,7 +49,7 @@ void IteratorHandler::iterateFlatIn(Octree * tree, OctreeNodeData params) {
                 uint8_t j = internalOrder[i];
                 OctreeNode * child = node->getChildNode(j, &tree->allocator, block);
                 if(child != NULL) {
-                    flatData.push(OctreeNodeData(data.level + 1,child, data.cube.getChild(j), data.context));
+                    flatData.push(OctreeNodeData(data.level + 1,child, data.cube.getChild(j), data.context, data.chunkContext));
                 }
             }
             after(tree, data);
@@ -56,6 +67,13 @@ void IteratorHandler::iterateFlat(Octree * tree, OctreeNodeData params) {
         StackFrame &frame = stack.top();
 
         if (!frame.secondVisit) {
+
+            ChunkContext * chunkContext = frame.chunkContext;
+            if(chunkContext == NULL && frame.cube.getLengthX() <= tree->chunkSize){
+                glm::vec3 chunkKey = frame.cube.getMin();
+                frame.chunkContext = &tree->chunks[chunkKey];
+            }
+
             // First visit: Apply `before()`
             before(tree, frame);
 
@@ -77,7 +95,7 @@ void IteratorHandler::iterateFlat(Octree * tree, OctreeNodeData params) {
             OctreeNode* child = node->getChildNode(j, &tree->allocator, block);
 
             if (child) {
-                OctreeNodeData data(frame.level+1, child, frame.cube.getChild(j), frame.context);
+                OctreeNodeData data(frame.level+1, child, frame.cube.getChild(j), frame.context, frame.chunkContext);
                 stack.push(StackFrame(data, 0, false));
             }
         } else {
@@ -101,6 +119,12 @@ void IteratorHandler::iterateFlatOut(Octree * tree, OctreeNodeData params) {
         StackFrameOut &frame = stackOut.top();
 
         if (!frame.visited) {
+
+            ChunkContext * chunkContext = frame.chunkContext;
+            if(chunkContext == NULL && frame.cube.getLengthX() <= tree->chunkSize){
+                glm::vec3 chunkKey = frame.cube.getMin();
+                frame.chunkContext = &tree->chunks[chunkKey];
+            }
             
             // First visit: execute before() and update context.
             before(tree, frame);
@@ -123,7 +147,7 @@ void IteratorHandler::iterateFlatOut(Octree * tree, OctreeNodeData params) {
                 ChildBlock * block = node->getBlock(&tree->allocator);
                 OctreeNode* child = node->getChildNode(j, &tree->allocator, block);
                 if (child) {
-                    stackOut.push(StackFrameOut(OctreeNodeData(frame.level + 1, child, frame.cube.getChild(j), frame.context), false));
+                    stackOut.push(StackFrameOut(OctreeNodeData(frame.level + 1, child, frame.cube.getChild(j), frame.context, frame.chunkContext), false));
                 }
             }
         } else {
