@@ -261,7 +261,8 @@ struct ShapeArgs {
 
 class ChunkContext {
 	public:
-	std::unordered_map<glm::vec3, float> sdfCache;
+	std::unordered_map<glm::vec3, float> shapeSdfCache;
+	std::unordered_map<glm::vec3, float> resultSdfCache;
     BoundingCube cube;
 
 	ChunkContext() : cube(BoundingCube()) {
@@ -311,7 +312,7 @@ class Octree: public BoundingCube {
 		void exportOctreeSerialization(OctreeSerialized * octree);
 		void exportNodesSerialization(std::vector<OctreeNodeCubeSerialized> * nodes);
 	private:
-		void buildSDF(SignedDistanceFunction * function, Transformation model, BoundingCube &cube, float * resultSDF, float * existingSDF, ChunkContext * chunkContext);
+		void buildSDF(ShapeArgs * args, BoundingCube &cube, float * shapeSDF, float * resultSDF, float * existingShapeSDF, float * frameSDF, ChunkContext * chunkContext);
 
 	};
 
