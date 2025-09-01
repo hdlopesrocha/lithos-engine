@@ -277,7 +277,7 @@ void Octree::add(
         OctreeChangeHandler * changeHandler
     ) {
 	expand(function, model);	
-    *threadsRunning = 0;
+    threadsCreated = 0;
     *shapeCounter = 0;
     ChunkContext localChunkContext(*this);
     OctreeNodeFrame frame = OctreeNodeFrame(root, *this, 0, root->sdf);
@@ -292,7 +292,6 @@ void Octree::del(
         const TexturePainter &painter,
         float minSize, Simplifier &simplifier, OctreeChangeHandler  * changeHandler
     ) {
-    *threadsRunning = 0;
     threadsCreated = 0;
     *shapeCounter = 0;
     ChunkContext localChunkContext(*this);
@@ -346,7 +345,7 @@ NodeOperationResult Octree::shape(OctreeNodeFrame frame, ShapeArgs * args, Chunk
     bool isLeaf = length <= args->minSize;
     NodeOperationResult children[8];
     std::vector<std::thread> threads;
-    threads.reserve(MAX_CONCURRENCY);
+    threads.reserve(8);
     if (!isLeaf) {
         block = node ? node->getBlock(&allocator) : NULL;
         for (int i = 7; i >= 0; --i) {
@@ -368,9 +367,8 @@ NodeOperationResult Octree::shape(OctreeNodeFrame frame, ShapeArgs * args, Chunk
             bool isChildChunk = isChunkNode(length*0.5f);
             (*shapeCounter)++;
 
-            if(isChildChunk && (*threadsRunning) < MAX_CONCURRENCY) {
+            if(isChildChunk) {
                 ++threadsCreated;
-                ++(*threadsRunning);
                 threads.emplace_back([this, i, childFrame, args, &children, chunkContext]() {
                    NodeOperationResult * result = children+i;
                    *result = shape(childFrame, args, chunkContext);
@@ -380,15 +378,10 @@ NodeOperationResult Octree::shape(OctreeNodeFrame frame, ShapeArgs * args, Chunk
             }
         }
     }
-    int joinCount = 0;
     for(std::thread &t : threads) {
         if(t.joinable()) {
             t.join();
-            ++joinCount;
         }
-    }
-    if(joinCount > 0) {
-        *threadsRunning -= joinCount;
     }
 
     // build SDF from children

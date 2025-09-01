@@ -274,12 +274,9 @@ class Octree: public BoundingCube {
 		OctreeNode * root;
 		OctreeAllocator allocator;
 		int threadsCreated = 0;
-		std::shared_ptr<std::atomic<int>> threadsRunning = std::make_shared<std::atomic<int>>(0);
 		std::shared_ptr<std::atomic<int>> shapeCounter = std::make_shared<std::atomic<int>>(0);
 		std::unordered_map<glm::vec3, ChunkContext> chunks;
-
-		const int MAX_CONCURRENCY = 8;
-//		std::counting_semaphore<32> semaphore{0};
+		
 		Octree(BoundingCube minCube, float chunkSize);
 		Octree();
 		
