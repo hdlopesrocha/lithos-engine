@@ -183,11 +183,10 @@ class OctreeAllocator {
 struct OctreeNodeFrame {
     OctreeNode* node;
     BoundingCube cube;
-    float minSize;
 	uint level;
 	float sdf[8];
-	OctreeNodeFrame(OctreeNode* node, BoundingCube cube, float minSize, uint level, float * sdf) 
-		: node(node), cube(cube), minSize(minSize), level(level) {
+	OctreeNodeFrame(OctreeNode* node, BoundingCube cube, uint level, float * sdf) 
+		: node(node), cube(cube), level(level) {
 			for(int i = 0; i < 8; ++i) {
 				this->sdf[i] = sdf!=NULL ? sdf[i] : 0.0f;
 			}	
@@ -220,14 +219,6 @@ struct NodeOperationResult {
     };
 };
 
-struct ShapeContext {
-	int threadId;
-
-	ShapeContext(	int threadId) : threadId(threadId)  {
-
-	}
-};
-
 struct ShapeArgs {
     float (*operation)(float, float);
     WrappedSignedDistanceFunction * function; 
@@ -235,21 +226,24 @@ struct ShapeArgs {
     const Transformation model;
     Simplifier &simplifier; 
     OctreeChangeHandler * changeHandler;
+	float minSize;
+
     ShapeArgs(
         float (*operation)(float, float),
         WrappedSignedDistanceFunction * function, 
         const TexturePainter &painter,
         const Transformation model,
         Simplifier &simplifier, 
-        OctreeChangeHandler * changeHandler
+        OctreeChangeHandler * changeHandler,
+	    float minSize
 	) :
         operation(operation),
         function(function),
         painter(painter),
         model(model),
         simplifier(simplifier),
-        changeHandler(changeHandler)
-
+        changeHandler(changeHandler),
+		minSize(minSize)
 		 {
 
             
@@ -279,9 +273,9 @@ class Octree: public BoundingCube {
 		float chunkSize;
 		OctreeNode * root;
 		OctreeAllocator allocator;
-		std::shared_ptr<std::atomic<int>> counter = std::make_shared<std::atomic<int>>(0);
-		std::shared_ptr<std::atomic<int>> threadId = std::make_shared<std::atomic<int>>(0);
-		std::shared_ptr<std::atomic<int>> works = std::make_shared<std::atomic<int>>(0);
+		int threadsCreated = 0;
+		std::shared_ptr<std::atomic<int>> threadsRunning = std::make_shared<std::atomic<int>>(0);
+		std::shared_ptr<std::atomic<int>> shapeCounter = std::make_shared<std::atomic<int>>(0);
 		std::unordered_map<glm::vec3, ChunkContext> chunks;
 
 		const int MAX_CONCURRENCY = 8;
@@ -292,7 +286,7 @@ class Octree: public BoundingCube {
 		void expand(const WrappedSignedDistanceFunction *function, Transformation model);
 		void add(WrappedSignedDistanceFunction *function, const Transformation model, const TexturePainter &painter, float minSize, Simplifier &simplifier, OctreeChangeHandler * changeHandler);
 		void del(WrappedSignedDistanceFunction *function, const Transformation model, const TexturePainter &painter, float minSize, Simplifier &simplifier, OctreeChangeHandler * changeHandler);
-		NodeOperationResult shape(ShapeContext context, OctreeNodeFrame frame, ShapeArgs * args, ChunkContext * shapeChunkContext, ChunkContext * chunkContext);
+		NodeOperationResult shape(OctreeNodeFrame frame, ShapeArgs * args, ChunkContext * chunkContext);
 		void iterate(IteratorHandler &handler);
 		void iterateFlat(IteratorHandler &handler);
 
@@ -308,6 +302,7 @@ class Octree: public BoundingCube {
 
 		int getMaxLevel(BoundingCube &cube);
 		int getMaxLevel(OctreeNode *node, BoundingCube &cube, BoundingCube &c, int level);
+		bool isChunkNode(float length);
 
 		void exportOctreeSerialization(OctreeSerialized * octree);
 		void exportNodesSerialization(std::vector<OctreeNodeCubeSerialized> * nodes);
