@@ -88,9 +88,9 @@ class OctreeNode {
 
 	public: 
 		Vertex vertex;
-		uint8_t bits;
 		uint id;
-		uint mask;
+		uint8_t bits;
+		uint8_t sign;
 		float sdf[8];
 
 		OctreeNode(Vertex vertex);
@@ -122,7 +122,7 @@ class OctreeNode {
 
 		SpaceType getType();
 
-		void setSdf(float * value);
+		void setSign(float * sdf);
 		uint exportSerialization(OctreeAllocator * allocator, std::vector<OctreeNodeCubeSerialized> * nodes, int * leafNodes, BoundingCube cube, BoundingCube chunk, uint level);
 		OctreeNode * compress(OctreeAllocator * allocator, BoundingCube * cube, BoundingCube chunk);
 };

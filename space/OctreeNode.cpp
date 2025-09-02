@@ -9,7 +9,7 @@ OctreeNode * OctreeNode::init(Vertex vertex) {
 		this->sdf[i] = MAXFLOAT;
 	}
 	this->bits = 0x0;
-	this->mask = 0x0;
+	this->sign = 0x0;
 	this->setSolid(false);
 	this->setEmpty(false);
 	this->setSimplified(false);
@@ -65,11 +65,11 @@ void OctreeNode::clear(OctreeAllocator * allocator, BoundingCube &cube, OctreeCh
 	}
 }
 
-void OctreeNode::setSdf(float * value) {
-	this->mask = 0x0;
+void OctreeNode::setSign(float * value) {
+	this->sign = 0x0;
 	for(int i = 0; i < 8; ++i) {
 		this->sdf[i] = value[i];
-		this->mask |= (value[i] < 0.0f ? (0x1 << i) : 0x0);
+		this->sign |= (value[i] < 0.0f ? (0x1 << i) : 0x0);
 	}
 }
 

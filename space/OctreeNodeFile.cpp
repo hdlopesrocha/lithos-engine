@@ -15,7 +15,7 @@ OctreeNode * loadRecursive2(OctreeAllocator * allocator, OctreeNode * node, int 
 		Vertex vertex(position, normal, glm::vec2(0), serialized.brushIndex);
 		node = allocator->allocateOctreeNode(cube)->init(vertex);
 	}
-	node->setSdf(serialized.sdf);
+	node->setSign(serialized.sdf);
 	node->bits = serialized.bits;
 	if(node->isChunk()){
 		node->setDirty(true);

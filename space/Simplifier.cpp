@@ -9,13 +9,6 @@ Simplifier::Simplifier(float angle, float distance, bool texturing) {
 
 
 void Simplifier::simplify(Octree * tree, BoundingCube chunkCube, const OctreeNodeData &params){
-
-	if(params.node->isLeaf()) {
-		params.node->setSimplified(true);
-		return;
-	}else {
-		params.node->setSimplified(false);
-	}
 	OctreeNode * node = params.node;
 	ChildBlock * block = node->getBlock(&tree->allocator);
 	int brushIndex = 0;
