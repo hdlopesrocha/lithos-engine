@@ -2,7 +2,6 @@
 #define UI_HPP
 
 #include <vector>
-#include "../gl/gl.hpp"
 #include "../tools/tools.hpp"
 
 class TexturePreviewer {

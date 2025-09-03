@@ -71,7 +71,8 @@ tool: $(OBJ_DIR)/tools/wavefrontConverter.o
 # Install dependencies (assuming Ubuntu-based system)
 install:
 	@echo "To install dependencies, run:"
-	@echo "  sudo apt-get install libimgui-dev libglew-dev libstb-dev cloc kcachegrind libgdal-dev gdal-bin"
+	@echo "  sudo apt-get install libimgui-dev libglew-dev libstb-dev libgdal-dev gdal-bin"
+	@echo "  sudo apt-get install cloc kcachegrind massif-visualizer"
 	@echo "  make libs"
 
 # Count lines of code
@@ -85,7 +86,7 @@ callgrind:
 	cd bin; valgrind --tool=callgrind --callgrind-out-file=file.out ./app;  kcachegrind file.out
 
 massif:
-	cd bin; valgrind --tool=massif --massif-out-file=file.out ./app;  kcachegrind file.out
+	cd bin; valgrind --tool=massif --massif-out-file=file.out ./app;  massif-visualizer file.out
 
 libs:
 	mkdir -p libs; 

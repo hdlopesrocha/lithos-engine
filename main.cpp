@@ -1,4 +1,5 @@
 #define STB_PERLIN_IMPLEMENTATION
+
 #include "math/math.hpp"
 #include "gl/gl.hpp"
 #include "ui/ui.hpp"
@@ -205,10 +206,12 @@ public:
 			compileShader(GlslInclude::replaceIncludes(includes,readFile("shaders/3d_fragment.glsl")),GL_FRAGMENT_SHADER) 
 		});
 
+		#ifdef DEBUG_OCTREE_WIREFRAME
 		programDebug = createShaderProgram({
 			compileShader(GlslInclude::replaceIncludes(includes,readFile("shaders/debug_vertex.glsl")),GL_VERTEX_SHADER), 
 			compileShader(GlslInclude::replaceIncludes(includes,readFile("shaders/debug_fragment.glsl")),GL_FRAGMENT_SHADER) 
 		});
+		#endif
 
 		programImpostor = createShaderProgram({
 			compileShader(GlslInclude::replaceIncludes(includes,readFile("shaders/impostor_vertex.glsl")),GL_VERTEX_SHADER), 
@@ -225,7 +228,9 @@ public:
 		computeShader = ComputeShader(octreeComputeShader3d);
 		brushContext = new BrushContext(settings, &camera);
 		mainScene = new Scene(settings, &computeShader, brushContext);
+		#ifdef STARTUP_GENERATE
 		mainScene->generate(camera);
+		#endif
 
 		textureLayers.textures[0] = createTextureArray(1024, 1024, 20, GL_RGB8);
 		textureLayers.textures[1] = createTextureArray(1024, 1024, 20, GL_RGB8);
@@ -628,7 +633,9 @@ public:
 			processTime += endTime - startTime;
 		}
 		else {
-		//	this->close();
+			#ifdef CLOSE_AFTER_GENERATE
+			this->close();
+			#endif
 		}
 		glPolygonMode(GL_FRONT, GL_FILL);
 		glPatchParameteri(GL_PATCH_VERTICES, 3); // Define the number of control points per patch
@@ -755,11 +762,13 @@ public:
 			mainScene->draw3dSolid(camera.position, mainScene->visibleSolidNodes);
 		}
 
+		#ifdef DEBUG_OCTREE_WIREFRAME
 		if(settings->octreeWireframe) {
 			glUseProgram(programDebug);
 			UniformBlock::uniform(0, &uniformBlock, sizeof(UniformBlock), uniformBlockData);
 			mainScene->draw3dOctree(camera.position, mainScene->visibleSolidNodes);
 		}
+		#endif
 
 		if(settings->wireFrameEnabled) {
 			glPolygonMode(GL_FRONT, GL_FILL);

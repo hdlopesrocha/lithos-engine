@@ -1,6 +1,9 @@
 #ifndef TOOLS_HPP
 #define TOOLS_HPP
 
+//#define DEBUG_OCTREE_WIREFRAME 1
+#define STARTUP_GENERATE 1
+//#define CLOSE_AFTER_GENERATE 1
 #define TYPE_INSTANCE_AMOUNT_DRAWABLE 0x1
 #define TYPE_INSTANCE_FULL_DRAWABLE 0x2
 
@@ -193,13 +196,13 @@ class SolidSpaceChangeHandler : public OctreeChangeHandler {
 
 class BrushSpaceChangeHandler : public OctreeChangeHandler {
 	std::unordered_map<OctreeNode*, NodeInfo<InstanceData>> * brushInfo;
-	std::unordered_map<OctreeNode*, NodeInfo<DebugInstanceData>> * debugInfo;
+	std::unordered_map<OctreeNode*, NodeInfo<DebugInstanceData>> * octreeWireframeInfo;
 	std::mutex mtx;
 	public:
 	BrushSpaceChangeHandler();
 	BrushSpaceChangeHandler(
 		std::unordered_map<OctreeNode*, NodeInfo<InstanceData>> * brushInfo,
-		std::unordered_map<OctreeNode*, NodeInfo<DebugInstanceData>> * debugInfo
+		std::unordered_map<OctreeNode*, NodeInfo<DebugInstanceData>> * octreeWireframeInfo
 	);
 
 	void create(OctreeNode* nodeId) override;
@@ -276,7 +279,7 @@ class Scene {
 	std::unordered_map<OctreeNode*, NodeInfo<InstanceData>> brushInfo;
 	std::unordered_map<OctreeNode*, NodeInfo<InstanceData>> liquidInfo;
 	std::unordered_map<OctreeNode*, NodeInfo<InstanceData>> solidInfo;
-	std::unordered_map<OctreeNode*, NodeInfo<DebugInstanceData>> debugInfo;
+	std::unordered_map<OctreeNode*, NodeInfo<DebugInstanceData>> octreeWireframeInfo;
 	std::unordered_map<OctreeNode*, NodeInfo<InstanceData>> vegetationInfo;
 
 	OctreeSSBO octreeSSBO;

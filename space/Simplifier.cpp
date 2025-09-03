@@ -57,8 +57,6 @@ void Simplifier::simplify(Octree * tree, BoundingCube chunkCube, const OctreeNod
 				if(a < angle) {
 					return;
 				}
-
-
 				
 				++nodeCount;
 			}

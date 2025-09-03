@@ -33,7 +33,7 @@ Scene::Scene(Settings * settings, ComputeShader * computeShader, BrushContext * 
 
 	liquidSpaceChangeHandler = new LiquidSpaceChangeHandler(&liquidInfo);
 	solidSpaceChangeHandler = new SolidSpaceChangeHandler(&vegetationInfo, &solidInfo);
-	brushSpaceChangeHandler = new BrushSpaceChangeHandler(&brushInfo, &debugInfo);
+	brushSpaceChangeHandler = new BrushSpaceChangeHandler(&brushInfo, &octreeWireframeInfo);
 
 	inputSSBO.allocate();
 	outputSSBO.allocate();
@@ -147,9 +147,11 @@ bool Scene::processSolid(OctreeNodeData &data, Octree * tree) {
 		if(loadSpace(tree, data, &vegetationInfo, vegetationBuilder)) {
 			result = true;			
 		}
-		if(settings->octreeWireframe && loadSpace(tree, data, &debugInfo, debugBuilder)) {
+		#ifdef DEBUG_OCTREE_WIREFRAME
+		if(loadSpace(tree, data, &octreeWireframeInfo, debugBuilder)) {
 			result = true;			
 		}
+		#endif
 		data.node->setDirty(false);	
 	}
 	return result;
@@ -310,7 +312,7 @@ void Scene::draw3dLiquid(glm::vec3 cameraPosition, const std::vector<OctreeNodeD
 }
 
 void Scene::draw3dOctree(glm::vec3 cameraPosition, const std::vector<OctreeNodeData> &list) {
-	draw<DebugInstanceData, DebugInstanceDataHandler>(TYPE_INSTANCE_FULL_DRAWABLE, GL_LINES, cameraPosition, list, &debugInfo, &debugInstancesVisible);
+	draw<DebugInstanceData, DebugInstanceDataHandler>(TYPE_INSTANCE_FULL_DRAWABLE, GL_LINES, cameraPosition, list, &octreeWireframeInfo, &debugInstancesVisible);
 }
 
 void Scene::generate(Camera &camera) {
