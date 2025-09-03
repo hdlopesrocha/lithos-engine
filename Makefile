@@ -23,7 +23,7 @@ BUILD = debug
 
 
 # Release Build Configuration (optimized)
-release: CFLAGS += -O2
+release: CFLAGS += -O3
 release: compile
 
 # Profile Build Configuration (for profiling with gprof)
@@ -79,10 +79,13 @@ report:
 	cloc . --exclude-dir=$(BIN_DIR) --exclude-dir=libs
 
 cachegrind:
-	cd bin; kcachegrind callgrind.out
+	cd bin; valgrind --tool=cachegrind --cachegrind-out-file=file.out ./app;  kcachegrind file.out
 
 callgrind:
-	cd bin; valgrind --tool=callgrind --callgrind-out-file=callgrind.out ./app;  kcachegrind callgrind.out
+	cd bin; valgrind --tool=callgrind --callgrind-out-file=file.out ./app;  kcachegrind file.out
+
+massif:
+	cd bin; valgrind --tool=massif --massif-out-file=file.out ./app;  kcachegrind file.out
 
 libs:
 	mkdir -p libs; 

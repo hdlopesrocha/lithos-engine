@@ -225,7 +225,7 @@ public:
 		computeShader = ComputeShader(octreeComputeShader3d);
 		brushContext = new BrushContext(settings, &camera);
 		mainScene = new Scene(settings, &computeShader, brushContext);
-		//mainScene->generate(camera);
+		mainScene->generate(camera);
 
 		textureLayers.textures[0] = createTextureArray(1024, 1024, 20, GL_RGB8);
 		textureLayers.textures[1] = createTextureArray(1024, 1024, 20, GL_RGB8);
@@ -628,7 +628,7 @@ public:
 			processTime += endTime - startTime;
 		}
 		else {
-			//this->close();
+		//	this->close();
 		}
 		glPolygonMode(GL_FRONT, GL_FILL);
 		glPatchParameteri(GL_PATCH_VERTICES, 3); // Define the number of control points per patch

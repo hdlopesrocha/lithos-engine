@@ -360,7 +360,15 @@ class Settings {
 
 };
 
+class SettingsFile {
+	Settings * settings;
+    std::string filename;
+    public: 
+		SettingsFile(Settings * settings, std::string filename);
+        void save(std::string baseFolder);
+        void load(std::string baseFolder);
 
+};
 
 class Vegetation3d : public Geometry {
     public:
