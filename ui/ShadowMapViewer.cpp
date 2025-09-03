@@ -17,6 +17,9 @@ void ShadowMapViewer::draw2d(float time){
         --selectedBuffer;
     }
     ImGui::SameLine();
+    ImGui::Text("%d/%d", selectedBuffer+1, (int)shadowBuffers->size());
+    ImGui::SameLine();
+    
     if (ImGui::ArrowButton("##selectedBuffer_right", ImGuiDir_Right)) {
         ++selectedBuffer;
     }

@@ -129,42 +129,39 @@ bool Scene::computeGeometry(OctreeNodeData &data, Octree * tree, std::unordered_
 
 bool Scene::processLiquid(OctreeNodeData &data, Octree * tree) {
 	bool result = false;
-	if(data.node->isDirty()) {
-		if(loadSpace(tree, data, &liquidInfo, meshBuilder)) {
-			result = true;
-		}
-		data.node->setDirty(false);
+	if(loadSpace(tree, data, &liquidInfo, meshBuilder)) {
+		result = true;
 	}
+	data.node->setDirty(false);
+
 	return result;
 }
 
 bool Scene::processSolid(OctreeNodeData &data, Octree * tree) {
 	bool result = false;
-	if(data.node->isDirty()) { 
-		if(loadSpace(tree, data, &solidInfo, meshBuilder)) {
-			result = true;
-		}
-		if(loadSpace(tree, data, &vegetationInfo, vegetationBuilder)) {
-			result = true;			
-		}
-		#ifdef DEBUG_OCTREE_WIREFRAME
-		if(loadSpace(tree, data, &octreeWireframeInfo, debugBuilder)) {
-			result = true;			
-		}
-		#endif
-		data.node->setDirty(false);	
+	if(loadSpace(tree, data, &solidInfo, meshBuilder)) {
+		result = true;
 	}
+	if(loadSpace(tree, data, &vegetationInfo, vegetationBuilder)) {
+		result = true;			
+	}
+	#ifdef DEBUG_OCTREE_WIREFRAME
+	if(loadSpace(tree, data, &octreeWireframeInfo, debugBuilder)) {
+		result = true;			
+	}
+	#endif
+	data.node->setDirty(false);	
+
 	return result;
 }
 
 bool Scene::processBrush(OctreeNodeData &data, Octree * tree) {
 	bool result = false;
-	if(data.node->isDirty()) { 
-		if(loadSpace(tree, data, &brushInfo, meshBuilder)) {
-			result = true;
-		}
-		data.node->setDirty(false);	
+	if(loadSpace(tree, data, &brushInfo, meshBuilder)) {
+		result = true;
 	}
+	data.node->setDirty(false);	
+
 	return result;
 }
 
@@ -175,46 +172,74 @@ bool Scene::processSpace() {
 	vegetationInstancesVisible = 0;
 	brushInstancesVisible = 0;
 	debugInstancesVisible = 0;
-	int loadCountSolid = 10;
-	int loadCountLiquid = 1;
+	
+	std::shared_ptr<std::atomic<int>> loadCountSolid = std::make_shared<std::atomic<int>>(0);
+	std::shared_ptr<std::atomic<int>> loadCountLiquid = std::make_shared<std::atomic<int>>(0);
+	std::shared_ptr<std::atomic<int>> loadCountBrush = std::make_shared<std::atomic<int>>(0);
+
+	int maxSolidThreads = 8;
+	int maxLiquidThreads = 8;
+	int maxBrushThreads = 8;
+
+	std::unordered_set<uint> visibleNodeIds;
+	std::vector<OctreeNodeData*> allVisibleNodes;
 
 	for(OctreeNodeData &data : visibleSolidNodes) {
-		if(loadCountSolid > 0) {
-			if(processSolid(data, &solidSpace)) {
-				--loadCountSolid;
-			}
-		} else {
-			break;
-		}
-	}
-
-	for(OctreeNodeData &data : visibleBrushNodes) {
-		processBrush(data, &brushSpace);
-	}
-
-	for(OctreeNodeData &data : visibleLiquidNodes) {
-		if(loadCountLiquid > 0) {
-			if(processLiquid(data, &liquidSpace)) {
-				--loadCountLiquid;
-			}
-		} else {
-			break;
+		if(visibleNodeIds.find(data.node->id) == visibleNodeIds.end()) {
+			allVisibleNodes.push_back(&data);
+			visibleNodeIds.insert(data.node->id);
 		}
 	}
 
 	for(int i =0 ; i < SHADOW_MATRIX_COUNT ; ++i) {
 		std::vector<OctreeNodeData> &vec = visibleShadowNodes[i];
 		for(OctreeNodeData &data : vec) {
-			if(loadCountSolid > 0) {
-				if(processSolid(data, &solidSpace)) {
-					--loadCountSolid;
-				}
-			} else {
-				break;
+			if(visibleNodeIds.find(data.node->id) == visibleNodeIds.end()) {
+				allVisibleNodes.push_back(&data);
+				visibleNodeIds.insert(data.node->id);
 			}
 		}
 	}
-	return loadCountSolid <=0 || loadCountLiquid <=0;
+
+    std::vector<std::thread> threads(24);
+
+	for(OctreeNodeData * data : allVisibleNodes) {
+		if(data->node->isDirty() && --maxSolidThreads >= 0) {
+			threads.emplace_back([this, data, loadCountSolid]() {
+				if(processSolid(*data, &solidSpace)) {
+					(*loadCountSolid)++;
+				}
+			});
+		}
+	}
+
+	for(OctreeNodeData &data : visibleBrushNodes) {
+		if(data.node->isDirty()  && --maxBrushThreads >= 0) {
+			threads.emplace_back([this, &data, loadCountBrush]() {
+				if(processBrush(data, &brushSpace)) {
+					(*loadCountBrush)++;
+				}
+			});
+		}
+	}
+
+	for(OctreeNodeData &data : visibleLiquidNodes) {
+		if(data.node->isDirty() && --maxLiquidThreads >= 0) {
+			threads.emplace_back([this, &data, loadCountLiquid]() {
+				if(processLiquid(data, &liquidSpace)) {
+					(*loadCountLiquid)++;
+				}
+			});
+		}
+	}
+
+    for(std::thread &t : threads) {
+        if(t.joinable()) {
+            t.join();
+        }
+    }
+
+	return *loadCountSolid > 0 || *loadCountLiquid > 0 || *loadCountBrush > 0;
 }
 
 void Scene::setVisibility(glm::mat4 viewProjection, std::vector<std::pair<glm::mat4, glm::vec3>> lightProjection ,Camera &camera) {

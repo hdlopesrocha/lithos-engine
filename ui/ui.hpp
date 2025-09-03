@@ -128,11 +128,12 @@ class GamepadEditor: public Closable {
 
 class ShadowMapViewer : public Closable{
 	std::vector<std::pair<RenderBuffer, int>> * shadowBuffers;
-  	int selectedBuffer;
     int width;
     int height;
 
     public:
+  	int selectedBuffer;
+
     ShadowMapViewer(std::vector<std::pair<RenderBuffer, int>> * shadowBuffers, int width, int height);
 
     void draw2d(float time) override;
