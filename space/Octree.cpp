@@ -154,10 +154,18 @@ int Octree::getNeighborLevel(OctreeNodeData &data, bool simplification, int dire
     return level;
 }
 
-OctreeNode * Octree::fetch(OctreeNodeData &data, OctreeNode ** out, int i, bool simplification) {
+OctreeNode * Octree::fetch(OctreeNodeData &data, OctreeNode ** out, int i, bool simplification, ChunkContext * context) {
     if(out[i] == NULL) {
         glm::vec3 pos = data.cube.getCenter() + data.cube.getLengthX() * Octree::getShift(i);
-        out[i] = getNodeAt(pos, data.level, simplification);
+        glm::vec4 key = glm::vec4(pos, data.level);
+        OctreeNode * node;
+        if(context->nodeCache.find(key) != context->nodeCache.end()) {
+            node = context->nodeCache[key];
+        } else {
+            node = getNodeAt(pos, data.level, simplification);
+            context->nodeCache[key] = node;
+        }
+        out[i] = node;
     }
     return out[i];
 }
@@ -183,7 +191,7 @@ bool allDifferent(const T& first, const Args&... args) {
     return true;
 }
 
-void Octree::handleQuadNodes(OctreeNodeData &data, OctreeNodeTriangleHandler * handler, bool simplification) {
+void Octree::handleQuadNodes(OctreeNodeData &data, OctreeNodeTriangleHandler * handler, bool simplification, ChunkContext * context) {
 
     OctreeNode * neighbors[8] = {NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL};
 	
@@ -197,7 +205,7 @@ void Octree::handleQuadNodes(OctreeNodeData &data, OctreeNodeTriangleHandler * h
 			glm::ivec4 quad = TESSELATION_ORDERS[k];
             Vertex vertices[4] = { Vertex(), Vertex(), Vertex(), Vertex() };
 			for(int i =0; i<4 ; ++i) {
-				OctreeNode * n = fetch(data, neighbors, quad[i], simplification);
+				OctreeNode * n = fetch(data, neighbors, quad[i], simplification, context);
                 if(n != NULL && !n->isSolid() && !n->isEmpty()) {
                     vertices[i] = n->vertex;
                 }else {

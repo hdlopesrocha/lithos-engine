@@ -9,12 +9,12 @@ MeshGeometryBuilder::MeshGeometryBuilder(long * trianglesCount) {
     this->trianglesCount = trianglesCount;
 }
 
-InstanceGeometry<InstanceData>* MeshGeometryBuilder::build(Octree * tree, OctreeNodeData &params){
+InstanceGeometry<InstanceData>* MeshGeometryBuilder::build(Octree * tree, OctreeNodeData &params, ChunkContext * context){
 
     // Tesselate
     Geometry * geometry = new Geometry(false);
 
-    Tesselator tesselator(geometry, trianglesCount);
+    Tesselator tesselator(geometry, trianglesCount, context);
     tesselator.iterateFlatIn(tree, params);
     if(geometry->indices.size() > 0) {
         InstanceGeometry<InstanceData> * pre = new InstanceGeometry<InstanceData>(geometry);

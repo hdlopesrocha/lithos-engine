@@ -1,7 +1,7 @@
 #include "space.hpp"
 
 
-Tesselator::Tesselator(Geometry * chunk, long * count): OctreeNodeTriangleHandler(count) {
+Tesselator::Tesselator(Geometry * chunk, long * count, ChunkContext * context): OctreeNodeTriangleHandler(count), context(context) {
     this->chunk = chunk;
 }
 
@@ -14,7 +14,7 @@ void Tesselator::before(Octree * tree, OctreeNodeData &params) {
     	//tree->handleQuadNodes(params , this, true);
 	}*/
     if(params.node->isLeaf()) {
-       	tree->handleQuadNodes(params , this, true);
+       	tree->handleQuadNodes(params , this, true, context);
     }
 }
 

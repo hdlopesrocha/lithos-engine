@@ -97,7 +97,19 @@ struct alignas(16)  Vertex {
 
 // Custom hash function for glm::vec3
 namespace std {
-    template <> struct hash<glm::vec3> {
+    template <> struct hash<glm::vec4> {
+        std::size_t operator()(const glm::vec4& v) const {
+            std::size_t hx = std::hash<float>{}(v.x);
+            std::size_t hy = std::hash<float>{}(v.y);
+            std::size_t hz = std::hash<float>{}(v.z);
+            std::size_t hw = std::hash<float>{}(v.w);
+            
+            // Combine the individual component hashes using XOR and shifting
+            return hx ^ (hy << 1) ^ (hz << 2) ^ (hw << 3);
+        }
+    };
+
+	template <> struct hash<glm::vec3> {
         std::size_t operator()(const glm::vec3& v) const {
             std::size_t hx = std::hash<float>{}(v.x);
             std::size_t hy = std::hash<float>{}(v.y);

@@ -94,14 +94,14 @@ class VegetationInstanceBuilderHandler : public InstanceBuilderHandler<InstanceD
 	float scale;
 	VegetationInstanceBuilderHandler(float pointsPerArea, float scale);
 
-	void handle(Octree * tree, OctreeNodeData &data, std::vector<InstanceData> * instances) override;
+	void handle(Octree * tree, OctreeNodeData &data, std::vector<InstanceData> * instances, ChunkContext * context) override;
 };
 
 class OctreeInstanceBuilderHandler : public InstanceBuilderHandler<DebugInstanceData>  {
 	public:
 	OctreeInstanceBuilderHandler();
 
-	void handle(Octree * tree, OctreeNodeData &data, std::vector<DebugInstanceData> * instances) override;
+	void handle(Octree * tree, OctreeNodeData &data, std::vector<DebugInstanceData> * instances, ChunkContext * context) override;
 };
 
 class VegetationGeometryBuilder : public GeometryBuilder<InstanceData> {
@@ -112,7 +112,7 @@ class VegetationGeometryBuilder : public GeometryBuilder<InstanceData> {
     VegetationGeometryBuilder(InstanceBuilderHandler<InstanceData>  * handler);
     ~VegetationGeometryBuilder();
 
-	InstanceGeometry<InstanceData> * build(Octree * tree, OctreeNodeData &params) override;
+	InstanceGeometry<InstanceData> * build(Octree * tree, OctreeNodeData &params, ChunkContext * context) override;
 };
 
 class OctreeGeometryBuilder : public GeometryBuilder<DebugInstanceData> {
@@ -122,7 +122,7 @@ class OctreeGeometryBuilder : public GeometryBuilder<DebugInstanceData> {
     OctreeGeometryBuilder(InstanceBuilderHandler<DebugInstanceData>  * handler);
     ~OctreeGeometryBuilder();
 
-    InstanceGeometry<DebugInstanceData> * build(Octree * tree, OctreeNodeData &params) override;
+    InstanceGeometry<DebugInstanceData> * build(Octree * tree, OctreeNodeData &params, ChunkContext * context) override;
 };
 
 class VegetationInstanceBuilder : public OctreeNodeTriangleHandler {
@@ -319,7 +319,7 @@ class Scene {
 
 	void import(const std::string &filename, Camera &camera) ;
 	void generate(Camera &camera) ;
-	template <typename T> bool loadSpace(Octree * tree, OctreeNodeData &data, std::unordered_map<OctreeNode*, NodeInfo<T>> *infos, GeometryBuilder<T> * builder);
+	template <typename T> bool loadSpace(Octree * tree, OctreeNodeData &data, std::unordered_map<OctreeNode*, NodeInfo<T>> *infos, GeometryBuilder<T> * builder, ChunkContext * context);
 	template <typename T> DrawableInstanceGeometry<T> * loadIfNeeded(std::unordered_map<OctreeNode*, NodeInfo<T>> * infos, OctreeNode* node, InstanceHandler<T> * handler);
 
 	void save(std::string folderPath, Camera &camera);

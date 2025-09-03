@@ -9,10 +9,10 @@ OctreeGeometryBuilder::OctreeGeometryBuilder(InstanceBuilderHandler<DebugInstanc
     this->handler = handler;
 }
 
-InstanceGeometry<DebugInstanceData> * OctreeGeometryBuilder::build(Octree * tree, OctreeNodeData &params){
+InstanceGeometry<DebugInstanceData> * OctreeGeometryBuilder::build(Octree * tree, OctreeNodeData &params, ChunkContext * context){
     std::vector<DebugInstanceData> instances;
 
-    InstanceBuilder<DebugInstanceData> instanceBuilder(handler, &instances);
+    InstanceBuilder<DebugInstanceData> instanceBuilder(handler, &instances, context);
     instanceBuilder.iterateFlatIn(tree, params);
 	
     //glm::mat4 mat(1.0);

@@ -15,11 +15,11 @@ VegetationGeometryBuilder::VegetationGeometryBuilder(InstanceBuilderHandler<Inst
     this->handler = handler;
 }
 
-InstanceGeometry<InstanceData> * VegetationGeometryBuilder::build(Octree * tree, OctreeNodeData &params){
+InstanceGeometry<InstanceData> * VegetationGeometryBuilder::build(Octree * tree, OctreeNodeData &params, ChunkContext * context){
     //std::cout << "VegetationGeometryBuilder::build" <<std::endl;
     
     std::vector<InstanceData> instances;
-    InstanceBuilder instanceBuilder(handler, &instances);
+    InstanceBuilder instanceBuilder(handler, &instances, context);
 
     instanceBuilder.iterateFlatIn(tree, params);
 

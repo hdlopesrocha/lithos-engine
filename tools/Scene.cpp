@@ -40,10 +40,10 @@ Scene::Scene(Settings * settings, ComputeShader * computeShader, BrushContext * 
 	octreeSSBO.allocate();
 }
 
-template <typename T> bool Scene::loadSpace(Octree* tree, OctreeNodeData& data, std::unordered_map<OctreeNode*, NodeInfo<T>>* infos, GeometryBuilder<T>* builder) {
+template <typename T> bool Scene::loadSpace(Octree* tree, OctreeNodeData& data, std::unordered_map<OctreeNode*, NodeInfo<T>>* infos, GeometryBuilder<T>* builder, ChunkContext * context) {
 	bool emptyChunk = data.node->isEmpty() || data.node->isSolid();
 	if(!emptyChunk){
-		InstanceGeometry<T>* loadable = builder->build(tree, data);
+		InstanceGeometry<T>* loadable = builder->build(tree, data, context);
 		if (loadable == NULL) {
 			// No geometry to load — erase entry if it exists
 			infos->erase(data.node);
@@ -129,7 +129,8 @@ bool Scene::computeGeometry(OctreeNodeData &data, Octree * tree, std::unordered_
 
 bool Scene::processLiquid(OctreeNodeData &data, Octree * tree) {
 	bool result = false;
-	if(loadSpace(tree, data, &liquidInfo, meshBuilder)) {
+	ChunkContext context;
+	if(loadSpace(tree, data, &liquidInfo, meshBuilder, &context)) {
 		result = true;
 	}
 	data.node->setDirty(false);
@@ -139,14 +140,16 @@ bool Scene::processLiquid(OctreeNodeData &data, Octree * tree) {
 
 bool Scene::processSolid(OctreeNodeData &data, Octree * tree) {
 	bool result = false;
-	if(loadSpace(tree, data, &solidInfo, meshBuilder)) {
+	ChunkContext context;
+
+	if(loadSpace(tree, data, &solidInfo, meshBuilder, &context)) {
 		result = true;
 	}
-	if(loadSpace(tree, data, &vegetationInfo, vegetationBuilder)) {
+	if(loadSpace(tree, data, &vegetationInfo, vegetationBuilder, &context)) {
 		result = true;			
 	}
 	#ifdef DEBUG_OCTREE_WIREFRAME
-	if(loadSpace(tree, data, &octreeWireframeInfo, debugBuilder)) {
+	if(loadSpace(tree, data, &octreeWireframeInfo, debugBuilder, &context)) {
 		result = true;			
 	}
 	#endif
@@ -157,7 +160,9 @@ bool Scene::processSolid(OctreeNodeData &data, Octree * tree) {
 
 bool Scene::processBrush(OctreeNodeData &data, Octree * tree) {
 	bool result = false;
-	if(loadSpace(tree, data, &brushInfo, meshBuilder)) {
+	ChunkContext context;
+
+	if(loadSpace(tree, data, &brushInfo, meshBuilder, &context)) {
 		result = true;
 	}
 	data.node->setDirty(false);	

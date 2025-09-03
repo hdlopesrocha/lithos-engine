@@ -5,7 +5,7 @@ OctreeInstanceBuilderHandler::OctreeInstanceBuilderHandler() {
 
 }
 
-void OctreeInstanceBuilderHandler::handle(Octree * tree, OctreeNodeData &data, std::vector<DebugInstanceData> * instances){
+void OctreeInstanceBuilderHandler::handle(Octree * tree, OctreeNodeData &data, std::vector<DebugInstanceData> * instances, ChunkContext * context){
 	if(data.node->isSimplified()) {
 		glm::mat4 mat(1.0);
 		mat = glm::translate(mat, data.cube.getMin());

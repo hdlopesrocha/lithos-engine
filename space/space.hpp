@@ -257,7 +257,9 @@ class ChunkContext {
 	public:
 	std::unordered_map<glm::vec3, float> shapeSdfCache;
 	std::unordered_map<glm::vec3, float> resultSdfCache;
-    BoundingCube cube;
+	std::unordered_map<glm::vec4, OctreeNode*> nodeCache;
+
+	BoundingCube cube;
 
 	ChunkContext() : cube(BoundingCube()) {
 	}
@@ -290,11 +292,11 @@ class Octree: public BoundingCube {
 		OctreeNode* getNodeAt(const glm::vec3 &pos, int level, bool simplification);
 		OctreeNode* getNodeAt(const glm::vec3 &pos, bool simplification);
 		float getSdfAt(const glm::vec3 &pos);
-		void handleQuadNodes(OctreeNodeData &data, OctreeNodeTriangleHandler * handler, bool simplification);
+		void handleQuadNodes(OctreeNodeData &data, OctreeNodeTriangleHandler * handler, bool simplification, ChunkContext * context);
 		bool hasFinerNode(const OctreeNode *node);
 		int getLevelAt(const glm::vec3 &pos, bool simplification);
 		int getNeighborLevel(OctreeNodeData &data, bool simplification, int direction);
-		OctreeNode * fetch(OctreeNodeData &data, OctreeNode ** out, int i, bool simplification);
+		OctreeNode * fetch(OctreeNodeData &data, OctreeNode ** out, int i, bool simplification, ChunkContext * context);
 		int getMaxLevel(OctreeNode * node, int level);
 
 		int getMaxLevel(BoundingCube &cube);
@@ -371,7 +373,7 @@ struct DebugInstanceData {
 
 template <typename T> class GeometryBuilder {
     public:
-    virtual InstanceGeometry<T> * build(Octree * tree, OctreeNodeData &params) = 0;
+    virtual InstanceGeometry<T> * build(Octree * tree, OctreeNodeData &params, ChunkContext * context) = 0;
 };
 
 class MeshGeometryBuilder  : public GeometryBuilder<InstanceData> {
@@ -379,7 +381,7 @@ class MeshGeometryBuilder  : public GeometryBuilder<InstanceData> {
 	public:
 		MeshGeometryBuilder(long * trianglesCount);
 		~MeshGeometryBuilder();
-		InstanceGeometry<InstanceData> * build(Octree * tree, OctreeNodeData &params) override;
+		InstanceGeometry<InstanceData> * build(Octree * tree, OctreeNodeData &params, ChunkContext * context) override;
 };
 
 class IteratorHandler {
@@ -399,21 +401,23 @@ class IteratorHandler {
 
 template <typename T> class InstanceBuilderHandler {
 	public:
-		virtual void handle(Octree * tree, OctreeNodeData &data, std::vector<T> * instances) = 0;
+		virtual void handle(Octree * tree, OctreeNodeData &data, std::vector<T> * instances, ChunkContext * context) = 0;
 };
 
 template <typename T> class InstanceBuilder : public IteratorHandler{
 	InstanceBuilderHandler<T> * handler;
 	std::vector<T> * instances;
+	ChunkContext * context;
 	public: 
 
-		InstanceBuilder(InstanceBuilderHandler<T> * handler, std::vector<T> * instances) {
+		InstanceBuilder(InstanceBuilderHandler<T> * handler, std::vector<T> * instances, ChunkContext * context){
 			this->instances = instances;
 			this->handler = handler;
+			this->context = context;
 		}
 		
-		void before(Octree * tree, OctreeNodeData &params) {		
-			handler->handle(tree, params, instances);
+		void before(Octree * tree, OctreeNodeData &params) {	
+			handler->handle(tree, params, instances, context);
 		}
 		
 		void after(Octree * tree, OctreeNodeData &params) {			
@@ -433,8 +437,9 @@ template <typename T> class InstanceBuilder : public IteratorHandler{
 
 class Tesselator : public IteratorHandler, OctreeNodeTriangleHandler{
 	Geometry * chunk;
+	ChunkContext * context;
 	public:
-		Tesselator(Geometry * chunk, long * count);
+		Tesselator(Geometry * chunk, long * count, ChunkContext * context);
 		void before(Octree * tree, OctreeNodeData &params) override;
 		void after(Octree * tree, OctreeNodeData &params) override;
 		bool test(Octree * tree, OctreeNodeData &params) override;

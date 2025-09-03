@@ -6,11 +6,11 @@ VegetationInstanceBuilderHandler::VegetationInstanceBuilderHandler(float pointsP
 	this->scale = scale;
 }
 
-void VegetationInstanceBuilderHandler::handle(Octree * tree, OctreeNodeData &data, std::vector<InstanceData> * instances){
+void VegetationInstanceBuilderHandler::handle(Octree * tree, OctreeNodeData &data, std::vector<InstanceData> * instances, ChunkContext * context){
 	Vertex * vertex = &data.node->vertex;
 	if(data.node->isLeaf() && vertex->brushIndex == 2) { 
 		long count = 0;
 		VegetationInstanceBuilder handler(&count , instances, pointsPerArea, scale);
-		tree->handleQuadNodes(data, &handler, false);
+		tree->handleQuadNodes(data, &handler, false, context);
 	}
 }
