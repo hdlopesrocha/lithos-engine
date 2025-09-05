@@ -481,7 +481,7 @@ void Scene::generate(Camera &camera) {
 		waterBox.setMaxY(0);
 		OctreeDifferenceFunction function(&solidSpace, waterBox);
 		WrappedOctreeDifference wrappedFunction = WrappedOctreeDifference(&function, minSize, model);
-		wrappedFunction.cacheEnabled = true;
+		//wrappedFunction.cacheEnabled = true;
 		liquidSpace.add(&wrappedFunction, model, WaterBrush(0), minSize, *brushContext->simplifier, liquidSpaceChangeHandler);
 	}
 

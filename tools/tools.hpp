@@ -167,7 +167,6 @@ template <typename T> struct OctreeLayer {
 
 class LiquidSpaceChangeHandler : public OctreeChangeHandler {
 	OctreeLayer<InstanceData> * liquidInfo;
-	std::mutex mtx;
 
 	public:
 	LiquidSpaceChangeHandler(
@@ -182,7 +181,6 @@ class LiquidSpaceChangeHandler : public OctreeChangeHandler {
 class SolidSpaceChangeHandler : public OctreeChangeHandler {
 	OctreeLayer<InstanceData> * vegetationInfo;
 	OctreeLayer<InstanceData> * computeInfo;
- 	std::mutex mtx;
 
 	public:
 	SolidSpaceChangeHandler(
