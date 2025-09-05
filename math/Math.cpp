@@ -235,10 +235,18 @@ glm::quat Math::eulerToQuat(float yaw, float pitch, float roll) {
 }
 
 // Generate random float in range [0,1]
+
+/* Not thread safe
 float Math::randomFloat() {
     static std::random_device rd;
     static std::mt19937 gen(rd());
     static std::uniform_real_distribution<float> dis(0.0f, 1.0f);
+    return dis(gen);
+}*/
+
+float Math::randomFloat() {
+    thread_local std::mt19937 gen(std::random_device{}());
+    thread_local std::uniform_real_distribution<float> dis(0.0f, 1.0f);
     return dis(gen);
 }
 

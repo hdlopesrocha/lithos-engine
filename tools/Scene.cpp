@@ -40,18 +40,23 @@ Scene::Scene(Settings * settings, ComputeShader * computeShader, BrushContext * 
 	octreeSSBO.allocate();
 }
 
-template <typename T> bool Scene::loadSpace(Octree* tree, OctreeNodeData& data, std::unordered_map<OctreeNode*, NodeInfo<T>>* infos, GeometryBuilder<T>* builder, ChunkContext * context) {
+template <typename T> bool Scene::loadSpace(Octree* tree, OctreeNodeData& data, OctreeLayer<T>* infos, GeometryBuilder<T>* builder, ChunkContext * context) {
 	bool emptyChunk = data.node->isEmpty() || data.node->isSolid();
 	if(!emptyChunk){
 		InstanceGeometry<T>* loadable = builder->build(tree, data, context);
 		if (loadable == NULL) {
 			// No geometry to load — erase entry if it exists
-			infos->erase(data.node);
+			infos->mutex.lock();
+			infos->info.erase(data.node);
+			infos->mutex.unlock();
 			return false;
 		}
 
 		// Try to insert a new NodeInfo with loadable
-		auto [it, inserted] = infos->try_emplace(data.node, loadable);
+		infos->mutex.lock();
+		auto [it, inserted] = infos->info.try_emplace(data.node, loadable);
+		infos->mutex.unlock();
+
 		if (!inserted) {
 			// Already existed — replace existing loadable
 			if (it->second.loadable) {
@@ -206,8 +211,8 @@ bool Scene::processSpace() {
 		}
 	}
 
-    std::vector<std::thread> threads(24);
-
+    std::vector<std::thread> threads;
+	threads.reserve(24);
 	for(OctreeNodeData * data : allVisibleNodes) {
 		if(data->node->isDirty() && --maxSolidThreads >= 0) {
 			threads.emplace_back([this, data, loadCountSolid]() {
@@ -265,9 +270,12 @@ void Scene::setVisibleNodes(Octree * tree, glm::mat4 viewProjection, glm::vec3 s
 	tree->iterateFlat(checker);	//here we get the visible nodes for that LOD + geometryLevel
 }
 
-template <typename T> DrawableInstanceGeometry<T> * Scene::loadIfNeeded(std::unordered_map<OctreeNode*, NodeInfo<T>>* infos, OctreeNode* node, InstanceHandler<T> * handler) {
-	auto it = infos->find(node);
-	if (it == infos->end()) {
+template <typename T> DrawableInstanceGeometry<T> * Scene::loadIfNeeded(OctreeLayer<T>* infos, OctreeNode* node, InstanceHandler<T> * handler) {
+	infos->mutex.lock();
+	auto it = infos->info.find(node);
+	auto end = infos->info.end();
+	infos->mutex.unlock();
+	if (it == end) {
 		return NULL;
 	}
 	NodeInfo<T>& ni = it->second;
@@ -282,7 +290,7 @@ template <typename T> DrawableInstanceGeometry<T> * Scene::loadIfNeeded(std::uno
 	return ni.drawable;
 }
 
-template <typename T, typename H> void Scene::draw(uint drawableType, int mode, glm::vec3 cameraPosition, const std::vector<OctreeNodeData> &list, std::unordered_map<OctreeNode*, NodeInfo<T>> * info, long * count) {
+template <typename T, typename H> void Scene::draw(uint drawableType, int mode, glm::vec3 cameraPosition, const std::vector<OctreeNodeData> &list, OctreeLayer<T> * info, long * count) {
 	H handler;
 	for(const OctreeNodeData &data : list) {
 		OctreeNode * node = data.node;

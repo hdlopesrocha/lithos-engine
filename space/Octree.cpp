@@ -352,8 +352,8 @@ NodeOperationResult Octree::shape(OctreeNodeFrame frame, ShapeArgs * args, Chunk
 
     bool isLeaf = length <= args->minSize;
     NodeOperationResult children[8];
-    std::vector<std::thread> threads(8);
-
+    std::vector<std::thread> threads;
+    threads.reserve(8);
     if (!isLeaf) {
         block = node ? node->getBlock(&allocator) : NULL;
         for (int i = 7; i >= 0; --i) {

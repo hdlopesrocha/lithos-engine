@@ -1,12 +1,8 @@
 #include "tools.hpp"
 
-SolidSpaceChangeHandler::SolidSpaceChangeHandler() :
-    vegetationInfo(nullptr) {
-};
-
 SolidSpaceChangeHandler::SolidSpaceChangeHandler(
-    std::unordered_map<OctreeNode*, NodeInfo<InstanceData>> * vegetationInfo,
-    std::unordered_map<OctreeNode*, NodeInfo<InstanceData>> * computeInfo
+    OctreeLayer<InstanceData> * vegetationInfo,
+    OctreeLayer<InstanceData> * computeInfo
 ) {
     this->vegetationInfo = vegetationInfo;
     this->computeInfo = computeInfo;
@@ -23,7 +19,7 @@ void SolidSpaceChangeHandler::update(OctreeNode* node) {
 };
 
 void SolidSpaceChangeHandler::erase(OctreeNode* node) {
-    mtx.lock();
-	vegetationInfo->erase(node);
-    mtx.unlock();
+    vegetationInfo->mutex.lock();
+	vegetationInfo->info.erase(node);
+    vegetationInfo->mutex.unlock();
 };

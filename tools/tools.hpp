@@ -159,14 +159,19 @@ template <typename T> struct NodeInfo {
 };
 
 
+template <typename T> struct OctreeLayer {
+	std::unordered_map<OctreeNode*, NodeInfo<T>> info;
+	std::mutex mutex;
+};
+
+
 class LiquidSpaceChangeHandler : public OctreeChangeHandler {
-	std::unordered_map<OctreeNode*, NodeInfo<InstanceData>> * liquidInfo;
+	OctreeLayer<InstanceData> * liquidInfo;
 	std::mutex mtx;
 
 	public:
-	LiquidSpaceChangeHandler();
 	LiquidSpaceChangeHandler(
-		std::unordered_map<OctreeNode*, NodeInfo<InstanceData>> * liquidInfo
+		OctreeLayer<InstanceData> * liquidInfo
 	);
 
 	void create(OctreeNode* nodeId) override;
@@ -175,15 +180,14 @@ class LiquidSpaceChangeHandler : public OctreeChangeHandler {
 };
 
 class SolidSpaceChangeHandler : public OctreeChangeHandler {
-	std::unordered_map<OctreeNode*, NodeInfo<InstanceData>> * vegetationInfo;
-	std::unordered_map<OctreeNode*, NodeInfo<InstanceData>> * computeInfo;
+	OctreeLayer<InstanceData> * vegetationInfo;
+	OctreeLayer<InstanceData> * computeInfo;
  	std::mutex mtx;
 
 	public:
-	SolidSpaceChangeHandler();
 	SolidSpaceChangeHandler(
-		std::unordered_map<OctreeNode*, NodeInfo<InstanceData>> * vegetationInfo,
-		std::unordered_map<OctreeNode*, NodeInfo<InstanceData>> * computeInfo
+		OctreeLayer<InstanceData> * vegetationInfo,
+		OctreeLayer<InstanceData> * computeInfo
 	);
 
 	void create(OctreeNode* nodeId) override;
@@ -191,18 +195,13 @@ class SolidSpaceChangeHandler : public OctreeChangeHandler {
 	void erase(OctreeNode* nodeId) override;
 };
 
-
-
-
 class BrushSpaceChangeHandler : public OctreeChangeHandler {
-	std::unordered_map<OctreeNode*, NodeInfo<InstanceData>> * brushInfo;
-	std::unordered_map<OctreeNode*, NodeInfo<DebugInstanceData>> * octreeWireframeInfo;
-	std::mutex mtx;
+	OctreeLayer<InstanceData> * brushInfo;
+	OctreeLayer<DebugInstanceData> * octreeWireframeInfo;
 	public:
-	BrushSpaceChangeHandler();
 	BrushSpaceChangeHandler(
-		std::unordered_map<OctreeNode*, NodeInfo<InstanceData>> * brushInfo,
-		std::unordered_map<OctreeNode*, NodeInfo<DebugInstanceData>> * octreeWireframeInfo
+		OctreeLayer<InstanceData> * brushInfo,
+		OctreeLayer<DebugInstanceData> * octreeWireframeInfo
 	);
 
 	void create(OctreeNode* nodeId) override;
@@ -252,6 +251,7 @@ class BrushContext {
 	WrappedSignedDistanceFunction * getWrapped();
 };
 
+
 class Scene {
     public: 
 	Octree solidSpace;
@@ -276,11 +276,11 @@ class Scene {
 	MeshGeometryBuilder * meshBuilder;
 	OctreeGeometryBuilder * debugBuilder;
 
-	std::unordered_map<OctreeNode*, NodeInfo<InstanceData>> brushInfo;
-	std::unordered_map<OctreeNode*, NodeInfo<InstanceData>> liquidInfo;
-	std::unordered_map<OctreeNode*, NodeInfo<InstanceData>> solidInfo;
-	std::unordered_map<OctreeNode*, NodeInfo<DebugInstanceData>> octreeWireframeInfo;
-	std::unordered_map<OctreeNode*, NodeInfo<InstanceData>> vegetationInfo;
+	OctreeLayer<InstanceData> brushInfo;
+	OctreeLayer<InstanceData> liquidInfo;
+	OctreeLayer<InstanceData> solidInfo;
+	OctreeLayer<DebugInstanceData> octreeWireframeInfo;
+	OctreeLayer<InstanceData> vegetationInfo;
 
 	OctreeSSBO octreeSSBO;
 	InputSSBO inputSSBO;
@@ -310,7 +310,7 @@ class Scene {
 	void setVisibility(glm::mat4 viewProjection, std::vector<std::pair<glm::mat4, glm::vec3>> lightProjection ,Camera &camera);
 	void setVisibleNodes(Octree * tree, glm::mat4 viewProjection, glm::vec3 sortPosition, OctreeVisibilityChecker &checker);
 
-	template <typename T, typename H> void draw (uint drawableType, int mode, glm::vec3 cameraPosition, const std::vector<OctreeNodeData> &list, std::unordered_map<OctreeNode*, NodeInfo<T>> * info,long * count);
+	template <typename T, typename H> void draw (uint drawableType, int mode, glm::vec3 cameraPosition, const std::vector<OctreeNodeData> &list, OctreeLayer<T> * info,long * count);
 	void drawVegetation(glm::vec3 cameraPosition, const std::vector<OctreeNodeData> &list);
 	void draw3dSolid(glm::vec3 cameraPosition, const std::vector<OctreeNodeData> &list) ;
 	void draw3dLiquid(glm::vec3 cameraPosition, const std::vector<OctreeNodeData> &list);
@@ -319,8 +319,8 @@ class Scene {
 
 	void import(const std::string &filename, Camera &camera) ;
 	void generate(Camera &camera) ;
-	template <typename T> bool loadSpace(Octree * tree, OctreeNodeData &data, std::unordered_map<OctreeNode*, NodeInfo<T>> *infos, GeometryBuilder<T> * builder, ChunkContext * context);
-	template <typename T> DrawableInstanceGeometry<T> * loadIfNeeded(std::unordered_map<OctreeNode*, NodeInfo<T>> * infos, OctreeNode* node, InstanceHandler<T> * handler);
+	template <typename T> bool loadSpace(Octree * tree, OctreeNodeData &data, OctreeLayer<T> *infos, GeometryBuilder<T> * builder, ChunkContext * context);
+	template <typename T> DrawableInstanceGeometry<T> * loadIfNeeded(OctreeLayer<T> * infos, OctreeNode* node, InstanceHandler<T> * handler);
 
 	void save(std::string folderPath, Camera &camera);
 	void load(std::string folderPath, Camera &camera);

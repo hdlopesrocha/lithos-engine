@@ -991,9 +991,9 @@ public:
 										ImGuiWindowFlags_NoNav);
 			
 			ImGui::Text("%d FPS", framesPerSecond);
-			ImGui::Text("%ld/%ld solid instances", mainScene->solidInstancesVisible, mainScene->solidInfo.size());
-			ImGui::Text("%ld/%ld liquid instances", mainScene->liquidInstancesVisible, mainScene->liquidInfo.size());
-			ImGui::Text("%ld/%ld vegetation instances", mainScene->vegetationInstancesVisible, mainScene->vegetationInfo.size());
+			ImGui::Text("%ld/%ld solid instances", mainScene->solidInstancesVisible, mainScene->solidInfo.info.size());
+			ImGui::Text("%ld/%ld liquid instances", mainScene->liquidInstancesVisible, mainScene->liquidInfo.info.size());
+			ImGui::Text("%ld/%ld vegetation instances", mainScene->vegetationInstancesVisible, mainScene->vegetationInfo.info.size());
 			ImGui::Text("%ld triangles", mainScene->trianglesCount);
 			ImGui::Text("%ld solid datas", mainScene->solidSpace.allocator.getAllocatedBlocksCount());
 			ImGui::Text("%ld liquid datas", mainScene->liquidSpace.allocator.getAllocatedBlocksCount());
