@@ -4,6 +4,7 @@
 #include <thread>
 #include <unordered_set>
 #include <utility>
+#include <shared_mutex>
 #include "../math/math.hpp"
 #include "../math/SDF.hpp"
 #include "Allocator.hpp"

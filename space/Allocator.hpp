@@ -5,7 +5,7 @@ template <typename T> class Allocator {
 	std::vector<T*> freeList; 
 	std::vector<T*> allocatedBlocks;
 	size_t blockSize; 
-    std::mutex mtx;
+    std::shared_mutex mutex;
 
     // thread safe
     void allocateBlock() {
@@ -37,9 +37,8 @@ template <typename T> class Allocator {
     }
 
     size_t getAllocatedBlocksCount() {
-        mtx.lock();
+        std::shared_lock lock(mutex); 
         size_t result = allocatedBlocks.size();
-        mtx.unlock();
         return result;
     }
 
@@ -47,7 +46,7 @@ template <typename T> class Allocator {
         if(ptr == NULL) {
             return UINT_MAX;
         }
-        mtx.lock();
+        std::shared_lock lock(mutex); 
         // Iterate through all allocated blocks to find the block containing the pointer
         for (size_t blockIndex = 0; blockIndex < allocatedBlocks.size(); ++blockIndex) {
             T* block = allocatedBlocks[blockIndex];
@@ -55,11 +54,9 @@ template <typename T> class Allocator {
                 // Calculate the index within the block
                 size_t offset = ptr - block;
                 // Return the global index across all blocks
-                mtx.unlock();
                 return static_cast<uint>(blockIndex * blockSize + offset);
             }
         }
-        mtx.unlock();
         // If the pointer is not found, throw an error
         assert(false && "Pointer does not belong to any allocated block");
         return static_cast<uint>(UINT_MAX); // Return an invalid index
@@ -72,17 +69,16 @@ template <typename T> class Allocator {
         // Calculate the block index and offset within the block
         size_t blockIndex = index / blockSize;
         size_t offset = index % blockSize;
-        mtx.lock();
+        std::shared_lock lock(mutex); 
         // Check if the block index is valid
         assert(blockIndex < allocatedBlocks.size() && "Block index out of range");
         T * result = &allocatedBlocks[blockIndex][offset];
-        mtx.unlock();
         // Return the pointer to the requested element
         return result;
     }
 
     T* allocate() {
-        mtx.lock();
+        std::unique_lock lock(mutex); // exclusive
         // If the free list is empty, allocate a new block
         if (freeList.empty()) {
             allocateBlock();
@@ -90,12 +86,11 @@ template <typename T> class Allocator {
         // Get a block from the free list
         T* ptr = freeList.back();
         freeList.pop_back();
-        mtx.unlock();
         return ptr;
     }
 
     void deallocate(T* ptr) {
-        mtx.lock();
+        std::unique_lock lock(mutex); // exclusive
         // Ensure the pointer belongs to the allocator
         bool validPointer = false;
         for (T* block : allocatedBlocks) {
@@ -107,7 +102,6 @@ template <typename T> class Allocator {
         assert(validPointer && "Attempting to deallocate a pointer not owned by the allocator");
         // Return the block to the free list
         freeList.push_back(ptr);
-        mtx.unlock();
     }
 };
 
