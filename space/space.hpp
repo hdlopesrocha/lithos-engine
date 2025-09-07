@@ -102,7 +102,7 @@ class OctreeNode {
 		ChildBlock * getBlock(OctreeAllocator * allocator);
 		ChildBlock * createBlock(OctreeAllocator * allocator);
 		OctreeNode * getChildNode(int i, OctreeAllocator * allocator, ChildBlock * block);
-		
+		void clearBlockIfEmpty(OctreeAllocator * allocator, ChildBlock * block);
 		bool isSolid();
 		void setSolid(bool value);
 		
@@ -119,7 +119,6 @@ class OctreeNode {
 		void setChunk(bool value);
 		
 		bool isLeaf();
-		void setLeaf(bool value);
 
 		SpaceType getType();
 

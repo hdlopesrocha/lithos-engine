@@ -423,67 +423,66 @@ NodeOperationResult Octree::shape(OctreeNodeFrame frame, ShapeArgs * args, Chunk
     SpaceType resultType = isLeaf ? SDF::eval(resultSDF) : childToParent(childResultSolid, childResultEmpty);
         
     // Take action
-    if(resultType == SpaceType::Surface && node == NULL) {
-        node = allocator.allocateOctreeNode(frame.cube)->init(Vertex(frame.cube.getCenter()));   
-    }
-    if(node!=NULL) {
-        node->setSign(resultSDF);
-        node->setSolid(resultType == SpaceType::Solid);
-        node->setEmpty(resultType == SpaceType::Empty);
-        node->setChunk(isChunk);
-        node->setSimplified(isLeaf);
-        node->setLeaf(isLeaf);
-        if(isChunk) {
-            node->setDirty(true);
+    if(shapeType != SpaceType::Empty) {
+        if(resultType == SpaceType::Surface && node == NULL) {
+            node = allocator.allocateOctreeNode(frame.cube)->init(Vertex(frame.cube.getCenter()));   
         }
-        if(resultType == SpaceType::Surface) {
-            node->vertex.position = glm::vec4(SDF::getAveragePosition(node->sdf, frame.cube) ,0.0f);
-            //node->vertex.normal = glm::vec4(SDF::getNormal(node->sdf, args.frame.cube), 0.0f);   
-            node->vertex.normal = glm::vec4(SDF::getNormalFromPosition(node->sdf, frame.cube, node->vertex.position), 0.0f);
-        }
-        if(!isLeaf) {
-            if(block == NULL) {
-                block = node->createBlock(&allocator);
+        if(node!=NULL) {
+            node->setSign(resultSDF);
+            node->setSolid(resultType == SpaceType::Solid);
+            node->setEmpty(resultType == SpaceType::Empty);
+            node->setChunk(isChunk);
+            node->setSimplified(isLeaf);
+            if(isChunk) {
+                node->setDirty(true);
             }
-            for(int i =0 ; i < 8 ; ++i) {
-                NodeOperationResult & child = children[i];
-                if(child.process) {
+            if(resultType == SpaceType::Surface) {
+                node->vertex.position = glm::vec4(SDF::getAveragePosition(node->sdf, frame.cube) ,0.0f);
+                //node->vertex.normal = glm::vec4(SDF::getNormal(node->sdf, args.frame.cube), 0.0f);   
+                node->vertex.normal = glm::vec4(SDF::getNormalFromPosition(node->sdf, frame.cube, node->vertex.position), 0.0f);
+            }
+            if(!isLeaf) {
+                if(block == NULL) {
+                    block = node->createBlock(&allocator);
+                }
+                for(int i =0 ; i < 8 ; ++i) {
+                    NodeOperationResult & child = children[i];
                     OctreeNode * childNode = child.node;
-                    if(resultType == SpaceType::Surface && childNode == NULL && child.resultType != SpaceType::Surface) {
-                        bool isChildLeaf = length*0.5f <= args->minSize;
-                        BoundingCube childCube = frame.cube.getChild(i);
-                        childNode = allocator.allocateOctreeNode(childCube)->init(Vertex(childCube.getCenter()));
-                        childNode->setSolid(child.resultType == SpaceType::Solid);
-                        childNode->setEmpty(child.resultType == SpaceType::Empty);
-                        childNode->setSign(child.sdf);
-                        childNode->setLeaf(isChildLeaf);
-                        childNode->setSimplified(false);
-                        childNode->setChunk(false);
+                    if(child.process) {
+                        if(resultType == SpaceType::Surface && childNode == NULL && child.resultType != SpaceType::Surface) {
+                            BoundingCube childCube = frame.cube.getChild(i);
+                            childNode = allocator.allocateOctreeNode(childCube)->init(Vertex(childCube.getCenter()));
+                            childNode->setSolid(child.resultType == SpaceType::Solid);
+                            childNode->setEmpty(child.resultType == SpaceType::Empty);
+                            childNode->setSign(child.sdf);
+                            childNode->setSimplified(false);
+                            childNode->setChunk(false);
+                        }
+                        node->setChildNode(i, childNode, &allocator, block);
                     }
-                    node->setChildNode(i, childNode, &allocator, block);
+                }
+                node->clearBlockIfEmpty(&allocator, block);
+            }
+
+            if(resultType != SpaceType::Surface) {
+                if(isChunk && args->changeHandler != NULL) {
+                    args->changeHandler->erase(node);
+                }
+                node->clear(&allocator, frame.cube, args->changeHandler);
+            } else {
+                if(isChunk && args->changeHandler != NULL) {
+                    args->changeHandler->update(node);
                 }
             }
-        }
-
-        if(resultType != SpaceType::Surface) {
-            if(isChunk && args->changeHandler != NULL) {
-                args->changeHandler->erase(node);
+        
+            if(!node->isSimplified()) {
+                args->simplifier.simplify(this, chunkContext->cube, OctreeNodeData(frame.level, node, frame.cube, NULL));
             }
-            node->clear(&allocator, frame.cube, args->changeHandler);
-        } else {
-            if(isChunk && args->changeHandler != NULL) {
-                args->changeHandler->update(node);
+            if(node->isSimplified() && shapeType != SpaceType::Empty) {
+                args->painter.paint(node->vertex);
             }
-        }
-       
-        if(!node->isSimplified()) {
-            args->simplifier.simplify(this, chunkContext->cube, OctreeNodeData(frame.level, node, frame.cube, NULL));
-        }
-        if(node->isSimplified() && shapeType != SpaceType::Empty) {
-            args->painter.paint(node->vertex);
         }
     }
-
     return NodeOperationResult(node, shapeType, resultType, resultSDF, shapeSDF, true);
 }
 

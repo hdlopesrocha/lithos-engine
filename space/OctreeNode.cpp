@@ -15,7 +15,6 @@ OctreeNode * OctreeNode::init(Vertex vertex) {
 	this->setSimplified(false);
 	this->setDirty(true);
 	this->setChunk(false);
-	this->setLeaf(false);
 	this->vertex = vertex;
 	this->id = UINT_MAX;
 	return this;
@@ -118,11 +117,23 @@ void OctreeNode::setChunk(bool value) {
 }
 
 bool OctreeNode::isLeaf() {
-	return this->bits & (0x1 << 5);
+	return this->id == UINT_MAX;
 }
-void OctreeNode::setLeaf(bool value) {
-	uint8_t mask = (0x1 << 5);
-	this->bits = (this->bits & ~mask) | (value ? mask : 0x0);
+
+void OctreeNode::clearBlockIfEmpty(OctreeAllocator * allocator, ChildBlock * block) {
+	if(this->id != UINT_MAX) {
+		bool empty = true;
+		for(int i = 0; i < 8; ++i) {
+			if(block->children[i] != UINT_MAX) {
+				empty = false;
+				break;
+			}
+		}
+		if(empty) {
+			allocator->childAllocator.deallocate(block);
+			this->id = UINT_MAX;
+		}
+	}
 }
 
 SpaceType OctreeNode::getType()  {

@@ -416,6 +416,16 @@ void Scene::generate(Camera &camera) {
 	}
 
 	{
+		std::cout << "\tsolidSpace.add(box)"<< std::endl;
+		glm::vec3 min = glm::vec3(2500,0,-1000);
+		glm::vec3 len = glm::vec3(512.0f);
+		BoundingBox box = BoundingBox(min,min+len);
+		BoxDistanceFunction function(box.getCenter(), box.getLength()*0.5f);
+		WrappedBox wrappedFunction = WrappedBox(&function, minSize*0.25, model);
+		solidSpace.add(&wrappedFunction, model, SimpleBrush(8), minSize*0.25, *brushContext->simplifier, solidSpaceChangeHandler);
+	}
+
+	{
 		std::cout << "\tsolidSpace.add(sphere)"<< std::endl;
 		glm::vec3 min = glm::vec3(1500,0,500);
 		glm::vec3 len = glm::vec3(512.0f);
