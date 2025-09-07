@@ -24,7 +24,7 @@ void BrushSpaceChangeHandler::erase(OctreeNode* node) {
 
     #ifdef DEBUG_OCTREE_WIREFRAME
     octreeWireframeInfo->mutex.lock();
-    octreeWireframeInfo->erase(node);
+    octreeWireframeInfo->info.erase(node);
     octreeWireframeInfo->mutex.unlock();
     #endif
 };

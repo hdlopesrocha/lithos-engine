@@ -39,20 +39,23 @@ int getNodeIndex(const glm::vec3 &vec, const BoundingCube &cube) {
 }
 
 OctreeNode* Octree::getNodeAt(const glm::vec3 &pos, int level, bool simplification) {
-    OctreeNode* node = root;
+    OctreeNode* candidate = root;
+    OctreeNode* node = candidate; 
     BoundingCube cube = *this;
 	if(!contains(pos)) {
 		return NULL;
 	}
-
-    for (; node && level > 0; --level) {
-        if (simplification && node->isSimplified()) {
+    for (; candidate && level > 0; --level) {
+        if (simplification && candidate->isSimplified()) {
             break;
         }
         int i = getNodeIndex(pos, cube);
         cube = cube.getChild(i);
-        ChildBlock * block = node->getBlock(&allocator);
-        node = node->getChildNode(i, &allocator, block);
+        ChildBlock * block = candidate->getBlock(&allocator);
+        candidate = candidate->getChildNode(i, &allocator, block);
+        if(candidate != NULL) {
+            node = candidate;
+        }
     }
     return node;
 }
@@ -60,13 +63,11 @@ OctreeNode* Octree::getNodeAt(const glm::vec3 &pos, int level, bool simplificati
 OctreeNode* Octree::getNodeAt(const glm::vec3 &pos, bool simplification) {
     OctreeNode * candidate = root;
     OctreeNode* node = candidate;
-
     BoundingCube cube = *this;
 	if(!contains(pos)) {
 		return NULL;
 	}
     while (candidate) {
-        node = candidate;
         if (simplification && node->isSimplified()) {
             break;
         }
@@ -74,6 +75,9 @@ OctreeNode* Octree::getNodeAt(const glm::vec3 &pos, bool simplification) {
         cube = cube.getChild(i);
         ChildBlock * block = node->getBlock(&allocator);
         candidate = node->getChildNode(i, &allocator, block);
+        if(candidate != NULL) {
+            node = candidate;
+        }
     }
     return node;
 }
@@ -170,7 +174,8 @@ OctreeNode * Octree::fetch(OctreeNodeData &data, OctreeNode ** out, int i, bool 
     return out[i];
 }
 
-template <typename T, std::size_t N> bool allDifferent(const T (&arr)[N]) {
+template <typename T, std::size_t N> 
+bool allDifferent(const T (&arr)[N]) {
     for (std::size_t i = 0; i < N; ++i) {
         for (std::size_t j = i + 1; j < N; ++j) {
             if (arr[i] == arr[j]) return false;
@@ -251,7 +256,7 @@ void Octree::buildSDF(ShapeArgs * args, BoundingCube &cube, float * shapeSDF, fl
             shapeSDF[i] = d;
             (*shapeSdfCache)[p] = d;
         }
-        
+        // TODO: cache result
         float r = args->operation(existingResultSDF[i], shapeSDF[i]);
         resultSDF[i] = r;
     }
@@ -349,8 +354,7 @@ NodeOperationResult Octree::shape(OctreeNodeFrame frame, ShapeArgs * args, Chunk
     if(isChunk) {
         chunkContext = &localChunkContext;
     }
-
-    bool isLeaf = length <= args->minSize;
+    bool isLeaf = length <= args->minSize && (frame.node == NULL || frame.node->isLeaf()); // TODO: or something that already exists has more detail
     NodeOperationResult children[8];
     std::vector<std::thread> threads;
     threads.reserve(8);
@@ -446,12 +450,13 @@ NodeOperationResult Octree::shape(OctreeNodeFrame frame, ShapeArgs * args, Chunk
                 if(child.process) {
                     OctreeNode * childNode = child.node;
                     if(resultType == SpaceType::Surface && childNode == NULL && child.resultType != SpaceType::Surface) {
+                        bool isChildLeaf = length*0.5f <= args->minSize;
                         BoundingCube childCube = frame.cube.getChild(i);
                         childNode = allocator.allocateOctreeNode(childCube)->init(Vertex(childCube.getCenter()));
                         childNode->setSolid(child.resultType == SpaceType::Solid);
                         childNode->setEmpty(child.resultType == SpaceType::Empty);
                         childNode->setSign(child.sdf);
-                        childNode->setLeaf(false);
+                        childNode->setLeaf(isChildLeaf);
                         childNode->setSimplified(false);
                         childNode->setChunk(false);
                     }
@@ -474,10 +479,8 @@ NodeOperationResult Octree::shape(OctreeNodeFrame frame, ShapeArgs * args, Chunk
         if(!node->isSimplified()) {
             args->simplifier.simplify(this, chunkContext->cube, OctreeNodeData(frame.level, node, frame.cube, NULL));
         }
-        if(node->isSimplified()) {
-            if(shapeType != SpaceType::Empty) {
-                args->painter.paint(node->vertex);
-            }
+        if(node->isSimplified() && shapeType != SpaceType::Empty) {
+            args->painter.paint(node->vertex);
         }
     }
 
