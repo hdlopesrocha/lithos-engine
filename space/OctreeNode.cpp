@@ -117,7 +117,12 @@ void OctreeNode::setChunk(bool value) {
 }
 
 bool OctreeNode::isLeaf() {
-	return this->id == UINT_MAX;
+	return this->bits & (0x1 << 5);
+}
+
+void OctreeNode::setLeaf(bool value) {
+	uint8_t mask = (0x1 << 5);
+	this->bits = (this->bits & ~mask) | (value ? mask : 0x0);
 }
 
 void OctreeNode::clearBlockIfEmpty(OctreeAllocator * allocator, ChildBlock * block) {

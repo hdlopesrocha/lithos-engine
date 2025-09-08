@@ -119,6 +119,7 @@ class OctreeNode {
 		void setChunk(bool value);
 		
 		bool isLeaf();
+		void setLeaf(bool value);
 
 		SpaceType getType();
 
@@ -294,7 +295,7 @@ class Octree: public BoundingCube {
 		bool hasFinerNode(const OctreeNode *node);
 		int getLevelAt(const glm::vec3 &pos, bool simplification);
 		int getNeighborLevel(OctreeNodeData &data, bool simplification, int direction);
-		OctreeNode * fetch(OctreeNodeData &data, OctreeNode ** out, int i, bool simplification, ChunkContext * context);
+		OctreeNode * fetch(BoundingCube &cube, int level, OctreeNode ** out, int i, bool simplification, ChunkContext * context);
 		int getMaxLevel(OctreeNode * node, int level);
 
 		uint getMaxLevel(BoundingCube &cube);
