@@ -233,20 +233,10 @@ float SDF::interpolate(float * sdf, glm::vec3 position, BoundingCube cube) {
 }
 
 void SDF::getChildSDF(float * sdf, int i , float * result) {
-    for (int corner = 0; corner < 8; ++corner) {
-        float fx = ((corner & 4) ? 0.5f : 0.0f) + ((i & 4) ? 0.5f : 0.0f);
-        float fy = ((corner & 2) ? 0.5f : 0.0f) + ((i & 2) ? 0.5f : 0.0f);
-        float fz = ((corner & 1) ? 0.5f : 0.0f) + ((i & 1) ? 0.5f : 0.0f);
-
-        float c00 = glm::mix(sdf[0], sdf[1], fx);
-        float c01 = glm::mix(sdf[4], sdf[5], fx);
-        float c10 = glm::mix(sdf[2], sdf[3], fx);
-        float c11 = glm::mix(sdf[6], sdf[7], fx);
-
-        float c0 = glm::mix(c00, c10, fy);
-        float c1 = glm::mix(c01, c11, fy);
-
-        result[corner] = glm::mix(c0, c1, fz);
+    BoundingCube canonicalCube = BoundingCube(glm::vec3(0.0f), 1.0f);
+    BoundingCube cube = canonicalCube.getChild(i);
+    for (int j = 0; j < 8; ++j) {
+        result[j] = interpolate(sdf, cube.getCorner(j), canonicalCube);
     }
 }
 

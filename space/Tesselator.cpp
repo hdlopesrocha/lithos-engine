@@ -5,17 +5,22 @@ Tesselator::Tesselator(Geometry * chunk, long * count, ChunkContext * context): 
     this->chunk = chunk;
 }
 
-
+void Tesselator::virtualize(Octree * tree, OctreeNodeData &data, uint levels) {
+    if(data.level >= levels) {
+        tree->handleQuadNodes(data , this, true, context);
+    } else {
+        for(int i = 0 ; i < 8 ; ++i) {
+            OctreeNodeData childData(data.level + 1, data.node, data.cube.getChild(i), data.context);
+            virtualize(tree, childData, levels);
+        }
+    }
+}
 
 void Tesselator::before(Octree * tree, OctreeNodeData &params) {		
-/*    if(params.node->isSimplified()) {
-        int levels = tree->getMaxLevel(params.cube);
-		virtualize(params, levels- params.level);
-    	//tree->handleQuadNodes(params , this, true);
-	}*/
-    if(params.node->isLeaf()) {
-       	tree->handleQuadNodes(params , this, true, context);
-    }
+    if(params.node->isLeaf() && !params.node->isSolid() && !params.node->isEmpty()) {
+        uint levels = tree->getMaxLevel(params.cube);
+        virtualize(tree, params, levels);
+	}
 }
 
 void Tesselator::after(Octree * tree, OctreeNodeData &params) {

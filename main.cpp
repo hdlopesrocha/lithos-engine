@@ -521,7 +521,6 @@ public:
 		cameraEditor = new CameraEditor(&camera);
 		gamepadEditor = new GamepadEditor(gamepadTexture);
 		shadowMapViewer = new ShadowMapViewer(&shadowFrameBuffers, 512, 512);
-		shadowMapViewer->open = true;
 		
 		textureMixerEditor = new TextureMixerEditor(textureMixer, &mixers, programTexture, &textureLayers);
 		animatedTextureEditor = new AnimatedTextureEditor(&animations, programTexture, 256,256, &textureLayers);

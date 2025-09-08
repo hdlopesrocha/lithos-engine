@@ -182,8 +182,9 @@ struct OctreeNodeFrame {
     BoundingCube cube;
 	uint level;
 	float sdf[8];
-	OctreeNodeFrame(OctreeNode* node, BoundingCube cube, uint level, float * sdf) 
-		: node(node), cube(cube), level(level) {
+	int brushIndex = -1;
+	OctreeNodeFrame(OctreeNode* node, BoundingCube cube, uint level, float * sdf, int brushIndex) 
+		: node(node), cube(cube), level(level), brushIndex(brushIndex) {
 			for(int i = 0; i < 8; ++i) {
 				this->sdf[i] = sdf!=NULL ? sdf[i] : 0.0f;
 			}	
@@ -296,8 +297,8 @@ class Octree: public BoundingCube {
 		OctreeNode * fetch(OctreeNodeData &data, OctreeNode ** out, int i, bool simplification, ChunkContext * context);
 		int getMaxLevel(OctreeNode * node, int level);
 
-		int getMaxLevel(BoundingCube &cube);
-		int getMaxLevel(OctreeNode *node, BoundingCube &cube, BoundingCube &c, int level);
+		uint getMaxLevel(BoundingCube &cube);
+		uint getMaxLevel(OctreeNode *node, BoundingCube &cube, BoundingCube &c, uint level);
 		bool isChunkNode(float length);
 
 		void exportOctreeSerialization(OctreeSerialized * octree);
@@ -442,6 +443,7 @@ class Tesselator : public IteratorHandler, OctreeNodeTriangleHandler{
 		bool test(Octree * tree, OctreeNodeData &params) override;
 		void getOrder(Octree * tree, OctreeNodeData &params, uint8_t * order) override;
 		void handle(Vertex &v0, Vertex &v1, Vertex &v2, bool sign) override;
+		void virtualize(Octree * tree, OctreeNodeData &data, uint levels);
 
 };
 
