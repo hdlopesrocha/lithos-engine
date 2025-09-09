@@ -350,7 +350,9 @@ void Scene::draw3dLiquid(glm::vec3 cameraPosition, const std::vector<OctreeNodeD
 }
 
 void Scene::draw3dOctree(glm::vec3 cameraPosition, const std::vector<OctreeNodeData> &list) {
-	draw<DebugInstanceData, DebugInstanceDataHandler>(TYPE_INSTANCE_FULL_DRAWABLE, GL_LINES, cameraPosition, list, &octreeWireframeInfo, &debugInstancesVisible);
+	glDisable(GL_CULL_FACE);
+	draw<DebugInstanceData, DebugInstanceDataHandler>(TYPE_INSTANCE_FULL_DRAWABLE, GL_TRIANGLES, cameraPosition, list, &octreeWireframeInfo, &debugInstancesVisible);
+	glEnable(GL_CULL_FACE);
 }
 
 void Scene::generate(Camera &camera) {

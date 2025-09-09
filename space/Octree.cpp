@@ -39,20 +39,20 @@ int getNodeIndex(const glm::vec3 &vec, const BoundingCube &cube) {
 }
 
 OctreeNode* Octree::getNodeAt(const glm::vec3 &pos, int level, bool simplification) {
-    OctreeNode* candidate = root;
-    OctreeNode* node = candidate; 
+    OctreeNode * candidate = root;
+    OctreeNode* node = candidate;
     BoundingCube cube = *this;
 	if(!contains(pos)) {
 		return NULL;
 	}
-    for (; candidate && level > 0; --level) {
-        if (simplification && candidate->isSimplified()) {
+    while (candidate && level-- > 0 ) {
+        if (simplification && node->isSimplified()) {
             break;
         }
         int i = getNodeIndex(pos, cube);
         cube = cube.getChild(i);
-        ChildBlock * block = candidate->getBlock(&allocator);
-        candidate = candidate->getChildNode(i, &allocator, block);
+        ChildBlock * block = node->getBlock(&allocator);
+        candidate = node->getChildNode(i, &allocator, block);
         if(candidate != NULL) {
             node = candidate;
         }
@@ -140,11 +140,11 @@ uint Octree::getMaxLevel(OctreeNode *node, BoundingCube &cube, BoundingCube &nod
             OctreeNode * n = node->getChildNode(i, &allocator, block);
             if(n!=NULL) {
                 BoundingCube childCube = nodeCube.getChild(i); 
-                bool isAfter =  cube.getMinX() < childCube.getMaxX() && 
-                                cube.getMinY() < childCube.getMaxY() && 
-                                cube.getMinZ() < childCube.getMaxZ();
+                bool isAfter =  cube.getMaxX() < childCube.getMaxX() && 
+                                cube.getMaxY() < childCube.getMaxY() && 
+                                cube.getMaxZ() < childCube.getMaxZ();
 
-                if((isAfter || childCube.contains(cube)) && cube.intersects(childCube) && !cube.contains(childCube)) {
+                if(cube.intersects(childCube) && (childCube.getLengthX() <= cube.getLengthX() ?  isAfter : true)) {
                     l = glm::max(l, getMaxLevel(n, cube, childCube, level + 1));
                 }
             }
@@ -170,7 +170,7 @@ OctreeNode * Octree::fetch(BoundingCube &cube, int level, OctreeNode ** out, int
         if(context->nodeCache.find(key) != context->nodeCache.end()) {
             node = context->nodeCache[key];
         } else {
-            node = getNodeAt(pos, simplification);
+            node = getNodeAt(pos, level, simplification);
             context->nodeCache[key] = node;
         }
         out[i] = node;
@@ -334,7 +334,7 @@ bool Octree::isChunkNode(float length) {
 
 NodeOperationResult Octree::shape(OctreeNodeFrame frame, ShapeArgs * args, ChunkContext * chunkContext) {    
     ContainmentType check = args->function->check(frame.cube);
-    OctreeNode * node  = frame.node;
+    OctreeNode * node = frame.node;
 
     if(check == ContainmentType::Disjoint) {
         SpaceType spaceType;

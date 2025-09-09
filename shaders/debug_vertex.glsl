@@ -19,7 +19,7 @@ layout(location = 13) in float sdf5;
 layout(location = 14) in float sdf6;
 layout(location = 15) in float sdf7;
 out float distance;
-
+out float scale;
 
 void main() {
     float sdf[8];
@@ -37,6 +37,7 @@ void main() {
     uint iz = clamp(uint(position.z),0u,1u);
     uint i = (ix << 2) + (iy << 1) + iz;
     distance = sdf[i];
+    scale = length(model[0].xyz);
     mat4 mvp = viewProjection * world * model;
     gl_Position = mvp * vec4(position, 1.0);    
 }

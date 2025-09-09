@@ -5,7 +5,7 @@ OctreeGeometryBuilder::~OctreeGeometryBuilder(){
 }
 
 OctreeGeometryBuilder::OctreeGeometryBuilder(InstanceBuilderHandler<DebugInstanceData> * handler) {
-    this->geometry = new BoxLineGeometry(BoundingBox(glm::vec3(0), glm::vec3(1)));
+    this->geometry = new BoxGeometry(BoundingBox(glm::vec3(0), glm::vec3(1)));
     this->handler = handler;
 }
 
