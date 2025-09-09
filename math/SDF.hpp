@@ -83,7 +83,7 @@ public:
 	static float sphere(glm::vec3 p, const float r);
     static float capsule(glm::vec3 p, glm::vec3 a, glm::vec3 b, float r );
     static float octahedron(glm::vec3 p, float s);
-    static float pyramid(glm::vec3 p, float h );
+    static float pyramid(const glm::vec3 &p, float h, float a, const glm::mat4 &model);
 
     static glm::vec3 getPosition(float *sdf, const BoundingCube &cube);
     static glm::vec3 getAveragePosition(float *sdf, const BoundingCube &cube);

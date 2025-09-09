@@ -46,18 +46,20 @@ void Simplifier::simplify(Octree * tree, BoundingCube chunkCube, const OctreeNod
 				}
 				BoundingCube childCube = params.cube.getChild(i);
 
-						glm::vec3 p0 = child->vertex.position;
-				float d = parentPlane.distance(p0);
-				if( d > distance*cube.getLengthX() ) {
-					return;
 
-				}
-
-				float a = glm::dot(nodeVertex->normal, child->vertex.normal);
-				if(a < angle) {
-					return;
-				}
 				
+				for(int j = 0 ; j < 8 ; ++j) {
+					glm::vec3 corner = childCube.getCorner(j);
+					float d = SDF::interpolate(params.node->sdf, corner , params.cube);
+					float dif = glm::abs(d - child->sdf[j]);
+
+					if(dif > params.cube.getLengthX() * 0.05) {
+						return;
+					}
+				}
+
+
+
 				++nodeCount;
 			}
 		}
