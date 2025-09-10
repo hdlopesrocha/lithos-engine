@@ -200,24 +200,23 @@ bool allDifferent(const T& first, const Args&... args) {
     return true;
 }
 
-void Octree::handleQuadNodes(OctreeNodeData &data, OctreeNodeTriangleHandler * handler, bool simplification, ChunkContext * context) {
+void Octree::handleQuadNodes(OctreeNodeData &data, float * sdf, OctreeNodeTriangleHandler * handler, bool simplification, ChunkContext * context) {
 
     OctreeNode * neighbors[8] = {NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL};
 	
     for(size_t k =0 ; k < TESSELATION_EDGES.size(); ++k) {
 		glm::ivec2 edge = TESSELATION_EDGES[k];
-        uint mask = data.node->sign;
-		bool sign0 = (mask & (0x1 << edge[0])) != 0x0;
-		bool sign1 = (mask & (0x1 << edge[1])) != 0x0;
+		bool sign0 = sdf[edge[0]] < 0.0f;
+		bool sign1 = sdf[edge[1]] < 0.0f;
 
 		if(sign0 != sign1) {
 			glm::ivec4 quad = TESSELATION_ORDERS[k];
             Vertex vertices[4] = { Vertex(), Vertex(), Vertex(), Vertex() };
-			for(int i =0; i<4 ; ++i) {
+			for(int i =0; i < 4 ; ++i) {
 				OctreeNode * n = fetch(data.cube, data.level, neighbors, quad[i], simplification, context);
                 if(n != NULL && !n->isSolid() && !n->isEmpty()) {
                     vertices[i] = n->vertex;
-                }else {
+                } else {
                     vertices[i].brushIndex = DISCARD_BRUSH_INDEX;
                 }
 			}
@@ -438,7 +437,7 @@ NodeOperationResult Octree::shape(OctreeNodeFrame frame, ShapeArgs * args, Chunk
         }
         
         if(node!=NULL) {
-            node->setSign(resultSDF);
+            node->setSDF(resultSDF);
             node->setSolid(resultType == SpaceType::Solid);
             node->setEmpty(resultType == SpaceType::Empty);
             node->setChunk(isChunk);
@@ -466,7 +465,7 @@ NodeOperationResult Octree::shape(OctreeNodeFrame frame, ShapeArgs * args, Chunk
                             childNode = allocator.allocateOctreeNode(childCube)->init(Vertex(childCube.getCenter()));
                             childNode->setSolid(child.resultType == SpaceType::Solid);
                             childNode->setEmpty(child.resultType == SpaceType::Empty);
-                            childNode->setSign(child.sdf);
+                            childNode->setSDF(child.sdf);
                             childNode->setLeaf(isChildLeaf);
                             childNode->setSimplified(false);
                             childNode->setChunk(false);

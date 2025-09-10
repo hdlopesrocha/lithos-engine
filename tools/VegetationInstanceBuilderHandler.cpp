@@ -11,6 +11,6 @@ void VegetationInstanceBuilderHandler::handle(Octree * tree, OctreeNodeData &dat
 	if(data.node->isLeaf() && vertex->brushIndex == 2) { 
 		long count = 0;
 		VegetationInstanceBuilder handler(&count , instances, pointsPerArea, scale);
-		tree->handleQuadNodes(data, &handler, false, context);
+		tree->handleQuadNodes(data, data.node->sdf, &handler, false, context);
 	}
 }

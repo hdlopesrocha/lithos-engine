@@ -296,22 +296,20 @@ float SDF::opSmoothIntersection(float d1, float d2, float k) {
 
 float SDF::interpolate(float * sdf, glm::vec3 position, BoundingCube cube) {
     glm::vec3 local = (position - cube.getMin()) / cube.getLength(); // [0,1]^3
+    float x = local.x, y = local.y, z = local.z;
 
-    // Helper lambda to get the correct index for your CUBE_CORNERS order
-    auto idx = [](int x, int y, int z) { return x*4 + y*2 + z; };
-
-    // Interpolate along z
-    float c00 = glm::mix(sdf[idx(0,0,0)], sdf[idx(0,0,1)], local.z);
-    float c01 = glm::mix(sdf[idx(0,1,0)], sdf[idx(0,1,1)], local.z);
-    float c10 = glm::mix(sdf[idx(1,0,0)], sdf[idx(1,0,1)], local.z);
-    float c11 = glm::mix(sdf[idx(1,1,0)], sdf[idx(1,1,1)], local.z);
+    // Interpolate along z for each (x, y) pair
+    float v000 = glm::mix(sdf[0], sdf[1], z); // (0,0,0)-(0,0,1)
+    float v010 = glm::mix(sdf[2], sdf[3], z); // (0,1,0)-(0,1,1)
+    float v100 = glm::mix(sdf[4], sdf[5], z); // (1,0,0)-(1,0,1)
+    float v110 = glm::mix(sdf[6], sdf[7], z); // (1,1,0)-(1,1,1)
 
     // Interpolate along y
-    float c0 = glm::mix(c00, c01, local.y);
-    float c1 = glm::mix(c10, c11, local.y);
+    float v00 = glm::mix(v000, v010, y); // (0,*,*)
+    float v10 = glm::mix(v100, v110, y); // (1,*,*)
 
     // Interpolate along x
-    return glm::mix(c0, c1, local.x);
+    return glm::mix(v00, v10, x);
 }
 
 void SDF::getChildSDF(float * sdf, int i , float * result) {

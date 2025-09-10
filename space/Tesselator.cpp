@@ -5,13 +5,23 @@ Tesselator::Tesselator(Geometry * chunk, long * count, ChunkContext * context): 
     this->chunk = chunk;
 }
 
-void Tesselator::virtualize(Octree * tree, OctreeNodeData &data, uint levels) {
+void Tesselator::virtualize(Octree * tree, float * sdf, OctreeNodeData &data, uint levels) {
     if(data.level >= levels) {
-        tree->handleQuadNodes(data, this, true, context);
+        tree->handleQuadNodes(data, sdf, this, true, context);
     } else {
         for(int i = 0 ; i < 8 ; ++i) {
-            OctreeNodeData childData(data.level + 1, data.node, data.cube.getChild(i), data.context);
-            virtualize(tree, childData, levels);
+            float childSDF[8];
+            SDF::getChildSDF(sdf, i, childSDF);
+            SpaceType spaceType = SDF::eval(childSDF);
+            if(spaceType == SpaceType::Surface) {
+                OctreeNodeData childData(
+                    data.level + 1, 
+                    data.node, 
+                    data.cube.getChild(i), 
+                    data.context
+                );
+                virtualize(tree, childSDF, childData, levels);          
+            }
         }
     }
 }
@@ -22,7 +32,7 @@ void Tesselator::before(Octree * tree, OctreeNodeData &params) {
         if(params.level < levels) {
             std::cout << "Virtualize at level " << params.level << "/" << levels << std::endl;
         }
-        virtualize(tree, params, levels);
+        virtualize(tree, params.node->sdf, params, levels);
 	}
 }
 
@@ -31,7 +41,7 @@ void Tesselator::after(Octree * tree, OctreeNodeData &params) {
 }
 
 bool Tesselator::test(Octree * tree, OctreeNodeData &params) {			
-	return !params.node->isSolid() && !params.node->isLeaf();
+	return !params.node->isEmpty() && !params.node->isSolid() && !params.node->isLeaf();
 }
 
 void Tesselator::getOrder(Octree * tree, OctreeNodeData &params, uint8_t * order){

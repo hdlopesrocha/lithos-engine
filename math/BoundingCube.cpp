@@ -49,10 +49,6 @@ BoundingCube BoundingCube::getChild(int i) const {
     return BoundingCube(getMin() + newLength * AbstractBoundingBox::getShift(i), newLength);
 }
 
-BoundingCube BoundingCube::getChild3(int i) const {
-    return BoundingCube(getMin() + getLengthX() * AbstractBoundingBox::getShift3(i), getLengthX());
-}
-
 bool BoundingCube::operator<(const BoundingCube& other) const {
     if (getMinX() != other.getMinX()) return getMinX() < other.getMinX();
     if (getMinY() != other.getMinY()) return getMinY() < other.getMinY();

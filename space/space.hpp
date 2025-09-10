@@ -91,7 +91,6 @@ class OctreeNode {
 		Vertex vertex;
 		uint id;
 		uint8_t bits;
-		uint8_t sign;
 		float sdf[8];
 
 		OctreeNode(Vertex vertex);
@@ -123,7 +122,7 @@ class OctreeNode {
 
 		SpaceType getType();
 
-		void setSign(float * sdf);
+		void setSDF(float * sdf);
 		uint exportSerialization(OctreeAllocator * allocator, std::vector<OctreeNodeCubeSerialized> * nodes, int * leafNodes, BoundingCube cube, BoundingCube chunk, uint level);
 		OctreeNode * compress(OctreeAllocator * allocator, BoundingCube * cube, BoundingCube chunk);
 };
@@ -291,7 +290,7 @@ class Octree: public BoundingCube {
 		OctreeNode* getNodeAt(const glm::vec3 &pos, int level, bool simplification);
 		OctreeNode* getNodeAt(const glm::vec3 &pos, bool simplification);
 		float getSdfAt(const glm::vec3 &pos);
-		void handleQuadNodes(OctreeNodeData &data, OctreeNodeTriangleHandler * handler, bool simplification, ChunkContext * context);
+		void handleQuadNodes(OctreeNodeData &data, float * sdf, OctreeNodeTriangleHandler * handler, bool simplification, ChunkContext * context);
 		bool hasFinerNode(const OctreeNode *node);
 		int getLevelAt(const glm::vec3 &pos, bool simplification);
 		int getNeighborLevel(OctreeNodeData &data, bool simplification, int direction);
@@ -444,7 +443,7 @@ class Tesselator : public IteratorHandler, OctreeNodeTriangleHandler{
 		bool test(Octree * tree, OctreeNodeData &params) override;
 		void getOrder(Octree * tree, OctreeNodeData &params, uint8_t * order) override;
 		void handle(Vertex &v0, Vertex &v1, Vertex &v2, bool sign) override;
-		void virtualize(Octree * tree, OctreeNodeData &data, uint levels);
+		void virtualize(Octree * tree, float * sdf, OctreeNodeData &data, uint levels);
 
 };
 
