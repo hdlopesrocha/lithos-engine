@@ -183,8 +183,9 @@ struct OctreeNodeFrame {
 	uint level;
 	float sdf[8];
 	int brushIndex = -1;
-	OctreeNodeFrame(OctreeNode* node, BoundingCube cube, uint level, float * sdf, int brushIndex) 
-		: node(node), cube(cube), level(level), brushIndex(brushIndex) {
+	bool interpolated;
+	OctreeNodeFrame(OctreeNode* node, BoundingCube cube, uint level, float * sdf, int brushIndex, bool interpolated) 
+		: node(node), cube(cube), level(level), brushIndex(brushIndex), interpolated(interpolated) {
 			for(int i = 0; i < 8; ++i) {
 				this->sdf[i] = sdf!=NULL ? sdf[i] : 0.0f;
 			}	
@@ -196,20 +197,20 @@ struct NodeOperationResult {
 	SpaceType shapeType;
 	SpaceType resultType;
 	bool process;
- 	float sdf[8];
+ 	float resultSDF[8];
     float shapeSDF[8];
 
 	NodeOperationResult() : node(NULL), shapeType(SpaceType::Empty), resultType(SpaceType::Empty), process(false) {
 		for(int i = 0; i < 8; ++i) {
-			this->sdf[i] = INFINITY;
+			this->resultSDF[i] = INFINITY;
 			this->shapeSDF[i] = INFINITY;
 		}
 	};
 
-    NodeOperationResult(OctreeNode * node, SpaceType shapeType, SpaceType resultType, float * sdf, float * shapeSDF, bool process) 
+    NodeOperationResult(OctreeNode * node, SpaceType shapeType, SpaceType resultType, float * resultSDF, float * shapeSDF, bool process) 
         : node(node), shapeType(shapeType), resultType(resultType), process(process) {
-		if(sdf != NULL) {
-			SDF::copySDF(sdf, this->sdf);	
+		if(resultSDF != NULL) {
+			SDF::copySDF(resultSDF, this->resultSDF);	
 		}
 		if(shapeSDF != NULL) {
 			SDF::copySDF(shapeSDF, this->shapeSDF);	
@@ -254,7 +255,6 @@ struct ShapeArgs {
 class ChunkContext {
 	public:
 	std::unordered_map<glm::vec3, float> shapeSdfCache;
-	std::unordered_map<glm::vec3, float> resultSdfCache;
 	std::unordered_map<glm::vec4, OctreeNode*> nodeCache;
 
 	BoundingCube cube;
@@ -304,8 +304,8 @@ class Octree: public BoundingCube {
 		void exportOctreeSerialization(OctreeSerialized * octree);
 		void exportNodesSerialization(std::vector<OctreeNodeCubeSerialized> * nodes);
 	private:
-		void buildSDF(ShapeArgs * args, BoundingCube &cube, float * shapeSDF, float * resultSDF, float * existingShapeSDF, float * frameSDF, ChunkContext * chunkContext);
-
+		void buildSDF(ShapeArgs * args, BoundingCube &cube, float * shapeSDF, float * resultSDF, float * inheritedShapeSDF, float * inheritedResultSDF, float * existingResultSDF, ChunkContext * chunkContext);
+		float evaluateSDF(ShapeArgs * args, std::unordered_map<glm::vec3, float> * chunkContext, glm::vec3 p);
 	};
 
 class Simplifier {

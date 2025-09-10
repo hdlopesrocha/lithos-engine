@@ -4,7 +4,7 @@
 template <typename T> class Allocator {
 	std::vector<T*> freeList; 
 	std::vector<T*> allocatedBlocks;
-	size_t blockSize; 
+	const size_t blockSize; 
     std::shared_mutex mutex;
 
     // thread safe
@@ -22,7 +22,7 @@ template <typename T> class Allocator {
 
 	public:
     Allocator() : blockSize(1024) {
-
+        freeList.reserve(blockSize);
     }
     
     ~Allocator() {

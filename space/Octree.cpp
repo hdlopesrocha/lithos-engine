@@ -242,26 +242,35 @@ glm::vec3 sdf_rotated(glm::vec3 p, glm::quat q, glm::vec3 pivot) {
     return rotated + pivot;
 }
 
-void Octree::buildSDF(ShapeArgs * args, BoundingCube &cube, float * shapeSDF, float * resultSDF, float * existingShapeSDF, float * existingResultSDF, ChunkContext * chunkContext) {
+float Octree::evaluateSDF(ShapeArgs * args, std::unordered_map<glm::vec3, float> * cache, glm::vec3 p) {
+    if(cache->find(p) != cache->end()) {
+       return (*cache)[p];
+    } else {
+        float d = args->function->distance(p, args->model);
+        (*cache)[p] = d;
+        return d;
+    }
+}
+
+
+void Octree::buildSDF(ShapeArgs * args, BoundingCube &cube, float * shapeSDF, float * resultSDF, float * inheritedShapeSDF, float * inheritedResultSDF, float * existingResultSDF, ChunkContext * chunkContext) {
     const glm::vec3 min = cube.getMin();
     const glm::vec3 length = cube.getLength();
     std::unordered_map<glm::vec3, float> * shapeSdfCache = &chunkContext->shapeSdfCache;
-    std::unordered_map<glm::vec3, float> * resultSdfCache = &chunkContext->resultSdfCache;
 
     for (int i = 0; i < 8; ++i) {
-        glm::vec3 p = min + length * Octree::getShift(i);
-        if(existingShapeSDF != NULL && existingShapeSDF[i] != INFINITY) {
-            shapeSDF[i] = existingShapeSDF[i];
-        } else if(shapeSdfCache->find(p) != shapeSdfCache->end()) {
-            shapeSDF[i] = (*shapeSdfCache)[p];
+        if(inheritedShapeSDF != NULL && inheritedShapeSDF[i] != INFINITY) {
+            shapeSDF[i] = inheritedShapeSDF[i];
         } else {
-            float d = args->function->distance(p, args->model);
-            shapeSDF[i] = d;
-            (*shapeSdfCache)[p] = d;
+            glm::vec3 p = min + length * Octree::getShift(i);
+            shapeSDF[i] = evaluateSDF(args, shapeSdfCache, p);
         }
-        // TODO: cache result
-        float r = args->operation(existingResultSDF[i], shapeSDF[i]);
-        resultSDF[i] = r;
+        if(inheritedResultSDF != NULL && inheritedResultSDF[i] != INFINITY) {
+            resultSDF[i] = inheritedResultSDF[i];
+        } else {
+            float r = args->operation(existingResultSDF[i], shapeSDF[i]);
+            resultSDF[i] = r;
+        }
     }
 }
 
@@ -296,7 +305,7 @@ void Octree::add(
     threadsCreated = 0;
     *shapeCounter = 0;
     ChunkContext localChunkContext(*this);
-    OctreeNodeFrame frame = OctreeNodeFrame(root, *this, 0, root->sdf, DISCARD_BRUSH_INDEX);
+    OctreeNodeFrame frame = OctreeNodeFrame(root, *this, 0, root->sdf, DISCARD_BRUSH_INDEX, false);
     ShapeArgs args = ShapeArgs(SDF::opUnion, function, painter, model, simplifier, changeHandler, minSize);
     shape(frame, &args, &localChunkContext);
     std::cout << "\t\tOctree::add Ok! threads=" << threadsCreated << ", works=" << *shapeCounter << std::endl; 
@@ -311,7 +320,7 @@ void Octree::del(
     threadsCreated = 0;
     *shapeCounter = 0;
     ChunkContext localChunkContext(*this);
-    OctreeNodeFrame frame = OctreeNodeFrame(root, *this, 0, root->sdf, DISCARD_BRUSH_INDEX);
+    OctreeNodeFrame frame = OctreeNodeFrame(root, *this, 0, root->sdf, DISCARD_BRUSH_INDEX, false);
     ShapeArgs args = ShapeArgs(SDF::opSubtraction, function, painter, model, simplifier, changeHandler, minSize);
     shape(frame, &args, &localChunkContext);
     std::cout << "\t\tOctree::del Ok! threads=" << threadsCreated << ", works=" << *shapeCounter << std::endl; 
@@ -370,10 +379,12 @@ NodeOperationResult Octree::shape(OctreeNodeFrame frame, ShapeArgs * args, Chunk
         for (int i = 7; i >= 0; --i) {
             OctreeNode * childNode = node ? node->getChildNode(i, &allocator, block) : NULL;
             float childSDF[8];
+            bool interpolated = false;
             if(childNode) {
                 SDF::copySDF(childNode->sdf, childSDF);
             } else {
                 SDF::getChildSDF(frame.sdf, i, childSDF);
+                interpolated = true;
             }
 
             OctreeNodeFrame childFrame(
@@ -381,7 +392,8 @@ NodeOperationResult Octree::shape(OctreeNodeFrame frame, ShapeArgs * args, Chunk
                 frame.cube.getChild(i), 
                 frame.level + 1, 
                 childSDF,
-                node != NULL ? node->vertex.brushIndex : frame.brushIndex
+                node != NULL ? node->vertex.brushIndex : frame.brushIndex,
+                interpolated || frame.interpolated
             );
 
             bool isChildChunk = isChunkNode(length*0.5f);
@@ -405,16 +417,14 @@ NodeOperationResult Octree::shape(OctreeNodeFrame frame, ShapeArgs * args, Chunk
     }
 
     // build SDF from children
-    float existingShapeSDF[8];
+    float inheritedShapeSDF[8];
+    float inheritedResultSDF[8];
     for(int i = 0; i < 8; ++i) {
         NodeOperationResult & child = children[i];
-        if(child.process) {
-            OctreeNode * childNode = child.node;
-            existingShapeSDF[i] = childNode != NULL? child.shapeSDF[i] : INFINITY;
-        } else {
-            existingShapeSDF[i] = INFINITY;
-        }
-
+     
+        inheritedShapeSDF[i] = isLeaf || !child.process ? INFINITY : child.shapeSDF[i];
+        inheritedResultSDF[i] = isLeaf || !child.process ? INFINITY : child.resultSDF[i];
+        
         childResultEmpty &= child.resultType == SpaceType::Empty;
         childResultSolid &= child.resultType == SpaceType::Solid;
         childShapeEmpty &= child.shapeType == SpaceType::Empty;
@@ -425,13 +435,13 @@ NodeOperationResult Octree::shape(OctreeNodeFrame frame, ShapeArgs * args, Chunk
     float shapeSDF[8];
     float resultSDF[8];
 
-    buildSDF(args, frame.cube, shapeSDF, resultSDF, existingShapeSDF, frame.sdf, chunkContext);
+    buildSDF(args, frame.cube, shapeSDF, resultSDF, inheritedShapeSDF, inheritedResultSDF, frame.sdf, chunkContext);
     
     SpaceType shapeType = isLeaf ? SDF::eval(shapeSDF) : childToParent(childShapeSolid, childShapeEmpty);
     SpaceType resultType = isLeaf ? SDF::eval(resultSDF) : childToParent(childResultSolid, childResultEmpty);
         
     // Take action
-    if(shapeType != SpaceType::Empty || node == NULL) {
+    if(shapeType != SpaceType::Empty || (frame.interpolated && node == NULL)) {
         if(resultType == SpaceType::Surface && node == NULL) {
             node = allocator.allocateOctreeNode(frame.cube)->init(Vertex(frame.cube.getCenter()));   
         }
@@ -465,7 +475,7 @@ NodeOperationResult Octree::shape(OctreeNodeFrame frame, ShapeArgs * args, Chunk
                             childNode = allocator.allocateOctreeNode(childCube)->init(Vertex(childCube.getCenter()));
                             childNode->setSolid(child.resultType == SpaceType::Solid);
                             childNode->setEmpty(child.resultType == SpaceType::Empty);
-                            childNode->setSDF(child.sdf);
+                            childNode->setSDF(child.resultSDF);
                             childNode->setLeaf(isChildLeaf);
                             childNode->setSimplified(false);
                             childNode->setChunk(false);
@@ -473,7 +483,6 @@ NodeOperationResult Octree::shape(OctreeNodeFrame frame, ShapeArgs * args, Chunk
                         node->setChildNode(i, childNode, &allocator, block);
                     }
                 }
-                node->clearBlockIfEmpty(&allocator, block);
             }
 
             if(resultType != SpaceType::Surface) {
@@ -485,8 +494,11 @@ NodeOperationResult Octree::shape(OctreeNodeFrame frame, ShapeArgs * args, Chunk
                 if(isChunk && args->changeHandler != NULL) {
                     args->changeHandler->update(node);
                 }
+                if(block != NULL) {
+                    node->clearBlockIfEmpty(&allocator, block);
+                }
             }
-        
+            
             if(!node->isSimplified()) {
                 args->simplifier.simplify(this, chunkContext->cube, OctreeNodeData(frame.level, node, frame.cube, NULL));
             }

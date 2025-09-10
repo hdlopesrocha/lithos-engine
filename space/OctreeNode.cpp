@@ -6,7 +6,7 @@ OctreeNode::OctreeNode(Vertex vertex) {
 
 OctreeNode * OctreeNode::init(Vertex vertex) {
 	for(int i = 0; i < 8; ++i) {
-		this->sdf[i] = MAXFLOAT;
+		this->sdf[i] = MAXFLOAT*0.5f;
 	}
 	this->bits = 0x0;
 	this->setSolid(false);
@@ -38,8 +38,12 @@ ChildBlock * OctreeNode::createBlock(OctreeAllocator * allocator) {
 void OctreeNode::setChildNode(int i, OctreeNode * node, OctreeAllocator * allocator, ChildBlock * block) {
 	if(node == NULL && this->id == UINT_MAX) {
 		return;
+	} 
+	uint newIndex = allocator->getIndex(node);
+	if(block->children[i] != newIndex && block->children[i] != UINT_MAX) {
+		throw std::runtime_error("Lost reference @ OctreeNode::setChildNode");
 	}
-	block->children[i] = allocator->getIndex(node);
+	block->children[i] = newIndex;
 }
 
 OctreeNode * OctreeNode::getChildNode(int i, OctreeAllocator * allocator, ChildBlock * block) {

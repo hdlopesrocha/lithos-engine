@@ -7,7 +7,7 @@ OctreeInstanceBuilderHandler::OctreeInstanceBuilderHandler() {
 
 void OctreeInstanceBuilderHandler::handle(Octree * tree, OctreeNodeData &data, std::vector<DebugInstanceData> * instances, ChunkContext * context){
 	if(data.node->isLeaf()) {
-		bool virtualizeSDF = true;
+		bool virtualizeSDF = false;
 		
 		if(virtualizeSDF) {
 			for(int i = 0 ; i < 8 ; ++i) {
