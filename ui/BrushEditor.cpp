@@ -108,25 +108,6 @@ void BrushEditor::draw2d(float time){
             break;
         }
         break;
-
-        case SdfType::PYRAMID:
-        {
-            PyramidDistanceFunction* function = (PyramidDistanceFunction*)brushContext->currentFunction;
-            ImGui::Text("Position: ");
-            if(ImGui::InputFloat3("m##pyramidPosition", &(function->position[0]))) {
-                changed = true; 
-            }
-            ImGui::Text("Width: ");
-            if(ImGui::InputFloat("m##pyramidWidth", &(function->width))) {
-                changed = true; 
-            }
-            ImGui::Text("Height: ");
-            if(ImGui::InputFloat("m##pyramidHeight", &(function->height))) {
-                changed = true; 
-            }
-        }
-        break; 
-        
         case SdfType::TORUS:
         {
             TorusDistanceFunction * function = (TorusDistanceFunction*)brushContext->currentFunction;

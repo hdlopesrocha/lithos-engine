@@ -173,7 +173,16 @@ float SDF::octahedron(glm::vec3 p, float s ) {
   return glm::length(glm::vec3(q.x,q.y-s+k,q.z-k)); 
 }
 
+glm::vec3 faceOutward(const glm::vec3 &a, const glm::vec3 &b, const glm::vec3 &c, const glm::vec3 &centroid) {
+    // normal da face
+    glm::vec3 n = glm::normalize(glm::cross(b - a, c - a));
 
+    // se a normal aponta para dentro, inverter
+    if (glm::dot(n, centroid - a) > 0.0f)
+        n = -n;
+
+    return n;
+}
 
 // distance to segment AB
 inline float sdSegment(const glm::vec3 &p, const glm::vec3 &a, const glm::vec3 &b) {
@@ -223,59 +232,46 @@ inline glm::vec3 transformPos(const glm::mat4 &M, const glm::vec3 &v) {
 // - h: original pyramid height (apex at (0,h,0), base at y=0)
 // - a: half base size (base corners at +/-a, y=0)
 // - model: 4x4 model matrix (scaling, rotation, translation). If you only want non-uniform scale use glm::scale(...)
-float SDF::pyramid(const glm::vec3 &p, float h, float a, const glm::mat4 &model) {
-    // original model-space vertices
+float SDF::pyramid(const glm::vec3 &p, float h, float a) {
+      // Vértices locais
     glm::vec3 apex(0.0f, h, 0.0f);
     glm::vec3 v0(-a, 0.0f, -a);
     glm::vec3 v1( a, 0.0f, -a);
     glm::vec3 v2( a, 0.0f,  a);
     glm::vec3 v3(-a, 0.0f,  a);
 
-    // transform to world space
-    glm::vec3 A = transformPos(model, apex);
-    glm::vec3 V0 = transformPos(model, v0);
-    glm::vec3 V1 = transformPos(model, v1);
-    glm::vec3 V2 = transformPos(model, v2);
-    glm::vec3 V3 = transformPos(model, v3);
+    // mesmo cálculo de distâncias (sem model matrix!)
+    glm::vec3 centroid = (apex + v0 + v1 + v2 + v3) / 5.0f;
 
-    // centroid (a point guaranteed inside the (convex) pyramid)
-    glm::vec3 centroid = (A + V0 + V1 + V2 + V3) * (1.0f / 5.0f);
+    float d0 = sdTriangle(p, apex, v0, v1);
+    float d1 = sdTriangle(p, apex, v1, v2);
+    float d2 = sdTriangle(p, apex, v2, v3);
+    float d3 = sdTriangle(p, apex, v3, v0);
+    float db0 = sdTriangle(p, v0, v1, v2);
+    float db1 = sdTriangle(p, v2, v3, v0);
 
-    // distances to 4 side triangles (A, Vi, Vi+1)
-    float d0 = sdTriangle(p, A, V0, V1);
-    float d1 = sdTriangle(p, A, V1, V2);
-    float d2 = sdTriangle(p, A, V2, V3);
-    float d3 = sdTriangle(p, A, V3, V0);
+    float dist = std::min({d0, d1, d2, d3, db0, db1});
 
-    // base as two triangles (V0,V1,V2) and (V2,V3,V0)
-    float db0 = sdTriangle(p, V0, V1, V2);
-    float db1 = sdTriangle(p, V2, V3, V0);
-
-    float dist = std::min({ d0, d1, d2, d3, db0, db1 });
-
-    // SIGN: determine if p is inside the convex polyhedron.
-    // For each face compute outward-pointing normal and test dot(p - a, normal) <= 0.
     auto faceOutward = [&](const glm::vec3 &a_, const glm::vec3 &b_, const glm::vec3 &c_) {
         glm::vec3 n = glm::normalize(glm::cross(b_ - a_, c_ - a_));
-        // If normal points towards centroid, flip it so normals point outward
         if (glm::dot(n, centroid - a_) > 0.0f) n = -n;
         return n;
     };
 
-    glm::vec3 n0 = faceOutward(A, V0, V1);
-    glm::vec3 n1 = faceOutward(A, V1, V2);
-    glm::vec3 n2 = faceOutward(A, V2, V3);
-    glm::vec3 n3 = faceOutward(A, V3, V0);
-    glm::vec3 nb0 = faceOutward(V0, V1, V2); // base tri normals (should point downward/outward)
-    glm::vec3 nb1 = faceOutward(V2, V3, V0);
+    glm::vec3 n0 = faceOutward(apex, v0, v1);
+    glm::vec3 n1 = faceOutward(apex, v1, v2);
+    glm::vec3 n2 = faceOutward(apex, v2, v3);
+    glm::vec3 n3 = faceOutward(apex, v3, v0);
+    glm::vec3 nb0 = faceOutward(v0, v1, v2);
+    glm::vec3 nb1 = faceOutward(v2, v3, v0);
 
     bool inside =
-        (glm::dot(p - A, n0) <= 0.0f) &&
-        (glm::dot(p - A, n1) <= 0.0f) &&
-        (glm::dot(p - A, n2) <= 0.0f) &&
-        (glm::dot(p - A, n3) <= 0.0f) &&
-        (glm::dot(p - V0, nb0) <= 0.0f) &&
-        (glm::dot(p - V2, nb1) <= 0.0f);
+        (glm::dot(p - apex, n0) <= 0.0f) &&
+        (glm::dot(p - apex, n1) <= 0.0f) &&
+        (glm::dot(p - apex, n2) <= 0.0f) &&
+        (glm::dot(p - apex, n3) <= 0.0f) &&
+        (glm::dot(p - v0, nb0) <= 0.0f) &&
+        (glm::dot(p - v2, nb1) <= 0.0f);
 
     return inside ? -dist : dist;
 }
@@ -458,14 +454,23 @@ glm::vec3 OctahedronDistanceFunction::getCenter(Transformation model) const {
 }
 
 
-PyramidDistanceFunction::PyramidDistanceFunction(glm::vec3 position, float height, float width): position(position), height(height), width(width) {
+PyramidDistanceFunction::PyramidDistanceFunction() {
     
 }
 
 float PyramidDistanceFunction::distance(const glm::vec3 p, Transformation model)  {
-    glm::vec3 pos = p - getCenter(model); // Move point into model space
+   glm::vec3 pos = p - getCenter(model);
     pos = glm::inverse(model.quaternion) * pos;
-    return SDF::pyramid(pos, height, width*0.5, glm::scale(glm::mat4(1.0f), model.scale));
+
+    // aplicar escala ao ponto, não à geometria
+    pos /= model.scale;
+
+    // pirâmide unitária (base half=0.5, altura=1.0)
+    float d = SDF::pyramid(pos, 1.0f, 0.5f);
+
+    // corrigir métrica multiplicando pela menor escala
+    float minScale = glm::min(glm::min(model.scale.x, model.scale.y), model.scale.z);
+    return d * minScale;
 }
 
 SdfType PyramidDistanceFunction::getType() const {
@@ -473,7 +478,7 @@ SdfType PyramidDistanceFunction::getType() const {
 }
 
 glm::vec3 PyramidDistanceFunction::getCenter(Transformation model) const {
-    return position+model.translate;
+    return model.translate;
 }
 
 

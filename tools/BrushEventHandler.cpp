@@ -79,27 +79,6 @@ template<typename T> void BrushEventHandler<T>::handle(T * event) {
                 changed = true;
             }
         }
-
-        if(context.currentFunction == context.functions[4]) {
-            PyramidDistanceFunction * function = (PyramidDistanceFunction*) context.currentFunction;
-            if(event->getType() == EVENT_VECTOR_3D_0) {
-                Axis3dEvent * e = (Axis3dEvent*) event;
-                TranslateHandler(context.camera, &(function->position)).handle(e);
-                changed = true;
-            }
-            if(event->getType() == EVENT_FLOAT_1_X) {
-                FloatEvent * e = (FloatEvent*) event;
-                ScaleHandler(&(function->width)).handle(e);
-                changed = true;
-            }
-            if(event->getType() == EVENT_FLOAT_1_Y) {
-                FloatEvent * e = (FloatEvent*) event;
-                ScaleHandler(&(function->height)).handle(e);
-                changed = true;
-            }
-        }
-        break;
-    
     default:
         break;
     }

@@ -85,7 +85,7 @@ public:
     static float torus(glm::vec3 p, glm::vec2 t );
     static float capsule(glm::vec3 p, glm::vec3 a, glm::vec3 b, float r );
     static float octahedron(glm::vec3 p, float s);
-    static float pyramid(const glm::vec3 &p, float h, float a, const glm::mat4 &model);
+    static float pyramid(const glm::vec3 &p, float h, float a);
 
     static glm::vec3 getPosition(float *sdf, const BoundingCube &cube);
     static glm::vec3 getAveragePosition(float *sdf, const BoundingCube &cube);
@@ -176,11 +176,8 @@ class OctahedronDistanceFunction : public SignedDistanceFunction {
 
 class PyramidDistanceFunction : public SignedDistanceFunction {
     public:
-    glm::vec3 position; 
-    float height;
-    float width;
 
-	PyramidDistanceFunction(glm::vec3 position, float height, float width);
+	PyramidDistanceFunction();
 	float distance(const glm::vec3 p, Transformation model) override;
     SdfType getType() const override; 
     glm::vec3 getCenter(Transformation model) const override;
@@ -422,7 +419,7 @@ class WrappedPyramid : public WrappedSignedDistanceFunction {
 
     BoundingSphere getSphere() const {
         PyramidDistanceFunction * f = (PyramidDistanceFunction*) function;
-        return BoundingSphere(f->getCenter(model), glm::max(f->height, f->width*0.5f) * glm::length(model.scale) + bias);
+        return BoundingSphere(f->getCenter(model), 0.5f * glm::length(model.scale) + bias);
     };
 
     ContainmentType check(const BoundingCube &cube) const override {
@@ -435,8 +432,7 @@ class WrappedPyramid : public WrappedSignedDistanceFunction {
         return cube.contains(sphere);
     };
     float getLength() const override {
-        PyramidDistanceFunction * f = (PyramidDistanceFunction*) function;
-        return f->height*glm::length(model.scale) + bias;
+        return glm::length(model.scale) + bias;
     };
 };
 
