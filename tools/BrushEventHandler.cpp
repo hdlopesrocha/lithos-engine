@@ -61,44 +61,6 @@ template<typename T> void BrushEventHandler<T>::handle(T * event) {
         }
         break;        
     case PAGE_SDF0:
-        if(context.currentFunction == context.functions[0]) {
-            SphereDistanceFunction * function = (SphereDistanceFunction*) context.currentFunction;
-            if(event->getType() == EVENT_VECTOR_3D_0) {
-                Axis3dEvent * e = (Axis3dEvent*) event;
-                TranslateHandler(context.camera, &(function->center)).handle(e);
-                changed = true;
-            }
-            if(event->getType() == EVENT_FLOAT_1_X) {
-                FloatEvent * e = (FloatEvent*) event;
-                ScaleHandler(&(function->radius)).handle(e);
-                changed = true;
-            }
-        }
-
-        if(context.currentFunction == context.functions[1]) {
-            BoxDistanceFunction * function = (BoxDistanceFunction*) context.currentFunction;
-            if(event->getType() == EVENT_VECTOR_3D_0) {
-                Axis3dEvent * e = (Axis3dEvent*) event;
-                TranslateHandler(context.camera, &(function->center)).handle(e);
-                changed = true;
-            } 
-            if(event->getType() == EVENT_FLOAT_1_X) {
-                FloatEvent * e = (FloatEvent*) event;
-                ScaleHandler(&(function->length.x)).handle(e);
-                changed = true;
-            }
-            if(event->getType() == EVENT_FLOAT_1_Y) {
-                FloatEvent * e = (FloatEvent*) event;
-                ScaleHandler(&(function->length.y)).handle(e);
-                changed = true;
-            }
-            if(event->getType() == EVENT_FLOAT_1_Z) {
-                FloatEvent * e = (FloatEvent*) event;
-                ScaleHandler(&(function->length.z)).handle(e);
-                changed = true;
-            }
-        }
-
         if(context.currentFunction == context.functions[2]) {
             CapsuleDistanceFunction * function = (CapsuleDistanceFunction*) context.currentFunction;
             if(event->getType() == EVENT_VECTOR_3D_0) {

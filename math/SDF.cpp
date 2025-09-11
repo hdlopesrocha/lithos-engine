@@ -155,8 +155,9 @@ float SDF::capsule(glm::vec3 p, glm::vec3 a, glm::vec3 b, float r ) {
     return glm::length( pa - ba*h ) - r;
 }
 
-float SDF::sphere(glm::vec3 p, const float r) {
-    return glm::length(p) - r;
+float SDF::torus(glm::vec3 p, glm::vec2 t ) {
+  glm::vec2 q = glm::vec2(glm::length(glm::vec2(p.x,p.z))-t.x,p.y);
+  return glm::length(q)-t.y;
 }
 
 float SDF::octahedron(glm::vec3 p, float s ) {
@@ -326,14 +327,14 @@ void SDF::copySDF(float * src, float * dst) {
     }
 }
 
-BoxDistanceFunction::BoxDistanceFunction(glm::vec3 center, glm::vec3 length): center(center), length(length) {
+BoxDistanceFunction::BoxDistanceFunction() {
 
 }
 
 float BoxDistanceFunction::distance(const glm::vec3 p, Transformation model) {
     glm::vec3 pos = p - getCenter(model); // Move point into model space
     pos = glm::inverse(model.quaternion) * pos;
-    return SDF::box(pos/model.scale, length);
+    return SDF::box(pos, model.scale);
 }
 
 SdfType BoxDistanceFunction::getType() const {
@@ -341,18 +342,21 @@ SdfType BoxDistanceFunction::getType() const {
 }
 
 glm::vec3 BoxDistanceFunction::getCenter(Transformation model) const {
-    return this->center+model.translate;
+    return model.translate;
 }
 
 
-SphereDistanceFunction::SphereDistanceFunction(glm::vec3 pos, float radius): center(pos), radius(radius) {
+SphereDistanceFunction::SphereDistanceFunction() {
     
 }
 
 float SphereDistanceFunction::distance(const glm::vec3 p, Transformation model) {
-    glm::vec3 pos = p - getCenter(model); // Move point into model space
+    glm::vec3 pos = p - model.translate;
     pos = glm::inverse(model.quaternion) * pos;
-    return SDF::sphere(pos/model.scale, radius);
+
+    glm::vec3 radii = model.scale;
+    glm::vec3 q = glm::abs(pos) / radii;
+    return (glm::length(q) - 1.0f) * glm::min(glm::min(radii.x, radii.y), radii.z);
 }
 
 SdfType SphereDistanceFunction::getType() const {
@@ -360,7 +364,25 @@ SdfType SphereDistanceFunction::getType() const {
 }
 
 glm::vec3 SphereDistanceFunction::getCenter(Transformation model) const {
-    return this->center+model.translate;
+    return model.translate;
+}
+
+TorusDistanceFunction::TorusDistanceFunction(glm::vec3 pos, glm::vec2 t): pos(pos), t(t) {
+    
+}
+
+float TorusDistanceFunction::distance(const glm::vec3 p, Transformation model) {
+    glm::vec3 pos = p - getCenter(model); // Move point into model space
+    pos = glm::inverse(model.quaternion) * pos;
+    return SDF::torus(pos/model.scale, t);
+}
+
+SdfType TorusDistanceFunction::getType() const {
+    return SdfType::TORUS;
+}
+
+glm::vec3 TorusDistanceFunction::getCenter(Transformation model) const {
+    return this->pos+model.translate;
 }
 
 
@@ -473,6 +495,7 @@ const char* toString(SdfType t)
         case SdfType::OCTREE_DIFFERENCE: return "Octree Difference";
         case SdfType::OCTAHEDRON: return "Octahedron";
         case SdfType::PYRAMID: return "Pyramid";
+        case SdfType::TORUS: return "Torus";
         default: return "Unknown";
     }
 }

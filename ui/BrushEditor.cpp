@@ -89,32 +89,6 @@ void BrushEditor::draw2d(float time){
 
     switch (brushContext->currentFunction->getType())
     {
-        case SdfType::SPHERE:
-        {
-            SphereDistanceFunction* function = (SphereDistanceFunction*)brushContext->currentFunction;
-            ImGui::Text("Position: ");
-            if(ImGui::InputFloat3("m##spherePosition", &(function->center[0]))) {
-                changed = true; 
-            }
-            ImGui::Text("Radius: ");
-            if(ImGui::InputFloat("m##sphereRadius", &(function->radius))) {
-                changed = true; 
-            }
-        }
-            break;  
-        case SdfType::BOX:
-        {
-            BoxDistanceFunction* function = (BoxDistanceFunction*)brushContext->currentFunction;
-            ImGui::Text("Position: "); 
-            if(ImGui::InputFloat3("m##boxPosition", &(function->center[0]))) {
-                changed = true; 
-            }    
-            ImGui::Text("Length: ");
-            if(ImGui::InputFloat3("m##boxLength", &(function->length[0]))) {
-                changed = true; 
-            }
-        }
-            break;
         case SdfType::CAPSULE:
         {
             CapsuleDistanceFunction* function = (CapsuleDistanceFunction*)brushContext->currentFunction;
@@ -164,7 +138,21 @@ void BrushEditor::draw2d(float time){
                 changed = true; 
             }
         }
-        break;  
+        break; 
+        
+        case SdfType::TORUS:
+        {
+            TorusDistanceFunction * function = (TorusDistanceFunction*)brushContext->currentFunction;
+            ImGui::Text("Position: ");
+            if(ImGui::InputFloat3("m##torusPosition", &(function->pos[0]))) {
+                changed = true; 
+            }
+            ImGui::Text("T: ");
+            if(ImGui::InputFloat2("m##torusT", &(function->t[0]))) {
+                changed = true; 
+            }
+        }
+        break; 
     default:
         break;
     }

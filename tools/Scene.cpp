@@ -281,7 +281,6 @@ void Scene::generate(Camera &camera) {
 	int tiles= 256;
 	int height = 2048;
 	float minSize = 30;
-	Transformation model = Transformation();
 
 
 	BoundingBox mapBox = BoundingBox(glm::vec3(-sizePerTile*tiles*0.5,-height*0.5,-sizePerTile*tiles*0.5), glm::vec3(sizePerTile*tiles*0.5,height*0.5,sizePerTile*tiles*0.5));
@@ -292,6 +291,7 @@ void Scene::generate(Camera &camera) {
 
 
 	{
+		Transformation model = Transformation();
 		std::cout << "\tGradientPerlinSurface"<< std::endl;
 		GradientPerlinSurface heightFunction = GradientPerlinSurface(height, 1.0/(256.0f*sizePerTile), -64);
 		std::cout << "\tCachedHeightMapSurface"<< std::endl;
@@ -310,7 +310,8 @@ void Scene::generate(Camera &camera) {
 	{
 		std::cout << "\tsolidSpace.del(sphere)"<< std::endl;
 		BoundingSphere sphere = BoundingSphere(glm::vec3(0,768,0),1024);
-		SphereDistanceFunction function(sphere.center, sphere.radius);
+		SphereDistanceFunction function = SphereDistanceFunction();
+		Transformation model = Transformation(glm::vec3(sphere.radius), sphere.center, 0, 0, 0);
 		WrappedSphere wrappedFunction = WrappedSphere(&function, minSize, model);
 		solidSpace.del(&wrappedFunction, model, SimpleBrush(14), minSize, *brushContext->simplifier, solidSpaceChangeHandler);
 	}
@@ -320,7 +321,8 @@ void Scene::generate(Camera &camera) {
 		glm::vec3 min = glm::vec3(1500,0,500);
 		glm::vec3 len = glm::vec3(512.0f);
 		BoundingBox box = BoundingBox(min,min+len);
-		BoxDistanceFunction function(box.getCenter(), box.getLength()*0.5f);
+		BoxDistanceFunction function = BoxDistanceFunction();
+		Transformation model = Transformation(box.getLength()*0.5f, box.getCenter(), 0, 0, 0);
 		WrappedBox wrappedFunction = WrappedBox(&function, minSize*2.0f, model);
 		solidSpace.add(&wrappedFunction, model, SimpleBrush(8), minSize*2.0f, *brushContext->simplifier, solidSpaceChangeHandler);
 	}
@@ -330,7 +332,8 @@ void Scene::generate(Camera &camera) {
 		glm::vec3 min = glm::vec3(1500,0,500);
 		glm::vec3 len = glm::vec3(512.0f);
 		BoundingSphere sphere = BoundingSphere(min+3.0f*len/4.0f, 256);
-		SphereDistanceFunction function(sphere.center, sphere.radius);
+		SphereDistanceFunction function = SphereDistanceFunction();
+		Transformation model = Transformation(glm::vec3(sphere.radius), sphere.center, 0, 0, 0);
 		WrappedSphere wrappedFunction = WrappedSphere(&function, minSize*0.5f, model);
 		solidSpace.add(&wrappedFunction, model, SimpleBrush(6), minSize*0.5f, *brushContext->simplifier, solidSpaceChangeHandler);
 	}
@@ -340,7 +343,8 @@ void Scene::generate(Camera &camera) {
 		glm::vec3 min = glm::vec3(1500,0,500);
 		glm::vec3 len = glm::vec3(512.0f);
 		BoundingSphere sphere = BoundingSphere(min+len, 128);
-		SphereDistanceFunction function(sphere.center, sphere.radius);
+		SphereDistanceFunction function;
+		Transformation model = Transformation(glm::vec3(sphere.radius), sphere.center, 0, 0, 0);
 		WrappedSphere wrappedFunction = WrappedSphere(&function, minSize*0.25f, model);
 		solidSpace.del(&wrappedFunction, model, SimpleBrush(4), minSize*0.25f, *brushContext->simplifier, solidSpaceChangeHandler);
 	}
@@ -350,12 +354,14 @@ void Scene::generate(Camera &camera) {
 		glm::vec3 min = glm::vec3(1500,0,500);
 		glm::vec3 len = glm::vec3(512.0f);
 		BoundingSphere sphere = BoundingSphere(min+3.0f*len/4.0f, 128);
-		SphereDistanceFunction function(sphere.center, sphere.radius);
+		SphereDistanceFunction function = SphereDistanceFunction();
+		Transformation model = Transformation(glm::vec3(sphere.radius), sphere.center, 0, 0, 0);
 		WrappedSphere wrappedFunction = WrappedSphere(&function, minSize, model);
 		solidSpace.del(&wrappedFunction, model, SimpleBrush(1), minSize, *brushContext->simplifier, solidSpaceChangeHandler);
 	}
 
 	{
+		Transformation model = Transformation();
 		std::cout << "\tsolidSpace.del(capsule)"<< std::endl;
 		glm::vec3 a = glm::vec3(0,0, -3000);
 		glm::vec3 b = glm::vec3(0,500,0);
@@ -370,12 +376,14 @@ void Scene::generate(Camera &camera) {
 		glm::vec3 min = glm::vec3(1500,0,500);
 		glm::vec3 len = glm::vec3(512.0f);
 		BoundingSphere sphere = BoundingSphere(min+len, 64);
-		SphereDistanceFunction function(sphere.center, sphere.radius);
+		SphereDistanceFunction function = SphereDistanceFunction();
+		Transformation model = Transformation(glm::vec3(sphere.radius), sphere.center, 0, 0, 0);
 		WrappedSphere wrappedFunction = WrappedSphere(&function, minSize*0.1f, model);
 		liquidSpace.add(&wrappedFunction, model, SimpleBrush(0), minSize*0.1f, *brushContext->simplifier, liquidSpaceChangeHandler);
 	}
 
 	{
+		Transformation model = Transformation();
 		std::cout << "\tsolidSpace.add(octahedron)"<< std::endl;
 		glm::vec3 center = glm::vec3(0,400,-600);
 		float radius = 256.0f;
@@ -390,12 +398,12 @@ void Scene::generate(Camera &camera) {
 		float radius = 256.0f;
 		PyramidDistanceFunction function(glm::vec3(0.0f), 1.0f, 1.0f);
 		Transformation model2(glm::vec3(radius), center, 0,0,0);
-
 		WrappedPyramid wrappedFunction = WrappedPyramid(&function, minSize, model2);
 		solidSpace.add(&wrappedFunction, model2, SimpleBrush(4), minSize, *brushContext->simplifier, solidSpaceChangeHandler);
 	}
 
 	{
+		Transformation model = Transformation();
 		std::cout << "\tsolidSpace.add(water)"<< std::endl;
 		BoundingBox waterBox = mapBox;
 		waterBox.setMaxY(0);
@@ -410,7 +418,8 @@ void Scene::generate(Camera &camera) {
 		glm::vec3 min = glm::vec3(1500,0,-1000);
 		glm::vec3 len = glm::vec3(512.0f);
 		BoundingBox box = BoundingBox(min,min+len);
-		BoxDistanceFunction function(box.getCenter(), box.getLength()*0.5f);
+		BoxDistanceFunction function = BoxDistanceFunction();
+		Transformation model = Transformation(box.getLength()*0.5f, box.getCenter(), 0, 0, 0);
 		WrappedBox wrappedFunction = WrappedBox(&function, minSize*4, model);
 		solidSpace.add(&wrappedFunction, model, SimpleBrush(8), minSize*4, *brushContext->simplifier, solidSpaceChangeHandler);
 	}
@@ -420,7 +429,8 @@ void Scene::generate(Camera &camera) {
 		glm::vec3 min = glm::vec3(2500,0,-1000);
 		glm::vec3 len = glm::vec3(512.0f);
 		BoundingBox box = BoundingBox(min,min+len);
-		BoxDistanceFunction function(box.getCenter(), box.getLength()*0.5f);
+		BoxDistanceFunction function = BoxDistanceFunction();
+		Transformation model = Transformation(box.getLength()*0.5f, box.getCenter(), 0, 0, 0);
 		WrappedBox wrappedFunction = WrappedBox(&function, minSize*0.25, model);
 		solidSpace.add(&wrappedFunction, model, SimpleBrush(8), minSize*0.25, *brushContext->simplifier, solidSpaceChangeHandler);
 	}
@@ -442,7 +452,6 @@ void Scene::import(const std::string &filename, Camera &camera) {
 	int height = 2048;
 	float minSize = 30;
 	Transformation model = Transformation(glm::vec3(1.0f),glm::vec3(0.0f), 0.0f, 0.0f, 0.0f);
-
 
 	BoundingBox mapBox = BoundingBox(glm::vec3(-sizePerTile*tiles*0.5,-height*0.5,-sizePerTile*tiles*0.5), glm::vec3(sizePerTile*tiles*0.5,height*0.5,sizePerTile*tiles*0.5));
 	camera.position.x = mapBox.getCenter().x;
