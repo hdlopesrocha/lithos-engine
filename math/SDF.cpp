@@ -363,14 +363,19 @@ glm::vec3 SphereDistanceFunction::getCenter(Transformation model) const {
     return model.translate;
 }
 
-TorusDistanceFunction::TorusDistanceFunction(glm::vec3 pos, glm::vec2 t): pos(pos), t(t) {
+TorusDistanceFunction::TorusDistanceFunction(glm::vec2 radius): radius(radius) {
     
 }
 
 float TorusDistanceFunction::distance(const glm::vec3 p, Transformation model) {
-    glm::vec3 pos = p - getCenter(model); // Move point into model space
+     glm::vec3 pos = p - getCenter(model);
     pos = glm::inverse(model.quaternion) * pos;
-    return SDF::torus(pos/model.scale, t);
+
+    glm::vec3 q = pos / model.scale;
+    float d = SDF::torus(q, radius);
+
+    float minScale = glm::min(glm::min(model.scale.x, model.scale.y), model.scale.z);
+    return d * minScale;
 }
 
 SdfType TorusDistanceFunction::getType() const {
@@ -378,7 +383,7 @@ SdfType TorusDistanceFunction::getType() const {
 }
 
 glm::vec3 TorusDistanceFunction::getCenter(Transformation model) const {
-    return this->pos+model.translate;
+    return model.translate;
 }
 
 

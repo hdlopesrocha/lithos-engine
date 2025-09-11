@@ -8,7 +8,7 @@ BrushContext::BrushContext(Settings * settings, Camera * camera) : settings(sett
     this->functions.push_back(new CapsuleDistanceFunction(glm::vec3(0, 0, 0), glm::vec3(1, 1, 1), 1.0f));
     this->functions.push_back(new OctahedronDistanceFunction());
     this->functions.push_back(new PyramidDistanceFunction());
-    this->functions.push_back(new TorusDistanceFunction(glm::vec3(0), glm::vec2(1.0f, 1.0f)));
+    this->functions.push_back(new TorusDistanceFunction(glm::vec2(0.25f, 0.25f)));
     this->currentFunction = this->functions[0];
     this->detail = 1.0f;
     this->mode = BrushMode::ADD;
@@ -38,7 +38,7 @@ WrappedSignedDistanceFunction * BrushContext::getWrapped() {
         PyramidDistanceFunction * function = (PyramidDistanceFunction*) currentFunction;
         return new WrappedPyramid(function, detail, model);
     }
-    else if(currentFunction == functions[4]) {
+    else if(currentFunction == functions[5]) {
         TorusDistanceFunction * function = (TorusDistanceFunction*) currentFunction;
         return new WrappedTorus(function, detail, model);
     }

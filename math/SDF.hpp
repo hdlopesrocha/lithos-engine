@@ -121,10 +121,9 @@ class SphereDistanceFunction : public SignedDistanceFunction {
 
 class TorusDistanceFunction : public SignedDistanceFunction {
     public:
-    glm::vec3 pos;
-    glm::vec2 t;	
+    glm::vec2 radius;	
 
-	TorusDistanceFunction(glm::vec3 pos, glm::vec2 t);
+	TorusDistanceFunction(glm::vec2 radius);
 	float distance(const glm::vec3 p, Transformation model) override;
     SdfType getType() const override; 
     glm::vec3 getCenter(Transformation model) const override;
@@ -291,8 +290,15 @@ class WrappedTorus : public WrappedSignedDistanceFunction {
     };
 
     float getLength() const override {
-        //TorusDistanceFunction * f = (TorusDistanceFunction*) function;
-        return glm::length(model.scale) + bias;
+        TorusDistanceFunction * f = (TorusDistanceFunction*) function;
+        float R = f->radius.x;
+        float r = f->radius.y;
+
+        float Rx = (R + r) * model.scale.x;
+        float Ry = r * model.scale.y;
+        float Rz = (R + r) * model.scale.z;
+
+        return glm::max(glm::max(Rx, Ry), Rz) + bias;
     };
 
 };

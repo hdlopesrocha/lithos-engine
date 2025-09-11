@@ -384,7 +384,7 @@ void Scene::generate(Camera &camera) {
 
 	{
 		std::cout << "\tsolidSpace.add(octahedron)"<< std::endl;
-		glm::vec3 center = glm::vec3(0,400,-600);
+		glm::vec3 center = glm::vec3(0,512, 512*0);
 		float radius = 256.0f;
 		OctahedronDistanceFunction function = OctahedronDistanceFunction();
 		Transformation model = Transformation(glm::vec3(radius), center, 0, 0, 0);
@@ -394,13 +394,24 @@ void Scene::generate(Camera &camera) {
 
 	{
 		std::cout << "\tsolidSpace.add(pyramid)"<< std::endl;
-		glm::vec3 center = glm::vec3(0,500,0);
+		glm::vec3 center = glm::vec3(0,512, 512*1);
 		float radius = 256.0f;
 		PyramidDistanceFunction function = PyramidDistanceFunction();
 		Transformation model2(glm::vec3(radius), center, 0,0,0);
 		WrappedPyramid wrappedFunction = WrappedPyramid(&function, minSize, model2);
 		solidSpace.add(&wrappedFunction, model2, SimpleBrush(4), minSize, *brushContext->simplifier, solidSpaceChangeHandler);
 	}
+
+	{
+		std::cout << "\tsolidSpace.add(torus)"<< std::endl;
+		glm::vec3 center = glm::vec3(0,512, 512*2);
+		float radius = 256.0f;
+		TorusDistanceFunction function = TorusDistanceFunction(glm::vec2(0.5, 0.25));
+		Transformation model(glm::vec3(radius), center, 0,0,0);
+		WrappedTorus wrappedFunction = WrappedTorus(&function, minSize, model);
+		solidSpace.add(&wrappedFunction, model, SimpleBrush(4), minSize, *brushContext->simplifier, solidSpaceChangeHandler);
+	}
+
 
 	{
 		Transformation model = Transformation();

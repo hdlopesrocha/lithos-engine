@@ -111,12 +111,8 @@ void BrushEditor::draw2d(float time){
         case SdfType::TORUS:
         {
             TorusDistanceFunction * function = (TorusDistanceFunction*)brushContext->currentFunction;
-            ImGui::Text("Position: ");
-            if(ImGui::InputFloat3("m##torusPosition", &(function->pos[0]))) {
-                changed = true; 
-            }
-            ImGui::Text("T: ");
-            if(ImGui::InputFloat2("m##torusT", &(function->t[0]))) {
+            ImGui::Text("Radius: ");
+            if(ImGui::InputFloat2("m##torusRadius", &(function->radius[0]))) {
                 changed = true; 
             }
         }
