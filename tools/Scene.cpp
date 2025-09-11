@@ -463,8 +463,8 @@ void Scene::import(const std::string &filename, Camera &camera) {
 }
 
 void Scene::save(std::string folderPath, Camera &camera) {
-	OctreeFile saver1(&solidSpace, "solid", 9);
-	OctreeFile saver2(&liquidSpace, "liquid", 9);
+	OctreeFile saver1(&solidSpace, "solid");
+	OctreeFile saver2(&liquidSpace, "liquid");
 	SettingsFile settingsFile(settings, "settings");
 	settingsFile.save(folderPath);
 	saver1.save(folderPath, 4096);
@@ -472,8 +472,8 @@ void Scene::save(std::string folderPath, Camera &camera) {
 }
 
 void Scene::load(std::string folderPath, Camera &camera) {
-	OctreeFile loader1(&solidSpace, "solid", 9);
-	OctreeFile loader2(&liquidSpace, "liquid", 9);
+	OctreeFile loader1(&solidSpace, "solid");
+	OctreeFile loader2(&liquidSpace, "liquid");
 	SettingsFile settingsFile(settings, "settings");
 	settingsFile.load(folderPath);
 	loader1.load(folderPath, 4096);

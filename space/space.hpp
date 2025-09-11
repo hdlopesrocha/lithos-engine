@@ -64,16 +64,7 @@ struct OctreeNodeSerialized {
 	float sdf[8];
     uint children[8] = {0,0,0,0,0,0,0,0};
     int brushIndex;
-    uint bits;
-
-	bool isDirty(){
-		return this->bits & (0x1 << 3);
-	}
-
-	void setDirty(bool value){
-		uint8_t mask = (0x1 << 3);
-		this->bits = (this->bits & ~mask) | (value ? mask : 0x0);
-	}
+    uint8_t bits;
 
 };
 #pragma pack()  // Reset to default packing
@@ -452,22 +443,26 @@ class Tesselator : public IteratorHandler, OctreeNodeTriangleHandler{
 class OctreeFile {
 	Octree * tree;
     std::string filename;
-    int chunkHeight;
     public: 
-		OctreeFile(Octree * tree, std::string filename, int chunkHeight);
+		OctreeFile(Octree * tree, std::string filename);
         void save(std::string baseFolder, float chunkSize);
         void load(std::string baseFolder, float chunkSize);
 		AbstractBoundingBox& getBox();
+		OctreeNode * loadRecursive(int i, std::vector<OctreeNodeSerialized> * nodes, float chunkSize, std::string filename, BoundingCube cube, std::string baseFolder);
+		uint saveRecursive(OctreeNode * node, std::vector<OctreeNodeSerialized> * nodes, float chunkSize, std::string filename, BoundingCube cube, std::string baseFolder);
 
 };
 
 class OctreeNodeFile {
 	OctreeNode * node;
     std::string filename;
+	Octree * tree;
     public: 
-		OctreeNodeFile(OctreeNode * node, std::string filename);
-        void save(OctreeAllocator * allocator, std::string baseFolder);
-        void load(OctreeAllocator * allocator, std::string baseFolder, BoundingCube &cube);
+		OctreeNodeFile(Octree * tree, OctreeNode * node, std::string filename);
+        void save(std::string baseFolder);
+        void load(std::string baseFolder, BoundingCube &cube);
+		OctreeNode * loadRecursive(OctreeNode * node, int i, BoundingCube &cube, std::vector<OctreeNodeSerialized> * nodes);
+		uint saveRecursive(OctreeNode * node, std::vector<OctreeNodeSerialized> * nodes);
 };
 
 

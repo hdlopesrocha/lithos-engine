@@ -2,21 +2,23 @@
 
 
 
-OctreeNodeFile::OctreeNodeFile(OctreeNode * node, std::string filename) {
+OctreeNodeFile::OctreeNodeFile(Octree * tree, OctreeNode * node, std::string filename) {
 	this->node = node;
 	this->filename = filename;
+	this->tree = tree;
 }
 
-OctreeNode * loadRecursive2(OctreeAllocator * allocator, OctreeNode * node, int i, BoundingCube &cube, std::vector<OctreeNodeSerialized> * nodes) {
+OctreeNode * OctreeNodeFile::loadRecursive(OctreeNode * node, int i, BoundingCube &cube, std::vector<OctreeNodeSerialized> * nodes) {
 	OctreeNodeSerialized serialized = nodes->at(i);
 	if(node == NULL) {
-		glm::vec3 position = SDF::getPosition(serialized.sdf, cube);
-		glm::vec3 normal = SDF::getNormal(serialized.sdf, cube);
+		glm::vec3 position = SDF::getAveragePosition(serialized.sdf, cube);
+		glm::vec3 normal = SDF::getNormalFromPosition(serialized.sdf, cube, position);
 		Vertex vertex(position, normal, glm::vec2(0), serialized.brushIndex);
-		node = allocator->allocateOctreeNode(cube)->init(vertex);
+		node = tree->allocator.allocateOctreeNode(cube)->init(vertex);
+		node->setSDF(serialized.sdf);
+		node->bits = serialized.bits;
 	}
-	node->setSDF(serialized.sdf);
-	node->bits = serialized.bits;
+
 	if(node->isChunk()){
 		node->setDirty(true);
 	}
@@ -27,12 +29,12 @@ OctreeNode * loadRecursive2(OctreeAllocator * allocator, OctreeNode * node, int 
 			break;
 		}
 	}
-	ChildBlock * block = isLeaf ? NULL : node->createBlock(allocator);
+	ChildBlock * block = isLeaf ? NULL : node->createBlock(&tree->allocator);
 	for(int j=0 ; j <8 ; ++j){
 		int index = serialized.children[j];
 		if(index != 0) {
 			BoundingCube c = cube.getChild(j);
-			node->setChildNode(j , loadRecursive2(allocator, NULL, index, c, nodes), allocator, block);
+			node->setChildNode(j , loadRecursive(NULL, index, c, nodes), &tree->allocator, block);
 		}
 	}
 
@@ -40,7 +42,7 @@ OctreeNode * loadRecursive2(OctreeAllocator * allocator, OctreeNode * node, int 
 }
 
 
-void OctreeNodeFile::load(OctreeAllocator * allocator, std::string baseFolder, BoundingCube &cube) {
+void OctreeNodeFile::load(std::string baseFolder, BoundingCube &cube) {
 	std::ifstream file = std::ifstream(filename, std::ios::binary);
     if (!file) {
         std::cerr << "Error opening file for reading: " << filename << std::endl;
@@ -56,13 +58,13 @@ void OctreeNodeFile::load(OctreeAllocator * allocator, std::string baseFolder, B
 	nodes.resize(size);
 
    	decompressed.read(reinterpret_cast<char*>(nodes.data()), size * sizeof(OctreeNodeSerialized));
-	loadRecursive2(allocator, node, 0, cube, &nodes);
+	loadRecursive(node, 0, cube, &nodes);
     file.close();
 	nodes.clear();
 }
 
 
-uint saveRecursive2(OctreeAllocator * allocator, OctreeNode * node, std::vector<OctreeNodeSerialized> * nodes) {
+uint OctreeNodeFile::saveRecursive(OctreeNode * node, std::vector<OctreeNodeSerialized> * nodes) {
 	if(node!=NULL) {
 		OctreeNodeSerialized n = OctreeNodeSerialized();
 		n.brushIndex = node->vertex.brushIndex;
@@ -71,16 +73,16 @@ uint saveRecursive2(OctreeAllocator * allocator, OctreeNode * node, std::vector<
 
 		uint index = nodes->size(); 
 		nodes->push_back(n);
-		ChildBlock * block = node->getBlock(allocator);
+		ChildBlock * block = node->getBlock(&tree->allocator);
 		for(int i=0; i < 8; ++i) {
-            (*nodes)[index].children[i] = saveRecursive2(allocator, node->getChildNode(i, allocator, block), nodes);
+            (*nodes)[index].children[i] = saveRecursive(node->getChildNode(i, &tree->allocator, block), nodes);
 		}
 		return index;
 	}
 	return 0;
 }
 
-void OctreeNodeFile::save(OctreeAllocator * allocator, std::string baseFolder){
+void OctreeNodeFile::save(std::string baseFolder){
     std::vector<OctreeNodeSerialized> nodes;
 
 	std::ofstream file = std::ofstream(filename, std::ios::binary);
@@ -89,7 +91,7 @@ void OctreeNodeFile::save(OctreeAllocator * allocator, std::string baseFolder){
         return;
     }
 
-	saveRecursive2(allocator, node, &nodes);
+	saveRecursive(node, &nodes);
 
 	size_t size = nodes.size();
 	//std::cout << "Saving " << std::to_string(size) << " nodes" << std::endl;
