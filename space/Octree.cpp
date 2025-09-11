@@ -127,6 +127,25 @@ int Octree::getLevelAt(const glm::vec3 &pos, bool simplification) {
     return level;
 }
 
+
+uint Octree::getCurrentLevel(OctreeNodeData &data) {
+    uint l = data.level;
+    ChildBlock * block = data.node->getBlock(&allocator);
+    for(int i=0; i < 8; ++i) {
+        OctreeNode * childNode = data.node->getChildNode(i, &allocator, block);
+        if(childNode != NULL) {
+            OctreeNodeData childData(
+                            data.level + 1, 
+                            childNode, 
+                            data.cube.getChild(i), 
+                            data.context
+            );
+            l = glm::max(l, getCurrentLevel(childData));
+        }
+    }
+    return l;
+}
+
 uint Octree::getMaxLevel(BoundingCube &cube) {
     return getMaxLevel(this->root, cube, *this, 0);
 }
@@ -137,15 +156,19 @@ uint Octree::getMaxLevel(OctreeNode *node, BoundingCube &cube, BoundingCube &nod
         ChildBlock * block = node->getBlock(&allocator);
 
         for(int i=0; i < 8; ++i) {
-            OctreeNode * n = node->getChildNode(i, &allocator, block);
-            if(n!=NULL) {
+            OctreeNode * childNode = node->getChildNode(i, &allocator, block);
+            if(childNode!=NULL && !childNode->isSolid() && !childNode->isEmpty() ) {
                 BoundingCube childCube = nodeCube.getChild(i); 
-                bool isAfter =  cube.getMaxX() < childCube.getMaxX() && 
-                                cube.getMaxY() < childCube.getMaxY() && 
-                                cube.getMaxZ() < childCube.getMaxZ();
+                // Neighbor conditions:
+                bool intersects = cube.intersects(childCube);
+                bool notContained = !cube.contains(childCube);
+                bool isAfter = childCube.getMinX() >= cube.getMinX() &&
+                               childCube.getMinY() >= cube.getMinY() &&
+                               childCube.getMinZ() >= cube.getMinZ();
+                bool isSize = childCube.getLengthX() <= cube.getLengthX();
 
-                if(cube.intersects(childCube) && (childCube.getLengthX() <= cube.getLengthX() ?  isAfter : true)) {
-                    l = glm::max(l, getMaxLevel(n, cube, childCube, level + 1));
+                if (intersects && notContained && (isSize ? isAfter : true)) {
+                    l = glm::max(l, getMaxLevel(childNode, cube, childCube, level + 1));
                 }
             }
         }
@@ -162,15 +185,15 @@ int Octree::getNeighborLevel(OctreeNodeData &data, bool simplification, int dire
     return level;
 }
 
-OctreeNode * Octree::fetch(BoundingCube &cube, int level, OctreeNode ** out, int i, bool simplification, ChunkContext * context) {
+OctreeNode * Octree::fetch(OctreeNodeData &data, OctreeNode ** out, int i, bool simplification, ChunkContext * context) {
     if(out[i] == NULL) {
-        glm::vec3 pos = cube.getCenter() + cube.getLengthX() * Octree::getShift(i);
-        glm::vec4 key = glm::vec4(pos, level);
+        glm::vec3 pos = data.cube.getCenter() + data.cube.getLength() * Octree::getShift(i);
+        glm::vec4 key = glm::vec4(pos, data.level);
         OctreeNode * node;
         if(context->nodeCache.find(key) != context->nodeCache.end()) {
             node = context->nodeCache[key];
         } else {
-            node = getNodeAt(pos, level, simplification);
+            node = getNodeAt(pos, data.level, simplification);
             context->nodeCache[key] = node;
         }
         out[i] = node;
@@ -213,9 +236,9 @@ void Octree::handleQuadNodes(OctreeNodeData &data, float * sdf, OctreeNodeTriang
 			glm::ivec4 quad = TESSELATION_ORDERS[k];
             Vertex vertices[4] = { Vertex(), Vertex(), Vertex(), Vertex() };
 			for(int i =0; i < 4 ; ++i) {
-				OctreeNode * n = fetch(data.cube, data.level, neighbors, quad[i], simplification, context);
-                if(n != NULL && !n->isSolid() && !n->isEmpty()) {
-                    vertices[i] = n->vertex;
+				OctreeNode * childNode = fetch(data, neighbors, quad[i], simplification, context);
+                if(childNode != NULL && !childNode->isSolid() && !childNode->isEmpty()) {
+                    vertices[i] = childNode->vertex;
                 } else {
                     vertices[i].brushIndex = DISCARD_BRUSH_INDEX;
                 }
@@ -231,17 +254,6 @@ void Octree::handleQuadNodes(OctreeNodeData &data, float * sdf, OctreeNodeTriang
 	}
 }
 
-glm::vec3 sdf_rotated(glm::vec3 p, glm::quat q, glm::vec3 pivot) {
-    // Step 1: Translate point to rotation origin
-    glm::vec3 local = p - pivot;
-
-    // Step 2: Apply inverse rotation
-    glm::vec3 rotated = glm::inverse(q) * local;
-
-    // Step 3: Translate back
-    return rotated + pivot;
-}
-
 float Octree::evaluateSDF(ShapeArgs * args, std::unordered_map<glm::vec3, float> * cache, glm::vec3 p) {
     if(cache->find(p) != cache->end()) {
        return (*cache)[p];
@@ -251,7 +263,6 @@ float Octree::evaluateSDF(ShapeArgs * args, std::unordered_map<glm::vec3, float>
         return d;
     }
 }
-
 
 void Octree::buildSDF(ShapeArgs * args, BoundingCube &cube, float * shapeSDF, float * resultSDF, float * inheritedShapeSDF, float * inheritedResultSDF, float * existingResultSDF, ChunkContext * chunkContext) {
     const glm::vec3 min = cube.getMin();

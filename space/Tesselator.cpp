@@ -13,7 +13,7 @@ void Tesselator::virtualize(Octree * tree, float * sdf, OctreeNodeData &data, ui
             float childSDF[8];
             SDF::getChildSDF(sdf, i, childSDF);
             SpaceType spaceType = SDF::eval(childSDF);
-            if(spaceType == SpaceType::Surface) {
+            //if(spaceType == SpaceType::Surface) {
                 OctreeNodeData childData(
                     data.level + 1, 
                     data.node, 
@@ -21,35 +21,37 @@ void Tesselator::virtualize(Octree * tree, float * sdf, OctreeNodeData &data, ui
                     data.context
                 );
                 virtualize(tree, childSDF, childData, levels);          
-            }
+            //}
         }
     }
 }
 
-void Tesselator::before(Octree * tree, OctreeNodeData &params) {		
-    if(params.node->isLeaf() && !params.node->isSolid() && !params.node->isEmpty()) {
+bool Tesselator::test(Octree * tree, OctreeNodeData &params) {
+    bool shouldContinue = !params.node->isEmpty() && !params.node->isSolid() && !params.node->isLeaf();
+    if(!shouldContinue) {
+        //uint levels = tree->getCurrentLevel(params);
         uint levels = tree->getMaxLevel(params.cube);
         if(params.level < levels) {
-            std::cout << "Virtualize at level " << params.level << "/" << levels << std::endl;
+        //    std::cout << "Virtualize at level " << params.level << "/" << levels << std::endl;
         }
         virtualize(tree, params.node->sdf, params, levels);
-	}
+    }
+	return shouldContinue;
+}
+
+void Tesselator::before(Octree * tree, OctreeNodeData &params) {		
+
 }
 
 void Tesselator::after(Octree * tree, OctreeNodeData &params) {
 	return;
 }
 
-bool Tesselator::test(Octree * tree, OctreeNodeData &params) {			
-	return !params.node->isEmpty() && !params.node->isSolid() && !params.node->isLeaf();
-}
-
 void Tesselator::getOrder(Octree * tree, OctreeNodeData &params, uint8_t * order){
-	for(int i = 7 ; i >= 0 ; --i) {
+    for(int i = 0 ; i < 8 ; ++i) {
 		order[i] = i;
 	}
 }
-
 
 int triplanarPlane(glm::vec3 normal) {
     glm::vec3 absNormal = glm::abs(normal);
