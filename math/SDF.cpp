@@ -430,14 +430,14 @@ glm::vec3 OctahedronDistanceFunction::getCenter(Transformation model) const {
 }
 
 
-PyramidDistanceFunction::PyramidDistanceFunction(glm::vec3 base, float height): base(base), height(height) {
+PyramidDistanceFunction::PyramidDistanceFunction(glm::vec3 position, float height, float width): position(position), height(height), width(width) {
     
 }
 
 float PyramidDistanceFunction::distance(const glm::vec3 p, Transformation model)  {
     glm::vec3 pos = p - getCenter(model); // Move point into model space
     pos = glm::inverse(model.quaternion) * pos;
-    return SDF::pyramid(pos, height, 0.5f, glm::scale(glm::mat4(1.0f), model.scale));
+    return SDF::pyramid(pos, height, width*0.5, glm::scale(glm::mat4(1.0f), model.scale));
 }
 
 SdfType PyramidDistanceFunction::getType() const {
@@ -445,7 +445,7 @@ SdfType PyramidDistanceFunction::getType() const {
 }
 
 glm::vec3 PyramidDistanceFunction::getCenter(Transformation model) const {
-    return base+model.translate;
+    return position+model.translate;
 }
 
 

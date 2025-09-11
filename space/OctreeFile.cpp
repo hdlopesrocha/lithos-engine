@@ -14,9 +14,8 @@ std::string getChunkName(BoundingCube cube) {
 
 OctreeNode * OctreeFile::loadRecursive(int i, std::vector<OctreeNodeSerialized> * nodes, float chunkSize, std::string filename, BoundingCube cube, std::string baseFolder) {
 	OctreeNodeSerialized serialized = nodes->at(i);
-	glm::vec3 position = SDF::getPosition(serialized.sdf, cube);
+	glm::vec3 position = SDF::getAveragePosition(serialized.sdf, cube);
 	glm::vec3 normal = SDF::getNormalFromPosition(serialized.sdf, cube, position);
-
 	Vertex vertex(position, normal, glm::vec2(0), serialized.brushIndex);
 
 	OctreeNode * node = tree->allocator.allocateOctreeNode(cube)->init(vertex);

@@ -168,10 +168,11 @@ class OctahedronDistanceFunction : public SignedDistanceFunction {
 
 class PyramidDistanceFunction : public SignedDistanceFunction {
     public:
-    glm::vec3 base; 
+    glm::vec3 position; 
     float height;
+    float width;
 
-	PyramidDistanceFunction(glm::vec3 base, float height);
+	PyramidDistanceFunction(glm::vec3 position, float height, float width);
 	float distance(const glm::vec3 p, Transformation model) override;
     SdfType getType() const override; 
     glm::vec3 getCenter(Transformation model) const override;
@@ -387,7 +388,7 @@ class WrappedPyramid : public WrappedSignedDistanceFunction {
 
     BoundingSphere getSphere() const {
         PyramidDistanceFunction * f = (PyramidDistanceFunction*) function;
-        return BoundingSphere(f->getCenter(model), f->height*glm::length(model.scale) + bias);
+        return BoundingSphere(f->getCenter(model), glm::max(f->height, f->width*0.5f) * glm::length(model.scale) + bias);
     };
 
     ContainmentType check(const BoundingCube &cube) const override {

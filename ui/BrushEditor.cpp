@@ -151,8 +151,12 @@ void BrushEditor::draw2d(float time){
         case SdfType::PYRAMID:
         {
             PyramidDistanceFunction* function = (PyramidDistanceFunction*)brushContext->currentFunction;
-            ImGui::Text("Base: ");
-            if(ImGui::InputFloat3("m##pyramidPosition", &(function->base[0]))) {
+            ImGui::Text("Position: ");
+            if(ImGui::InputFloat3("m##pyramidPosition", &(function->position[0]))) {
+                changed = true; 
+            }
+            ImGui::Text("Width: ");
+            if(ImGui::InputFloat("m##pyramidWidth", &(function->width))) {
                 changed = true; 
             }
             ImGui::Text("Height: ");

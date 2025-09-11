@@ -388,7 +388,7 @@ void Scene::generate(Camera &camera) {
 		std::cout << "\tsolidSpace.add(pyramid)"<< std::endl;
 		glm::vec3 center = glm::vec3(0,500,0);
 		float radius = 256.0f;
-		PyramidDistanceFunction function(glm::vec3(0.0f), 1.0f);
+		PyramidDistanceFunction function(glm::vec3(0.0f), 1.0f, 1.0f);
 		Transformation model2(glm::vec3(radius), center, 0,0,0);
 
 		WrappedPyramid wrappedFunction = WrappedPyramid(&function, minSize, model2);
