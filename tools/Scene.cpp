@@ -383,11 +383,11 @@ void Scene::generate(Camera &camera) {
 	}
 
 	{
-		Transformation model = Transformation();
 		std::cout << "\tsolidSpace.add(octahedron)"<< std::endl;
 		glm::vec3 center = glm::vec3(0,400,-600);
 		float radius = 256.0f;
-		OctahedronDistanceFunction function(center, radius);
+		OctahedronDistanceFunction function = OctahedronDistanceFunction();
+		Transformation model = Transformation(glm::vec3(radius), center, 0, 0, 0);
 		WrappedOctahedron wrappedFunction = WrappedOctahedron(&function, minSize, model);
 		solidSpace.add(&wrappedFunction, model, SimpleBrush(4), minSize, *brushContext->simplifier, solidSpaceChangeHandler);
 	}

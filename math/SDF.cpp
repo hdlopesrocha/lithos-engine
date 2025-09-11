@@ -433,14 +433,20 @@ glm::vec3 HeightMapDistanceFunction::getCenter(Transformation model) const {
     return this->map->getCenter();
 }
 
-OctahedronDistanceFunction::OctahedronDistanceFunction(glm::vec3 center, float radius): center(center), radius(radius) {
+OctahedronDistanceFunction::OctahedronDistanceFunction() {
     
 }
 
 float OctahedronDistanceFunction::distance(const glm::vec3 p, Transformation model) {
-    glm::vec3 pos = p - getCenter(model); // Move point into model space
+    glm::vec3 pos = p - getCenter(model);
     pos = glm::inverse(model.quaternion) * pos;
-    return SDF::octahedron(pos/model.scale, radius);
+
+    glm::vec3 q = pos / model.scale;
+
+    float d = SDF::octahedron(q, 1.0f);
+    float minScale = glm::min(glm::min(model.scale.x, model.scale.y), model.scale.z);
+
+    return d * minScale;
 }
 
 SdfType OctahedronDistanceFunction::getType() const {
@@ -448,7 +454,7 @@ SdfType OctahedronDistanceFunction::getType() const {
 }
 
 glm::vec3 OctahedronDistanceFunction::getCenter(Transformation model) const {
-    return this->center+model.translate;
+    return model.translate;
 }
 
 

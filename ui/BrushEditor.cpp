@@ -108,19 +108,6 @@ void BrushEditor::draw2d(float time){
             break;
         }
         break;
-        case SdfType::OCTAHEDRON:
-        {
-            OctahedronDistanceFunction* function = (OctahedronDistanceFunction*)brushContext->currentFunction;
-            ImGui::Text("Position: ");
-            if(ImGui::InputFloat3("m##octahedronPosition", &(function->center[0]))) {
-                changed = true; 
-            }
-            ImGui::Text("Radius: ");
-            if(ImGui::InputFloat("m##octahedronRadius", &(function->radius))) {
-                changed = true; 
-            }
-        }
-        break;  
 
         case SdfType::PYRAMID:
         {

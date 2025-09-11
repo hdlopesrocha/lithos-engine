@@ -80,20 +80,6 @@ template<typename T> void BrushEventHandler<T>::handle(T * event) {
             }
         }
 
-        if(context.currentFunction == context.functions[3]) {
-            OctahedronDistanceFunction * function = (OctahedronDistanceFunction*) context.currentFunction;
-            if(event->getType() == EVENT_VECTOR_3D_0) {
-                Axis3dEvent * e = (Axis3dEvent*) event;
-                TranslateHandler(context.camera, &(function->center)).handle(e);
-                changed = true;
-            }
-            if(event->getType() == EVENT_FLOAT_1_X) {
-                FloatEvent * e = (FloatEvent*) event;
-                ScaleHandler(&(function->radius)).handle(e);
-                changed = true;
-            }
-        }
-
         if(context.currentFunction == context.functions[4]) {
             PyramidDistanceFunction * function = (PyramidDistanceFunction*) context.currentFunction;
             if(event->getType() == EVENT_VECTOR_3D_0) {

@@ -166,10 +166,8 @@ class HeightMapDistanceFunction : public SignedDistanceFunction {
 
 class OctahedronDistanceFunction : public SignedDistanceFunction {
     public:
-    glm::vec3 center;
-    float radius;	
-
-	OctahedronDistanceFunction(glm::vec3 center, float radius);
+ 
+	OctahedronDistanceFunction();
 	float distance(const glm::vec3 p, Transformation model) override;
     SdfType getType() const override; 
     glm::vec3 getCenter(Transformation model) const override;
@@ -394,7 +392,7 @@ class WrappedOctahedron : public WrappedSignedDistanceFunction {
 
     BoundingSphere getSphere() const {
         OctahedronDistanceFunction * f = (OctahedronDistanceFunction*) function;
-        return BoundingSphere(f->getCenter(model), f->radius*glm::length(model.scale) + bias);
+        return BoundingSphere(f->getCenter(model), glm::length(model.scale) + bias);
     };
 
     ContainmentType check(const BoundingCube &cube) const override {
@@ -407,8 +405,7 @@ class WrappedOctahedron : public WrappedSignedDistanceFunction {
         return cube.contains(sphere);
     };
     float getLength() const override {
-        OctahedronDistanceFunction * f = (OctahedronDistanceFunction*) function;
-        return f->radius*glm::length(model.scale) + bias;
+        return glm::length(model.scale) + bias;
     };
 
 };
