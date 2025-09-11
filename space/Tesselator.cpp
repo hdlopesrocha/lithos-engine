@@ -13,7 +13,7 @@ void Tesselator::virtualize(Octree * tree, float * sdf, OctreeNodeData &data, ui
             float childSDF[8];
             SDF::getChildSDF(sdf, i, childSDF);
             SpaceType spaceType = SDF::eval(childSDF);
-            //if(spaceType == SpaceType::Surface) {
+            if(spaceType == SpaceType::Surface) {
                 OctreeNodeData childData(
                     data.level + 1, 
                     data.node, 
@@ -21,7 +21,7 @@ void Tesselator::virtualize(Octree * tree, float * sdf, OctreeNodeData &data, ui
                     data.context
                 );
                 virtualize(tree, childSDF, childData, levels);          
-            //}
+            }
         }
     }
 }
