@@ -2,7 +2,7 @@
 #define TOOLS_HPP
 
 #define DEBUG_OCTREE_WIREFRAME 1
-#define STARTUP_GENERATE 1
+//#define STARTUP_GENERATE 1
 //#define CLOSE_AFTER_GENERATE 1
 #define TYPE_INSTANCE_AMOUNT_DRAWABLE 0x1
 #define TYPE_INSTANCE_FULL_DRAWABLE 0x2
@@ -207,29 +207,6 @@ class BrushSpaceChangeHandler : public OctreeChangeHandler {
 	void erase(OctreeNode* nodeId) override;
 };
 
-
-struct ComputeShaderInfo {
-	public:
-	ComputeShader * computeShader;
-
-	ComputeShaderInfo(ComputeShader * computeShader) {
-		this->computeShader = computeShader;
-	}
-};
-
-class ComputeShaderInfoHandler : public OctreeChangeHandler {
-	std::unordered_map<OctreeNode*, GeometrySSBO> * info;
-
-	public:
-	ComputeShaderInfoHandler();
-	ComputeShaderInfoHandler(
-		std::unordered_map<OctreeNode*, GeometrySSBO> * info);
-
-	void create(OctreeNode* nodeId) override;
-	void update(OctreeNode* nodeId) override;
-	void erase(OctreeNode* nodeId) override;
-};
-
 class BrushContext {
 	public:
 	BrushMode mode;
@@ -280,10 +257,6 @@ class Scene {
 	OctreeLayer<DebugInstanceData> octreeWireframeInfo;
 	OctreeLayer<InstanceData> vegetationInfo;
 
-	OctreeSSBO octreeSSBO;
-	InputSSBO inputSSBO;
-	OutputSSBO outputSSBO;
-
 	LiquidSpaceChangeHandler * liquidSpaceChangeHandler;
 	SolidSpaceChangeHandler * solidSpaceChangeHandler;
 	BrushSpaceChangeHandler * brushSpaceChangeHandler;
@@ -294,11 +267,10 @@ class Scene {
 	OctreeVisibilityChecker * shadowRenderer[SHADOW_MATRIX_COUNT];
 
 	Settings * settings;
-	ComputeShader * computeShader;
 	BrushContext * brushContext;
 	
 
-	Scene(Settings * settings, ComputeShader *computeShader, BrushContext * brushContext);
+	Scene(Settings * settings, BrushContext * brushContext);
 
 	bool processSpace();
 	bool processLiquid(OctreeNodeData &data, Octree * tree);
@@ -322,7 +294,6 @@ class Scene {
 
 	void save(std::string folderPath, Camera &camera);
 	void load(std::string folderPath, Camera &camera);
-	bool computeGeometry(OctreeNodeData &data, Octree * tree, std::unordered_map<OctreeNode*, GeometrySSBO>* infos);
 
 };
 

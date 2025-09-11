@@ -31,8 +31,6 @@ class MainApplication : public LithosApplication {
 
 	GLuint programSwap;
 	GLuint program3d;
-	GLuint octreeComputeShader3d;
-	ComputeShader computeShader;
 	GLuint programBillboard;
 	GLuint programImpostor;
 	GLuint programDeferred;
@@ -124,9 +122,7 @@ public:
 		std::cout << "sizeof(ChildBlock) = " << sizeof(ChildBlock) << std::endl; 
 		std::cout << "sizeof(OctreeNodeSerialized) = " << sizeof(OctreeNodeSerialized) << std::endl; 
 		std::cout << "sizeof(OctreeNodeCubeSerialized) = " << sizeof(OctreeNodeCubeSerialized) << std::endl; 
-		std::cout << "sizeof(ComputeShaderInput) = " << sizeof(ComputeShaderInput) << std::endl; 
-		std::cout << "sizeof(ComputeShaderOutput) = " << sizeof(ComputeShaderOutput) << std::endl; 
-
+	
 		// Register all GDAL drivers
 		GDALAllRegister();
 
@@ -152,10 +148,6 @@ public:
 	
 
 	
-		octreeComputeShader3d = createShaderProgram({
-			compileShader(GlslInclude::replaceIncludes(includes,readFile("shaders/octree_compute.glsl")), GL_COMPUTE_SHADER)
-		});
-
 		programAtlas = createShaderProgram({
 			compileShader(GlslInclude::replaceIncludes(includes,readFile("shaders/texture/atlas_vertex.glsl")),GL_VERTEX_SHADER), 
 			compileShader(GlslInclude::replaceIncludes(includes,readFile("shaders/texture/atlas_fragment.glsl")),GL_FRAGMENT_SHADER) 
@@ -225,9 +217,8 @@ public:
 			compileShader(GlslInclude::replaceIncludes(includes,readFile("shaders/deferred_fragment.glsl")),GL_FRAGMENT_SHADER) 
 		});
 
-		computeShader = ComputeShader(octreeComputeShader3d);
 		brushContext = new BrushContext(settings, &camera);
-		mainScene = new Scene(settings, &computeShader, brushContext);
+		mainScene = new Scene(settings, brushContext);
 		#ifdef STARTUP_GENERATE
 		mainScene->generate(camera);
 		#endif
