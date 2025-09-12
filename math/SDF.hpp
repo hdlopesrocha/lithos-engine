@@ -189,21 +189,20 @@ class WrappedSignedDistanceFunction : public SignedDistanceFunction {
     protected:
     SignedDistanceFunction * function;
     float bias;
-    Transformation &model;
     std::unordered_map<glm::vec3, float> cacheSDF;
     std::mutex mtx;
     public:
     bool cacheEnabled = false;
 
 
-    WrappedSignedDistanceFunction(SignedDistanceFunction * function, float bias, Transformation &model) : function(function), bias(bias), model(model) {
+    WrappedSignedDistanceFunction(SignedDistanceFunction * function, float bias) : function(function), bias(bias) {
 
     }
     virtual ~WrappedSignedDistanceFunction() = default;
 
 
     virtual ContainmentType check(const BoundingCube &cube, const Transformation &model) const = 0;
-    virtual float getLength() const = 0;
+    virtual float getLength(const Transformation &model) const = 0;
 
     virtual bool isContained(const BoundingCube &cube, const Transformation &model) const = 0;
 
@@ -243,26 +242,26 @@ class WrappedSignedDistanceFunction : public SignedDistanceFunction {
 
 class WrappedSphere : public WrappedSignedDistanceFunction {
     public:
-    WrappedSphere(SphereDistanceFunction * function, float bias, Transformation &model) : WrappedSignedDistanceFunction(function, bias, model) {
+    WrappedSphere(SphereDistanceFunction * function, float bias) : WrappedSignedDistanceFunction(function, bias) {
 
     }
 
-    BoundingSphere getSphere() const {
+    BoundingSphere getSphere(const Transformation &model) const {
         SphereDistanceFunction * f = (SphereDistanceFunction*) function;
         return BoundingSphere(f->getCenter(model), glm::length(model.scale) + bias);
     };
 
     ContainmentType check(const BoundingCube &cube, const Transformation &model) const override {
-        BoundingSphere sphere = getSphere();
+        BoundingSphere sphere = getSphere(model);
         return sphere.test(cube);
     };
 
     bool isContained(const BoundingCube &cube, const Transformation &model) const override {
-        BoundingSphere sphere = getSphere();
+        BoundingSphere sphere = getSphere(model);
         return cube.contains(sphere);
     };
 
-    float getLength() const override {
+    float getLength(const Transformation &model) const override {
         return glm::length(model.scale) + bias;
     };
 
@@ -270,26 +269,26 @@ class WrappedSphere : public WrappedSignedDistanceFunction {
 
 class WrappedTorus : public WrappedSignedDistanceFunction {
     public:
-    WrappedTorus(TorusDistanceFunction * function, float bias, Transformation &model) : WrappedSignedDistanceFunction(function, bias, model) {
+    WrappedTorus(TorusDistanceFunction * function, float bias) : WrappedSignedDistanceFunction(function, bias) {
 
     }
 
-    BoundingSphere getSphere() const {
+    BoundingSphere getSphere(const Transformation &model) const {
         TorusDistanceFunction * f = (TorusDistanceFunction*) function;
         return BoundingSphere(f->getCenter(model), glm::length(model.scale) + bias);
     };
 
     ContainmentType check(const BoundingCube &cube, const Transformation &model) const override {
-        BoundingSphere sphere = getSphere();
+        BoundingSphere sphere = getSphere(model);
         return sphere.test(cube);
     };
 
     bool isContained(const BoundingCube &cube, const Transformation &model) const override {
-        BoundingSphere sphere = getSphere();
+        BoundingSphere sphere = getSphere(model);
         return cube.contains(sphere);
     };
 
-    float getLength() const override {
+    float getLength(const Transformation &model) const override {
         TorusDistanceFunction * f = (TorusDistanceFunction*) function;
         float R = f->radius.x;
         float r = f->radius.y;
@@ -306,37 +305,37 @@ class WrappedTorus : public WrappedSignedDistanceFunction {
 
 class WrappedBox : public WrappedSignedDistanceFunction {
     public:
-    WrappedBox(BoxDistanceFunction * function, float bias, Transformation &model) : WrappedSignedDistanceFunction(function, bias, model) {
+    WrappedBox(BoxDistanceFunction * function, float bias) : WrappedSignedDistanceFunction(function, bias) {
 
     }
 
-    BoundingSphere getSphere() const {
+    BoundingSphere getSphere(const Transformation &model) const {
         BoxDistanceFunction * f = (BoxDistanceFunction*) function;
         return BoundingSphere(f->getCenter(model), glm::length(model.scale)+ bias);
     };
 
     ContainmentType check(const BoundingCube &cube, const Transformation &model) const override {
-        BoundingSphere sphere = getSphere();
+        BoundingSphere sphere = getSphere(model);
         return sphere.test(cube);
     };
 
     bool isContained(const BoundingCube &cube, const Transformation &model) const override {
-        BoundingSphere sphere = getSphere();
+        BoundingSphere sphere = getSphere(model);
         return cube.contains(sphere);
     };
 
-    float getLength() const override {
+    float getLength(const Transformation &model) const override {
         return glm::length(model.scale) + bias;
     };
 };
 
 class WrappedCapsule : public WrappedSignedDistanceFunction {
     public:
-    WrappedCapsule(CapsuleDistanceFunction * function, float bias, Transformation &model) : WrappedSignedDistanceFunction(function, bias, model) {
+    WrappedCapsule(CapsuleDistanceFunction * function, float bias) : WrappedSignedDistanceFunction(function, bias) {
 
     }
 
-    BoundingBox getBox() const {
+    BoundingBox getBox(const Transformation &model) const {
         CapsuleDistanceFunction * f = (CapsuleDistanceFunction*) function;
         glm::vec3 min = glm::min(f->a, f->b)*glm::length(model.scale)+model.translate;
         glm::vec3 max = glm::max(f->a, f->b)*glm::length(model.scale)+model.translate;
@@ -347,23 +346,23 @@ class WrappedCapsule : public WrappedSignedDistanceFunction {
     };
 
     ContainmentType check(const BoundingCube &cube, const Transformation &model) const override {
-        BoundingBox box = getBox();
+        BoundingBox box = getBox(model);
         return box.test(cube);
     };
 
     bool isContained(const BoundingCube &cube, const Transformation &model) const override {
-        BoundingBox box = getBox();
+        BoundingBox box = getBox(model);
         return cube.contains(box);
     };
-    float getLength() const override {
-        BoundingBox box = getBox();
+    float getLength(const Transformation &model) const override {
+        BoundingBox box = getBox(model);
         return glm::distance(box.getMin(), box.getMax());
     };
 };
 
 class WrappedHeightMap : public WrappedSignedDistanceFunction {
     public:
-    WrappedHeightMap(HeightMapDistanceFunction * function, float bias, Transformation &model) : WrappedSignedDistanceFunction(function, bias, model) {
+    WrappedHeightMap(HeightMapDistanceFunction * function, float bias) : WrappedSignedDistanceFunction(function, bias) {
 
     }
 
@@ -381,7 +380,7 @@ class WrappedHeightMap : public WrappedSignedDistanceFunction {
         BoundingBox box = getBox();
         return cube.contains(box);
     };
-    float getLength() const override {
+    float getLength(const Transformation &model) const override {
         HeightMapDistanceFunction * f = (HeightMapDistanceFunction*) function;
         return glm::distance(f->map->getMin(), f->map->getMax()) + bias;
     };
@@ -389,25 +388,25 @@ class WrappedHeightMap : public WrappedSignedDistanceFunction {
 
 class WrappedOctahedron : public WrappedSignedDistanceFunction {
     public:
-    WrappedOctahedron(OctahedronDistanceFunction * function, float bias, Transformation &model) : WrappedSignedDistanceFunction(function, bias, model) {
+    WrappedOctahedron(OctahedronDistanceFunction * function, float bias) : WrappedSignedDistanceFunction(function, bias) {
 
     }
 
-    BoundingSphere getSphere() const {
+    BoundingSphere getSphere(const Transformation &model) const {
         OctahedronDistanceFunction * f = (OctahedronDistanceFunction*) function;
         return BoundingSphere(f->getCenter(model), glm::length(model.scale) + bias);
     };
 
     ContainmentType check(const BoundingCube &cube, const Transformation &model) const override {
-        BoundingSphere sphere = getSphere();
+        BoundingSphere sphere = getSphere(model);
         return sphere.test(cube);
     };
 
     bool isContained(const BoundingCube &cube, const Transformation &model) const override {
-        BoundingSphere sphere = getSphere();
+        BoundingSphere sphere = getSphere(model);
         return cube.contains(sphere);
     };
-    float getLength() const override {
+    float getLength(const Transformation &model) const override {
         return glm::length(model.scale) + bias;
     };
 
@@ -415,7 +414,7 @@ class WrappedOctahedron : public WrappedSignedDistanceFunction {
 
 class WrappedPyramid : public WrappedSignedDistanceFunction {
     public:
-    WrappedPyramid(PyramidDistanceFunction * function, float bias, Transformation &model) : WrappedSignedDistanceFunction(function, bias, model) {
+    WrappedPyramid(PyramidDistanceFunction * function, float bias) : WrappedSignedDistanceFunction(function, bias) {
 
     }
 
@@ -423,21 +422,21 @@ class WrappedPyramid : public WrappedSignedDistanceFunction {
         return glm::length(glm::vec3(width, height, depth));
     }
 
-    BoundingSphere getSphere() const {
+    BoundingSphere getSphere(const Transformation &model) const {
         PyramidDistanceFunction * f = (PyramidDistanceFunction*) function;
         return BoundingSphere(f->getCenter(model), 0.5f * glm::length(model.scale) + bias);
     };
 
     ContainmentType check(const BoundingCube &cube, const Transformation &model) const override {
-        BoundingSphere sphere = getSphere();
+        BoundingSphere sphere = getSphere(model);
         return sphere.test(cube);
     };
 
     bool isContained(const BoundingCube &cube, const Transformation &model) const override {
-        BoundingSphere sphere = getSphere();
+        BoundingSphere sphere = getSphere(model);
         return cube.contains(sphere);
     };
-    float getLength() const override {
+    float getLength(const Transformation &model) const override {
         return glm::length(model.scale) + bias;
     };
 };

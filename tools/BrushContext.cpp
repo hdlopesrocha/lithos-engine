@@ -20,27 +20,27 @@ BrushContext::BrushContext(Settings * settings, Camera * camera) : settings(sett
 WrappedSignedDistanceFunction * BrushContext::getWrapped() {
     if(currentFunction == functions[0]) {
         SphereDistanceFunction * function = (SphereDistanceFunction*) currentFunction;
-        return new WrappedSphere(function, detail, model);
+        return new WrappedSphere(function, detail);
     }
     else if(currentFunction == functions[1]) {
         BoxDistanceFunction * function = (BoxDistanceFunction*) currentFunction;
-        return new WrappedBox(function, detail, model);
+        return new WrappedBox(function, detail);
     }
     else if(currentFunction == functions[2]) {
         CapsuleDistanceFunction * function = (CapsuleDistanceFunction*) currentFunction;
-        return new WrappedCapsule(function, detail, model);
+        return new WrappedCapsule(function, detail);
     }
     else if(currentFunction == functions[3]) {
         OctahedronDistanceFunction * function = (OctahedronDistanceFunction*) currentFunction;
-        return new WrappedOctahedron(function, detail, model);
+        return new WrappedOctahedron(function, detail);
     }
     else if(currentFunction == functions[4]) {
         PyramidDistanceFunction * function = (PyramidDistanceFunction*) currentFunction;
-        return new WrappedPyramid(function, detail, model);
+        return new WrappedPyramid(function, detail);
     }
     else if(currentFunction == functions[5]) {
         TorusDistanceFunction * function = (TorusDistanceFunction*) currentFunction;
-        return new WrappedTorus(function, detail, model);
+        return new WrappedTorus(function, detail);
     }
     return NULL;
 }
@@ -49,7 +49,7 @@ WrappedSignedDistanceFunction * BrushContext::getWrapped() {
 void BrushContext::apply(Octree &space, OctreeChangeHandler * handler, bool preview) {
     WrappedSignedDistanceFunction * wrapped = getWrapped();
     if(wrapped) {
-        float safeDetail = glm::ceil(wrapped->getLength() * settings->safetyDetailRatio);
+        float safeDetail = glm::ceil(wrapped->getLength(this->model) * settings->safetyDetailRatio);
         if(detail < safeDetail) {
             detail = safeDetail;
             std::cout << "BrushContext::apply: detail increased to " << std::to_string(detail) << std::endl;

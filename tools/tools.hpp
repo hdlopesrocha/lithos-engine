@@ -366,7 +366,7 @@ class OctreeDifferenceFunction : public SignedDistanceFunction {
 
 class WrappedOctreeDifference : public WrappedSignedDistanceFunction {
     public:
-    WrappedOctreeDifference(OctreeDifferenceFunction * function, float bias, Transformation model) : WrappedSignedDistanceFunction(function, bias, model) {
+    WrappedOctreeDifference(OctreeDifferenceFunction * function, float bias) : WrappedSignedDistanceFunction(function, bias) {
 
     }
 
@@ -389,7 +389,7 @@ class WrappedOctreeDifference : public WrappedSignedDistanceFunction {
         BoundingBox box = getBox();
         return box.getCenter();
     };
-	float getLength() const override {
+	float getLength(const Transformation &model) const override {
 		BoundingBox box = getBox();
 		return glm::length(box.getLength()) + bias;
 	};
