@@ -286,7 +286,7 @@ void Octree::buildSDF(ShapeArgs * args, BoundingCube &cube, float * shapeSDF, fl
 }
 
 void Octree::expand(const WrappedSignedDistanceFunction *function, Transformation model) {
-	while (!function->isContained(*this)) {
+	while (!function->isContained(*this, model)) {
 		glm::vec3 point = function->getCenter(model);
 	    unsigned int i = getNodeIndex(point, *this) ^ 0x7;
 
@@ -352,7 +352,7 @@ bool Octree::isChunkNode(float length) {
 }
 
 NodeOperationResult Octree::shape(OctreeNodeFrame frame, ShapeArgs * args, ChunkContext * chunkContext) {    
-    ContainmentType check = args->function->check(frame.cube);
+    ContainmentType check = args->function->check(frame.cube, args->model);
     OctreeNode * node = frame.node;
 
     if(check == ContainmentType::Disjoint) {

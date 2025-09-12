@@ -358,9 +358,9 @@ class OctreeDifferenceFunction : public SignedDistanceFunction {
     Octree * tree;
     BoundingBox box;
     OctreeDifferenceFunction(Octree * tree, BoundingBox box);
-    float distance(const glm::vec3 p, Transformation model) override;
+    float distance(const glm::vec3 p, const Transformation &model) override;
 	SdfType getType() const override;
-	glm::vec3 getCenter(Transformation model) const override;
+	glm::vec3 getCenter(const Transformation &model) const override;
 
 };
 
@@ -375,17 +375,17 @@ class WrappedOctreeDifference : public WrappedSignedDistanceFunction {
         return BoundingBox(f->box.getMin()-glm::vec3(bias), f->box.getMax()+glm::vec3(bias));
     }
         
-    ContainmentType check(const BoundingCube &cube) const override {
+    ContainmentType check(const BoundingCube &cube, const Transformation &model) const override {
         BoundingBox box = getBox();
         return box.test(cube);
     };
 
-    bool isContained(const BoundingCube &cube) const override {
+    bool isContained(const BoundingCube &cube, const Transformation &model) const override {
         BoundingBox box = getBox();
         return cube.contains(box);
     };
 
-    glm::vec3 getCenter(Transformation model) const override {
+    glm::vec3 getCenter(const Transformation &model) const override {
         BoundingBox box = getBox();
         return box.getCenter();
     };

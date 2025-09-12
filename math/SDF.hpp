@@ -104,8 +104,8 @@ public:
 class SignedDistanceFunction {
     public:
     virtual SdfType getType() const = 0; 
-	virtual float distance(const glm::vec3 p, Transformation model) = 0;
-    virtual glm::vec3 getCenter(Transformation model) const = 0;
+	virtual float distance(const glm::vec3 p, const Transformation &model) = 0;
+    virtual glm::vec3 getCenter(const Transformation &model) const = 0;
 };
 
 
@@ -113,9 +113,9 @@ class SphereDistanceFunction : public SignedDistanceFunction {
     public:
 	
 	SphereDistanceFunction();
-	float distance(const glm::vec3 p, Transformation model) override;
+	float distance(const glm::vec3 p, const Transformation &model) override;
     SdfType getType() const override; 
-    glm::vec3 getCenter(Transformation model) const override;
+    glm::vec3 getCenter(const Transformation &model) const override;
 
 };
 
@@ -124,9 +124,9 @@ class TorusDistanceFunction : public SignedDistanceFunction {
     glm::vec2 radius;	
 
 	TorusDistanceFunction(glm::vec2 radius);
-	float distance(const glm::vec3 p, Transformation model) override;
+	float distance(const glm::vec3 p, const Transformation &model) override;
     SdfType getType() const override; 
-    glm::vec3 getCenter(Transformation model) const override;
+    glm::vec3 getCenter(const Transformation &model) const override;
 
 };
 
@@ -134,9 +134,9 @@ class BoxDistanceFunction : public SignedDistanceFunction {
     public:
 
 	BoxDistanceFunction();
-	float distance(const glm::vec3 p, Transformation model) override;
+	float distance(const glm::vec3 p, const Transformation &model) override;
     SdfType getType() const override; 
-    glm::vec3 getCenter(Transformation model) const override;
+    glm::vec3 getCenter(const Transformation &model) const override;
 
 };
 
@@ -147,9 +147,9 @@ class CapsuleDistanceFunction : public SignedDistanceFunction {
     float radius;
 
     CapsuleDistanceFunction(glm::vec3 a, glm::vec3 b, float r);
-	float distance(const glm::vec3 p, Transformation model) override;
+	float distance(const glm::vec3 p, const Transformation &model) override;
     SdfType getType() const override; 
-    glm::vec3 getCenter(Transformation model) const override;
+    glm::vec3 getCenter(const Transformation &model) const override;
 
 };
 
@@ -157,9 +157,9 @@ class HeightMapDistanceFunction : public SignedDistanceFunction {
 	public:
 	HeightMap * map;
 	HeightMapDistanceFunction(HeightMap * map);
-	float distance(const glm::vec3 p, Transformation model) override;
+	float distance(const glm::vec3 p, const Transformation &model) override;
     SdfType getType() const override; 
-    glm::vec3 getCenter(Transformation model) const override;
+    glm::vec3 getCenter(const Transformation &model) const override;
 
 };
 
@@ -167,9 +167,9 @@ class OctahedronDistanceFunction : public SignedDistanceFunction {
     public:
  
 	OctahedronDistanceFunction();
-	float distance(const glm::vec3 p, Transformation model) override;
+	float distance(const glm::vec3 p, const Transformation &model) override;
     SdfType getType() const override; 
-    glm::vec3 getCenter(Transformation model) const override;
+    glm::vec3 getCenter(const Transformation &model) const override;
 
 };
 
@@ -177,9 +177,9 @@ class PyramidDistanceFunction : public SignedDistanceFunction {
     public:
 
 	PyramidDistanceFunction();
-	float distance(const glm::vec3 p, Transformation model) override;
+	float distance(const glm::vec3 p, const Transformation &model) override;
     SdfType getType() const override; 
-    glm::vec3 getCenter(Transformation model) const override;
+    glm::vec3 getCenter(const Transformation &model) const override;
 
 };
 
@@ -202,16 +202,16 @@ class WrappedSignedDistanceFunction : public SignedDistanceFunction {
     virtual ~WrappedSignedDistanceFunction() = default;
 
 
-    virtual ContainmentType check(const BoundingCube &cube) const = 0;
+    virtual ContainmentType check(const BoundingCube &cube, const Transformation &model) const = 0;
     virtual float getLength() const = 0;
 
-    virtual bool isContained(const BoundingCube &cube) const = 0;
+    virtual bool isContained(const BoundingCube &cube, const Transformation &model) const = 0;
 
     SdfType getType() const override {
         return function->getType();
     }    
 
-	float distance(const glm::vec3 p, Transformation model) override {
+	float distance(const glm::vec3 p, const Transformation &model) override {
         if(cacheEnabled){
             mtx.lock();
             auto it = cacheSDF.find(p);
@@ -235,7 +235,7 @@ class WrappedSignedDistanceFunction : public SignedDistanceFunction {
         }
     }
 
-    glm::vec3 getCenter(Transformation model) const override {
+    glm::vec3 getCenter(const Transformation &model) const override {
         return function->getCenter(model);
     };
 
@@ -252,12 +252,12 @@ class WrappedSphere : public WrappedSignedDistanceFunction {
         return BoundingSphere(f->getCenter(model), glm::length(model.scale) + bias);
     };
 
-    ContainmentType check(const BoundingCube &cube) const override {
+    ContainmentType check(const BoundingCube &cube, const Transformation &model) const override {
         BoundingSphere sphere = getSphere();
         return sphere.test(cube);
     };
 
-    bool isContained(const BoundingCube &cube) const override {
+    bool isContained(const BoundingCube &cube, const Transformation &model) const override {
         BoundingSphere sphere = getSphere();
         return cube.contains(sphere);
     };
@@ -279,12 +279,12 @@ class WrappedTorus : public WrappedSignedDistanceFunction {
         return BoundingSphere(f->getCenter(model), glm::length(model.scale) + bias);
     };
 
-    ContainmentType check(const BoundingCube &cube) const override {
+    ContainmentType check(const BoundingCube &cube, const Transformation &model) const override {
         BoundingSphere sphere = getSphere();
         return sphere.test(cube);
     };
 
-    bool isContained(const BoundingCube &cube) const override {
+    bool isContained(const BoundingCube &cube, const Transformation &model) const override {
         BoundingSphere sphere = getSphere();
         return cube.contains(sphere);
     };
@@ -315,12 +315,12 @@ class WrappedBox : public WrappedSignedDistanceFunction {
         return BoundingSphere(f->getCenter(model), glm::length(model.scale)+ bias);
     };
 
-    ContainmentType check(const BoundingCube &cube) const override {
+    ContainmentType check(const BoundingCube &cube, const Transformation &model) const override {
         BoundingSphere sphere = getSphere();
         return sphere.test(cube);
     };
 
-    bool isContained(const BoundingCube &cube) const override {
+    bool isContained(const BoundingCube &cube, const Transformation &model) const override {
         BoundingSphere sphere = getSphere();
         return cube.contains(sphere);
     };
@@ -346,12 +346,12 @@ class WrappedCapsule : public WrappedSignedDistanceFunction {
         return BoundingBox(min - len, max + len);
     };
 
-    ContainmentType check(const BoundingCube &cube) const override {
+    ContainmentType check(const BoundingCube &cube, const Transformation &model) const override {
         BoundingBox box = getBox();
         return box.test(cube);
     };
 
-    bool isContained(const BoundingCube &cube) const override {
+    bool isContained(const BoundingCube &cube, const Transformation &model) const override {
         BoundingBox box = getBox();
         return cube.contains(box);
     };
@@ -372,12 +372,12 @@ class WrappedHeightMap : public WrappedSignedDistanceFunction {
         return BoundingBox(f->map->getMin()-glm::vec3(bias), f->map->getMax()+glm::vec3(bias));
     }
         
-    ContainmentType check(const BoundingCube &cube) const override {
+    ContainmentType check(const BoundingCube &cube, const Transformation &model) const override {
         BoundingBox box = getBox();
         return box.test(cube);
     };
 
-    bool isContained(const BoundingCube &cube) const override {
+    bool isContained(const BoundingCube &cube, const Transformation &model) const override {
         BoundingBox box = getBox();
         return cube.contains(box);
     };
@@ -398,12 +398,12 @@ class WrappedOctahedron : public WrappedSignedDistanceFunction {
         return BoundingSphere(f->getCenter(model), glm::length(model.scale) + bias);
     };
 
-    ContainmentType check(const BoundingCube &cube) const override {
+    ContainmentType check(const BoundingCube &cube, const Transformation &model) const override {
         BoundingSphere sphere = getSphere();
         return sphere.test(cube);
     };
 
-    bool isContained(const BoundingCube &cube) const override {
+    bool isContained(const BoundingCube &cube, const Transformation &model) const override {
         BoundingSphere sphere = getSphere();
         return cube.contains(sphere);
     };
@@ -428,12 +428,12 @@ class WrappedPyramid : public WrappedSignedDistanceFunction {
         return BoundingSphere(f->getCenter(model), 0.5f * glm::length(model.scale) + bias);
     };
 
-    ContainmentType check(const BoundingCube &cube) const override {
+    ContainmentType check(const BoundingCube &cube, const Transformation &model) const override {
         BoundingSphere sphere = getSphere();
         return sphere.test(cube);
     };
 
-    bool isContained(const BoundingCube &cube) const override {
+    bool isContained(const BoundingCube &cube, const Transformation &model) const override {
         BoundingSphere sphere = getSphere();
         return cube.contains(sphere);
     };

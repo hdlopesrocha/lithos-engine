@@ -397,9 +397,9 @@ void Scene::generate(Camera &camera) {
 		glm::vec3 center = glm::vec3(0,512, 512*1);
 		float radius = 256.0f;
 		PyramidDistanceFunction function = PyramidDistanceFunction();
-		Transformation model2(glm::vec3(radius), center, 0,0,0);
-		WrappedPyramid wrappedFunction = WrappedPyramid(&function, minSize, model2);
-		solidSpace.add(&wrappedFunction, model2, SimpleBrush(4), minSize, *brushContext->simplifier, solidSpaceChangeHandler);
+		Transformation model(glm::vec3(radius), center, 0,0,0);
+		WrappedPyramid wrappedFunction = WrappedPyramid(&function, minSize, model);
+		solidSpace.add(&wrappedFunction, model, SimpleBrush(4), minSize, *brushContext->simplifier, solidSpaceChangeHandler);
 	}
 
 	{
