@@ -271,10 +271,10 @@ class Octree: public BoundingCube {
 		Octree(BoundingCube minCube, float chunkSize);
 		Octree();
 		
-		void expand(const WrappedSignedDistanceFunction *function, Transformation model);
+		void expand(const ShapeArgs &args);
 		void add(WrappedSignedDistanceFunction *function, const Transformation model, const TexturePainter &painter, float minSize, Simplifier &simplifier, OctreeChangeHandler * changeHandler);
 		void del(WrappedSignedDistanceFunction *function, const Transformation model, const TexturePainter &painter, float minSize, Simplifier &simplifier, OctreeChangeHandler * changeHandler);
-		NodeOperationResult shape(OctreeNodeFrame frame, ShapeArgs * args, ChunkContext * chunkContext);
+		NodeOperationResult shape(OctreeNodeFrame frame, const ShapeArgs &args, ChunkContext * chunkContext);
 		void iterate(IteratorHandler &handler);
 		void iterateFlat(IteratorHandler &handler);
 
@@ -296,8 +296,8 @@ class Octree: public BoundingCube {
 		void exportOctreeSerialization(OctreeSerialized * octree);
 		void exportNodesSerialization(std::vector<OctreeNodeCubeSerialized> * nodes);
 	private:
-		void buildSDF(ShapeArgs * args, BoundingCube &cube, float * shapeSDF, float * resultSDF, float * inheritedShapeSDF, float * inheritedResultSDF, float * existingResultSDF, ChunkContext * chunkContext);
-		float evaluateSDF(ShapeArgs * args, std::unordered_map<glm::vec3, float> * chunkContext, glm::vec3 p);
+		void buildSDF(const ShapeArgs &args, BoundingCube &cube, float * shapeSDF, float * resultSDF, float * inheritedShapeSDF, float * inheritedResultSDF, float * existingResultSDF, ChunkContext * chunkContext);
+		float evaluateSDF(const ShapeArgs &args, std::unordered_map<glm::vec3, float> * chunkContext, glm::vec3 p);
 	};
 
 class Simplifier {

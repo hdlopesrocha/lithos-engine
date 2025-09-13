@@ -210,8 +210,8 @@ class BrushSpaceChangeHandler : public OctreeChangeHandler {
 class BrushContext {
 	public:
 	BrushMode mode;
-	std::vector<SignedDistanceFunction*> functions;
-	SignedDistanceFunction * currentFunction;
+	std::vector<WrappedSignedDistanceFunction*> functions;
+	WrappedSignedDistanceFunction * currentFunction;
 	Simplifier * simplifier;
 	Tab currentTab;
 
@@ -223,7 +223,6 @@ class BrushContext {
 
 	BrushContext(Settings * settings, Camera * camera);
 	void apply(Octree &space, OctreeChangeHandler * handler, bool preview);
-	WrappedSignedDistanceFunction * getWrapped();
 };
 
 
@@ -366,31 +365,31 @@ class OctreeDifferenceFunction : public SignedDistanceFunction {
 
 class WrappedOctreeDifference : public WrappedSignedDistanceFunction {
     public:
-    WrappedOctreeDifference(OctreeDifferenceFunction * function, float bias) : WrappedSignedDistanceFunction(function, bias) {
+    WrappedOctreeDifference(OctreeDifferenceFunction * function) : WrappedSignedDistanceFunction(function) {
 
     }
 
-    BoundingBox getBox() const {
+    BoundingBox getBox(float bias) const {
         OctreeDifferenceFunction * f = (OctreeDifferenceFunction*) function;
         return BoundingBox(f->box.getMin()-glm::vec3(bias), f->box.getMax()+glm::vec3(bias));
     }
         
-    ContainmentType check(const BoundingCube &cube, const Transformation &model) const override {
-        BoundingBox box = getBox();
+    ContainmentType check(const BoundingCube &cube, const Transformation &model, float bias) const override {
+        BoundingBox box = getBox(bias);
         return box.test(cube);
     };
 
-    bool isContained(const BoundingCube &cube, const Transformation &model) const override {
-        BoundingBox box = getBox();
+    bool isContained(const BoundingCube &cube, const Transformation &model, float bias) const override {
+        BoundingBox box = getBox(bias);
         return cube.contains(box);
     };
 
     glm::vec3 getCenter(const Transformation &model) const override {
-        BoundingBox box = getBox();
-        return box.getCenter();
+        OctreeDifferenceFunction * f = (OctreeDifferenceFunction*) function;
+        return f->box.getCenter();
     };
-	float getLength(const Transformation &model) const override {
-		BoundingBox box = getBox();
+	float getLength(const Transformation &model, float bias) const override {
+		BoundingBox box = getBox(bias);
 		return glm::length(box.getLength()) + bias;
 	};
 };

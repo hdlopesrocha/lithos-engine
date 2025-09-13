@@ -65,7 +65,7 @@ void BrushEditor::draw2d(float time){
 
     if (ImGui::BeginCombo("##selectedFunction", toString(brushContext->currentFunction->getType()))) {
         
-        for (SignedDistanceFunction * function : brushContext->functions) {
+        for (WrappedSignedDistanceFunction * function : brushContext->functions) {
             SdfType bs = function->getType();
             std::string label = std::string(toString(bs));
        
@@ -112,7 +112,7 @@ void BrushEditor::draw2d(float time){
         {
             TorusDistanceFunction * function = (TorusDistanceFunction*)brushContext->currentFunction;
             ImGui::Text("Radius: ");
-            if(ImGui::InputFloat2("m##torusRadius", &(function->radius[0]))) {
+            if(ImGui::InputFloat2("\%##torusRadius", &(function->radius[0]))) {
                 changed = true; 
             }
         }
