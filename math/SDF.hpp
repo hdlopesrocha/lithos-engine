@@ -4,10 +4,6 @@
 #include <glm/glm.hpp>
 #include "math.hpp"
 
-#define SDF_TYPE_SPHERE 0
-#define SDF_TYPE_BOX 1
-#define SDF_TYPE_CAPSULE 2
-#define SDF_TYPE_HEIGHTMAP 3
 
 enum SdfType {
     SPHERE, BOX, CAPSULE, HEIGHTMAP, OCTREE_DIFFERENCE, OCTAHEDRON, PYRAMID, TORUS
@@ -207,6 +203,10 @@ class WrappedSignedDistanceFunction : public SignedDistanceFunction {
     SdfType getType() const override {
         return function->getType();
     }    
+
+    SignedDistanceFunction * getFunction() {
+        return function;
+    }
 
 	float distance(const glm::vec3 p, const Transformation &model) override {
         if(cacheEnabled){

@@ -91,7 +91,7 @@ void BrushEditor::draw2d(float time){
     {
         case SdfType::CAPSULE:
         {
-            CapsuleDistanceFunction* function = (CapsuleDistanceFunction*)brushContext->currentFunction;
+            CapsuleDistanceFunction* function = (CapsuleDistanceFunction*)brushContext->currentFunction->getFunction();
 
             ImGui::Text("A: ");
             if(ImGui::InputFloat3("m##capsuleA", &(function->a[0]))) {
@@ -110,7 +110,7 @@ void BrushEditor::draw2d(float time){
         break;
         case SdfType::TORUS:
         {
-            TorusDistanceFunction * function = (TorusDistanceFunction*)brushContext->currentFunction;
+            TorusDistanceFunction * function = (TorusDistanceFunction*)brushContext->currentFunction->getFunction();
             ImGui::Text("Radius: ");
             if(ImGui::InputFloat2("\%##torusRadius", &(function->radius[0]))) {
                 changed = true; 
