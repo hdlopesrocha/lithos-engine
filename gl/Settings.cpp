@@ -21,4 +21,5 @@ Settings::Settings() {
     this->parallaxPower = 100.0;
     this->octreeWireframe = false;
     this->safetyDetailRatio = 0.05f;
+    this->showBrushVolume = false;
 }

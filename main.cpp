@@ -47,7 +47,6 @@ class MainApplication : public LithosApplication {
 	Brush3d * brush3d;
 	DrawableInstanceGeometry<InstanceData> * brushSphere;
 	DrawableInstanceGeometry<InstanceData> * brushBox;
-
 	UniformBlock viewerBlock;
 	UniformBlock uniformBlock;
 
@@ -125,7 +124,6 @@ public:
 	
 		// Register all GDAL drivers
 		GDALAllRegister();
-
 	
 		uniformBlockData = new ProgramData();
 		uniformBrushData = new ProgramData();
@@ -260,7 +258,7 @@ public:
 
 		{
 			SphereGeometry sphereGeometry(40,80);
-			BoxGeometry boxGeometry(BoundingBox(glm::vec3(-0.5), glm::vec3(0.5)));
+			BoxGeometry boxGeometry(BoundingBox(glm::vec3(0), glm::vec3(1)));
 			InstanceDataHandler handler;
 			std::vector<InstanceData> instances;
 			instances.push_back(InstanceData(0,glm::mat4(1.0),0));
@@ -268,6 +266,12 @@ public:
 			brushBox = new DrawableInstanceGeometry<InstanceData>(&boxGeometry, &instances, &handler);
 		}
 
+		{
+			UniformBlockBrush tb = UniformBlockBrush(textureLayers.count, glm::vec2(0.2), 0.1, 8, 32, 16,4 ,256, 0.4, 0.0);
+			loadTexture(&textureLayers, {"textures/pixel_color.jpg", "textures/pixel_normal.jpg", "textures/pixel_bump.jpg"}, textureLayers.count, true);
+			brushes.push_back(tb);
+			textureLayers.count++;
+		}
 		{
 			UniformBlockBrush tb = UniformBlockBrush(textureLayers.count, glm::vec2(0.2), 0.02, 8, 32, 16,4, 10.0, 0.5 , 1.33);
 			animations.push_back(AnimateParams(textureLayers.count));
@@ -324,31 +328,31 @@ public:
 		}
 		{
 			UniformBlockBrush tb = UniformBlockBrush(textureLayers.count, glm::vec2(0.2), 0.01, 8, 32, 16,4, 256, 0.2 , 0.0);
-			mixers.push_back(MixerParams(textureLayers.count, 2, 3));
+			mixers.push_back(MixerParams(textureLayers.count, 3, 4));
 			brushes.push_back(tb);
 			textureLayers.count++;
 		}
 		{
 			UniformBlockBrush tb = UniformBlockBrush(textureLayers.count, glm::vec2(0.2), 0.01, 8, 32, 16,4, 256, 0.2 , 0.0);
-			mixers.push_back(MixerParams(textureLayers.count, 2, 5));
+			mixers.push_back(MixerParams(textureLayers.count, 3, 6));
 			brushes.push_back(tb);
 			textureLayers.count++;
 		}
 		{
 			UniformBlockBrush tb = UniformBlockBrush(textureLayers.count, glm::vec2(0.2), 0.01, 8, 32, 16,4, 256, 0.2 , 0.0);
-			mixers.push_back(MixerParams(textureLayers.count, 4, 2));
+			mixers.push_back(MixerParams(textureLayers.count, 6, 3));
 			brushes.push_back(tb);
 			textureLayers.count++;
 		}
 		{
 			UniformBlockBrush tb = UniformBlockBrush(textureLayers.count, glm::vec2(0.2), 0.01, 8, 32, 16,4, 256, 0.2 , 0.0);
-			mixers.push_back(MixerParams(textureLayers.count, 4, 5));
+			mixers.push_back(MixerParams(textureLayers.count, 5, 6));
 			brushes.push_back(tb);
 			textureLayers.count++;
 		}
 		{
 			UniformBlockBrush tb = UniformBlockBrush(textureLayers.count, glm::vec2(0.2), 0.01, 8, 32, 16,4, 256, 0.2 , 0.0);
-			mixers.push_back(MixerParams(textureLayers.count, 4, 3));
+			mixers.push_back(MixerParams(textureLayers.count, 5, 4));
 			brushes.push_back(tb);
 			textureLayers.count++;
 		}
@@ -674,7 +678,7 @@ public:
 				uniformBlock.set(OPACITY_FLAG, false);
 				uniformBlock.set(BILLBOARD_FLAG, false); 
 
-				UniformBlock::uniform(0, &uniformBlock, sizeof(UniformBlock), uniformBlockData);
+				UniformBlock::uniform(0, &uniformBlock, sizeof(UniformBlock), *uniformBlockData);
 				if(settings->solidEnabled) {
 					mainScene->draw3dSolid(camera.position, mainScene->visibleShadowNodes[i]);
 				}
@@ -683,7 +687,7 @@ public:
 					glUseProgram(programBillboard);
 					uniformBlock.set(OPACITY_FLAG, settings->opacityEnabled);
 					uniformBlock.set(BILLBOARD_FLAG, settings->billboardEnabled); 
-					UniformBlock::uniform(0, &uniformBlock, sizeof(UniformBlock), uniformBrushData);
+					UniformBlock::uniform(0, &uniformBlock, sizeof(UniformBlock), *uniformBrushData);
 					mainScene->drawVegetation(camera.position, mainScene->visibleShadowNodes[i]);
 				}
 				++i;
@@ -706,7 +710,7 @@ public:
 			glUseProgram(program3d);
 			uniformBlock.set(BILLBOARD_FLAG, false); 
 			uniformBlock.set(OPACITY_FLAG, false);
-			UniformBlock::uniform(0, &uniformBlock, sizeof(UniformBlock), uniformBlockData);
+			UniformBlock::uniform(0, &uniformBlock, sizeof(UniformBlock), *uniformBlockData);
 			mainScene->draw3dSolid(camera.position, mainScene->visibleSolidNodes);
 		}
 
@@ -715,7 +719,7 @@ public:
 			uniformBlock.set(TESSELATION_FLAG, false);
 			uniformBlock.set(BILLBOARD_FLAG, settings->billboardEnabled); 
 			uniformBlock.set(OPACITY_FLAG, settings->opacityEnabled);
-			UniformBlock::uniform(0, &uniformBlock, sizeof(UniformBlock), uniformBrushData);
+			UniformBlock::uniform(0, &uniformBlock, sizeof(UniformBlock), *uniformBrushData);
 			mainScene->drawVegetation(camera.position, mainScene->visibleSolidNodes);
 		}
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -741,7 +745,7 @@ public:
 			glUseProgram(programBillboard);
 			uniformBlock.set(BILLBOARD_FLAG, settings->billboardEnabled); 
 			uniformBlock.set(OPACITY_FLAG, settings->opacityEnabled);
-			UniformBlock::uniform(0, &uniformBlock, sizeof(UniformBlock), uniformBrushData);
+			UniformBlock::uniform(0, &uniformBlock, sizeof(UniformBlock), *uniformBrushData);
 			mainScene->drawVegetation(camera.position, mainScene->visibleSolidNodes);
 		}
 
@@ -750,14 +754,14 @@ public:
 			uniformBlock.set(BILLBOARD_FLAG, false); 
 			uniformBlock.set(TESSELATION_FLAG, settings->tesselationEnabled);
 			uniformBlock.set(OPACITY_FLAG, false);
-			UniformBlock::uniform(0, &uniformBlock, sizeof(UniformBlock), uniformBlockData);
+			UniformBlock::uniform(0, &uniformBlock, sizeof(UniformBlock), *uniformBlockData);
 			mainScene->draw3dSolid(camera.position, mainScene->visibleSolidNodes);
 		}
 
 		#ifdef DEBUG_OCTREE_WIREFRAME
 		if(settings->octreeWireframe) {
 			glUseProgram(programDebug);
-			UniformBlock::uniform(0, &uniformBlock, sizeof(UniformBlock), uniformBlockData);
+			UniformBlock::uniform(0, &uniformBlock, sizeof(UniformBlock), *uniformBlockData);
 			mainScene->draw3dOctree(camera.position, mainScene->visibleSolidNodes);
 		}
 		#endif
@@ -786,15 +790,22 @@ public:
 		} 
 
 		if(settings->liquidEnabled) {
-			UniformBlock::uniform(0, &uniformBlock, sizeof(UniformBlock), uniformBlockData);
+			UniformBlock::uniform(0, &uniformBlock, sizeof(UniformBlock), *uniformBlockData);
 			mainScene->draw3dLiquid(camera.position, mainScene->visibleLiquidNodes);
 		}
 
 		if(brush3d->enabled) {
-			UniformBlock::uniform(0, &uniformBlock, sizeof(UniformBlock), uniformBlockData);
+			UniformBlock::uniform(0, &uniformBlock, sizeof(UniformBlock), *uniformBlockData);
 			mainScene->draw3dBrush(camera.position, mainScene->visibleBrushNodes);
 		}	
 
+		if(settings->showBrushVolume) {
+			UniformBlockBrush uniformBrush = brushes.at(0);
+			uniformBrush.alpha = 0.25f;
+			BoundingVolumeDrawer boundingVolumeDrawer = BoundingVolumeDrawer(brushSphere, brushBox, program3d, *uniformBlockData, uniformBlock, uniformBrush);
+			brushContext->currentFunction->accept(boundingVolumeDrawer, brushContext->model, brushContext->detail);
+		}
+		
 		glPolygonMode(GL_FRONT, GL_FILL);
 
 		// ==========

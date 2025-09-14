@@ -159,7 +159,7 @@ void main() {
         color = mixedColor;
     }
 
-
+    color.a = teProps.alpha;
 
     if(debugEnabled) {
         if(debugMode == 0){

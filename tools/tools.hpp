@@ -392,6 +392,10 @@ class WrappedOctreeDifference : public WrappedSignedDistanceFunction {
 		BoundingBox box = getBox(bias);
 		return glm::length(box.getLength()) + bias;
 	};
+
+    void accept(BoundingVolumeVisitor &visitor, const Transformation &model, float bias) const override {
+        getBox(bias).accept(visitor);
+    }
 };
 
 

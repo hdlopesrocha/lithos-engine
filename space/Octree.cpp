@@ -312,14 +312,12 @@ void Octree::add(
         Simplifier &simplifier, 
         OctreeChangeHandler * changeHandler
     ) {
-
-    ShapeArgs args = ShapeArgs(SDF::opUnion, function, painter, model, simplifier, changeHandler, minSize);
-	expand(args);	
     threadsCreated = 0;
     *shapeCounter = 0;
-    ChunkContext localChunkContext(*this);
+    ShapeArgs args = ShapeArgs(SDF::opUnion, function, painter, model, simplifier, changeHandler, minSize);	
+  	expand(args);
     OctreeNodeFrame frame = OctreeNodeFrame(root, *this, 0, root->sdf, DISCARD_BRUSH_INDEX, false);
-    
+    ChunkContext localChunkContext(*this);
     shape(frame, args, &localChunkContext);
     std::cout << "\t\tOctree::add Ok! threads=" << threadsCreated << ", works=" << *shapeCounter << std::endl; 
 }
@@ -332,9 +330,9 @@ void Octree::del(
     ) {
     threadsCreated = 0;
     *shapeCounter = 0;
-    ChunkContext localChunkContext(*this);
-    OctreeNodeFrame frame = OctreeNodeFrame(root, *this, 0, root->sdf, DISCARD_BRUSH_INDEX, false);
     ShapeArgs args = ShapeArgs(SDF::opSubtraction, function, painter, model, simplifier, changeHandler, minSize);
+    OctreeNodeFrame frame = OctreeNodeFrame(root, *this, 0, root->sdf, DISCARD_BRUSH_INDEX, false);
+    ChunkContext localChunkContext(*this);
     shape(frame, args, &localChunkContext);
     std::cout << "\t\tOctree::del Ok! threads=" << threadsCreated << ", works=" << *shapeCounter << std::endl; 
 }

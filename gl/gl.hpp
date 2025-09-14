@@ -81,7 +81,7 @@ struct UniformBlock {
     public:
     static std::string toString(UniformBlock * block);
     void set(uint index, uint flag, bool value);
-	static void uniform(GLuint bindingIndex,void * block, size_t size, ProgramData * data);
+	static void uniform(GLuint bindingIndex,void * block, size_t size, ProgramData &data);
 };
 #pragma pack()  // Reset to default packing
 
@@ -98,6 +98,7 @@ struct UniformBlockBrush {
     float refractiveIndex;
     glm::vec2 textureScale;
     int textureIndex;
+    float alpha;
 
     UniformBlockBrush();
     UniformBlockBrush(int textureIndex, glm::vec2 textureScale);
@@ -356,6 +357,7 @@ class Settings {
         float parallaxPower;
         bool octreeWireframe;
         float safetyDetailRatio;
+        bool showBrushVolume;
         Settings();
 
 };
@@ -438,6 +440,22 @@ class GlslInclude {
 
 	static std::string replace(std::string input,  std::string replace_word, std::string replace_by );
 	static std::string replaceIncludes(std::vector<GlslInclude> includes, std::string code);
+};
+
+class BoundingVolumeDrawer : public BoundingVolumeVisitor {
+    DrawableInstanceGeometry<InstanceData> * sphereGeometry;
+    DrawableInstanceGeometry<InstanceData> * boxGeometry;
+    GLuint program; 
+    ProgramData &data;
+    UniformBlock uniformBlock;
+    UniformBlockBrush uniformBrush;
+	public:
+    BoundingVolumeDrawer(DrawableInstanceGeometry<InstanceData> * sphereGeometry, DrawableInstanceGeometry<InstanceData> * boxGeometry, GLuint program, ProgramData &data, UniformBlock uniformBlock, UniformBlockBrush uniformBrush);
+    ~BoundingVolumeDrawer();
+    void bind(glm::mat4 model);
+    void visit(const BoundingSphere& sphere) override;
+    void visit(const AbstractBoundingBox& box) override;
+
 };
 
 

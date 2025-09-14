@@ -44,6 +44,8 @@ const std::array<glm::ivec3, 8> CUBE_CORNERS = {{
 class BoundingSphere;
 class BoundingBox;
 class IteratorHandler;
+class AbstractBoundingBox;
+class BoundingSphere;
 
 enum ContainmentType {
 	Contains,
@@ -170,7 +172,22 @@ enum SpaceType {
     Solid
 };
 
-class AbstractBoundingBox {
+
+class BoundingVolumeVisitor {
+	public:
+    virtual void visit(const BoundingSphere& sphere) = 0;
+    virtual void visit(const AbstractBoundingBox& box) = 0;
+
+};
+
+class BoundingVolume {
+	public:
+    virtual void accept(class BoundingVolumeVisitor& v) const = 0;
+
+};
+
+
+class AbstractBoundingBox : public BoundingVolume {
 	protected: 
 	glm::vec3 min;
 
@@ -203,7 +220,7 @@ class AbstractBoundingBox {
 	bool intersects(const BoundingSphere &sphere) const;
 	bool intersects(const AbstractBoundingBox &cube) const;
 	ContainmentType test(const AbstractBoundingBox &cube) const;
-
+	void accept(BoundingVolumeVisitor& visitor) const;
 	static glm::vec3 getShift(int i);
 	glm::vec3 getCorner(int i) const;
 
@@ -255,7 +272,8 @@ struct BoundingCubeKeyHash {
     }
 };
 
-class BoundingSphere {
+
+class BoundingSphere : public BoundingVolume {
 	public: 
 		glm::vec3 center;
 		float radius;
@@ -264,6 +282,8 @@ class BoundingSphere {
 		bool contains(const glm::vec3 point) const ;
 		ContainmentType test(const AbstractBoundingBox& cube) const;
 		bool intersects(const AbstractBoundingBox& cube) const;
+		void accept(BoundingVolumeVisitor& visitor) const;
+
 };
 
 

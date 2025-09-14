@@ -101,5 +101,8 @@ void SettingsEditor::draw2d(float time){
     #endif
     ImGui::DragFloat("Safety Detail Ratio", &settings->safetyDetailRatio, 0.000001f, 0.0f, 1.0f, "%.6f");
 
+
+    ImGui::Checkbox("Show brush volume", &settings->showBrushVolume);
+
 	ImGui::End();
 }

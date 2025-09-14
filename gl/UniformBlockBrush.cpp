@@ -11,6 +11,7 @@ UniformBlockBrush::UniformBlockBrush(){
     this->textureScale = glm::vec2(1.0);
     this->refractiveIndex = 0;
 	this->textureIndex = 0;
+	this->alpha = 1.0f;
 }
 
 UniformBlockBrush::UniformBlockBrush(int textureIndex, glm::vec2 textureScale){
@@ -24,6 +25,7 @@ UniformBlockBrush::UniformBlockBrush(int textureIndex, glm::vec2 textureScale){
     this->specularStrength = 0.4;
     this->refractiveIndex = 0;
 	this->textureIndex = textureIndex;
+	this->alpha = 1.0f;
 }
 
 UniformBlockBrush::UniformBlockBrush(int textureIndex, glm::vec2 textureScale,float parallaxScale, float parallaxMinLayers, float parallaxMaxLayers, float parallaxFade, float parallaxRefine, float shininess, float specularStrength, float refractiveIndex){
@@ -37,6 +39,7 @@ UniformBlockBrush::UniformBlockBrush(int textureIndex, glm::vec2 textureScale,fl
     this->textureScale = textureScale;
     this->refractiveIndex = refractiveIndex;
 	this->textureIndex = textureIndex;
+	this->alpha = 1.0f;
 }
 
 void UniformBlockBrush::uniform(GLuint program, UniformBlockBrush * brush, std::string objectName) {
@@ -48,6 +51,7 @@ void UniformBlockBrush::uniform(GLuint program, UniformBlockBrush * brush, std::
 	glUniform1f(glGetUniformLocation(program, (objectName +".shininess").c_str()), brush->shininess);
 	glUniform1f(glGetUniformLocation(program, (objectName +".specularStrength").c_str()), brush->specularStrength);
 	glUniform1f(glGetUniformLocation(program, (objectName +".refractiveIndex").c_str()), brush->refractiveIndex);
+	glUniform1f(glGetUniformLocation(program, (objectName +".alpha").c_str()), brush->alpha);
 	glUniform2fv(glGetUniformLocation(program, (objectName +".textureScale").c_str()), 1, glm::value_ptr(brush->textureScale));
 }
 

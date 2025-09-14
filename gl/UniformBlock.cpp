@@ -23,10 +23,10 @@ std::string UniformBlock::toString(UniformBlock * block) {
     return ss.str();
 }
 
-void UniformBlock::uniform(GLuint bindingIndex, void * block, size_t size, ProgramData * data){
+void UniformBlock::uniform(GLuint bindingIndex, void * block, size_t size, ProgramData &data){
 
     // Bind the UBO to the correct binding point
-    glBindBufferBase(GL_UNIFORM_BUFFER, bindingIndex, data->ubo);  // Binding UBO to binding point 0
+    glBindBufferBase(GL_UNIFORM_BUFFER, bindingIndex, data.ubo);  // Binding UBO to binding point 0
 
     // Map the buffer for writing (invalidate previous contents)
     void* ptr = glMapBufferRange(GL_UNIFORM_BUFFER, 0, sizeof(UniformBlock), 

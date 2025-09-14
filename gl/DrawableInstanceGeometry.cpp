@@ -81,6 +81,7 @@ template <typename T> void DrawableInstanceGeometry<T>::draw(uint mode, float am
 	    glBindVertexArray(0);
 	}
 }
+
 template <typename T> void DrawableInstanceGeometry<T>::draw(uint mode, long * count) {
 	draw(mode, 1.0, count);
 }

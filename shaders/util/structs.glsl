@@ -10,6 +10,7 @@ struct TextureBrush {
     float specularStrength;
     float refractiveIndex;
     vec2 textureScale;
+    float alpha;
 };
 
 struct ShadowProperties {

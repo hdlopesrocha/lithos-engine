@@ -198,7 +198,7 @@ class WrappedSignedDistanceFunction : public SignedDistanceFunction {
     }
     virtual ~WrappedSignedDistanceFunction() = default;
 
-
+    virtual void accept(BoundingVolumeVisitor &visitor, const Transformation &model, float bias) const = 0;
     virtual ContainmentType check(const BoundingCube &cube, const Transformation &model, float bias) const = 0;
     virtual float getLength(const Transformation &model, float bias) const = 0;
 
@@ -263,6 +263,9 @@ class WrappedSphere : public WrappedSignedDistanceFunction {
         return glm::length(model.scale) + bias;
     };
 
+    void accept(BoundingVolumeVisitor &visitor, const Transformation &model, float bias) const override {
+        getSphere(model, bias).accept(visitor);
+    }
 };
 
 class WrappedTorus : public WrappedSignedDistanceFunction {
@@ -298,6 +301,9 @@ class WrappedTorus : public WrappedSignedDistanceFunction {
         return glm::max(glm::max(Rx, Ry), Rz) + bias;
     };
 
+    void accept(BoundingVolumeVisitor &visitor, const Transformation &model, float bias) const override {
+        getSphere(model, bias).accept(visitor);
+    }
 };
 
 
@@ -325,6 +331,10 @@ class WrappedBox : public WrappedSignedDistanceFunction {
     float getLength(const Transformation &model, float bias) const override {
         return glm::length(model.scale) + bias;
     };
+
+    void accept(BoundingVolumeVisitor &visitor, const Transformation &model, float bias) const override {
+        getSphere(model, bias).accept(visitor);
+    }
 };
 
 class WrappedCapsule : public WrappedSignedDistanceFunction {
@@ -356,6 +366,10 @@ class WrappedCapsule : public WrappedSignedDistanceFunction {
         BoundingBox box = getBox(model, bias);
         return glm::distance(box.getMin(), box.getMax());
     };
+
+    void accept(BoundingVolumeVisitor &visitor, const Transformation &model, float bias) const override {
+        getBox(model, bias).accept(visitor);
+    }
 };
 
 class WrappedHeightMap : public WrappedSignedDistanceFunction {
@@ -383,6 +397,10 @@ class WrappedHeightMap : public WrappedSignedDistanceFunction {
         HeightMapDistanceFunction * f = (HeightMapDistanceFunction*) function;
         return glm::distance(f->map->getMin(), f->map->getMax()) + bias;
     };
+
+    void accept(BoundingVolumeVisitor &visitor, const Transformation &model, float bias) const override {
+        getBox(bias).accept(visitor);
+    }
 };
 
 class WrappedOctahedron : public WrappedSignedDistanceFunction {
@@ -410,6 +428,9 @@ class WrappedOctahedron : public WrappedSignedDistanceFunction {
         return glm::length(model.scale) + bias;
     };
 
+    void accept(BoundingVolumeVisitor &visitor, const Transformation &model, float bias) const override {
+        getSphere(model, bias).accept(visitor);
+    }    
 };
 
 class WrappedPyramid : public WrappedSignedDistanceFunction {
@@ -439,6 +460,10 @@ class WrappedPyramid : public WrappedSignedDistanceFunction {
     float getLength(const Transformation &model, float bias) const override {
         return glm::length(model.scale) + bias;
     };
+
+    void accept(BoundingVolumeVisitor &visitor, const Transformation &model, float bias) const override {
+        getSphere(model, bias).accept(visitor);
+    }    
 };
 
 #endif

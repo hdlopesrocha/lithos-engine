@@ -92,7 +92,11 @@ void main() {
 
             teProps.refractiveIndex = tcProps[0].refractiveIndex * gl_TessCoord[0] + 
                                 tcProps[1].refractiveIndex * gl_TessCoord[1] + 
-                                tcProps[2].refractiveIndex * gl_TessCoord[2];                                                                                           
+                                tcProps[2].refractiveIndex * gl_TessCoord[2];      
+                                
+            teProps.alpha = tcProps[0].alpha * gl_TessCoord[0] + 
+                    tcProps[1].alpha * gl_TessCoord[1] + 
+                    tcProps[2].alpha * gl_TessCoord[2];      
         
         }
 

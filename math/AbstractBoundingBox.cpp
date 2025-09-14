@@ -127,3 +127,7 @@ glm::vec3 AbstractBoundingBox::getShift(int i) {
 glm::vec3 AbstractBoundingBox::getCorner(int i) const {
     return getMin() + AbstractBoundingBox::getShift(i) * getLength();
 }
+
+void AbstractBoundingBox::accept(BoundingVolumeVisitor& visitor) const {
+    visitor.visit(*this);  
+}

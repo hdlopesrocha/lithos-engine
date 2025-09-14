@@ -41,3 +41,7 @@ ContainmentType BoundingSphere::test(const AbstractBoundingBox& cube) const {
     
     return ContainmentType::Disjoint;
 }
+
+void BoundingSphere::accept(BoundingVolumeVisitor& visitor) const {
+    visitor.visit(*this);  
+}

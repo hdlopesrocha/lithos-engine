@@ -1,17 +1,17 @@
 #include "tools.hpp"
 
 DerivativeLandBrush::DerivativeLandBrush(){
-    this->underground = 7;
-    this->grass = 2;
-    this->sand = 3;
-    this->softSand = 14;
-    this->rock = 4;
-    this->snow = 5;
-    this->grassMixSand = 9;
-    this->grassMixSnow = 10;
-    this->rockMixGrass = 11;
-    this->rockMixSnow = 12;
-    this->rockMixSand = 13;
+    this->underground = 8;
+    this->grass = 3;
+    this->sand = 4;
+    this->softSand = 15;
+    this->rock = 5;
+    this->snow = 6;
+    this->grassMixSand = 10;
+    this->grassMixSnow = 11;
+    this->rockMixGrass = 12;
+    this->rockMixSnow = 13;
+    this->rockMixSand = 14;
 }
 
 void DerivativeLandBrush::paint(Vertex &vertex) const {
