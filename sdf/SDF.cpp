@@ -276,6 +276,27 @@ float SDF::pyramid(const glm::vec3 &p, float h, float a) {
     return inside ? -dist : dist;
 }
 
+
+float SDF::cone(glm::vec3 p) {
+    // Unit cone: apex at origin, base radius = height = 1
+    // q vector derived from Inigo Quilez's formula
+    const glm::vec2 q(1.0f, -1.0f);
+
+    // Convert 3D point to 2D (radius in XZ plane, height in Y)
+    glm::vec2 w(glm::length(glm::vec2(p.x, p.z)), p.y);
+
+    // Project onto cone sides
+    glm::vec2 a = w - q * glm::clamp(glm::dot(w, q) / glm::dot(q, q), 0.0f, 1.0f);
+    glm::vec2 b = w - q * glm::vec2(glm::clamp(w.x / q.x, 0.0f, 1.0f), 1.0f);
+
+    // Sign helper
+    float k = glm::sign(q.y);
+    float d = glm::min(glm::dot(a, a), glm::dot(b, b));
+    float s = glm::max(k * (w.x * q.y - w.y * q.x), k * (w.y - q.y));
+
+    return glm::sqrt(d) * glm::sign(s);
+}
+
 float SDF::opSmoothUnion(float d1, float d2, float k) {
     float h = glm::clamp( 0.5 + 0.5*(d2-d1)/k, 0.0, 1.0 );
     return glm::mix( d2, d1, h ) - k*h*(1.0-h);
@@ -323,7 +344,6 @@ void SDF::copySDF(float * src, float * dst) {
     }
 }
 
-
 SpaceType SDF::eval(float * sdf) {
     bool hasPositive = false;
     bool hasNegative = false;
@@ -336,5 +356,3 @@ SpaceType SDF::eval(float * sdf) {
     }
     return hasNegative && hasPositive ? SpaceType::Surface : (hasPositive ? SpaceType::Empty : SpaceType::Solid);
 }
-
-WrappedSignedDistanceFunction::~WrappedSignedDistanceFunction() {}

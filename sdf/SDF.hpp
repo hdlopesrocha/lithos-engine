@@ -5,7 +5,15 @@
 #include "../math/math.hpp"
 
 enum SdfType {
-    SPHERE, BOX, CAPSULE, HEIGHTMAP, OCTREE_DIFFERENCE, OCTAHEDRON, PYRAMID, TORUS
+    SPHERE, 
+    BOX, 
+    CAPSULE, 
+    HEIGHTMAP, 
+    OCTREE_DIFFERENCE, 
+    OCTAHEDRON, 
+    PYRAMID, 
+    TORUS, 
+    CONE
 };
 const char* toString(SdfType t);
 
@@ -52,6 +60,7 @@ public:
     static float capsule(glm::vec3 p, glm::vec3 a, glm::vec3 b, float r );
     static float octahedron(glm::vec3 p, float s);
     static float pyramid(const glm::vec3 &p, float h, float a);
+    static float cone(glm::vec3 p);
 
     static glm::vec3 getPosition(float *sdf, const BoundingCube &cube);
     static glm::vec3 getAveragePosition(float *sdf, const BoundingCube &cube);
@@ -85,7 +94,7 @@ class WrappedSignedDistanceFunction : public SignedDistanceFunction {
     WrappedSignedDistanceFunction(SignedDistanceFunction * function) : function(function) {
 
     }
-    virtual ~WrappedSignedDistanceFunction();
+    virtual ~WrappedSignedDistanceFunction() = default;
 
     virtual void accept(BoundingVolumeVisitor &visitor, const Transformation &model, float bias) const = 0;
     virtual ContainmentType check(const BoundingCube &cube, const Transformation &model, float bias) const = 0;
@@ -288,5 +297,27 @@ class WrappedPyramid : public WrappedSignedDistanceFunction {
     void accept(BoundingVolumeVisitor &visitor, const Transformation &model, float bias) const override;
     const char* getLabel() const override;
 };
+
+class ConeDistanceFunction : public SignedDistanceFunction {
+    public:
+	
+	ConeDistanceFunction();
+	float distance(const glm::vec3 p, const Transformation &model) override;
+    SdfType getType() const override; 
+    glm::vec3 getCenter(const Transformation &model) const override;
+};
+
+class WrappedCone : public WrappedSignedDistanceFunction {
+    public:
+    WrappedCone(ConeDistanceFunction * function);
+    ~WrappedCone();
+    BoundingSphere getSphere(const Transformation &model, float bias) const;
+    ContainmentType check(const BoundingCube &cube, const Transformation &model, float bias) const override;
+    bool isContained(const BoundingCube &cube, const Transformation &model, float bias) const override;
+    float getLength(const Transformation &model, float bias) const override;
+    void accept(BoundingVolumeVisitor &visitor, const Transformation &model, float bias) const override;
+    const char* getLabel() const override;
+};
+
 
 #endif

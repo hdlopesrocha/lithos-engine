@@ -8,7 +8,9 @@ BrushContext::BrushContext(Settings * settings, Camera * camera) : settings(sett
     this->functions.push_back(new WrappedCapsule(new CapsuleDistanceFunction(glm::vec3(0, 0, 0), glm::vec3(1, 1, 1), 1.0f)));
     this->functions.push_back(new WrappedOctahedron(new OctahedronDistanceFunction()));
     this->functions.push_back(new WrappedPyramid(new PyramidDistanceFunction()));
-    this->functions.push_back(new WrappedTorus(new TorusDistanceFunction(glm::vec2(0.25f, 0.25f))));
+    this->functions.push_back(new WrappedTorus(new TorusDistanceFunction(glm::vec2(0.75f, 0.25f))));
+    this->functions.push_back(new WrappedCone(new ConeDistanceFunction()));
+
     this->currentFunction = this->functions[0];
     this->detail = 1.0f;
     this->mode = BrushMode::ADD;

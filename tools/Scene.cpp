@@ -414,6 +414,17 @@ void Scene::generate(Camera &camera) {
 
 
 	{
+		std::cout << "\tsolidSpace.add(cone)"<< std::endl;
+		glm::vec3 center = glm::vec3(0,512, 512*3);
+		float radius = 256.0f;
+		ConeDistanceFunction function = ConeDistanceFunction();
+		Transformation model(glm::vec3(radius), center, 0,0,0);
+		WrappedCone wrappedFunction = WrappedCone(&function);
+		solidSpace.add(&wrappedFunction, model, SimpleBrush(5), minSize, *brushContext->simplifier, solidSpaceChangeHandler);
+	}
+
+
+	{
 		Transformation model = Transformation();
 		std::cout << "\tsolidSpace.add(water)"<< std::endl;
 		BoundingBox waterBox = mapBox;
