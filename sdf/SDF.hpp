@@ -63,6 +63,7 @@ public:
     static float cone(glm::vec3 p);
     static glm::vec3 distortPerlin(glm::vec3 p, float amplitude, float frequency);
     static glm::vec3 distortPerlinFractal(glm::vec3 p, float amplitude, float frequency, int octaves, float lacunarity, float gain);
+    static float distortedCarveFractalSDF(glm::vec3 p, float d, float threshold, float amplitude, float frequency, int octaves, float lacunarity, float gain);
     static glm::vec3 getPosition(float *sdf, const BoundingCube &cube);
     static glm::vec3 getAveragePosition(float *sdf, const BoundingCube &cube);
     static glm::vec3 getAveragePosition2(float *sdf, const BoundingCube &cube);
@@ -324,6 +325,19 @@ class WrappedPerlinDistortDistanceFunction : public WrappedSignedDistanceFunctio
     public:
     WrappedPerlinDistortDistanceFunction(WrappedSignedDistanceFunction * function);
     ~WrappedPerlinDistortDistanceFunction();
+    BoundingSphere getSphere(const Transformation &model, float bias) const;
+    ContainmentType check(const BoundingCube &cube, const Transformation &model, float bias) const override;
+    bool isContained(const BoundingCube &cube, const Transformation &model, float bias) const override;
+    float getLength(const Transformation &model, float bias) const override;
+    void accept(BoundingVolumeVisitor &visitor, const Transformation &model, float bias) const override;
+    const char* getLabel() const override;
+  	float distance(const glm::vec3 p, const Transformation &model) override;
+};
+
+class WrappedPerlinCarveDistanceFunction : public WrappedSignedDistanceFunction {
+    public:
+    WrappedPerlinCarveDistanceFunction(WrappedSignedDistanceFunction * function);
+    ~WrappedPerlinCarveDistanceFunction();
     BoundingSphere getSphere(const Transformation &model, float bias) const;
     ContainmentType check(const BoundingCube &cube, const Transformation &model, float bias) const override;
     bool isContained(const BoundingCube &cube, const Transformation &model, float bias) const override;

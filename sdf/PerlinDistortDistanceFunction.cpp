@@ -28,10 +28,10 @@ void WrappedPerlinDistortDistanceFunction::accept(BoundingVolumeVisitor &visitor
 }    
 
 const char* WrappedPerlinDistortDistanceFunction::getLabel() const {
-    return "Perlin";
+    return "Perlin Distort";
 }
 
 float WrappedPerlinDistortDistanceFunction::distance(const glm::vec3 p, const Transformation &model) {
-    glm::vec3 newPos = SDF::distortPerlinFractal(p, 32.0f, 0.1f/32.0f, 6, 2.0f, 0.5f);
+    glm::vec3 newPos = SDF::distortPerlinFractal(p, 64.0f, 0.1f/32.0f, 6, 2.0f, 0.5f);
     return function->distance(newPos, model);
 }

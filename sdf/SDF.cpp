@@ -343,6 +343,37 @@ glm::vec3 SDF::distortPerlinFractal(glm::vec3 p, float amplitude, float frequenc
     return p + totalNoise;
 }
 
+float SDF::distortedCarveFractalSDF(glm::vec3 p, 
+                                    float d,
+                                    float threshold, 
+                                    float amplitude, 
+                                    float frequency, 
+                                    int octaves = 4, 
+                                    float lacunarity = 2.0f, 
+                                    float gain = 0.5f) {
+
+    float noiseValue = 0.0f;
+    float freq = frequency;
+    float amp = 1.0f;
+
+    for (int i = 0; i < octaves; ++i) {
+        noiseValue += amp * stb_perlin_noise3(
+            p.x * freq, 
+            p.y * freq, 
+            p.z * freq, 
+            0, 0, 0
+        );
+        freq *= lacunarity;
+        amp *= gain;
+    }
+
+    if (noiseValue > threshold) {
+        d += amplitude * (noiseValue - threshold);
+    }
+
+    return d;
+}
+
 float SDF::opSmoothUnion(float d1, float d2, float k) {
     float h = glm::clamp( 0.5 + 0.5*(d2-d1)/k, 0.0, 1.0 );
     return glm::mix( d2, d1, h ) - k*h*(1.0-h);
