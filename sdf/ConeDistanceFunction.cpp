@@ -9,7 +9,7 @@ float ConeDistanceFunction::distance(const glm::vec3 p, const Transformation &mo
  // Transform point into local space
     glm::vec3 pos = p - getCenter(model);
     pos = glm::inverse(model.quaternion) * pos;
-    glm::vec3 q = pos / model.scale;
+    glm::vec3 q = pos / model.scale - glm::vec3(0,1,0);
 
     // Distance in local space
     float d = SDF::cone(q);
@@ -24,7 +24,7 @@ SdfType ConeDistanceFunction::getType() const {
 }
 
 glm::vec3 ConeDistanceFunction::getCenter(const Transformation &model) const {
-    return model.translate + glm::vec3(0.0f, 0.75f, 0.0f)*model.scale;
+    return model.translate;
 }
 
 
@@ -38,7 +38,7 @@ WrappedCone::~WrappedCone() {
 
 BoundingSphere WrappedCone::getSphere(const Transformation &model, float bias) const {
     ConeDistanceFunction * f = (ConeDistanceFunction*) function;
-    return BoundingSphere(f->getCenter(model), glm::length(model.scale) + bias);
+    return BoundingSphere(f->getCenter(model), sqrt(0.5f) * glm::length(model.scale) + bias);
 };
 
 ContainmentType WrappedCone::check(const BoundingCube &cube, const Transformation &model, float bias) const {

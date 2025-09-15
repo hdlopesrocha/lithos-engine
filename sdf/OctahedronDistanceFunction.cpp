@@ -36,7 +36,7 @@ WrappedOctahedron::~WrappedOctahedron() {
 
 BoundingSphere WrappedOctahedron::getSphere(const Transformation &model, float bias) const {
     OctahedronDistanceFunction * f = (OctahedronDistanceFunction*) function;
-    return BoundingSphere(f->getCenter(model), glm::length(model.scale) + bias);
+    return BoundingSphere(f->getCenter(model), glm::length(model.scale)*sqrt(0.5f) + bias);
 };
 
 ContainmentType WrappedOctahedron::check(const BoundingCube &cube, const Transformation &model, float bias) const {

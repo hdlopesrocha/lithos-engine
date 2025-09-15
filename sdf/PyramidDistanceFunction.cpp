@@ -13,7 +13,7 @@ float PyramidDistanceFunction::distance(const glm::vec3 p, const Transformation 
     pos /= model.scale;
 
     // pirâmide unitária (base half=0.5, altura=1.0)
-    float d = SDF::pyramid(pos, 1.0f, 0.5f);
+    float d = SDF::pyramid(pos, 1.0f, sqrt(0.5f));
 
     // corrigir métrica multiplicando pela menor escala
     float minScale = glm::min(glm::min(model.scale.x, model.scale.y), model.scale.z);
@@ -42,7 +42,7 @@ float WrappedPyramid::boundingSphereRadius(float width, float depth, float heigh
 
 BoundingSphere WrappedPyramid::getSphere(const Transformation &model, float bias) const {
     PyramidDistanceFunction * f = (PyramidDistanceFunction*) function;
-    return BoundingSphere(f->getCenter(model), 0.5f * glm::length(model.scale) + bias);
+    return BoundingSphere(f->getCenter(model), sqrt(0.5f) * glm::length(model.scale) + bias);
 };
 
 ContainmentType WrappedPyramid::check(const BoundingCube &cube, const Transformation &model, float bias) const {

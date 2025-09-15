@@ -33,7 +33,7 @@ WrappedTorus::~WrappedTorus() {
 
 BoundingSphere WrappedTorus::getSphere(const Transformation &model, float bias) const {
     TorusDistanceFunction * f = (TorusDistanceFunction*) function;
-    return BoundingSphere(f->getCenter(model), glm::length(model.scale) + bias);
+    return BoundingSphere(f->getCenter(model), glm::length(model.scale)*sqrt(0.5f) + bias);
 };
 
 ContainmentType WrappedTorus::check(const BoundingCube &cube, const Transformation &model, float bias) const {

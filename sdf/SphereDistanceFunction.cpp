@@ -33,7 +33,7 @@ WrappedSphere::~WrappedSphere() {
 
 BoundingSphere WrappedSphere::getSphere(const Transformation &model, float bias) const {
     SphereDistanceFunction * f = (SphereDistanceFunction*) function;
-    return BoundingSphere(f->getCenter(model), glm::length(model.scale) + bias);
+    return BoundingSphere(f->getCenter(model), glm::length(model.scale)*sqrt(0.5f) + bias);
 };
 
 ContainmentType WrappedSphere::check(const BoundingCube &cube, const Transformation &model, float bias) const {
