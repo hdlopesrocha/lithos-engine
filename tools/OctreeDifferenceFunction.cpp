@@ -1,6 +1,6 @@
 #include "tools.hpp"
 
-OctreeDifferenceFunction::OctreeDifferenceFunction(Octree * tree, BoundingBox box):tree(tree), box(box) {
+OctreeDifferenceFunction::OctreeDifferenceFunction(Octree * tree, BoundingBox box, float bias):tree(tree), box(box), bias(bias) {
 
 }
 
@@ -9,7 +9,7 @@ float OctreeDifferenceFunction::distance(const glm::vec3 p, const Transformation
     glm::vec3 pos = p - box.getCenter()+model.translate;
     return SDF::opSubtraction(
         SDF::box(pos, len),
-        tree->getSdfAt(p)
+        tree->getSdfAt(p)+bias
     );
 }
 

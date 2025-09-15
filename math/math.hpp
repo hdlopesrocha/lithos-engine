@@ -300,6 +300,9 @@ class BoundingBox : public AbstractBoundingBox {
 		void setMaxX(float v);
 		void setMaxY(float v);
 		void setMaxZ(float v);
+		void setMinX(float v);
+		void setMinY(float v);
+		void setMinZ(float v);
 
 		glm::vec3 getLength() const override;
 		float getLengthX() const override;

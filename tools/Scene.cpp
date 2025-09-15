@@ -427,9 +427,9 @@ void Scene::generate(Camera &camera) {
 		std::cout << "\tsolidSpace.add(perlinDistort)"<< std::endl;
 		glm::vec3 center = glm::vec3(0,512, 512*4);
 		float radius = 200.0f;
-		BoxDistanceFunction function = BoxDistanceFunction();
+		SphereDistanceFunction function = SphereDistanceFunction();
 		Transformation model(glm::vec3(radius), center, 0,0,0);
-		WrappedBox wrappedFunction = WrappedBox(&function);
+		WrappedSphere wrappedFunction = WrappedSphere(&function);
 		WrappedPerlinDistortDistanceFunction distortedFunction = WrappedPerlinDistortDistanceFunction(&wrappedFunction);
 		solidSpace.add(&distortedFunction, model, SimpleBrush(5), minSize*0.25f, *brushContext->simplifier, solidSpaceChangeHandler);
 	}
@@ -438,9 +438,9 @@ void Scene::generate(Camera &camera) {
 		std::cout << "\tsolidSpace.add(perlinCarve)"<< std::endl;
 		glm::vec3 center = glm::vec3(0,512, 512*5);
 		float radius = 200.0f;
-		BoxDistanceFunction function = BoxDistanceFunction();
+		SphereDistanceFunction function = SphereDistanceFunction();
 		Transformation model(glm::vec3(radius), center, 0,0,0);
-		WrappedBox wrappedFunction = WrappedBox(&function);
+		WrappedSphere wrappedFunction = WrappedSphere(&function);
 		WrappedPerlinCarveDistanceFunction carvedFunction = WrappedPerlinCarveDistanceFunction(&wrappedFunction);
 		solidSpace.add(&carvedFunction, model, SimpleBrush(5), minSize*0.25f, *brushContext->simplifier, solidSpaceChangeHandler);
 	}
@@ -451,7 +451,8 @@ void Scene::generate(Camera &camera) {
 		std::cout << "\tsolidSpace.add(water)"<< std::endl;
 		BoundingBox waterBox = mapBox;
 		waterBox.setMaxY(0);
-		OctreeDifferenceFunction function(&solidSpace, waterBox);
+		waterBox.setMinY(mapBox.getMinY()*0.5f);
+		OctreeDifferenceFunction function(&solidSpace, waterBox, minSize*2.0f);
 		WrappedOctreeDifference wrappedFunction = WrappedOctreeDifference(&function);
 		//wrappedFunction.cacheEnabled = true;
 		liquidSpace.add(&wrappedFunction, model, WaterBrush(1), minSize, *brushContext->simplifier, liquidSpaceChangeHandler);

@@ -56,3 +56,14 @@ void BoundingBox::setMaxZ(float v){
     this->max.z = v;
 }
 
+void BoundingBox::setMinX(float v){
+    this->min.x = v;
+}
+
+void BoundingBox::setMinY(float v){
+    this->min.y = v;
+}
+
+void BoundingBox::setMinZ(float v){
+    this->min.z = v;
+}
