@@ -340,7 +340,7 @@ public:
 		}
 		{
 			UniformBlockBrush tb = UniformBlockBrush(textureLayers.count, glm::vec2(0.2), 0.01, 8, 32, 16,4, 256, 0.2 , 0.0);
-			mixers.push_back(MixerParams(textureLayers.count, 6, 3));
+			mixers.push_back(MixerParams(textureLayers.count, 5, 3));
 			brushes.push_back(tb);
 			textureLayers.count++;
 		}
