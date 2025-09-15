@@ -47,15 +47,7 @@ bool WrappedTorus::isContained(const BoundingCube &cube, const Transformation &m
 };
 
 float WrappedTorus::getLength(const Transformation &model, float bias) const {
-    TorusDistanceFunction * f = (TorusDistanceFunction*) function;
-    float R = f->radius.x;
-    float r = f->radius.y;
-
-    float Rx = (R + r) * model.scale.x;
-    float Ry = r * model.scale.y;
-    float Rz = (R + r) * model.scale.z;
-
-    return glm::max(glm::max(Rx, Ry), Rz) + bias;
+    return glm::length(model.scale) + bias;
 };
 
 void WrappedTorus::accept(BoundingVolumeVisitor &visitor, const Transformation &model, float bias) const {

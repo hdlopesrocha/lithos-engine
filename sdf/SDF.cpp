@@ -297,6 +297,52 @@ float SDF::cone(glm::vec3 p) {
     return glm::sqrt(d) * glm::sign(s);
 }
 
+glm::vec3 SDF::distortPerlin(glm::vec3 p, float amplitude, float frequency) {
+    float noiseX = stb_perlin_noise3(p.x*frequency, p.y*frequency, p.z*frequency, 0, 0, 0);
+    float noiseY = stb_perlin_noise3((p.x+100)*frequency, (p.y+100)*frequency, (p.z+100)*frequency, 0, 0, 0);
+    float noiseZ = stb_perlin_noise3((p.x+200)*frequency, (p.y+200)*frequency, (p.z+200)*frequency, 0, 0, 0);
+    return p + amplitude * glm::vec3(noiseX, noiseY, noiseZ);
+}
+
+glm::vec3 SDF::distortPerlinFractal(glm::vec3 p, float amplitude, float frequency, int octaves, float lacunarity = 2.0f, float gain = 0.5f) {
+    glm::vec3 totalNoise(0.0f);
+    float freq = frequency;
+    float amp = amplitude;
+
+    // For each axis, use different offsets to decorrelate noise
+    glm::vec3 offsetX(0.0f, 0.0f, 0.0f);
+    glm::vec3 offsetY(100.0f, 100.0f, 100.0f);
+    glm::vec3 offsetZ(200.0f, 200.0f, 200.0f);
+
+    for (int i = 0; i < octaves; ++i) {
+        float nx = stb_perlin_noise3(
+            p.x * freq + offsetX.x,
+            p.y * freq + offsetX.y,
+            p.z * freq + offsetX.z,
+            0,0,0
+        );
+        float ny = stb_perlin_noise3(
+            p.x * freq + offsetY.x,
+            p.y * freq + offsetY.y,
+            p.z * freq + offsetY.z,
+            0,0,0
+        );
+        float nz = stb_perlin_noise3(
+            p.x * freq + offsetZ.x,
+            p.y * freq + offsetZ.y,
+            p.z * freq + offsetZ.z,
+            0,0,0
+        );
+
+        totalNoise += amp * glm::vec3(nx, ny, nz);
+
+        freq *= lacunarity; // increase frequency
+        amp *= gain;        // decrease amplitude
+    }
+
+    return p + totalNoise;
+}
+
 float SDF::opSmoothUnion(float d1, float d2, float k) {
     float h = glm::clamp( 0.5 + 0.5*(d2-d1)/k, 0.0, 1.0 );
     return glm::mix( d2, d1, h ) - k*h*(1.0-h);

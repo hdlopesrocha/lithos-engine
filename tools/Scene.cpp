@@ -423,6 +423,16 @@ void Scene::generate(Camera &camera) {
 		solidSpace.add(&wrappedFunction, model, SimpleBrush(5), minSize, *brushContext->simplifier, solidSpaceChangeHandler);
 	}
 
+	{
+		std::cout << "\tsolidSpace.add(perlin)"<< std::endl;
+		glm::vec3 center = glm::vec3(0,512, 512*4);
+		float radius = 256.0f;
+		BoxDistanceFunction function = BoxDistanceFunction();
+		Transformation model(glm::vec3(radius), center, 0,0,0);
+		WrappedBox wrappedFunction = WrappedBox(&function);
+		WrappedPerlinDistortDistanceFunction distortedFunction = WrappedPerlinDistortDistanceFunction(&wrappedFunction);
+		solidSpace.add(&distortedFunction, model, SimpleBrush(5), minSize*0.25f, *brushContext->simplifier, solidSpaceChangeHandler);
+	}
 
 	{
 		Transformation model = Transformation();
