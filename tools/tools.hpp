@@ -369,6 +369,10 @@ class WrappedOctreeDifference : public WrappedSignedDistanceFunction {
 
     }
 
+    ~WrappedOctreeDifference() {
+
+    }
+
     BoundingBox getBox(float bias) const {
         OctreeDifferenceFunction * f = (OctreeDifferenceFunction*) function;
         return BoundingBox(f->box.getMin()-glm::vec3(bias), f->box.getMax()+glm::vec3(bias));
@@ -396,6 +400,10 @@ class WrappedOctreeDifference : public WrappedSignedDistanceFunction {
     void accept(BoundingVolumeVisitor &visitor, const Transformation &model, float bias) const override {
         getBox(bias).accept(visitor);
     }
+
+	const char* getLabel() const override {
+    	return "Octree Difference";
+	}
 };
 
 

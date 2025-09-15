@@ -549,6 +549,35 @@ class Brush3d {
 		void reset(Camera * camera);
 };
 
+class Transformation {
+	public:
+	glm::vec3 scale;
+	glm::vec3 translate;
+    glm::quat quaternion;
+
+    Transformation() {
+        this->scale = glm::vec3(1.0f,1.0f,1.0f);
+        this->translate = glm::vec3(0.0f,0.0f,0.0f);
+        this->quaternion = getRotation(0.0f, 0.0f, 0.0f);
+    }
+
+
+	Transformation(glm::vec3 scale, glm::vec3 translate, float yaw, float pitch, float roll) {
+		this->scale = scale;
+		this->translate = translate;
+		this->quaternion = getRotation(yaw, pitch, roll);
+	}
+
+
+	glm::quat getRotation(float yaw, float pitch, float roll) {
+		return 	glm::angleAxis(glm::radians(yaw), glm::vec3(0.0f, 1.0f, 0.0f)) * // Yaw (Y-axis)
+				glm::angleAxis(glm::radians(pitch), glm::vec3(1.0f, 0.0f, 0.0f)) * // Pitch (X-axis)
+				glm::angleAxis(glm::radians(roll), glm::vec3(0.0f, 0.0f, 1.0f));  // Roll (Z-axis)
+	}
+
+
+};
+
 class Math
 {
 public:

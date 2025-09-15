@@ -1,5 +1,4 @@
 #include "space.hpp"
-#include "../math/SDF.hpp"
 
 //      6-----7
 //     /|    /|

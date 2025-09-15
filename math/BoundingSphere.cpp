@@ -1,5 +1,4 @@
 #include "math.hpp"
-#include "SDF.hpp"
 
 BoundingSphere::BoundingSphere(glm::vec3 center, float radius) {
 	this->center = center;

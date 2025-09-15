@@ -63,11 +63,11 @@ void BrushEditor::draw2d(float time){
 
     ImGui::Text("Shape: ");
 
-    if (ImGui::BeginCombo("##selectedFunction", toString(brushContext->currentFunction->getType()))) {
+    if (ImGui::BeginCombo("##selectedFunction", brushContext->currentFunction->getLabel())) {
         
         for (WrappedSignedDistanceFunction * function : brushContext->functions) {
             SdfType bs = function->getType();
-            std::string label = std::string(toString(bs));
+            std::string label =  std::string(function->getLabel());
        
             if (ImGui::Selectable(label.c_str(), function == brushContext->currentFunction)) {
                 brushContext->currentFunction = function;

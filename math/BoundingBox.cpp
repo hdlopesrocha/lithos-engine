@@ -1,5 +1,4 @@
 #include "math.hpp"
-#include "SDF.hpp"
 
 BoundingBox::BoundingBox(glm::vec3 min, glm::vec3 max) : AbstractBoundingBox(min) {
 	this->max = max;

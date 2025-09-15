@@ -6,7 +6,7 @@
 #include <utility>
 #include <shared_mutex>
 #include "../math/math.hpp"
-#include "../math/SDF.hpp"
+#include "../sdf/SDF.hpp"
 #include "Allocator.hpp"
 #define SQRT_3_OVER_2 0.866025404f
 
