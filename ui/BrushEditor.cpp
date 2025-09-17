@@ -66,7 +66,6 @@ void BrushEditor::draw2d(float time){
     if (ImGui::BeginCombo("##selectedFunction", brushContext->currentFunction->getLabel())) {
         
         for (WrappedSignedDistanceFunction * function : brushContext->functions) {
-            SdfType bs = function->getType();
             std::string label =  std::string(function->getLabel());
        
             if (ImGui::Selectable(label.c_str(), function == brushContext->currentFunction)) {
@@ -150,13 +149,71 @@ void BrushEditor::draw2d(float time){
     if(ImGui::InputFloat3("m##translate", &(brushContext->model.translate[0]))) {
         changed = true; 
     }  
+    ImGui::Separator();
+
+    ImGui::Text("Effect: ");
+
+    if (ImGui::BeginCombo("##selectedEffect", brushContext->currentEffect ? brushContext->currentEffect->getLabel() : "None")) {
+        for (WrappedSignedDistanceEffect * effect : brushContext->effects) {
+            if (ImGui::Selectable(effect ? effect->getLabel() : "None",  effect == brushContext->currentEffect)) {
+                brushContext->currentEffect = effect;
+                changed = true; 
+            }
+            if (effect == brushContext->currentEffect) {
+                ImGui::SetItemDefaultFocus(); // Highlight selected item
+            }
+        }
+        ImGui::EndCombo();
+    }
+    
+    if(brushContext->currentEffect) {
+        switch (brushContext->currentEffect->getType())
+        {
+            case SdfType::DISTORT_PERLIN:
+            {
+                WrappedPerlinDistortDistanceEffect* effect = (WrappedPerlinDistortDistanceEffect*)brushContext->currentEffect;
+
+                ImGui::Text("Amplitude: ");
+                if(ImGui::InputFloat("m##distortAmplitude", &(effect->amplitude))) {
+                    changed = true; 
+                }
+                ImGui::Text("Frequency: ");
+                if(ImGui::InputFloat("m##distortFrequency", &(effect->frequency))) {
+                    changed = true; 
+                }    
+                break;
+            }
+            case SdfType::CARVE_PERLIN:
+            {
+                WrappedPerlinCarveDistanceEffect* effect = (WrappedPerlinCarveDistanceEffect*)brushContext->currentEffect;
+
+                ImGui::Text("Amplitude: ");
+                if(ImGui::InputFloat("m##carveAmplitude", &(effect->amplitude))) {
+                    changed = true; 
+                }
+                ImGui::Text("Frequency: ");
+                if(ImGui::InputFloat("m##carveFrequency", &(effect->frequency))) {
+                    changed = true; 
+                }    
+                ImGui::Text("Threshold: ");
+                if(ImGui::InputFloat("m##carveThreshold", &(effect->threshold))) {
+                    changed = true; 
+                }    
+                break;
+            }
+        default:
+            break;
+        }
+    }
+
+
+    ImGui::Separator();
 
     if(changed) {
         eventManager->publish<Event>(Event(EVENT_BRUSH_CHANGED));
     }
 
-    ImGui::Separator();
-
+    
     ImGui::Text("Texture Scale: ");
     ImGui::InputFloat2("\%##textureScale", &uniformBrush->textureScale[0]);
 

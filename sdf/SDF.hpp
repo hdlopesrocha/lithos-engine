@@ -13,7 +13,9 @@ enum SdfType {
     OCTAHEDRON, 
     PYRAMID, 
     TORUS, 
-    CONE
+    CONE,
+    DISTORT_PERLIN,
+    CARVE_PERLIN,
 };
 const char* toString(SdfType t);
 
@@ -321,30 +323,40 @@ class WrappedCone : public WrappedSignedDistanceFunction {
     const char* getLabel() const override;
 };
 
-class WrappedPerlinDistortDistanceFunction : public WrappedSignedDistanceFunction {
+
+class WrappedSignedDistanceEffect : public WrappedSignedDistanceFunction {
     public:
-    WrappedPerlinDistortDistanceFunction(WrappedSignedDistanceFunction * function);
-    ~WrappedPerlinDistortDistanceFunction();
-    BoundingSphere getSphere(const Transformation &model, float bias) const;
+    WrappedSignedDistanceEffect(WrappedSignedDistanceFunction * function);
+    ~WrappedSignedDistanceEffect();
+    void setFunction(WrappedSignedDistanceFunction * function);
     ContainmentType check(const BoundingCube &cube, const Transformation &model, float bias) const override;
     bool isContained(const BoundingCube &cube, const Transformation &model, float bias) const override;
     float getLength(const Transformation &model, float bias) const override;
     void accept(BoundingVolumeVisitor &visitor, const Transformation &model, float bias) const override;
-    const char* getLabel() const override;
-  	float distance(const glm::vec3 p, const Transformation &model) override;
 };
 
-class WrappedPerlinCarveDistanceFunction : public WrappedSignedDistanceFunction {
+class WrappedPerlinDistortDistanceEffect : public WrappedSignedDistanceEffect {
     public:
-    WrappedPerlinCarveDistanceFunction(WrappedSignedDistanceFunction * function);
-    ~WrappedPerlinCarveDistanceFunction();
+    float amplitude;
+    float frequency;
+    WrappedPerlinDistortDistanceEffect(WrappedSignedDistanceFunction * function, float amplitude, float frequency);
+    ~WrappedPerlinDistortDistanceEffect();
     BoundingSphere getSphere(const Transformation &model, float bias) const;
-    ContainmentType check(const BoundingCube &cube, const Transformation &model, float bias) const override;
-    bool isContained(const BoundingCube &cube, const Transformation &model, float bias) const override;
-    float getLength(const Transformation &model, float bias) const override;
-    void accept(BoundingVolumeVisitor &visitor, const Transformation &model, float bias) const override;
     const char* getLabel() const override;
   	float distance(const glm::vec3 p, const Transformation &model) override;
+    SdfType getType() const override { return SdfType::DISTORT_PERLIN; }
+};
+
+class WrappedPerlinCarveDistanceEffect : public WrappedSignedDistanceEffect {
+    public:
+    float amplitude;
+    float frequency;
+    float threshold;
+    WrappedPerlinCarveDistanceEffect(WrappedSignedDistanceFunction * function, float amplitude, float frequency, float threshold);
+    ~WrappedPerlinCarveDistanceEffect();
+    const char* getLabel() const override;
+  	float distance(const glm::vec3 p, const Transformation &model) override;
+    SdfType getType() const override { return SdfType::CARVE_PERLIN; }
 };
 
 #endif

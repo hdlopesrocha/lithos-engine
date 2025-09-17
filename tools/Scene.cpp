@@ -430,7 +430,7 @@ void Scene::generate(Camera &camera) {
 		SphereDistanceFunction function = SphereDistanceFunction();
 		Transformation model(glm::vec3(radius), center, 0,0,0);
 		WrappedSphere wrappedFunction = WrappedSphere(&function);
-		WrappedPerlinDistortDistanceFunction distortedFunction = WrappedPerlinDistortDistanceFunction(&wrappedFunction);
+		WrappedPerlinDistortDistanceEffect distortedFunction = WrappedPerlinDistortDistanceEffect(&wrappedFunction, 48.0f, 0.1f/32.0f);
 		solidSpace.add(&distortedFunction, model, SimpleBrush(5), minSize*0.25f, *brushContext->simplifier, solidSpaceChangeHandler);
 	}
 
@@ -441,7 +441,7 @@ void Scene::generate(Camera &camera) {
 		SphereDistanceFunction function = SphereDistanceFunction();
 		Transformation model(glm::vec3(radius), center, 0,0,0);
 		WrappedSphere wrappedFunction = WrappedSphere(&function);
-		WrappedPerlinCarveDistanceFunction carvedFunction = WrappedPerlinCarveDistanceFunction(&wrappedFunction);
+		WrappedPerlinCarveDistanceEffect carvedFunction = WrappedPerlinCarveDistanceEffect(&wrappedFunction, 64.0f, 0.1f/32.0f, 0.0f);
 		solidSpace.add(&carvedFunction, model, SimpleBrush(5), minSize*0.25f, *brushContext->simplifier, solidSpaceChangeHandler);
 	}
 

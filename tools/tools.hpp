@@ -212,6 +212,8 @@ class BrushContext {
 	BrushMode mode;
 	std::vector<WrappedSignedDistanceFunction*> functions;
 	WrappedSignedDistanceFunction * currentFunction;
+	std::vector<WrappedSignedDistanceEffect*> effects;
+	WrappedSignedDistanceEffect * currentEffect;
 	Simplifier * simplifier;
 	Tab currentTab;
 

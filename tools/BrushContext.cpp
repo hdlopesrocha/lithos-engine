@@ -11,6 +11,11 @@ BrushContext::BrushContext(Settings * settings, Camera * camera) : settings(sett
     this->functions.push_back(new WrappedTorus(new TorusDistanceFunction(glm::vec2(0.75f, 0.25f))));
     this->functions.push_back(new WrappedCone(new ConeDistanceFunction()));
 
+    this->effects.push_back(NULL);
+    this->effects.push_back(new WrappedPerlinDistortDistanceEffect(nullptr, 48.0f, 0.1f/32.0f));
+    this->effects.push_back(new WrappedPerlinCarveDistanceEffect(nullptr, 64.0f, 0.1f/32.0f, 0.0f));
+
+    this->currentEffect = this->effects[0];
     this->currentFunction = this->functions[0];
     this->detail = 1.0f;
     this->mode = BrushMode::ADD;
@@ -20,6 +25,9 @@ BrushContext::BrushContext(Settings * settings, Camera * camera) : settings(sett
 }
 
 void BrushContext::apply(Octree &space, OctreeChangeHandler * handler, bool preview) {
+    if(currentEffect) {
+        currentEffect->setFunction(currentFunction);
+    }
     if(currentFunction) {
         float safeDetail = glm::ceil(currentFunction->getLength(this->model, detail) * settings->safetyDetailRatio);
         if(detail < safeDetail) {
@@ -27,9 +35,9 @@ void BrushContext::apply(Octree &space, OctreeChangeHandler * handler, bool prev
             std::cout << "BrushContext::apply: detail increased to " << std::to_string(detail) << std::endl;
         }
         if(preview  || mode == BrushMode::ADD) {
-            space.add(currentFunction, this->model, SimpleBrush(brushIndex), detail, *simplifier, handler);
+            space.add(currentEffect ? currentEffect : currentFunction, this->model, SimpleBrush(brushIndex), detail, *simplifier, handler);
         } else {
-            space.del(currentFunction, this->model, SimpleBrush(brushIndex), detail, *simplifier, handler);
+            space.del(currentEffect ? currentEffect : currentFunction, this->model, SimpleBrush(brushIndex), detail, *simplifier, handler);
         }
     }
 }
