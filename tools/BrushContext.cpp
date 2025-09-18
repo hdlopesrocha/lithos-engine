@@ -10,6 +10,7 @@ BrushContext::BrushContext(Settings * settings, Camera * camera) : settings(sett
     this->functions.push_back(new WrappedPyramid(new PyramidDistanceFunction()));
     this->functions.push_back(new WrappedTorus(new TorusDistanceFunction(glm::vec2(0.75f, 0.25f))));
     this->functions.push_back(new WrappedCone(new ConeDistanceFunction()));
+    this->functions.push_back(new WrappedCylinder(new CylinderDistanceFunction()));
 
     this->effects.push_back(NULL);
     this->effects.push_back(new WrappedPerlinDistortDistanceEffect(nullptr, 48.0f, 0.1f/32.0f, glm::vec3(0)));

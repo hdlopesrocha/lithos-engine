@@ -16,7 +16,8 @@ enum SdfType {
     CONE,
     DISTORT_PERLIN,
     CARVE_PERLIN,
-    DISTORT_SINE
+    DISTORT_SINE,
+    CYLINDER
 };
 const char* toString(SdfType t);
 
@@ -58,6 +59,8 @@ public:
     static float opSmoothIntersection( float d1, float d2, float k );
 
 	static float box(glm::vec3 p, const glm::vec3 len);
+    static float cylinder(glm::vec3 p, float r, float h);
+
 	static float sphere(glm::vec3 p, const float r);
     static float torus(glm::vec3 p, glm::vec2 t );
     static float capsule(glm::vec3 p, glm::vec3 a, glm::vec3 b, float r );
@@ -158,6 +161,27 @@ class WrappedSphere : public WrappedSignedDistanceFunction {
     public:
     WrappedSphere(SphereDistanceFunction * function);
     ~WrappedSphere();
+    BoundingSphere getSphere(const Transformation &model, float bias) const;
+    ContainmentType check(const BoundingCube &cube, const Transformation &model, float bias) const override;
+    bool isContained(const BoundingCube &cube, const Transformation &model, float bias) const override;
+    float getLength(const Transformation &model, float bias) const override;
+    void accept(BoundingVolumeVisitor &visitor, const Transformation &model, float bias) const override;
+    const char* getLabel() const override;
+};
+
+class CylinderDistanceFunction : public SignedDistanceFunction {
+    public:
+	
+	CylinderDistanceFunction();
+	float distance(const glm::vec3 p, const Transformation &model) override;
+    SdfType getType() const override; 
+    glm::vec3 getCenter(const Transformation &model) const override;
+};
+
+class WrappedCylinder : public WrappedSignedDistanceFunction {
+    public:
+    WrappedCylinder(CylinderDistanceFunction * function);
+    ~WrappedCylinder();
     BoundingSphere getSphere(const Transformation &model, float bias) const;
     ContainmentType check(const BoundingCube &cube, const Transformation &model, float bias) const override;
     bool isContained(const BoundingCube &cube, const Transformation &model, float bias) const override;

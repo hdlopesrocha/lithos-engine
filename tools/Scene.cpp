@@ -371,14 +371,7 @@ void Scene::generate(Camera &camera) {
 		std::cout << "\tsolidSpace.add(heightmap)"<< std::endl;
 		solidSpace.add(&wrappedFunction, model, LandBrush(), minSize, *brushContext->simplifier, solidSpaceChangeHandler);
 	}
-	{
-		std::cout << "\tsolidSpace.del(sphere)"<< std::endl;
-		BoundingSphere sphere = BoundingSphere(glm::vec3(0,768,0),1024);
-		SphereDistanceFunction function = SphereDistanceFunction();
-		Transformation model = Transformation(glm::vec3(sphere.radius), sphere.center, 0, 0, 0);
-		WrappedSphere wrappedFunction = WrappedSphere(&function);
-		solidSpace.del(&wrappedFunction, model, SimpleBrush(15), minSize, *brushContext->simplifier, solidSpaceChangeHandler);
-	}
+
 
 	{
 		std::cout << "\tsolidSpace.add(box)"<< std::endl;
@@ -437,7 +430,7 @@ void Scene::generate(Camera &camera) {
 	}
 
 	{
-		std::cout << "\tsolidSpace.add(sphere)"<< std::endl;
+		std::cout << "\tliquidSpace.add(sphere)"<< std::endl;
 		glm::vec3 min = glm::vec3(1500,0,500);
 		glm::vec3 len = glm::vec3(512.0f);
 		BoundingSphere sphere = BoundingSphere(min+len, 64);
@@ -489,6 +482,17 @@ void Scene::generate(Camera &camera) {
 	}
 
 	{
+		std::cout << "\tsolidSpace.add(cylinder)"<< std::endl;
+		glm::vec3 center = glm::vec3(0,512, 512*4);
+		float radius = 256.0f;
+		CylinderDistanceFunction function = CylinderDistanceFunction();
+		Transformation model(glm::vec3(radius), center, 0,0,0);
+		WrappedCylinder wrappedFunction = WrappedCylinder(&function);
+		solidSpace.add(&wrappedFunction, model, SimpleBrush(5), minSize, *brushContext->simplifier, solidSpaceChangeHandler);
+	}
+
+
+	{
 		std::cout << "\tsolidSpace.add(perlinDistort)"<< std::endl;
 		glm::vec3 center = glm::vec3(512,512, 512*0);
 		float radius = 200.0f;
@@ -525,7 +529,7 @@ void Scene::generate(Camera &camera) {
 
 	{
 		Transformation model = Transformation();
-		std::cout << "\tsolidSpace.add(water)"<< std::endl;
+		std::cout << "\tliquidSpace.add(water)"<< std::endl;
 		BoundingBox waterBox = mapBox;
 		waterBox.setMaxY(0);
 		waterBox.setMinY(mapBox.getMinY()*0.5f);

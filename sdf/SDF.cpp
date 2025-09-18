@@ -149,6 +149,11 @@ float SDF::box(glm::vec3 p, const glm::vec3 len) {
     return glm::length(glm::max(q, glm::vec3(0.0))) + glm::min(glm::max(q.x,glm::max(q.y,q.z)),0.0f);
 }
 
+float SDF::cylinder(glm::vec3 p, float r, float h) {
+    glm::vec2 d = glm::vec2(glm::length(glm::vec2(p.x, p.z)) - r, glm::abs(p.y) - h);
+    return glm::min(glm::max(d.x, d.y), 0.0f) + glm::length(glm::max(d, 0.0f));
+}
+
 float SDF::capsule(glm::vec3 p, glm::vec3 a, glm::vec3 b, float r ) {
     glm::vec3 pa = p - a, ba = b - a;
     float h = glm::clamp( glm::dot(pa,ba)/glm::dot(ba,ba), 0.0f, 1.0f );
