@@ -244,10 +244,10 @@ void Octree::handleQuadNodes(OctreeNodeData &data, float * sdf, OctreeNodeTriang
 			}
 	
             if(allDifferent(vertices[0], vertices[2], vertices[1])) {
-			    handler->handle(vertices[0], vertices[2], vertices[1], sign1);
+			    handler->handle(data, vertices[0], vertices[2], vertices[1], sign1);
 			}
             if(allDifferent(vertices[0], vertices[3], vertices[2])) {
-                handler->handle(vertices[0], vertices[3], vertices[2], sign1);
+                handler->handle(data, vertices[0], vertices[3], vertices[2], sign1);
             }
 		}
 	}

@@ -88,15 +88,6 @@ class WaterBrush : public TexturePainter {
 	void paint(Vertex &vertex) const override;
 };
 
-class VegetationInstanceBuilderHandler : public InstanceBuilderHandler<InstanceData> {
-	public:
-	float pointsPerArea;
-	float scale;
-	VegetationInstanceBuilderHandler(float pointsPerArea, float scale);
-
-	void handle(Octree * tree, OctreeNodeData &data, std::vector<InstanceData> * instances, ChunkContext * context) override;
-};
-
 class OctreeInstanceBuilderHandler : public InstanceBuilderHandler<DebugInstanceData>  {
 	public:
 	OctreeInstanceBuilderHandler();
@@ -104,16 +95,6 @@ class OctreeInstanceBuilderHandler : public InstanceBuilderHandler<DebugInstance
 	void handle(Octree * tree, OctreeNodeData &data, std::vector<DebugInstanceData> * instances, ChunkContext * context) override;
 };
 
-class VegetationGeometryBuilder : public GeometryBuilder<InstanceData> {
-    public:
-    Geometry * geometry;
-    InstanceBuilderHandler<InstanceData>  * handler;
-	long * instancesCount;
-    VegetationGeometryBuilder(InstanceBuilderHandler<InstanceData>  * handler);
-    ~VegetationGeometryBuilder();
-
-	InstanceGeometry<InstanceData> * build(Octree * tree, OctreeNodeData &params, ChunkContext * context) override;
-};
 
 class OctreeGeometryBuilder : public GeometryBuilder<DebugInstanceData> {
     public:
@@ -132,8 +113,8 @@ class VegetationInstanceBuilder : public OctreeNodeTriangleHandler {
 	float scale;
 	
 	using OctreeNodeTriangleHandler::OctreeNodeTriangleHandler;
-	VegetationInstanceBuilder(long * count,std::vector<InstanceData> * instances, float pointsPerArea, float scale);
-	void handle(Vertex &v0, Vertex &v1, Vertex &v2, bool signn) override;
+	VegetationInstanceBuilder(Octree * tree, long * count,std::vector<InstanceData> * instances, float pointsPerArea, float scale);
+	void handle(OctreeNodeData &data, Vertex &v0, Vertex &v1, Vertex &v2, bool signn) override;
 };
 
 
@@ -228,6 +209,7 @@ class BrushContext {
 };
 
 
+
 class Scene {
     public: 
 	Octree solidSpace;
@@ -248,8 +230,6 @@ class Scene {
 	std::vector<OctreeNodeData> visibleLiquidNodes;
 	std::vector<OctreeNodeData> visibleShadowNodes[SHADOW_MATRIX_COUNT];
 	
-	VegetationGeometryBuilder * vegetationBuilder;
-	MeshGeometryBuilder * meshBuilder;
 	OctreeGeometryBuilder * debugBuilder;
 
 	OctreeLayer<InstanceData> brushInfo;
@@ -269,7 +249,8 @@ class Scene {
 
 	Settings * settings;
 	BrushContext * brushContext;
-	
+	Vegetation3d * vegetationGeometry;
+
 
 	Scene(Settings * settings, BrushContext * brushContext);
 
@@ -290,7 +271,7 @@ class Scene {
 
 	void import(const std::string &filename, Camera &camera) ;
 	void generate(Camera &camera) ;
-	template <typename T> bool loadSpace(Octree * tree, OctreeNodeData &data, OctreeLayer<T> *infos, GeometryBuilder<T> * builder, ChunkContext * context);
+	template <typename T> bool loadSpace(Octree * tree, OctreeNodeData &data, OctreeLayer<T> *infos, InstanceGeometry<T>* loadable);
 	template <typename T> DrawableInstanceGeometry<T> * loadIfNeeded(OctreeLayer<T> * infos, OctreeNode* node, InstanceHandler<T> * handler);
 
 	void save(std::string folderPath, Camera &camera);

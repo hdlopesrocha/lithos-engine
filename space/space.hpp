@@ -130,14 +130,6 @@ struct ChildBlock {
 	OctreeNode * get(int i, OctreeAllocator * allocator);
 };
 
-class OctreeNodeTriangleHandler {
-
-	public: 
-	long * count;
-	OctreeNodeTriangleHandler(long * count);
-	virtual void handle(Vertex &v0, Vertex &v1, Vertex &v2, bool sign) = 0;
-};
-
 
 struct OctreeNodeData {
 	public:
@@ -152,6 +144,15 @@ struct OctreeNodeData {
 		this->context = context;
 	}
 };
+
+class OctreeNodeTriangleHandler {
+
+	public: 
+	long * count;
+	OctreeNodeTriangleHandler(long * count);
+	virtual void handle(OctreeNodeData &data, Vertex &v0, Vertex &v1, Vertex &v2, bool sign) = 0;
+};
+
 
 
 class OctreeAllocator {
@@ -366,14 +367,6 @@ template <typename T> class GeometryBuilder {
     virtual InstanceGeometry<T> * build(Octree * tree, OctreeNodeData &params, ChunkContext * context) = 0;
 };
 
-class MeshGeometryBuilder  : public GeometryBuilder<InstanceData> {
-	long * trianglesCount;
-	public:
-		MeshGeometryBuilder(long * trianglesCount);
-		~MeshGeometryBuilder();
-		InstanceGeometry<InstanceData> * build(Octree * tree, OctreeNodeData &params, ChunkContext * context) override;
-};
-
 class IteratorHandler {
     std::stack<OctreeNodeData> flatData;
     std::stack<StackFrame> stack;
@@ -425,19 +418,29 @@ template <typename T> class InstanceBuilder : public IteratorHandler{
 		}
 };
 
-class Tesselator : public IteratorHandler, OctreeNodeTriangleHandler{
-	Geometry * chunk;
+class Tesselator : public OctreeNodeTriangleHandler{
 	ChunkContext * context;
+
 	public:
-		Tesselator(Geometry * chunk, long * count, ChunkContext * context);
+		Geometry * geometry;
+		Tesselator(long * count, ChunkContext * context);
+		void handle(OctreeNodeData &data, Vertex &v0, Vertex &v1, Vertex &v2, bool sign) override;
+
+};
+
+class Processor : public IteratorHandler {
+	ChunkContext * context;
+	std::vector<OctreeNodeTriangleHandler*> * handlers;
+	public:
+		Processor(long * count, ChunkContext * context, std::vector<OctreeNodeTriangleHandler*> * handlers);
 		void before(Octree * tree, OctreeNodeData &params) override;
 		void after(Octree * tree, OctreeNodeData &params) override;
 		bool test(Octree * tree, OctreeNodeData &params) override;
 		void getOrder(Octree * tree, OctreeNodeData &params, uint8_t * order) override;
-		void handle(Vertex &v0, Vertex &v1, Vertex &v2, bool sign) override;
 		void virtualize(Octree * tree, float * sdf, OctreeNodeData &data, uint levels);
 
 };
+
 
 
 class OctreeFile {

@@ -40,16 +40,16 @@ glm::vec3 randomPointInTriangle(const glm::vec3& A, const glm::vec3& B, const gl
 }
 
 
-VegetationInstanceBuilder::VegetationInstanceBuilder(long * count,std::vector<InstanceData> * instances, float pointsPerArea, float scale) : OctreeNodeTriangleHandler(count){
+VegetationInstanceBuilder::VegetationInstanceBuilder(Octree * tree, long * count,std::vector<InstanceData> * instances, float pointsPerArea, float scale) : OctreeNodeTriangleHandler(count){
     this->instances = instances;
     this->pointsPerArea = pointsPerArea;
     this->scale = scale;
 }
 
-void VegetationInstanceBuilder::handle(Vertex &v0, Vertex &v1, Vertex &v2, bool sign){    
-    if(v0.brushIndex>DISCARD_BRUSH_INDEX && 
-        v1.brushIndex>DISCARD_BRUSH_INDEX && 
-        v2.brushIndex>DISCARD_BRUSH_INDEX) {
+void VegetationInstanceBuilder::handle(OctreeNodeData &data, Vertex &v0, Vertex &v1, Vertex &v2, bool sign){    
+    if(v0.brushIndex == 3 || 
+        v1.brushIndex == 3 || 
+        v2.brushIndex == 3) {
         float area = Math::triangleArea(v0.position, v1.position, v2.position);
         glm::vec3 d1 = v1.position-v0.position;
         glm::vec3 d2 = v2.position-v0.position;
@@ -84,4 +84,5 @@ void VegetationInstanceBuilder::handle(Vertex &v0, Vertex &v1, Vertex &v2, bool 
             }
         }
     }
+    
 }

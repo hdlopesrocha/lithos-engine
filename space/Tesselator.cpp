@@ -1,57 +1,10 @@
 #include "space.hpp"
 
 
-Tesselator::Tesselator(Geometry * chunk, long * count, ChunkContext * context): OctreeNodeTriangleHandler(count), context(context) {
-    this->chunk = chunk;
+Tesselator::Tesselator(long * count, ChunkContext * context): OctreeNodeTriangleHandler(count), context(context) {
+    this->geometry = new Geometry(false);
 }
 
-void Tesselator::virtualize(Octree * tree, float * sdf, OctreeNodeData &data, uint levels) {
-    if(data.level >= levels) {
-        tree->handleQuadNodes(data, sdf, this, true, context);
-    } else {
-        for(int i = 0 ; i < 8 ; ++i) {
-            float childSDF[8];
-            SDF::getChildSDF(sdf, i, childSDF);
-            SpaceType spaceType = SDF::eval(childSDF);
-            if(spaceType == SpaceType::Surface) {
-                OctreeNodeData childData(
-                    data.level + 1, 
-                    data.node, 
-                    data.cube.getChild(i), 
-                    data.context
-                );
-                virtualize(tree, childSDF, childData, levels);          
-            }
-        }
-    }
-}
-
-bool Tesselator::test(Octree * tree, OctreeNodeData &params) {
-    bool shouldContinue = !params.node->isEmpty() && !params.node->isSolid() && !params.node->isLeaf();
-    if(!shouldContinue) {
-        //uint levels = tree->getCurrentLevel(params);
-        uint levels = tree->getMaxLevel(params.cube);
-        if(params.level < levels) {
-        //    std::cout << "Virtualize at level " << params.level << "/" << levels << std::endl;
-        }
-        virtualize(tree, params.node->sdf, params, levels);
-    }
-	return shouldContinue;
-}
-
-void Tesselator::before(Octree * tree, OctreeNodeData &params) {		
-
-}
-
-void Tesselator::after(Octree * tree, OctreeNodeData &params) {
-	return;
-}
-
-void Tesselator::getOrder(Octree * tree, OctreeNodeData &params, uint8_t * order){
-    for(int i = 0 ; i < 8 ; ++i) {
-		order[i] = i;
-	}
-}
 
 int triplanarPlane(glm::vec3 normal) {
     glm::vec3 absNormal = glm::abs(normal);
@@ -76,7 +29,8 @@ glm::vec2 triplanarMapping(glm::vec3 position, int plane) {
     }
 }
 
-void Tesselator::handle(Vertex &v0, Vertex &v1, Vertex &v2, bool reverse) {
+
+void Tesselator::handle(OctreeNodeData &data, Vertex &v0, Vertex &v1, Vertex &v2, bool reverse) {
     if(v0.brushIndex>DISCARD_BRUSH_INDEX && 
         v1.brushIndex>DISCARD_BRUSH_INDEX && 
         v2.brushIndex>DISCARD_BRUSH_INDEX) {
@@ -95,9 +49,9 @@ void Tesselator::handle(Vertex &v0, Vertex &v1, Vertex &v2, bool reverse) {
             v2.texCoord = triplanarMapping(v2.position, plane)*triplanarScale;
         }
 
-        chunk->addVertex(reverse ? v2 : v0);
-        chunk->addVertex(reverse ? v1 : v1);
-        chunk->addVertex(reverse ? v0 : v2);
+        geometry->addVertex(reverse ? v2 : v0);
+        geometry->addVertex(reverse ? v1 : v1);
+        geometry->addVertex(reverse ? v0 : v2);
         ++(*count);
     }
 }

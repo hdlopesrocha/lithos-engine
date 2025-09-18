@@ -1,6 +1,10 @@
 
 #include "tools.hpp"
 
+// Random number generator
+std::random_device rd;
+std::mt19937 g(rd());  // Mersenne Twister engine
+
 Scene::Scene(Settings * settings, BrushContext * brushContext):
   
 	solidSpace(BoundingCube(glm::vec3(0,0,0), 30.0), glm::pow(2, 9)),
@@ -19,9 +23,7 @@ Scene::Scene(Settings * settings, BrushContext * brushContext):
 	brushInstancesVisible = 0;
 	debugInstancesVisible = 0;
 
-	vegetationBuilder = new VegetationGeometryBuilder(new VegetationInstanceBuilderHandler(0.1, 4));
 	debugBuilder = new OctreeGeometryBuilder(new OctreeInstanceBuilderHandler());
-	meshBuilder = new MeshGeometryBuilder(&trianglesCount);
 
 	solidRenderer = new OctreeVisibilityChecker(&visibleSolidNodes);
 	brushRenderer = new OctreeVisibilityChecker(&visibleBrushNodes);
@@ -33,13 +35,12 @@ Scene::Scene(Settings * settings, BrushContext * brushContext):
 	liquidSpaceChangeHandler = new LiquidSpaceChangeHandler(&liquidInfo);
 	solidSpaceChangeHandler = new SolidSpaceChangeHandler(&vegetationInfo, &solidInfo);
 	brushSpaceChangeHandler = new BrushSpaceChangeHandler(&brushInfo, &octreeWireframeInfo);
-
+	vegetationGeometry = new Vegetation3d(1.0);
 }
 
-template <typename T> bool Scene::loadSpace(Octree* tree, OctreeNodeData& data, OctreeLayer<T>* infos, GeometryBuilder<T>* builder, ChunkContext * context) {
+template <typename T> bool Scene::loadSpace(Octree* tree, OctreeNodeData& data, OctreeLayer<T>* infos, InstanceGeometry<T>* loadable) {
 	bool emptyChunk = data.node->isEmpty() || data.node->isSolid();
 	if(!emptyChunk){
-		InstanceGeometry<T>* loadable = builder->build(tree, data, context);
 		if (loadable == NULL) {
 			// No geometry to load — erase entry if it exists
 			infos->mutex.lock();
@@ -70,29 +71,84 @@ template <typename T> bool Scene::loadSpace(Octree* tree, OctreeNodeData& data, 
 bool Scene::processLiquid(OctreeNodeData &data, Octree * tree) {
 	bool result = false;
 	ChunkContext context;
-	if(loadSpace(tree, data, &liquidInfo, meshBuilder, &context)) {
-		result = true;
+	Tesselator tesselator(&trianglesCount, &context);
+	std::vector<OctreeNodeTriangleHandler*> handlers;
+	handlers.push_back(&tesselator);
+	Processor processor(&trianglesCount, &context, &handlers);
+	processor.iterateFlatIn(tree, data);
+	
+ 	if(tesselator.geometry->indices.size() > 0) {
+        InstanceGeometry<InstanceData> * pre = new InstanceGeometry<InstanceData>(tesselator.geometry);
+        pre->instances.push_back(InstanceData(0, glm::mat4(1.0), 0.0f));
+
+		if(loadSpace(tree, data, &liquidInfo, pre)) {
+			result = true;
+		}
+	}else {
+		if(loadSpace(tree, data, &liquidInfo, (InstanceGeometry<InstanceData>*) NULL)) {
+			result = true;
+		}
 	}
+	
 	data.node->setDirty(false);
 
 	return result;
 }
 
+
+
+
 bool Scene::processSolid(OctreeNodeData &data, Octree * tree) {
 	bool result = false;
 	ChunkContext context;
+	Tesselator tesselator(&trianglesCount, &context);
+	std::vector<InstanceData> vegetationInstances; 
+	VegetationInstanceBuilder vegetationBuilder(tree, &vegetationInstancesVisible, &vegetationInstances, 0.1, 4);
 
-	if(loadSpace(tree, data, &solidInfo, meshBuilder, &context)) {
-		result = true;
+	std::vector<OctreeNodeTriangleHandler*> handlers;
+	handlers.push_back(&tesselator);
+	handlers.push_back(&vegetationBuilder);
+
+	Processor processor(&trianglesCount, &context, &handlers);
+	processor.iterateFlatIn(tree, data);
+
+
+ 	if(tesselator.geometry->indices.size() > 0) {
+        InstanceGeometry<InstanceData> * pre = new InstanceGeometry<InstanceData>(tesselator.geometry);
+        pre->instances.push_back(InstanceData(0, glm::mat4(1.0), 0.0f));
+
+		if(loadSpace(tree, data, &solidInfo, pre)) {
+			result = true;
+		}
+
+	} else {
+		if(loadSpace(tree, data, &solidInfo, (InstanceGeometry<InstanceData>*) NULL)) {
+			result = true;
+		}
 	}
-	if(loadSpace(tree, data, &vegetationInfo, vegetationBuilder, &context)) {
-		result = true;			
+
+	
+    // Shuffle the vector
+    if(vegetationInstances.size()) {
+        std::shuffle(vegetationInstances.begin(), vegetationInstances.end(), g);
+        InstanceGeometry<InstanceData> * pre = new InstanceGeometry<InstanceData>(vegetationGeometry, vegetationInstances);
+
+		if(loadSpace(tree, data, &vegetationInfo, pre)) {
+			result = true;
+		}
+    } else {
+		if(loadSpace(tree, data, &vegetationInfo, (InstanceGeometry<InstanceData>*) NULL)) {
+			result = true;
+		}
 	}
+	
+
 	#ifdef DEBUG_OCTREE_WIREFRAME
-	if(loadSpace(tree, data, &octreeWireframeInfo, debugBuilder, &context)) {
+	if(loadSpace(tree, data, &octreeWireframeInfo, debugBuilder->build(tree, data, &context))) {
 		result = true;			
 	}
 	#endif
+
 	data.node->setDirty(false);	
 
 	return result;
@@ -101,10 +157,26 @@ bool Scene::processSolid(OctreeNodeData &data, Octree * tree) {
 bool Scene::processBrush(OctreeNodeData &data, Octree * tree) {
 	bool result = false;
 	ChunkContext context;
+	Tesselator tesselator(&trianglesCount, &context);
 
-	if(loadSpace(tree, data, &brushInfo, meshBuilder, &context)) {
-		result = true;
+	std::vector<OctreeNodeTriangleHandler*> handlers;
+	handlers.push_back(&tesselator);
+	Processor processor(&trianglesCount, &context, &handlers);
+	processor.iterateFlatIn(tree, data);
+
+ 	if(tesselator.geometry->indices.size() > 0) {
+        InstanceGeometry<InstanceData> * pre = new InstanceGeometry<InstanceData>(tesselator.geometry);
+        pre->instances.push_back(InstanceData(0, glm::mat4(1.0), 0.0f));
+
+		if(loadSpace(tree, data, &brushInfo, pre)) {
+			result = true;
+		}
+	}else {
+		if(loadSpace(tree, data, &brushInfo, (InstanceGeometry<InstanceData>*) NULL)) {
+			result = true;
+		}
 	}
+
 	data.node->setDirty(false);	
 
 	return result;
@@ -368,7 +440,8 @@ void Scene::generate(Camera &camera) {
 		float r = 256.0f;
 		CapsuleDistanceFunction function(a, b, r);
 		WrappedCapsule wrappedFunction = WrappedCapsule(&function);
-		solidSpace.del(&wrappedFunction, model, SimpleBrush(5), minSize, *brushContext->simplifier, solidSpaceChangeHandler);
+		WrappedPerlinDistortDistanceEffect distortedFunction = WrappedPerlinDistortDistanceEffect(&wrappedFunction, 64.0f, 0.1f/32.0f);
+		solidSpace.del(&distortedFunction, model, SimpleBrush(5), minSize, *brushContext->simplifier, solidSpaceChangeHandler);
 	}
 
 	{
@@ -431,6 +504,7 @@ void Scene::generate(Camera &camera) {
 		Transformation model(glm::vec3(radius), center, 0,0,0);
 		WrappedSphere wrappedFunction = WrappedSphere(&function);
 		WrappedPerlinDistortDistanceEffect distortedFunction = WrappedPerlinDistortDistanceEffect(&wrappedFunction, 48.0f, 0.1f/32.0f);
+		//distortedFunction.cacheEnabled = true;
 		solidSpace.add(&distortedFunction, model, SimpleBrush(5), minSize*0.25f, *brushContext->simplifier, solidSpaceChangeHandler);
 	}
 
@@ -441,7 +515,8 @@ void Scene::generate(Camera &camera) {
 		SphereDistanceFunction function = SphereDistanceFunction();
 		Transformation model(glm::vec3(radius), center, 0,0,0);
 		WrappedSphere wrappedFunction = WrappedSphere(&function);
-		WrappedPerlinCarveDistanceEffect carvedFunction = WrappedPerlinCarveDistanceEffect(&wrappedFunction, 64.0f, 0.1f/32.0f, 0.0f);
+		WrappedPerlinCarveDistanceEffect carvedFunction = WrappedPerlinCarveDistanceEffect(&wrappedFunction, 64.0f, 0.1f/32.0f, 0.1f);
+		//carvedFunction.cacheEnabled = true;
 		solidSpace.add(&carvedFunction, model, SimpleBrush(5), minSize*0.25f, *brushContext->simplifier, solidSpaceChangeHandler);
 	}
 
