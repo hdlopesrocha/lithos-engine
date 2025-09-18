@@ -13,10 +13,14 @@ const char* WrappedSineDistortDistanceEffect::getLabel() const {
 }
 
 float WrappedSineDistortDistanceEffect::distance(const glm::vec3 p, const Transformation &model) {
-    float dx = sin((p.y + offset.x) * frequency) * amplitude;
-    float dy = sin((p.z + offset.y) * frequency) * amplitude;
-    float dz = sin((p.x + offset.z) * frequency) * amplitude; 
-    glm::vec3 newPos = p + glm::vec3(dx, dy, dz);
+    glm::vec3 pp = p + offset; // apply offset
+
+    float dx = sin(pp.x * frequency) * cos(pp.y * frequency) * sin(pp.z * frequency);
+    float dy = cos(pp.x * frequency) * sin(pp.y * frequency) * cos(pp.z * frequency);
+    float dz = sin(pp.x * frequency) * sin(pp.y * frequency) * cos(pp.z * frequency);
+
+    const float norm = 2.0f; // sum of two [-1,1] waves
+    glm::vec3 newPos = p + amplitude / norm * glm::vec3(dx, dy, dz);
 
     return function->distance(newPos, model);
 }
