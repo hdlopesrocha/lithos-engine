@@ -1,7 +1,7 @@
 # Compiler and flags
 CC = g++
-CFLAGS = -std=c++20 -pthread -Wall -I/usr/include/imgui
-LIBS = -lGLEW -lglfw -lGL -lz -limgui -lstb -lgdal
+CFLAGS = -std=c++20 -pthread -Wall -I/usr/include/imgui -Ilibs/FastNoise2/include
+LIBS = -lGLEW -lglfw -lGL -lz -limgui -lstb -lgdal libs/FastNoise2/build/lib/libFastNoise.a
 LDFLAGS = 
 
 
@@ -89,6 +89,8 @@ massif:
 	cd bin; valgrind --tool=massif --massif-out-file=file.out ./app;  massif-visualizer file.out
 
 libs:
+	sudo apt-get install cmake
 	mkdir -p libs; 
-	cd libs; 
-	git clone https://github.com/aiekick/ImGuiFileDialog.git
+	cd libs; git clone https://github.com/aiekick/ImGuiFileDialog.git
+	cd libs; git clone https://github.com/Auburn/FastNoise2.git; cd FastNoise2; mkdir -p build; cd build; cmake .. -DBUILD_STATIC_LIBS=ON; cmake --build . -j
+
