@@ -64,7 +64,7 @@ public:
     static float pyramid(const glm::vec3 &p, float h, float a);
     static float cone(glm::vec3 p);
     static glm::vec3 distortPerlin(glm::vec3 p, float amplitude, float frequency);
-    static glm::vec3 distortPerlinFractal(glm::vec3 p, float amplitude, float frequency, int octaves, float lacunarity, float gain);
+    static glm::vec3 distortPerlinFractal(glm::vec3 p, float amplitude, float frequency, glm::vec3 offset, int octaves, float lacunarity, float gain);
     static float distortedCarveFractalSDF(glm::vec3 p, float d, float threshold, float amplitude, float frequency, int octaves, float lacunarity, float gain);
     static glm::vec3 getPosition(float *sdf, const BoundingCube &cube);
     static glm::vec3 getAveragePosition(float *sdf, const BoundingCube &cube);
@@ -339,7 +339,8 @@ class WrappedPerlinDistortDistanceEffect : public WrappedSignedDistanceEffect {
     public:
     float amplitude;
     float frequency;
-    WrappedPerlinDistortDistanceEffect(WrappedSignedDistanceFunction * function, float amplitude, float frequency);
+    glm::vec3 offset;
+    WrappedPerlinDistortDistanceEffect(WrappedSignedDistanceFunction * function, float amplitude, float frequency, glm::vec3 offset);
     ~WrappedPerlinDistortDistanceEffect();
     BoundingSphere getSphere(const Transformation &model, float bias) const;
     const char* getLabel() const override;
@@ -352,7 +353,8 @@ class WrappedPerlinCarveDistanceEffect : public WrappedSignedDistanceEffect {
     float amplitude;
     float frequency;
     float threshold;
-    WrappedPerlinCarveDistanceEffect(WrappedSignedDistanceFunction * function, float amplitude, float frequency, float threshold);
+    glm::vec3 offset;
+    WrappedPerlinCarveDistanceEffect(WrappedSignedDistanceFunction * function, float amplitude, float frequency, float threshold, glm::vec3 offset);
     ~WrappedPerlinCarveDistanceEffect();
     const char* getLabel() const override;
   	float distance(const glm::vec3 p, const Transformation &model) override;

@@ -6,25 +6,20 @@ std::random_device rd;
 std::mt19937 g(rd());  // Mersenne Twister engine
 
 Scene::Scene(Settings * settings, BrushContext * brushContext):
-  
 	solidSpace(BoundingCube(glm::vec3(0,0,0), 30.0), glm::pow(2, 9)),
 	liquidSpace(BoundingCube(glm::vec3(0,0,0), 30.0), glm::pow(2, 9)),
 	brushSpace(BoundingCube(glm::vec3(0,0,0), 30.0), glm::pow(2, 9)),
   	brushTrianglesCount(0),
 	trianglesCount(0),
 	brushContext(brushContext)
-
  {
 	this->settings = settings;
-
 	solidInstancesVisible = 0;
 	liquidInstancesVisible = 0;
 	vegetationInstancesVisible = 0;
 	brushInstancesVisible = 0;
-	debugInstancesVisible = 0;
-
+	debugInstancesVisible = 0;	
 	debugBuilder = new OctreeGeometryBuilder(new OctreeInstanceBuilderHandler());
-
 	solidRenderer = new OctreeVisibilityChecker(&visibleSolidNodes);
 	brushRenderer = new OctreeVisibilityChecker(&visibleBrushNodes);
 	liquidRenderer = new OctreeVisibilityChecker(&visibleLiquidNodes);
@@ -89,9 +84,7 @@ bool Scene::processLiquid(OctreeNodeData &data, Octree * tree) {
 			result = true;
 		}
 	}
-	
 	data.node->setDirty(false);
-
 	return result;
 }
 
@@ -103,7 +96,8 @@ bool Scene::processSolid(OctreeNodeData &data, Octree * tree) {
 	ChunkContext context;
 	Tesselator tesselator(&trianglesCount, &context);
 	std::vector<InstanceData> vegetationInstances; 
-	VegetationInstanceBuilder vegetationBuilder(tree, &vegetationInstancesVisible, &vegetationInstances, 0.1, 4);
+	long count = 0;
+	VegetationInstanceBuilder vegetationBuilder(tree, &count, &vegetationInstances, 0.1, 4);
 
 	std::vector<OctreeNodeTriangleHandler*> handlers;
 	handlers.push_back(&tesselator);
@@ -184,12 +178,8 @@ bool Scene::processBrush(OctreeNodeData &data, Octree * tree) {
 
 bool Scene::processSpace() {
 	// Set load counts per Processor
-	solidInstancesVisible = 0;
-	liquidInstancesVisible = 0;
-	vegetationInstancesVisible = 0;
-	brushInstancesVisible = 0;
-	debugInstancesVisible = 0;
-	
+
+
 	std::shared_ptr<std::atomic<int>> loadCountSolid = std::make_shared<std::atomic<int>>(0);
 	std::shared_ptr<std::atomic<int>> loadCountLiquid = std::make_shared<std::atomic<int>>(0);
 	std::shared_ptr<std::atomic<int>> loadCountBrush = std::make_shared<std::atomic<int>>(0);
@@ -302,9 +292,8 @@ template <typename T, typename H> void Scene::draw(uint drawableType, int mode, 
 	for(const OctreeNodeData &data : list) {
 		OctreeNode * node = data.node;
 		DrawableInstanceGeometry<T> * drawable = loadIfNeeded(info, node, &handler);
-		
-		if(drawableType == TYPE_INSTANCE_AMOUNT_DRAWABLE) {
-			if(drawable != NULL) {
+		if(drawable != NULL) {
+			if(drawableType == TYPE_INSTANCE_AMOUNT_DRAWABLE) {
 				float amount = glm::clamp( 1.0 - glm::length(cameraPosition -  drawable->center)/(float(settings->billboardRange)), 0.0, 1.0);
 				if(amount > 0.8){
 					amount = 1.0;
@@ -312,35 +301,38 @@ template <typename T, typename H> void Scene::draw(uint drawableType, int mode, 
 				//std::cout << "Scene.draw() " << std::to_string(drawableType) << "|" << std::to_string(amount) << std::endl;
 				drawable->draw(mode, amount, count);
 			}
-		}
-		else if(drawableType == TYPE_INSTANCE_FULL_DRAWABLE) {
-			if(drawable != NULL) {
+			else if(drawableType == TYPE_INSTANCE_FULL_DRAWABLE) {
 				drawable->draw(mode, 1.0, count);
-			}
-		}	
+			}	
+		}
 	}
 }
 
 void Scene::drawVegetation(glm::vec3 cameraPosition, const std::vector<OctreeNodeData> &list) {
 	glDisable(GL_CULL_FACE);
+	vegetationInstancesVisible = 0;
 	draw<InstanceData, InstanceDataHandler>(TYPE_INSTANCE_AMOUNT_DRAWABLE, GL_PATCHES, cameraPosition, list, &vegetationInfo, &vegetationInstancesVisible);
 	glEnable(GL_CULL_FACE);
 }
 
 void Scene::draw3dSolid(glm::vec3 cameraPosition, const std::vector<OctreeNodeData> &list) {
+	solidInstancesVisible = 0;
 	draw<InstanceData, InstanceDataHandler>(TYPE_INSTANCE_FULL_DRAWABLE, GL_PATCHES, cameraPosition, list, &solidInfo, &solidInstancesVisible);
 }
 
 void Scene::draw3dBrush(glm::vec3 cameraPosition, const std::vector<OctreeNodeData> &list) {
+	brushInstancesVisible = 0;
 	draw<InstanceData, InstanceDataHandler>(TYPE_INSTANCE_FULL_DRAWABLE, GL_PATCHES, cameraPosition, list, &brushInfo, &brushInstancesVisible);
 }
 
 void Scene::draw3dLiquid(glm::vec3 cameraPosition, const std::vector<OctreeNodeData> &list) {
+	liquidInstancesVisible = 0;
 	draw<InstanceData, InstanceDataHandler>(TYPE_INSTANCE_FULL_DRAWABLE, GL_PATCHES, cameraPosition, list, &liquidInfo, &liquidInstancesVisible);
 }
 
 void Scene::draw3dOctree(glm::vec3 cameraPosition, const std::vector<OctreeNodeData> &list) {
 	glDisable(GL_CULL_FACE);
+	debugInstancesVisible = 0;
 	draw<DebugInstanceData, DebugInstanceDataHandler>(TYPE_INSTANCE_FULL_DRAWABLE, GL_TRIANGLES, cameraPosition, list, &octreeWireframeInfo, &debugInstancesVisible);
 	glEnable(GL_CULL_FACE);
 }
@@ -440,7 +432,7 @@ void Scene::generate(Camera &camera) {
 		float r = 256.0f;
 		CapsuleDistanceFunction function(a, b, r);
 		WrappedCapsule wrappedFunction = WrappedCapsule(&function);
-		WrappedPerlinDistortDistanceEffect distortedFunction = WrappedPerlinDistortDistanceEffect(&wrappedFunction, 64.0f, 0.1f/32.0f);
+		WrappedPerlinDistortDistanceEffect distortedFunction = WrappedPerlinDistortDistanceEffect(&wrappedFunction, 64.0f, 0.1f/32.0f, glm::vec3(0));
 		solidSpace.del(&distortedFunction, model, SimpleBrush(5), minSize, *brushContext->simplifier, solidSpaceChangeHandler);
 	}
 
@@ -503,7 +495,7 @@ void Scene::generate(Camera &camera) {
 		SphereDistanceFunction function = SphereDistanceFunction();
 		Transformation model(glm::vec3(radius), center, 0,0,0);
 		WrappedSphere wrappedFunction = WrappedSphere(&function);
-		WrappedPerlinDistortDistanceEffect distortedFunction = WrappedPerlinDistortDistanceEffect(&wrappedFunction, 48.0f, 0.1f/32.0f);
+		WrappedPerlinDistortDistanceEffect distortedFunction = WrappedPerlinDistortDistanceEffect(&wrappedFunction, 48.0f, 0.1f/32.0f, glm::vec3(0));
 		//distortedFunction.cacheEnabled = true;
 		solidSpace.add(&distortedFunction, model, SimpleBrush(5), minSize*0.25f, *brushContext->simplifier, solidSpaceChangeHandler);
 	}
@@ -515,7 +507,7 @@ void Scene::generate(Camera &camera) {
 		SphereDistanceFunction function = SphereDistanceFunction();
 		Transformation model(glm::vec3(radius), center, 0,0,0);
 		WrappedSphere wrappedFunction = WrappedSphere(&function);
-		WrappedPerlinCarveDistanceEffect carvedFunction = WrappedPerlinCarveDistanceEffect(&wrappedFunction, 64.0f, 0.1f/32.0f, 0.1f);
+		WrappedPerlinCarveDistanceEffect carvedFunction = WrappedPerlinCarveDistanceEffect(&wrappedFunction, 64.0f, 0.1f/32.0f, 0.1f, glm::vec3(0));
 		//carvedFunction.cacheEnabled = true;
 		solidSpace.add(&carvedFunction, model, SimpleBrush(5), minSize*0.25f, *brushContext->simplifier, solidSpaceChangeHandler);
 	}

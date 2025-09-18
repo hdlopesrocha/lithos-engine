@@ -23,7 +23,7 @@ BUILD = debug
 
 
 # Release Build Configuration (optimized)
-release: CFLAGS += -O3
+release: CFLAGS += -O3 -march=native 
 release: compile
 
 # Profile Build Configuration (for profiling with gprof)

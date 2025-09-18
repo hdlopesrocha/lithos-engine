@@ -120,6 +120,7 @@ void BrushEditor::draw2d(float time){
         break;
     }
 
+    ImGui::Text("Rotate: ");
     glm::vec3 euler = glm::eulerAngles(brushContext->model.quaternion);
     pitch = glm::degrees(euler.x);
     yaw   = glm::degrees(euler.y);
@@ -180,7 +181,11 @@ void BrushEditor::draw2d(float time){
                 ImGui::Text("Frequency: ");
                 if(ImGui::InputFloat("m##distortFrequency", &(effect->frequency))) {
                     changed = true; 
-                }    
+                }
+                ImGui::Text("Offset: ");
+                if(ImGui::DragFloat3("m##distortOffset", &(effect->offset[0]), 1.0f)) {
+                    changed = true; 
+                }
                 break;
             }
             case SdfType::CARVE_PERLIN:
@@ -194,11 +199,15 @@ void BrushEditor::draw2d(float time){
                 ImGui::Text("Frequency: ");
                 if(ImGui::InputFloat("m##carveFrequency", &(effect->frequency))) {
                     changed = true; 
+                }
+                ImGui::Text("Offset: ");
+                if(ImGui::DragFloat3("m##distortOffset", &(effect->offset[0]), 1.0f)) {
+                    changed = true; 
                 }    
                 ImGui::Text("Threshold: ");
                 if(ImGui::InputFloat("m##carveThreshold", &(effect->threshold))) {
                     changed = true; 
-                }    
+                }  
                 break;
             }
         default:

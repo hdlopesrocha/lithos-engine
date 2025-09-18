@@ -12,8 +12,8 @@ BrushContext::BrushContext(Settings * settings, Camera * camera) : settings(sett
     this->functions.push_back(new WrappedCone(new ConeDistanceFunction()));
 
     this->effects.push_back(NULL);
-    this->effects.push_back(new WrappedPerlinDistortDistanceEffect(nullptr, 48.0f, 0.1f/32.0f));
-    this->effects.push_back(new WrappedPerlinCarveDistanceEffect(nullptr, 64.0f, 0.1f/32.0f, 0.0f));
+    this->effects.push_back(new WrappedPerlinDistortDistanceEffect(nullptr, 48.0f, 0.1f/32.0f, glm::vec3(0)));
+    this->effects.push_back(new WrappedPerlinCarveDistanceEffect(nullptr, 64.0f, 0.1f/32.0f, 0.0f, glm::vec3(0)));
 
     this->currentEffect = this->effects[0];
     this->currentFunction = this->functions[0];
