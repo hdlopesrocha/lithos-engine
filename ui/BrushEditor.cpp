@@ -210,6 +210,24 @@ void BrushEditor::draw2d(float time){
                 }  
                 break;
             }
+            case SdfType::DISTORT_SINE:
+            {
+                WrappedSineDistortDistanceEffect* effect = (WrappedSineDistortDistanceEffect*)brushContext->currentEffect;
+
+                ImGui::Text("Amplitude: ");
+                if(ImGui::InputFloat("m##carveAmplitude", &(effect->amplitude))) {
+                    changed = true; 
+                }
+                ImGui::Text("Frequency: ");
+                if(ImGui::InputFloat("m##carveFrequency", &(effect->frequency))) {
+                    changed = true; 
+                }
+                ImGui::Text("Offset: ");
+                if(ImGui::DragFloat3("m##distortOffset", &(effect->offset[0]), 1.0f)) {
+                    changed = true; 
+                }    
+                break;
+            }
         default:
             break;
         }

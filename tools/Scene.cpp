@@ -490,7 +490,7 @@ void Scene::generate(Camera &camera) {
 
 	{
 		std::cout << "\tsolidSpace.add(perlinDistort)"<< std::endl;
-		glm::vec3 center = glm::vec3(0,512, 512*4);
+		glm::vec3 center = glm::vec3(512,512, 512*0);
 		float radius = 200.0f;
 		SphereDistanceFunction function = SphereDistanceFunction();
 		Transformation model(glm::vec3(radius), center, 0,0,0);
@@ -502,7 +502,7 @@ void Scene::generate(Camera &camera) {
 
 	{
 		std::cout << "\tsolidSpace.add(perlinCarve)"<< std::endl;
-		glm::vec3 center = glm::vec3(0,512, 512*5);
+		glm::vec3 center = glm::vec3(512,512, 512*1);
 		float radius = 200.0f;
 		SphereDistanceFunction function = SphereDistanceFunction();
 		Transformation model(glm::vec3(radius), center, 0,0,0);
@@ -511,7 +511,17 @@ void Scene::generate(Camera &camera) {
 		//carvedFunction.cacheEnabled = true;
 		solidSpace.add(&carvedFunction, model, SimpleBrush(5), minSize*0.25f, *brushContext->simplifier, solidSpaceChangeHandler);
 	}
-
+	{
+		std::cout << "\tsolidSpace.add(sineDistort)"<< std::endl;
+		glm::vec3 center = glm::vec3(512,512, 512*2);
+		float radius = 200.0f;
+		SphereDistanceFunction function = SphereDistanceFunction();
+		Transformation model(glm::vec3(radius), center, 0,0,0);
+		WrappedSphere wrappedFunction = WrappedSphere(&function);
+		WrappedSineDistortDistanceEffect carvedFunction = WrappedSineDistortDistanceEffect(&wrappedFunction, 32.0f, 0.1f/2.0f, glm::vec3(0));
+		//carvedFunction.cacheEnabled = true;
+		solidSpace.add(&carvedFunction, model, SimpleBrush(5), minSize*0.25f, *brushContext->simplifier, solidSpaceChangeHandler);
+	}
 
 	{
 		Transformation model = Transformation();
