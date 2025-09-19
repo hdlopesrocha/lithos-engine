@@ -605,6 +605,7 @@ public:
 	static float check(float p, float min, float max);
 	static float randomFloat();
 	static glm::vec3 solveLinearSystem(const glm::mat3& A, const glm::vec3& b);
+	static float brightnessAndContrast(float color, float brightness, float contrast);
 };
 void ensureFolderExists(const std::string& folder);
 

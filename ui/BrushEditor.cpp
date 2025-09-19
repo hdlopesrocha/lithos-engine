@@ -186,6 +186,14 @@ void BrushEditor::draw2d(float time){
                 if(ImGui::DragFloat3("m##distortOffset", &(effect->offset[0]), 1.0f)) {
                     changed = true; 
                 }
+                ImGui::Text("Brightness: ");
+                if(ImGui::InputFloat("m##brightness", &(effect->brightness))) {
+                    changed = true; 
+                }
+                ImGui::Text("Contrast: ");
+                if(ImGui::InputFloat("m##contrast", &(effect->contrast))) {
+                    changed = true; 
+                }
                 break;
             }
             case SdfType::CARVE_PERLIN:
@@ -208,6 +216,14 @@ void BrushEditor::draw2d(float time){
                 if(ImGui::InputFloat("m##carveThreshold", &(effect->threshold))) {
                     changed = true; 
                 }  
+                ImGui::Text("Brightness: ");
+                if(ImGui::InputFloat("m##brightness", &(effect->brightness))) {
+                    changed = true; 
+                }
+                ImGui::Text("Contrast: ");
+                if(ImGui::InputFloat("m##contrast", &(effect->contrast))) {
+                    changed = true; 
+                }
                 break;
             }
             case SdfType::DISTORT_SINE:
@@ -228,9 +244,9 @@ void BrushEditor::draw2d(float time){
                 }    
                 break;
             }
-            case SdfType::DISTORT_VORONOI:
+            case SdfType::CARVE_VORONOI:
             {
-                WrappedVoronoiDistortDistanceEffect * effect = (WrappedVoronoiDistortDistanceEffect*)brushContext->currentEffect;
+                WrappedVoronoiCarveDistanceEffect * effect = (WrappedVoronoiCarveDistanceEffect*)brushContext->currentEffect;
 
                 ImGui::Text("Amplitude: ");
                 if(ImGui::InputFloat("m##carveAmplitude", &(effect->amplitude))) {
@@ -244,6 +260,14 @@ void BrushEditor::draw2d(float time){
                 if(ImGui::DragFloat3("m##distortOffset", &(effect->offset[0]), 1.0f)) {
                     changed = true; 
                 }    
+                ImGui::Text("Brightness: ");
+                if(ImGui::InputFloat("m##brightness", &(effect->brightness))) {
+                    changed = true; 
+                }
+                ImGui::Text("Contrast: ");
+                if(ImGui::InputFloat("m##contrast", &(effect->contrast))) {
+                    changed = true; 
+                }
                 break;
             }
         default:

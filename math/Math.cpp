@@ -316,4 +316,9 @@ const char* toString(BrushMode v)
     }
 }
 
-
+float Math::brightnessAndContrast(float color, float brightness, float contrast) {
+    color += brightness;
+    color = glm::clamp(color, -1.0f, 1.0f);
+    color *= contrast;
+    return glm::clamp(color, -1.0f, 1.0f);
+}

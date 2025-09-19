@@ -18,7 +18,7 @@ enum SdfType {
     CARVE_PERLIN,
     DISTORT_SINE,
     CYLINDER,
-    DISTORT_VORONOI
+    CARVE_VORONOI
 };
 const char* toString(SdfType t);
 
@@ -70,8 +70,8 @@ public:
     static float cone(glm::vec3 p);
     static float voronoi3D(const glm::vec3& p, float cellSize, float seed);
     static glm::vec3 distortPerlin(glm::vec3 p, float amplitude, float frequency);
-    static glm::vec3 distortPerlinFractal(glm::vec3 p, float amplitude, float frequency, glm::vec3 offset, int octaves, float lacunarity, float gain);
-    static float distortedCarveFractalSDF(glm::vec3 p, float threshold, float amplitude, float frequency, int octaves, float lacunarity, float gain);
+    static glm::vec3 distortPerlinFractal(glm::vec3 p, float frequency, glm::vec3 offset, int octaves, float lacunarity, float gain);
+    static float distortedCarveFractalSDF(glm::vec3 p, float threshold, float frequency, int octaves, float lacunarity, float gain);
     static glm::vec3 getPosition(float *sdf, const BoundingCube &cube);
     static glm::vec3 getAveragePosition(float *sdf, const BoundingCube &cube);
     static glm::vec3 getAveragePosition2(float *sdf, const BoundingCube &cube);
@@ -367,11 +367,14 @@ class WrappedPerlinDistortDistanceEffect : public WrappedSignedDistanceEffect {
     float amplitude;
     float frequency;
     glm::vec3 offset;
-    WrappedPerlinDistortDistanceEffect(WrappedSignedDistanceFunction * function, float amplitude, float frequency, glm::vec3 offset);
+    float brightness;
+    float contrast;
+    WrappedPerlinDistortDistanceEffect(WrappedSignedDistanceFunction * function, float amplitude, float frequency, glm::vec3 offset, float brightness, float contrast);
     ~WrappedPerlinDistortDistanceEffect();
     BoundingSphere getSphere(const Transformation &model, float bias) const;
     const char* getLabel() const override;
   	float distance(const glm::vec3 p, const Transformation &model) override;
+    ContainmentType check(const BoundingCube &cube, const Transformation &model, float bias) const override;
     SdfType getType() const override { return SdfType::DISTORT_PERLIN; }
 };
 
@@ -381,10 +384,13 @@ class WrappedPerlinCarveDistanceEffect : public WrappedSignedDistanceEffect {
     float frequency;
     float threshold;
     glm::vec3 offset;
-    WrappedPerlinCarveDistanceEffect(WrappedSignedDistanceFunction * function, float amplitude, float frequency, float threshold, glm::vec3 offset);
+    float brightness;
+    float contrast;
+    WrappedPerlinCarveDistanceEffect(WrappedSignedDistanceFunction * function, float amplitude, float frequency, float threshold, glm::vec3 offset, float brightness, float contrast);
     ~WrappedPerlinCarveDistanceEffect();
     const char* getLabel() const override;
   	float distance(const glm::vec3 p, const Transformation &model) override;
+    ContainmentType check(const BoundingCube &cube, const Transformation &model, float bias) const override;
     SdfType getType() const override { return SdfType::CARVE_PERLIN; }
 };
 
@@ -401,17 +407,20 @@ class WrappedSineDistortDistanceEffect : public WrappedSignedDistanceEffect {
     SdfType getType() const override { return SdfType::DISTORT_SINE; }
 };
 
-class WrappedVoronoiDistortDistanceEffect : public WrappedSignedDistanceEffect {
+class WrappedVoronoiCarveDistanceEffect : public WrappedSignedDistanceEffect {
     public:
     float amplitude;
     float cellSize;
     glm::vec3 offset;
-    WrappedVoronoiDistortDistanceEffect(WrappedSignedDistanceFunction * function, float amplitude, float cellSize, glm::vec3 offset);
-    ~WrappedVoronoiDistortDistanceEffect();
+    float brightness;
+    float contrast;
+    WrappedVoronoiCarveDistanceEffect(WrappedSignedDistanceFunction * function, float amplitude, float cellSize, glm::vec3 offset, float brightness, float contrast);
+    ~WrappedVoronoiCarveDistanceEffect();
     BoundingSphere getSphere(const Transformation &model, float bias) const;
     const char* getLabel() const override;
   	float distance(const glm::vec3 p, const Transformation &model) override;
-    SdfType getType() const override { return SdfType::DISTORT_VORONOI; }
+    ContainmentType check(const BoundingCube &cube, const Transformation &model, float bias) const override;
+    SdfType getType() const override { return SdfType::CARVE_VORONOI; }
 };
 
 #endif

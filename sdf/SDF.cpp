@@ -178,7 +178,6 @@ float SDF::octahedron(glm::vec3 p, float s ) {
   return glm::length(glm::vec3(q.x,q.y-s+k,q.z-k)); 
 }
 
-
 // Deterministic pseudo-random [0,1] from integer coords
 inline float randFromPerlin(const glm::ivec3& cell, float seed = 0.0f) {
     float n = stb_perlin_noise3(
@@ -191,20 +190,19 @@ inline float randFromPerlin(const glm::ivec3& cell, float seed = 0.0f) {
 
 // Safe Voronoi 3D with adjustable cell size
 float SDF::voronoi3D(const glm::vec3& p, float cellSize = 1.0f, float seed = 0.0f) {
-    // Prevent division by zero
     if (cellSize <= 0.0f) {
-        return 0.0f;
+        return 0.0f; // safe fallback
     }
 
     // Work in normalized lattice space
     glm::vec3 q = p / cellSize;
 
-q += 0.3f * glm::vec3(
-    stb_perlin_noise3(q.x, q.y, q.z, 0,0,0),
-    stb_perlin_noise3(q.y, q.z, q.x, 0,0,0),
-    stb_perlin_noise3(q.z, q.x, q.y, 0,0,0)
-);
-
+    // Domain warp to break grid artifacts
+    q += 0.3f * glm::vec3(
+        stb_perlin_noise3(q.x, q.y, q.z, 0,0,0),
+        stb_perlin_noise3(q.y, q.z, q.x, 0,0,0),
+        stb_perlin_noise3(q.z, q.x, q.y, 0,0,0)
+    );
 
     glm::ivec3 baseCell = glm::floor(q);
     float minDist = 1e10f;
@@ -215,7 +213,6 @@ q += 0.3f * glm::vec3(
             for (int i = -1; i <= 1; i++) {
                 glm::ivec3 neighbor = baseCell + glm::ivec3(i, j, k);
 
-                // Deterministic offset
                 float ox = randFromPerlin(neighbor, seed);
                 float oy = randFromPerlin(neighbor + glm::ivec3(7, 3, 5), seed + 17.0f);
                 float oz = randFromPerlin(neighbor + glm::ivec3(11, 19, 23), seed + 37.0f);
@@ -228,7 +225,8 @@ q += 0.3f * glm::vec3(
         }
     }
 
-    return minDist * cellSize;
+    // Normalize: [0, sqrt(3)] → [0,1]
+    return minDist / sqrtf(3.0f);
 }
 
 
@@ -363,10 +361,10 @@ glm::vec3 SDF::distortPerlin(glm::vec3 p, float amplitude, float frequency) {
     return p + amplitude * glm::vec3(noiseX, noiseY, noiseZ);
 }
 
-glm::vec3 SDF::distortPerlinFractal(glm::vec3 p, float amplitude, float frequency, glm::vec3 offset, int octaves, float lacunarity = 2.0f, float gain = 0.5f) {
+glm::vec3 SDF::distortPerlinFractal(glm::vec3 p, float frequency, glm::vec3 offset, int octaves, float lacunarity = 2.0f, float gain = 0.5f) {
     glm::vec3 totalNoise(0.0f);
     float freq = frequency;
-    float amp = amplitude;
+    float amp = 1.0f;
 
     // For each axis, use different offsets to decorrelate noise
     glm::vec3 offsetX = offset + glm::vec3(0.0f, 0.0f, 0.0f);
@@ -399,12 +397,11 @@ glm::vec3 SDF::distortPerlinFractal(glm::vec3 p, float amplitude, float frequenc
         amp *= gain;        // decrease amplitude
     }
 
-    return p + totalNoise;
+    return totalNoise;
 }
 
 float SDF::distortedCarveFractalSDF(glm::vec3 p, 
                                     float threshold, 
-                                    float amplitude, 
                                     float frequency, 
                                     int octaves = 4, 
                                     float lacunarity = 2.0f, 
@@ -427,7 +424,7 @@ float SDF::distortedCarveFractalSDF(glm::vec3 p,
     }
 
     if (noiseValue > threshold) {
-        d += amplitude * (noiseValue - threshold);
+        d += (noiseValue - threshold);
     }
 
     return d;
