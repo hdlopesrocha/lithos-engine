@@ -14,5 +14,5 @@ const char* WrappedPerlinCarveDistanceEffect::getLabel() const {
 
 float WrappedPerlinCarveDistanceEffect::distance(const glm::vec3 p, const Transformation &model) {
     float d = function->distance(p, model);
-    return SDF::distortedCarveFractalSDF(p+offset, d, threshold, amplitude, frequency, 6, 2.0f, 0.5f);
+    return d + SDF::distortedCarveFractalSDF(p+offset, threshold, amplitude, frequency, 6, 2.0f, 0.5f);
 }

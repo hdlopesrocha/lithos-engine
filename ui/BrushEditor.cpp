@@ -228,6 +228,24 @@ void BrushEditor::draw2d(float time){
                 }    
                 break;
             }
+            case SdfType::DISTORT_VORONOI:
+            {
+                WrappedVoronoiDistortDistanceEffect * effect = (WrappedVoronoiDistortDistanceEffect*)brushContext->currentEffect;
+
+                ImGui::Text("Amplitude: ");
+                if(ImGui::InputFloat("m##carveAmplitude", &(effect->amplitude))) {
+                    changed = true; 
+                }
+                ImGui::Text("Cell Size: ");
+                if(ImGui::InputFloat("m##cellSize", &(effect->cellSize))) {
+                    changed = true; 
+                }
+                ImGui::Text("Offset: ");
+                if(ImGui::DragFloat3("m##distortOffset", &(effect->offset[0]), 1.0f)) {
+                    changed = true; 
+                }    
+                break;
+            }
         default:
             break;
         }

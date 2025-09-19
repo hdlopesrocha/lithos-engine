@@ -178,6 +178,60 @@ float SDF::octahedron(glm::vec3 p, float s ) {
   return glm::length(glm::vec3(q.x,q.y-s+k,q.z-k)); 
 }
 
+
+// Deterministic pseudo-random [0,1] from integer coords
+inline float randFromPerlin(const glm::ivec3& cell, float seed = 0.0f) {
+    float n = stb_perlin_noise3(
+        cell.x * 0.123f,
+        cell.y * 0.456f,
+        cell.z * 0.789f + seed,0,0,0
+    );
+    return 0.5f * (n + 1.0f); // map [-1,1] -> [0,1]
+}
+
+// Safe Voronoi 3D with adjustable cell size
+float SDF::voronoi3D(const glm::vec3& p, float cellSize = 1.0f, float seed = 0.0f) {
+    // Prevent division by zero
+    if (cellSize <= 0.0f) {
+        return 0.0f;
+    }
+
+    // Work in normalized lattice space
+    glm::vec3 q = p / cellSize;
+
+q += 0.3f * glm::vec3(
+    stb_perlin_noise3(q.x, q.y, q.z, 0,0,0),
+    stb_perlin_noise3(q.y, q.z, q.x, 0,0,0),
+    stb_perlin_noise3(q.z, q.x, q.y, 0,0,0)
+);
+
+
+    glm::ivec3 baseCell = glm::floor(q);
+    float minDist = 1e10f;
+
+    // Check neighbors (27 cells)
+    for (int k = -1; k <= 1; k++) {
+        for (int j = -1; j <= 1; j++) {
+            for (int i = -1; i <= 1; i++) {
+                glm::ivec3 neighbor = baseCell + glm::ivec3(i, j, k);
+
+                // Deterministic offset
+                float ox = randFromPerlin(neighbor, seed);
+                float oy = randFromPerlin(neighbor + glm::ivec3(7, 3, 5), seed + 17.0f);
+                float oz = randFromPerlin(neighbor + glm::ivec3(11, 19, 23), seed + 37.0f);
+
+                glm::vec3 cellSeed = glm::vec3(neighbor) + glm::vec3(ox, oy, oz);
+
+                float d = glm::length(q - cellSeed);
+                minDist = glm::min(minDist, d);
+            }
+        }
+    }
+
+    return minDist * cellSize;
+}
+
+
 glm::vec3 faceOutward(const glm::vec3 &a, const glm::vec3 &b, const glm::vec3 &c, const glm::vec3 &centroid) {
     // normal da face
     glm::vec3 n = glm::normalize(glm::cross(b - a, c - a));
@@ -349,7 +403,6 @@ glm::vec3 SDF::distortPerlinFractal(glm::vec3 p, float amplitude, float frequenc
 }
 
 float SDF::distortedCarveFractalSDF(glm::vec3 p, 
-                                    float d,
                                     float threshold, 
                                     float amplitude, 
                                     float frequency, 
@@ -360,6 +413,7 @@ float SDF::distortedCarveFractalSDF(glm::vec3 p,
     float noiseValue = 0.0f;
     float freq = frequency;
     float amp = 1.0f;
+    float d = 0.0f;
 
     for (int i = 0; i < octaves; ++i) {
         noiseValue += amp * stb_perlin_noise3(

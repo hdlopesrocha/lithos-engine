@@ -526,7 +526,16 @@ void Scene::generate(Camera &camera) {
 		//carvedFunction.cacheEnabled = true;
 		solidSpace.add(&carvedFunction, model, SimpleBrush(5), minSize*0.25f, *brushContext->simplifier, solidSpaceChangeHandler);
 	}
-
+	{
+		std::cout << "\tsolidSpace.add(voronoiDistort)"<< std::endl;
+		glm::vec3 center = glm::vec3(512,512, 512*3);
+		float radius = 200.0f;
+		SphereDistanceFunction function = SphereDistanceFunction();
+		Transformation model(glm::vec3(radius), center, 0,0,0);
+		WrappedSphere wrappedFunction = WrappedSphere(&function);
+		WrappedVoronoiDistortDistanceEffect distortFunction = WrappedVoronoiDistortDistanceEffect(&wrappedFunction, 0.5f, 64.0f, glm::vec3(0));
+		solidSpace.add(&distortFunction, model, SimpleBrush(5), minSize*0.25f, *brushContext->simplifier, solidSpaceChangeHandler);
+	}
 	{
 		Transformation model = Transformation();
 		std::cout << "\tliquidSpace.add(water)"<< std::endl;

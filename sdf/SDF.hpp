@@ -17,7 +17,8 @@ enum SdfType {
     DISTORT_PERLIN,
     CARVE_PERLIN,
     DISTORT_SINE,
-    CYLINDER
+    CYLINDER,
+    DISTORT_VORONOI
 };
 const char* toString(SdfType t);
 
@@ -67,9 +68,10 @@ public:
     static float octahedron(glm::vec3 p, float s);
     static float pyramid(const glm::vec3 &p, float h, float a);
     static float cone(glm::vec3 p);
+    static float voronoi3D(const glm::vec3& p, float cellSize, float seed);
     static glm::vec3 distortPerlin(glm::vec3 p, float amplitude, float frequency);
     static glm::vec3 distortPerlinFractal(glm::vec3 p, float amplitude, float frequency, glm::vec3 offset, int octaves, float lacunarity, float gain);
-    static float distortedCarveFractalSDF(glm::vec3 p, float d, float threshold, float amplitude, float frequency, int octaves, float lacunarity, float gain);
+    static float distortedCarveFractalSDF(glm::vec3 p, float threshold, float amplitude, float frequency, int octaves, float lacunarity, float gain);
     static glm::vec3 getPosition(float *sdf, const BoundingCube &cube);
     static glm::vec3 getAveragePosition(float *sdf, const BoundingCube &cube);
     static glm::vec3 getAveragePosition2(float *sdf, const BoundingCube &cube);
@@ -397,6 +399,19 @@ class WrappedSineDistortDistanceEffect : public WrappedSignedDistanceEffect {
     const char* getLabel() const override;
   	float distance(const glm::vec3 p, const Transformation &model) override;
     SdfType getType() const override { return SdfType::DISTORT_SINE; }
+};
+
+class WrappedVoronoiDistortDistanceEffect : public WrappedSignedDistanceEffect {
+    public:
+    float amplitude;
+    float cellSize;
+    glm::vec3 offset;
+    WrappedVoronoiDistortDistanceEffect(WrappedSignedDistanceFunction * function, float amplitude, float cellSize, glm::vec3 offset);
+    ~WrappedVoronoiDistortDistanceEffect();
+    BoundingSphere getSphere(const Transformation &model, float bias) const;
+    const char* getLabel() const override;
+  	float distance(const glm::vec3 p, const Transformation &model) override;
+    SdfType getType() const override { return SdfType::DISTORT_VORONOI; }
 };
 
 #endif
