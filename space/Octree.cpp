@@ -222,8 +222,7 @@ bool allDifferent(const T& first, const Args&... args) {
     return true;
 }
 
-void Octree::handleQuadNodes(OctreeNodeData &data, float * sdf, OctreeNodeTriangleHandler * handler, bool simplification, ChunkContext * context) {
-
+void Octree::handleQuadNodes(OctreeNodeData &data, float * sdf, std::vector<OctreeNodeTriangleHandler*> * handlers, bool simplification, ChunkContext * context) {
     OctreeNode * neighbors[8] = {NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL};
 	
     for(size_t k =0 ; k < TESSELATION_EDGES.size(); ++k) {
@@ -244,10 +243,14 @@ void Octree::handleQuadNodes(OctreeNodeData &data, float * sdf, OctreeNodeTriang
 			}
 	
             if(allDifferent(vertices[0], vertices[2], vertices[1])) {
-			    handler->handle(data, vertices[0], vertices[2], vertices[1], sign1);
+                for(auto handler : *handlers) {
+                    handler->handle(data, vertices[0], vertices[2], vertices[1], sign1);
+                }
 			}
             if(allDifferent(vertices[0], vertices[3], vertices[2])) {
-                handler->handle(data, vertices[0], vertices[3], vertices[2], sign1);
+                for(auto handler : *handlers) {
+                    handler->handle(data, vertices[0], vertices[3], vertices[2], sign1);
+                }
             }
 		}
 	}

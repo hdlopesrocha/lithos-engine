@@ -7,9 +7,7 @@ Processor::Processor(long * count, ChunkContext * context, std::vector<OctreeNod
 
 void Processor::virtualize(Octree * tree, float * sdf, OctreeNodeData &data, uint levels) {
     if(data.level >= levels) {
-        for(auto handler : *handlers) {
-            tree->handleQuadNodes(data, sdf, handler, true, context);
-        }
+        tree->handleQuadNodes(data, sdf, handlers, true, context);
     } else {
         for(int i = 0 ; i < 8 ; ++i) {
             float childSDF[8];
