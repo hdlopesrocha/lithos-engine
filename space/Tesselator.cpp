@@ -1,7 +1,7 @@
 #include "space.hpp"
 
 
-Tesselator::Tesselator(long * count, ChunkContext * context): OctreeNodeTriangleHandler(count), context(context) {
+Tesselator::Tesselator(long * count, ThreadContext * context): OctreeNodeTriangleHandler(count), context(context) {
     this->geometry = new Geometry(false);
 }
 

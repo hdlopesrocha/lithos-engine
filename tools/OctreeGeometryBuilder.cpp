@@ -9,7 +9,7 @@ OctreeGeometryBuilder::OctreeGeometryBuilder(InstanceBuilderHandler<DebugInstanc
     this->handler = handler;
 }
 
-InstanceGeometry<DebugInstanceData> * OctreeGeometryBuilder::build(Octree * tree, OctreeNodeData &params, ChunkContext * context){
+InstanceGeometry<DebugInstanceData> * OctreeGeometryBuilder::build(Octree * tree, OctreeNodeData &params, ThreadContext * context){
     std::vector<DebugInstanceData> instances;
 
     InstanceBuilder<DebugInstanceData> instanceBuilder(handler, &instances, context);

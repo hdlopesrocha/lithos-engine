@@ -65,7 +65,7 @@ template <typename T> bool Scene::loadSpace(Octree* tree, OctreeNodeData& data, 
 
 bool Scene::processLiquid(OctreeNodeData &data, Octree * tree) {
 	bool result = false;
-	ChunkContext context;
+	ThreadContext context;
 	Tesselator tesselator(&trianglesCount, &context);
 	std::vector<OctreeNodeTriangleHandler*> handlers;
 	handlers.push_back(&tesselator);
@@ -93,7 +93,7 @@ bool Scene::processLiquid(OctreeNodeData &data, Octree * tree) {
 
 bool Scene::processSolid(OctreeNodeData &data, Octree * tree) {
 	bool result = false;
-	ChunkContext context;
+	ThreadContext context;
 	Tesselator tesselator(&trianglesCount, &context);
 	std::vector<InstanceData> vegetationInstances; 
 	long count = 0;
@@ -150,7 +150,7 @@ bool Scene::processSolid(OctreeNodeData &data, Octree * tree) {
 
 bool Scene::processBrush(OctreeNodeData &data, Octree * tree) {
 	bool result = false;
-	ChunkContext context;
+	ThreadContext context;
 	Tesselator tesselator(&trianglesCount, &context);
 
 	std::vector<OctreeNodeTriangleHandler*> handlers;
@@ -208,42 +208,48 @@ bool Scene::processSpace() {
 		}
 	}
 
-    std::vector<std::thread> threads;
+    std::vector<std::future<void>> threads;
 	threads.reserve(24);
+
+
 	for(OctreeNodeData * data : allVisibleNodes) {
 		if(data->node->isDirty() && --maxSolidThreads >= 0) {
-			threads.emplace_back([this, data, loadCountSolid]() {
-				if(processSolid(*data, &solidSpace)) {
-					(*loadCountSolid)++;
-				}
-			});
+			threads.emplace_back(
+				threadPool.enqueue([this, data, loadCountSolid]() {
+					if(processSolid(*data, &solidSpace)) {
+						(*loadCountSolid)++;
+					}
+				})
+			);
 		}
 	}
 
 	for(OctreeNodeData &data : visibleBrushNodes) {
 		if(data.node->isDirty()  && --maxBrushThreads >= 0) {
-			threads.emplace_back([this, &data, loadCountBrush]() {
-				if(processBrush(data, &brushSpace)) {
-					(*loadCountBrush)++;
-				}
-			});
+			threads.emplace_back(
+				threadPool.enqueue([this, &data, loadCountBrush]() {
+					if(processBrush(data, &brushSpace)) {
+						(*loadCountBrush)++;
+					}
+				})
+			);
 		}
 	}
 
 	for(OctreeNodeData &data : visibleLiquidNodes) {
 		if(data.node->isDirty() && --maxLiquidThreads >= 0) {
-			threads.emplace_back([this, &data, loadCountLiquid]() {
-				if(processLiquid(data, &liquidSpace)) {
-					(*loadCountLiquid)++;
-				}
-			});
+			threads.emplace_back(
+				threadPool.enqueue([this, &data, loadCountLiquid]() {
+					if(processLiquid(data, &liquidSpace)) {
+						(*loadCountLiquid)++;
+					}
+				})
+			);
 		}
 	}
 
-    for(std::thread &t : threads) {
-        if(t.joinable()) {
-            t.join();
-        }
+    for(auto &t : threads) {
+        t.get();
     }
 
 	return *loadCountSolid > 0 || *loadCountLiquid > 0 || *loadCountBrush > 0;

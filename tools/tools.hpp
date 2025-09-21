@@ -10,7 +10,7 @@
 #include "../gl/gl.hpp"
 #include "../space/space.hpp"
 #include "../handler/handler.hpp"
-
+#include "../space/ThreadPool.hpp"
 #include <algorithm>
 #include <random>
 
@@ -92,7 +92,7 @@ class OctreeInstanceBuilderHandler : public InstanceBuilderHandler<DebugInstance
 	public:
 	OctreeInstanceBuilderHandler();
 
-	void handle(Octree * tree, OctreeNodeData &data, std::vector<DebugInstanceData> * instances, ChunkContext * context) override;
+	void handle(Octree * tree, OctreeNodeData &data, std::vector<DebugInstanceData> * instances, ThreadContext * context) override;
 };
 
 
@@ -103,7 +103,7 @@ class OctreeGeometryBuilder : public GeometryBuilder<DebugInstanceData> {
     OctreeGeometryBuilder(InstanceBuilderHandler<DebugInstanceData>  * handler);
     ~OctreeGeometryBuilder();
 
-    InstanceGeometry<DebugInstanceData> * build(Octree * tree, OctreeNodeData &params, ChunkContext * context) override;
+    InstanceGeometry<DebugInstanceData> * build(Octree * tree, OctreeNodeData &params, ThreadContext * context) override;
 };
 
 class VegetationInstanceBuilder : public OctreeNodeTriangleHandler {
@@ -250,6 +250,7 @@ class Scene {
 	Settings * settings;
 	BrushContext * brushContext;
 	Vegetation3d * vegetationGeometry;
+	ThreadPool threadPool = ThreadPool(std::thread::hardware_concurrency());
 
 
 	Scene(Settings * settings, BrushContext * brushContext);

@@ -5,7 +5,7 @@ OctreeInstanceBuilderHandler::OctreeInstanceBuilderHandler() {
 
 }
 
-void OctreeInstanceBuilderHandler::handle(Octree * tree, OctreeNodeData &data, std::vector<DebugInstanceData> * instances, ChunkContext * context){
+void OctreeInstanceBuilderHandler::handle(Octree * tree, OctreeNodeData &data, std::vector<DebugInstanceData> * instances, ThreadContext * context){
 	if(data.node->isLeaf()) {
 		bool virtualizeSDF = false;
 		

@@ -244,17 +244,17 @@ struct ShapeArgs {
 };
 
 
-class ChunkContext {
+class ThreadContext {
 	public:
 	std::unordered_map<glm::vec3, float> shapeSdfCache;
 	std::unordered_map<glm::vec4, OctreeNode*> nodeCache;
 
 	BoundingCube cube;
 
-	ChunkContext() : cube(BoundingCube()) {
+	ThreadContext() : cube(BoundingCube()) {
 	}
 	
-	ChunkContext(BoundingCube cube) : cube(cube) {
+	ThreadContext(BoundingCube cube) : cube(cube) {
 	}
 };
 
@@ -267,38 +267,38 @@ class Octree: public BoundingCube {
 		OctreeAllocator allocator;
 		int threadsCreated = 0;
 		std::shared_ptr<std::atomic<int>> shapeCounter = std::make_shared<std::atomic<int>>(0);
-		std::unordered_map<glm::vec3, ChunkContext> chunks;
-		
+		std::unordered_map<glm::vec3, ThreadContext> chunks;
+
 		Octree(BoundingCube minCube, float chunkSize);
 		Octree();
 		
 		void expand(const ShapeArgs &args);
 		void add(WrappedSignedDistanceFunction *function, const Transformation model, const TexturePainter &painter, float minSize, Simplifier &simplifier, OctreeChangeHandler * changeHandler);
 		void del(WrappedSignedDistanceFunction *function, const Transformation model, const TexturePainter &painter, float minSize, Simplifier &simplifier, OctreeChangeHandler * changeHandler);
-		NodeOperationResult shape(OctreeNodeFrame frame, const ShapeArgs &args, ChunkContext * chunkContext);
+		NodeOperationResult shape(OctreeNodeFrame frame, const ShapeArgs &args, ThreadContext * threadContext);
 		void iterate(IteratorHandler &handler);
 		void iterateFlat(IteratorHandler &handler);
 
 		OctreeNode* getNodeAt(const glm::vec3 &pos, int level, bool simplification);
 		OctreeNode* getNodeAt(const glm::vec3 &pos, bool simplification);
 		float getSdfAt(const glm::vec3 &pos);
-		void handleQuadNodes(OctreeNodeData &data, float * sdf, std::vector<OctreeNodeTriangleHandler*> * handlers, bool simplification, ChunkContext * context);
+		void handleQuadNodes(OctreeNodeData &data, float * sdf, std::vector<OctreeNodeTriangleHandler*> * handlers, bool simplification, ThreadContext * context);
 		bool hasFinerNode(const OctreeNode *node);
 		int getLevelAt(const glm::vec3 &pos, bool simplification);
 		int getNeighborLevel(OctreeNodeData &data, bool simplification, int direction);
-		OctreeNode * fetch(OctreeNodeData &data, OctreeNode ** out, int i, bool simplification, ChunkContext * context);
+		OctreeNode * fetch(OctreeNodeData &data, OctreeNode ** out, int i, bool simplification, ThreadContext * context);
 		int getMaxLevel(OctreeNode * node, int level);
 		uint getCurrentLevel(OctreeNodeData &data);
 
 		uint getMaxLevel(BoundingCube &cube);
 		uint getMaxLevel(OctreeNode *node, BoundingCube &cube, BoundingCube &c, uint level);
 		bool isChunkNode(float length);
-		bool isThreadNode(float length, float minSize);
+		bool isThreadNode(float length, float minSize, int threadSize);
 		void exportOctreeSerialization(OctreeSerialized * octree);
 		void exportNodesSerialization(std::vector<OctreeNodeCubeSerialized> * nodes);
 	private:
-		void buildSDF(const ShapeArgs &args, BoundingCube &cube, float * shapeSDF, float * resultSDF, float * inheritedShapeSDF, float * inheritedResultSDF, float * existingResultSDF, ChunkContext * chunkContext);
-		float evaluateSDF(const ShapeArgs &args, std::unordered_map<glm::vec3, float> * chunkContext, glm::vec3 p);
+		void buildSDF(const ShapeArgs &args, BoundingCube &cube, float * shapeSDF, float * resultSDF, float * inheritedShapeSDF, float * inheritedResultSDF, float * existingResultSDF, ThreadContext * threadContext);
+		float evaluateSDF(const ShapeArgs &args, std::unordered_map<glm::vec3, float> * threadContext, glm::vec3 p);
 	};
 
 class Simplifier {
@@ -364,7 +364,7 @@ struct DebugInstanceData {
 
 template <typename T> class GeometryBuilder {
     public:
-    virtual InstanceGeometry<T> * build(Octree * tree, OctreeNodeData &params, ChunkContext * context) = 0;
+    virtual InstanceGeometry<T> * build(Octree * tree, OctreeNodeData &params, ThreadContext * context) = 0;
 };
 
 class IteratorHandler {
@@ -384,16 +384,16 @@ class IteratorHandler {
 
 template <typename T> class InstanceBuilderHandler {
 	public:
-		virtual void handle(Octree * tree, OctreeNodeData &data, std::vector<T> * instances, ChunkContext * context) = 0;
+		virtual void handle(Octree * tree, OctreeNodeData &data, std::vector<T> * instances, ThreadContext * context) = 0;
 };
 
 template <typename T> class InstanceBuilder : public IteratorHandler{
 	InstanceBuilderHandler<T> * handler;
 	std::vector<T> * instances;
-	ChunkContext * context;
+	ThreadContext * context;
 	public: 
 
-		InstanceBuilder(InstanceBuilderHandler<T> * handler, std::vector<T> * instances, ChunkContext * context){
+		InstanceBuilder(InstanceBuilderHandler<T> * handler, std::vector<T> * instances, ThreadContext * context){
 			this->instances = instances;
 			this->handler = handler;
 			this->context = context;
@@ -419,20 +419,20 @@ template <typename T> class InstanceBuilder : public IteratorHandler{
 };
 
 class Tesselator : public OctreeNodeTriangleHandler{
-	ChunkContext * context;
+	ThreadContext * context;
 
 	public:
 		Geometry * geometry;
-		Tesselator(long * count, ChunkContext * context);
+		Tesselator(long * count, ThreadContext * context);
 		void handle(OctreeNodeData &data, Vertex &v0, Vertex &v1, Vertex &v2, bool sign) override;
 
 };
 
 class Processor : public IteratorHandler {
-	ChunkContext * context;
+	ThreadContext * context;
 	std::vector<OctreeNodeTriangleHandler*> * handlers;
 	public:
-		Processor(long * count, ChunkContext * context, std::vector<OctreeNodeTriangleHandler*> * handlers);
+		Processor(long * count, ThreadContext * context, std::vector<OctreeNodeTriangleHandler*> * handlers);
 		void before(Octree * tree, OctreeNodeData &params) override;
 		void after(Octree * tree, OctreeNodeData &params) override;
 		bool test(Octree * tree, OctreeNodeData &params) override;
