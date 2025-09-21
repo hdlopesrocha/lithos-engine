@@ -354,7 +354,7 @@ bool Octree::isChunkNode(float length) {
 }
 
 bool Octree::isThreadNode(float length, float minSize) {
-    int threadSize = 16;
+    int threadSize = 32;
     return length <= minSize*threadSize && minSize*threadSize < length*2.0f;
 }
 

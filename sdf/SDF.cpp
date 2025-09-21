@@ -361,15 +361,15 @@ glm::vec3 SDF::distortPerlin(glm::vec3 p, float amplitude, float frequency) {
     return p + amplitude * glm::vec3(noiseX, noiseY, noiseZ);
 }
 
-glm::vec3 SDF::distortPerlinFractal(glm::vec3 p, float frequency, glm::vec3 offset, int octaves, float lacunarity = 2.0f, float gain = 0.5f) {
+glm::vec3 SDF::distortPerlinFractal(glm::vec3 p, float frequency, int octaves, float lacunarity = 2.0f, float gain = 0.5f) {
     glm::vec3 totalNoise(0.0f);
     float freq = frequency;
     float amp = 1.0f;
 
     // For each axis, use different offsets to decorrelate noise
-    glm::vec3 offsetX = offset + glm::vec3(0.0f, 0.0f, 0.0f);
-    glm::vec3 offsetY = offset + glm::vec3(100.0f, 100.0f, 100.0f);
-    glm::vec3 offsetZ = offset + glm::vec3(200.0f, 200.0f, 200.0f);
+    glm::vec3 offsetX = glm::vec3(0.0f, 0.0f, 0.0f);
+    glm::vec3 offsetY = glm::vec3(100.0f, 100.0f, 100.0f);
+    glm::vec3 offsetZ = glm::vec3(200.0f, 200.0f, 200.0f);
 
     for (int i = 0; i < octaves; ++i) {
         float nx = stb_perlin_noise3(

@@ -70,7 +70,7 @@ public:
     static float cone(glm::vec3 p);
     static float voronoi3D(const glm::vec3& p, float cellSize, float seed);
     static glm::vec3 distortPerlin(glm::vec3 p, float amplitude, float frequency);
-    static glm::vec3 distortPerlinFractal(glm::vec3 p, float frequency, glm::vec3 offset, int octaves, float lacunarity, float gain);
+    static glm::vec3 distortPerlinFractal(glm::vec3 p, float frequency, int octaves, float lacunarity, float gain);
     static float distortedCarveFractalSDF(glm::vec3 p, float threshold, float frequency, int octaves, float lacunarity, float gain);
     static glm::vec3 getPosition(float *sdf, const BoundingCube &cube);
     static glm::vec3 getAveragePosition(float *sdf, const BoundingCube &cube);
