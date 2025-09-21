@@ -293,7 +293,7 @@ class Octree: public BoundingCube {
 		uint getMaxLevel(BoundingCube &cube);
 		uint getMaxLevel(OctreeNode *node, BoundingCube &cube, BoundingCube &c, uint level);
 		bool isChunkNode(float length);
-
+		bool isThreadNode(float length, float minSize);
 		void exportOctreeSerialization(OctreeSerialized * octree);
 		void exportNodesSerialization(std::vector<OctreeNodeCubeSerialized> * nodes);
 	private:

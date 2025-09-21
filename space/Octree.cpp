@@ -353,6 +353,12 @@ bool Octree::isChunkNode(float length) {
     return chunkSize*0.5f < length && length <= chunkSize;
 }
 
+bool Octree::isThreadNode(float length, float minSize) {
+    int threadSize = 16;
+    return length <= minSize*threadSize && minSize*threadSize < length*2.0f;
+}
+
+
 NodeOperationResult Octree::shape(OctreeNodeFrame frame, const ShapeArgs &args, ChunkContext * chunkContext) {    
     ContainmentType check = args.function->check(frame.cube, args.model, args.minSize);
     OctreeNode * node = frame.node;
@@ -374,9 +380,10 @@ NodeOperationResult Octree::shape(OctreeNodeFrame frame, const ShapeArgs &args, 
     ChildBlock * block = NULL;
     float length = frame.cube.getLengthX();
     bool isChunk = isChunkNode(length);
+    bool isThread = isThreadNode(length, args.minSize);
     ChunkContext localChunkContext(frame.cube);
 
-    if(isChunk) {
+    if(isThread) {
         chunkContext = &localChunkContext;
     }
     bool isLeaf = length <= args.minSize;
@@ -409,10 +416,10 @@ NodeOperationResult Octree::shape(OctreeNodeFrame frame, const ShapeArgs &args, 
                 interpolated || frame.interpolated
             );
 
-            bool isChildChunk = isChunkNode(length*0.5f);
+            bool isChildThread = isThreadNode(length*0.5f, args.minSize);
             (*shapeCounter)++;
 
-            if(isChildChunk) {
+            if(isChildThread) {
                 ++threadsCreated;
                 threads.emplace_back([this, i, childFrame, args, &children, chunkContext]() {
                    NodeOperationResult * result = children+i;
