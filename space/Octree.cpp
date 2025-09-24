@@ -106,45 +106,6 @@ float Octree::getSdfAt(const glm::vec3 &pos) {
     return INFINITY;
 }
 
-int Octree::getLevelAt(const glm::vec3 &pos, bool simplification) {
-    OctreeNode* node = root;
-    BoundingCube cube = *this;
-	if(!contains(pos)) {
-		return 0;
-	}
-    int level = 0;
-    while (node) {
-        if (simplification && node->isSimplified()) {
-            break;
-        }
-        int i = getNodeIndex(pos, cube);
-        cube = cube.getChild(i);
-        ChildBlock * block = node->getBlock(&allocator);
-        node = node->getChildNode(i, &allocator, block);
-        ++level;
-    }
-    return level;
-}
-
-
-uint Octree::getCurrentLevel(OctreeNodeData &data) {
-    uint l = data.level;
-    ChildBlock * block = data.node->getBlock(&allocator);
-    for(int i=0; i < 8; ++i) {
-        OctreeNode * childNode = data.node->getChildNode(i, &allocator, block);
-        if(childNode != NULL) {
-            OctreeNodeData childData(
-                            data.level + 1, 
-                            childNode, 
-                            data.cube.getChild(i), 
-                            data.context
-            );
-            l = glm::max(l, getCurrentLevel(childData));
-        }
-    }
-    return l;
-}
-
 uint Octree::getMaxLevel(BoundingCube &cube) {
     return getMaxLevel(this->root, cube, *this, 0);
 }
@@ -152,36 +113,31 @@ uint Octree::getMaxLevel(BoundingCube &cube) {
 uint Octree::getMaxLevel(OctreeNode *node, BoundingCube &cube, BoundingCube &nodeCube, uint level) {
     uint l = level;
     if(!node->isSimplified()) {
+        bool isSize = nodeCube.getLengthX() <= cube.getLengthX()*2.0f;
         ChildBlock * block = node->getBlock(&allocator);
 
         for(int i=0; i < 8; ++i) {
-            OctreeNode * childNode = node->getChildNode(i, &allocator, block);
-            if(childNode!=NULL && !childNode->isSolid() && !childNode->isEmpty() ) {
-                BoundingCube childCube = nodeCube.getChild(i); 
+            BoundingCube childCube = nodeCube.getChild(i); 
                 // Neighbor conditions:
-                bool intersects = cube.intersects(childCube);
-                bool notContained = !cube.contains(childCube);
-                bool isAfter = childCube.getMinX() >= cube.getMinX() &&
-                               childCube.getMinY() >= cube.getMinY() &&
-                               childCube.getMinZ() >= cube.getMinZ();
-                bool isSize = childCube.getLengthX() <= cube.getLengthX();
-
-                if (intersects && notContained && (isSize ? isAfter : true)) {
-                    l = glm::max(l, getMaxLevel(childNode, cube, childCube, level + 1));
+            bool isAfter = !isSize || (isSize && (
+                childCube.getMinX() == cube.getMaxX() ||
+                childCube.getMinY() == cube.getMaxY() ||
+                childCube.getMinZ() == cube.getMaxZ()
+            ));
+            if(isAfter) {
+                if (!cube.contains(childCube)) {
+                    if(cube.intersects(childCube)) {
+                        OctreeNode * childNode = node->getChildNode(i, &allocator, block);
+                        if(childNode!=NULL && !childNode->isSolid() && !childNode->isEmpty() ) {
+                            l = glm::max(l, getMaxLevel(childNode, cube, childCube, level + 1));
+                        }
+                    }          
                 }
             }
+            
         }
     }
     return l;
-}
-
-int Octree::getNeighborLevel(OctreeNodeData &data, bool simplification, int direction) {
-	int level = 0;
-    for(int i=0; i < 8; ++i) {
-		glm::vec3 pos = data.cube.getCenter() + direction* data.cube.getLengthX() * Octree::getShift(i);
-        level = glm::max(level, getLevelAt(pos, simplification));
-	}
-    return level;
 }
 
 OctreeNode * Octree::fetch(OctreeNodeData &data, OctreeNode ** out, int i, bool simplification, ThreadContext * context) {

@@ -29,7 +29,6 @@ void Processor::virtualize(Octree * tree, float * sdf, OctreeNodeData &data, uin
 bool Processor::test(Octree * tree, OctreeNodeData &params) {
     bool shouldContinue = !params.node->isEmpty() && !params.node->isSolid() && !params.node->isLeaf();
     if(!shouldContinue) {
-        //uint levels = tree->getCurrentLevel(params);
         uint levels = tree->getMaxLevel(params.cube);
         if(params.level < levels) {
         //    std::cout << "Virtualize at level " << params.level << "/" << levels << std::endl;

@@ -283,12 +283,8 @@ class Octree: public BoundingCube {
 		OctreeNode* getNodeAt(const glm::vec3 &pos, bool simplification);
 		float getSdfAt(const glm::vec3 &pos);
 		void handleQuadNodes(OctreeNodeData &data, float * sdf, std::vector<OctreeNodeTriangleHandler*> * handlers, bool simplification, ThreadContext * context);
-		bool hasFinerNode(const OctreeNode *node);
-		int getLevelAt(const glm::vec3 &pos, bool simplification);
-		int getNeighborLevel(OctreeNodeData &data, bool simplification, int direction);
 		OctreeNode * fetch(OctreeNodeData &data, OctreeNode ** out, int i, bool simplification, ThreadContext * context);
 		int getMaxLevel(OctreeNode * node, int level);
-		uint getCurrentLevel(OctreeNodeData &data);
 
 		uint getMaxLevel(BoundingCube &cube);
 		uint getMaxLevel(OctreeNode *node, BoundingCube &cube, BoundingCube &c, uint level);
