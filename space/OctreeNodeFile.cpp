@@ -29,12 +29,12 @@ OctreeNode * OctreeNodeFile::loadRecursive(OctreeNode * node, int i, BoundingCub
 			break;
 		}
 	}
-	ChildBlock * block = isLeaf ? NULL : node->createBlock(&tree->allocator);
+	ChildBlock * block = isLeaf ? NULL : node->createBlock(tree->allocator);
 	for(int j=0 ; j <8 ; ++j){
 		int index = serialized.children[j];
 		if(index != 0) {
 			BoundingCube c = cube.getChild(j);
-			node->setChildNode(j , loadRecursive(NULL, index, c, nodes), &tree->allocator, block);
+			node->setChildNode(j , loadRecursive(NULL, index, c, nodes), tree->allocator, block);
 		}
 	}
 
@@ -73,9 +73,9 @@ uint OctreeNodeFile::saveRecursive(OctreeNode * node, std::vector<OctreeNodeSeri
 
 		uint index = nodes->size(); 
 		nodes->push_back(n);
-		ChildBlock * block = node->getBlock(&tree->allocator);
+		ChildBlock * block = node->getBlock(tree->allocator);
 		for(int i=0; i < 8; ++i) {
-            (*nodes)[index].children[i] = saveRecursive(node->getChildNode(i, &tree->allocator, block), nodes);
+            (*nodes)[index].children[i] = saveRecursive(node->getChildNode(i, tree->allocator, block), nodes);
 		}
 		return index;
 	}

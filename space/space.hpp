@@ -87,12 +87,12 @@ class OctreeNode {
 		OctreeNode(Vertex vertex);
 		~OctreeNode();
 		OctreeNode * init(Vertex vertex);
-		void clear(OctreeAllocator * allocator, BoundingCube &cube, OctreeChangeHandler * handler);
-		void setChildNode(int i, OctreeNode * node, OctreeAllocator * allocator, ChildBlock * block);
-		ChildBlock * getBlock(OctreeAllocator * allocator);
-		ChildBlock * createBlock(OctreeAllocator * allocator);
-		OctreeNode * getChildNode(int i, OctreeAllocator * allocator, ChildBlock * block);
-		void clearBlockIfEmpty(OctreeAllocator * allocator, ChildBlock * block);
+		void clear(OctreeAllocator &allocator, BoundingCube &cube, OctreeChangeHandler * handler, ChildBlock * block);
+		void setChildNode(int i, OctreeNode * node, OctreeAllocator &allocator, ChildBlock * block);
+		ChildBlock * getBlock(OctreeAllocator &allocator);
+		ChildBlock * createBlock(OctreeAllocator &allocator);
+		OctreeNode * getChildNode(int i, OctreeAllocator &allocator, ChildBlock * block);
+		void clearBlockIfEmpty(OctreeAllocator &allocator, ChildBlock * block);
 		bool isSolid();
 		void setSolid(bool value);
 		
@@ -114,8 +114,8 @@ class OctreeNode {
 		SpaceType getType();
 
 		void setSDF(float * sdf);
-		uint exportSerialization(OctreeAllocator * allocator, std::vector<OctreeNodeCubeSerialized> * nodes, int * leafNodes, BoundingCube cube, BoundingCube chunk, uint level);
-		OctreeNode * compress(OctreeAllocator * allocator, BoundingCube * cube, BoundingCube chunk);
+		uint exportSerialization(OctreeAllocator &allocator, std::vector<OctreeNodeCubeSerialized> * nodes, int * leafNodes, BoundingCube cube, BoundingCube chunk, uint level);
+		OctreeNode * compress(OctreeAllocator &allocator, BoundingCube * cube, BoundingCube chunk);
 };
 
 struct ChildBlock {
@@ -124,7 +124,7 @@ struct ChildBlock {
 	public:
 	ChildBlock();
 	ChildBlock * init();
-	void clear(OctreeAllocator * allocator, BoundingCube &cube, OctreeChangeHandler * handler);
+	void clear(OctreeAllocator &allocator, BoundingCube &cube, OctreeChangeHandler * handler);
 
 	void set(int i, OctreeNode * node, OctreeAllocator * allocator);
 	OctreeNode * get(int i, OctreeAllocator * allocator);
@@ -248,7 +248,7 @@ class ThreadContext {
 	public:
 	std::unordered_map<glm::vec3, float> shapeSdfCache;
 	std::unordered_map<glm::vec4, OctreeNode*> nodeCache;
-
+    std::shared_mutex mutex;
 	BoundingCube cube;
 
 	ThreadContext() : cube(BoundingCube()) {
@@ -288,13 +288,13 @@ class Octree: public BoundingCube {
 
 		uint getMaxLevel(BoundingCube &cube);
 		uint getMaxLevel(OctreeNode *node, BoundingCube &cube, BoundingCube &c, uint level);
-		bool isChunkNode(float length);
-		bool isThreadNode(float length, float minSize, int threadSize);
+		bool isChunkNode(float length) const;
+		bool isThreadNode(float length, float minSize, int threadSize) const;
 		void exportOctreeSerialization(OctreeSerialized * octree);
 		void exportNodesSerialization(std::vector<OctreeNodeCubeSerialized> * nodes);
 	private:
-		void buildSDF(const ShapeArgs &args, BoundingCube &cube, float * shapeSDF, float * resultSDF, float * inheritedShapeSDF, float * inheritedResultSDF, float * existingResultSDF, ThreadContext * threadContext);
-		float evaluateSDF(const ShapeArgs &args, std::unordered_map<glm::vec3, float> * threadContext, glm::vec3 p);
+		void buildSDF(const ShapeArgs &args, BoundingCube &cube, float * shapeSDF, float * resultSDF, float * inheritedShapeSDF, float * inheritedResultSDF, float * existingResultSDF, ThreadContext * threadContext) const;
+		float evaluateSDF(const ShapeArgs &args, std::unordered_map<glm::vec3, float> * threadContext, glm::vec3 p) const;
 	};
 
 class Simplifier {

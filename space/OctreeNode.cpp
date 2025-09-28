@@ -19,50 +19,52 @@ OctreeNode * OctreeNode::init(Vertex vertex) {
 	return this;
 }
 
-ChildBlock * OctreeNode::getBlock(OctreeAllocator * allocator) {
-	return allocator->childAllocator.getFromIndex(this->id);
+ChildBlock * OctreeNode::getBlock(OctreeAllocator &allocator) {
+	return allocator.childAllocator.getFromIndex(this->id);
 }
 
-ChildBlock * OctreeNode::createBlock(OctreeAllocator * allocator) {
+ChildBlock * OctreeNode::createBlock(OctreeAllocator &allocator) {
 	ChildBlock * block = NULL;
 	if(this->id == UINT_MAX) {
-		block = allocator->childAllocator.allocate()->init();
-		this->id = allocator->childAllocator.getIndex(block);
+		block = allocator.childAllocator.allocate()->init();
+		this->id = allocator.childAllocator.getIndex(block);
 	}
 	if(block == NULL) {
-		block = allocator->childAllocator.getFromIndex(this->id);
+		block = allocator.childAllocator.getFromIndex(this->id);
 	}
 	return block;
 }
 
-void OctreeNode::setChildNode(int i, OctreeNode * node, OctreeAllocator * allocator, ChildBlock * block) {
+void OctreeNode::setChildNode(int i, OctreeNode * node, OctreeAllocator &allocator, ChildBlock * block) {
 	if(node == NULL && this->id == UINT_MAX) {
 		return;
 	} 
-	uint newIndex = allocator->getIndex(node);
-	if(block->children[i] != newIndex && block->children[i] != UINT_MAX) {
-		throw std::runtime_error("Lost reference @ OctreeNode::setChildNode");
+	uint newIndex = allocator.getIndex(node);
+	if(block->children[i] != newIndex && block->children[i] != UINT_MAX && newIndex != UINT_MAX) {
+		throw std::runtime_error("Lost reference @ OctreeNode::setChildNode " + std::to_string(block->children[i]) + " " + std::to_string(newIndex));
 	}
 	block->children[i] = newIndex;
 }
 
-OctreeNode * OctreeNode::getChildNode(int i, OctreeAllocator * allocator, ChildBlock * block) {
+OctreeNode * OctreeNode::getChildNode(int i, OctreeAllocator &allocator, ChildBlock * block) {
 	if(block == NULL) {
 		return NULL;
 	}
-	return allocator->getOctreeNode(block->children[i]);
+	return allocator.getOctreeNode(block->children[i]);
 }
 
 OctreeNode::~OctreeNode() {
 
 }
 
-void OctreeNode::clear(OctreeAllocator * allocator, BoundingCube &cube, OctreeChangeHandler * handler) {
+void OctreeNode::clear(OctreeAllocator &allocator, BoundingCube &cube, OctreeChangeHandler * handler, ChildBlock * block) {
 	handler->erase(this);
 	if(this->id != UINT_MAX) {
-		ChildBlock * block = allocator->childAllocator.getFromIndex(this->id);
+		if(block == NULL) {
+			block = allocator.childAllocator.getFromIndex(this->id);
+		}
 		block->clear(allocator, cube, handler);
-		allocator->childAllocator.deallocate(block);
+		allocator.childAllocator.deallocate(block);
 		this->id = UINT_MAX;
 	}
 }
@@ -126,7 +128,7 @@ void OctreeNode::setLeaf(bool value) {
 	this->bits = (this->bits & ~mask) | (value ? mask : 0x0);
 }
 
-void OctreeNode::clearBlockIfEmpty(OctreeAllocator * allocator, ChildBlock * block) {
+void OctreeNode::clearBlockIfEmpty(OctreeAllocator &allocator, ChildBlock * block) {
 	if(this->id != UINT_MAX) {
 		bool empty = true;
 		for(int i = 0; i < 8; ++i) {
@@ -136,7 +138,7 @@ void OctreeNode::clearBlockIfEmpty(OctreeAllocator * allocator, ChildBlock * blo
 			}
 		}
 		if(empty) {
-			allocator->childAllocator.deallocate(block);
+			allocator.childAllocator.deallocate(block);
 			this->id = UINT_MAX;
 		}
 	}
@@ -152,7 +154,7 @@ SpaceType OctreeNode::getType()  {
 	}
 }
 
-OctreeNode * OctreeNode::compress(OctreeAllocator * allocator, BoundingCube * cube, BoundingCube chunk) {
+OctreeNode * OctreeNode::compress(OctreeAllocator &allocator, BoundingCube * cube, BoundingCube chunk) {
 	int intersectingChildCount = 0;
 	int intersectingIndex = -1;
 
@@ -178,7 +180,7 @@ OctreeNode * OctreeNode::compress(OctreeAllocator * allocator, BoundingCube * cu
 }
 
 
-uint OctreeNode::exportSerialization(OctreeAllocator * allocator, std::vector<OctreeNodeCubeSerialized> * nodes, int * leafNodes, BoundingCube cube, BoundingCube chunk, uint level) {
+uint OctreeNode::exportSerialization(OctreeAllocator &allocator, std::vector<OctreeNodeCubeSerialized> * nodes, int * leafNodes, BoundingCube cube, BoundingCube chunk, uint level) {
 	if( this->isEmpty() || this->isSolid() || !chunk.intersects(cube)) {
 		return 0; // Skip this node
 	}

@@ -66,15 +66,20 @@ template <typename T> class Allocator {
         if(index == UINT_MAX) {
             return NULL;
         }
-        // Calculate the block index and offset within the block
+        std::shared_lock lock(mutex); 
+       // Calculate the block index and offset within the block
         size_t blockIndex = index / blockSize;
         size_t offset = index % blockSize;
-        std::shared_lock lock(mutex); 
         // Check if the block index is valid
         assert(blockIndex < allocatedBlocks.size() && "Block index out of range");
         T * result = &allocatedBlocks[blockIndex][offset];
         // Return the pointer to the requested element
         return result;
+    }
+
+    uint allocateIndex() {
+        T* ptr = allocate();
+        return getIndex(ptr);
     }
 
     T* allocate() {

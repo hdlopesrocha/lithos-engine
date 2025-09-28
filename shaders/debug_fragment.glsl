@@ -11,10 +11,10 @@ void main() {
     gl_FragDepth = logDepth;
 
     float r =  abs(distance/scale);
-    if(r > 0.2) {
+    if(r > 100.2) {
         discard;
     }
-    color = vec4(distance < 0.0 ? 1.0 - r : 0.0 ,distance >= 0.0 ? 1.0 - r : 0.0 ,0.0, 0.1*(1.0 - r));
+    color = vec4(1.0,1.0,1.0, 0.2);
 }
 
 
