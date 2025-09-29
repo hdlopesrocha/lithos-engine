@@ -29,15 +29,19 @@ void IteratorHandler::iterateFlatIn(Octree * tree, OctreeNodeData params) {
         flatData.pop();
 
         before(tree, data);
-        if(test(tree, data)) {
+        if(data.node && test(tree, data)) {
             getOrder(tree, data, internalOrder);
             OctreeNode * node = data.node;
             ChildBlock * block = node->getBlock(tree->allocator);
             for(int i=7; i >= 0 ; --i) {
                 uint8_t j = internalOrder[i];
-                OctreeNode * child = node->getChildNode(j, tree->allocator, block);
+                OctreeNode * child = block ? node->getChildNode(j, tree->allocator, block) : NULL;
                 if(child != NULL) {
-                    flatData.push(OctreeNodeData(data.level + 1,child, data.cube.getChild(j), data.context, child->sdf));
+                    flatData.push(OctreeNodeData(data.level + 1, child, data.cube.getChild(j), data.context, child->sdf));
+                } else {
+                    float childSdf[8];
+                    SDF::getChildSDF(data.node->sdf, j, childSdf);
+                    flatData.push(OctreeNodeData(data.level + 1, NULL, data.cube.getChild(j), data.context, childSdf));
                 }
             }
         }

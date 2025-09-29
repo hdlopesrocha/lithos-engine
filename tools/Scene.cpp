@@ -560,7 +560,7 @@ void Scene::generate(Camera &camera) {
 		WrappedVoronoiCarveDistanceEffect distortFunction = WrappedVoronoiCarveDistanceEffect(&wrappedFunction, 64.0f, 64.0f, glm::vec3(0), 0.0f, -1.0f);
 		solidSpace.add(&distortFunction, model, SimpleBrush(5), minSize*0.25f, *brushContext->simplifier, solidSpaceChangeHandler);
 	}
-	if(false){
+	{
 		Transformation model = Transformation();
 		std::cout << "\tliquidSpace.add(water)"<< std::endl;
 		BoundingBox waterBox = mapBox;

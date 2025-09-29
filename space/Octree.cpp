@@ -508,7 +508,7 @@ NodeOperationResult Octree::shape(OctreeNodeFrame frame, const ShapeArgs &args, 
                     if(childNode != currentChildNode && childNode!=NULL && currentChildNode!=NULL) {
                     	throw std::runtime_error("OctreeNode mismatch! " + std::to_string((long) childNode) + " " + std::to_string((long)currentChildNode) );
                     }
-                    if(childNode == node) {
+                    if(frame.node != NULL && childNode == node) {
                     	throw std::runtime_error("Infinite recursion! " + std::to_string((long) childNode) + " " + std::to_string((long)node) );
                     }
                     node->setChildNode(i, childNode, allocator, block);
