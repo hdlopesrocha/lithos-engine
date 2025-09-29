@@ -105,9 +105,8 @@ ContainmentType AbstractBoundingBox::test(const AbstractBoundingBox &cube) const
 }
 
 bool AbstractBoundingBox::intersects(const AbstractBoundingBox& box) const {
-    glm::vec3 halfSize(getLength() / 2.0f);
-    glm::vec3 minCube = getCenter() - halfSize;
-    glm::vec3 maxCube = getCenter() + halfSize;
+    glm::vec3 minCube = getMin();
+    glm::vec3 maxCube = getMax();
 
     glm::vec3 minBox = box.getMin();
     glm::vec3 maxBox = box.getMax();

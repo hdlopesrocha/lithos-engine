@@ -89,10 +89,12 @@ class OctreeNode {
 		OctreeNode * init(Vertex vertex);
 		void clear(OctreeAllocator &allocator, BoundingCube &cube, OctreeChangeHandler * handler, ChildBlock * block);
 		void setChildNode(int i, OctreeNode * node, OctreeAllocator &allocator, ChildBlock * block);
+		void setChildNode(int i, uint newIndex, OctreeAllocator &allocator, ChildBlock * block);
 		ChildBlock * getBlock(OctreeAllocator &allocator);
 		ChildBlock * createBlock(OctreeAllocator &allocator);
 		OctreeNode * getChildNode(int i, OctreeAllocator &allocator, ChildBlock * block);
-		void clearBlockIfEmpty(OctreeAllocator &allocator, ChildBlock * block);
+		ChildBlock * deleteBlock(OctreeAllocator &allocator, ChildBlock * block);
+
 		bool isSolid();
 		void setSolid(bool value);
 		
@@ -125,6 +127,7 @@ struct ChildBlock {
 	ChildBlock();
 	ChildBlock * init();
 	void clear(OctreeAllocator &allocator, BoundingCube &cube, OctreeChangeHandler * handler);
+	bool isEmpty();
 
 	void set(int i, OctreeNode * node, OctreeAllocator * allocator);
 	OctreeNode * get(int i, OctreeAllocator * allocator);
@@ -137,11 +140,13 @@ struct OctreeNodeData {
 	OctreeNode * node;
 	BoundingCube cube;
 	void * context;
-	OctreeNodeData(uint level, OctreeNode * node, BoundingCube cube, void * context) {
+	float sdf[8];
+	OctreeNodeData(uint level, OctreeNode * node, BoundingCube cube, void * context, float * sdf) {
 		this->level = level;
 		this->node = node;
 		this->cube = cube;
 		this->context = context;
+		SDF::copySDF(sdf, this->sdf);
 	}
 };
 
@@ -156,9 +161,8 @@ class OctreeNodeTriangleHandler {
 
 
 class OctreeAllocator {
-	Allocator<OctreeNode> nodeAllocator;
-	
 	public: 
+	Allocator<OctreeNode> nodeAllocator;
 	Allocator<ChildBlock> childAllocator;
 	OctreeNode * allocateOctreeNode(BoundingCube &cube);
 	OctreeNode * getOctreeNode(uint index);
@@ -303,7 +307,7 @@ class Simplifier {
 	bool texturing;
 	public:
 		Simplifier(float angle, float distance, bool texturing);
-		void simplify(Octree * tree, BoundingCube chunkCube, const OctreeNodeData &params);
+		void simplify(Octree * tree, BoundingCube chunkCube, const OctreeNodeData &params, ChildBlock * block);
 
 };
 
@@ -433,7 +437,7 @@ class Processor : public IteratorHandler {
 		void after(Octree * tree, OctreeNodeData &params) override;
 		bool test(Octree * tree, OctreeNodeData &params) override;
 		void getOrder(Octree * tree, OctreeNodeData &params, uint8_t * order) override;
-		void virtualize(Octree * tree, float * sdf, OctreeNodeData &data, uint levels);
+		void virtualize(Octree * tree, OctreeNodeData &data, uint levels);
 
 };
 

@@ -10,8 +10,8 @@ void OctreeVisibilityChecker::update(glm::mat4 m) {
 }
 
 void OctreeVisibilityChecker::before(Octree * tree, OctreeNodeData &params) {		
-	if(params.node->isChunk()){
-		visibleNodes->push_back({params.level, params.node, params.cube, params.context});
+	if(params.node && params.node->isChunk()){
+		visibleNodes->push_back({params.level, params.node, params.cube, params.context, params.sdf});
 	}
 }
 
@@ -20,7 +20,7 @@ void OctreeVisibilityChecker::after(Octree * tree, OctreeNodeData &params) {
 }
 
 bool OctreeVisibilityChecker::test(Octree * tree, OctreeNodeData &params) {
-	if(params.context != NULL) {
+	if(params.context != NULL || !params.node) {
 		return false;
 	}
 

@@ -35,6 +35,13 @@ ChildBlock * OctreeNode::createBlock(OctreeAllocator &allocator) {
 	return block;
 }
 
+void OctreeNode::setChildNode(int i, uint newIndex, OctreeAllocator &allocator, ChildBlock * block) {
+	if(block->children[i] != newIndex && block->children[i] != UINT_MAX && newIndex != UINT_MAX) {
+		throw std::runtime_error("Lost reference @ OctreeNode::setChildNode " + std::to_string(block->children[i]) + " " + std::to_string(newIndex));
+	}
+	block->children[i] = newIndex;
+}
+
 void OctreeNode::setChildNode(int i, OctreeNode * node, OctreeAllocator &allocator, ChildBlock * block) {
 	if(node == NULL && this->id == UINT_MAX) {
 		return;
@@ -61,7 +68,7 @@ void OctreeNode::clear(OctreeAllocator &allocator, BoundingCube &cube, OctreeCha
 	handler->erase(this);
 	if(this->id != UINT_MAX) {
 		if(block == NULL) {
-			block = allocator.childAllocator.getFromIndex(this->id);
+			block = getBlock(allocator);
 		}
 		block->clear(allocator, cube, handler);
 		allocator.childAllocator.deallocate(block);
@@ -128,20 +135,10 @@ void OctreeNode::setLeaf(bool value) {
 	this->bits = (this->bits & ~mask) | (value ? mask : 0x0);
 }
 
-void OctreeNode::clearBlockIfEmpty(OctreeAllocator &allocator, ChildBlock * block) {
-	if(this->id != UINT_MAX) {
-		bool empty = true;
-		for(int i = 0; i < 8; ++i) {
-			if(block->children[i] != UINT_MAX) {
-				empty = false;
-				break;
-			}
-		}
-		if(empty) {
-			allocator.childAllocator.deallocate(block);
-			this->id = UINT_MAX;
-		}
-	}
+ChildBlock * OctreeNode::deleteBlock(OctreeAllocator &allocator, ChildBlock * block) {
+	allocator.childAllocator.deallocate(block);
+	this->id = UINT_MAX;
+	return NULL;
 }
 
 SpaceType OctreeNode::getType()  {
