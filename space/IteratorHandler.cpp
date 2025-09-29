@@ -39,9 +39,9 @@ void IteratorHandler::iterateFlatIn(Octree * tree, OctreeNodeData params) {
                 if(child != NULL) {
                     flatData.push(OctreeNodeData(data.level + 1, child, data.cube.getChild(j), data.context, child->sdf));
                 } else {
-                    float childSdf[8];
-                    SDF::getChildSDF(data.node->sdf, j, childSdf);
-                    flatData.push(OctreeNodeData(data.level + 1, NULL, data.cube.getChild(j), data.context, childSdf));
+                    //float childSdf[8];
+                    //SDF::getChildSDF(data.node->sdf, j, childSdf);
+                    //flatData.push(OctreeNodeData(data.level + 1, NULL, data.cube.getChild(j), data.context, childSdf));
                 }
             }
         }

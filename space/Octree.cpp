@@ -427,7 +427,7 @@ NodeOperationResult Octree::shape(OctreeNodeFrame frame, const ShapeArgs &args, 
     SpaceType resultType = isLeaf ? SDF::eval(resultSDF) : childToParent(childResultSolid, childResultEmpty);
 
 
-    if(resultType == SpaceType::Empty) {
+    if(false && resultType == SpaceType::Empty) {
         // ------------------------------
         // Delete nodes if result is Empty
         // ------------------------------
@@ -493,7 +493,7 @@ NodeOperationResult Octree::shape(OctreeNodeFrame frame, const ShapeArgs &args, 
                     OctreeNode * currentChildNode = node->getChildNode(i, allocator, block);
             
                     if(child.process) {
-                        if(resultType == SpaceType::Surface && currentChildNode == NULL && childNode == NULL && child.resultType == SpaceType::Solid) {
+                        if(resultType == SpaceType::Surface && currentChildNode == NULL && childNode == NULL && child.resultType != SpaceType::Surface) {
                             bool isChildLeaf = length*0.5f <= args.minSize;
                             BoundingCube childCube = frame.cube.getChild(i);
                             childNode = allocator.allocateOctreeNode(childCube)->init(Vertex(childCube.getCenter()));

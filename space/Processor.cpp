@@ -6,8 +6,12 @@ Processor::Processor(long * count, ThreadContext * context, std::vector<OctreeNo
 }
 
 void Processor::virtualize(Octree * tree, OctreeNodeData &data, uint levels) {
+    if(data.node == NULL){
+    //    std::cout << "Virtualize empty node " << " " <<data.level << "/" << levels << std::endl;
+    }
     if(data.level >= levels) {
         tree->handleQuadNodes(data, data.sdf, handlers, true, context);
+        return;
     } else {
         for(int i = 0 ; i < 8 ; ++i) {
             float childSDF[8];
@@ -21,25 +25,24 @@ void Processor::virtualize(Octree * tree, OctreeNodeData &data, uint levels) {
             );
             virtualize(tree, childData, levels);                  
         }
+        return;
     }
 }
 
 bool Processor::test(Octree * tree, OctreeNodeData &params) {
-    bool shouldContinue = params.node && !params.node->isLeaf() && !params.node->isEmpty() && !params.node->isSolid();
+    bool shouldContinue = params.node != NULL && !params.node->isLeaf() && !params.node->isEmpty() && !params.node->isSolid();
 	return shouldContinue;
 }
 
 void Processor::before(Octree * tree, OctreeNodeData &params) {		
-    bool shouldContinue = params.node != NULL && !params.node->isLeaf() && !params.node->isEmpty() && !params.node->isSolid();
+    bool shouldContinue = test(tree, params);
 
-    if(!shouldContinue) {
+    if(!shouldContinue || params.node == NULL) {
         uint levels = tree->getMaxLevel(params.cube);
         if(params.level < levels) {
 //          std::cout << "Virtualize at level " << params.node << " " <<params.level << "/" << levels << std::endl;
         }
-        if(params.node != NULL) {
-            virtualize(tree, params, levels);
-        }
+        virtualize(tree, params, levels);
     }
 }
 
