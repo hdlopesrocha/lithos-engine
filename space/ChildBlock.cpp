@@ -13,28 +13,33 @@ ChildBlock * ChildBlock::init() {
     return this;
 }
 
-void ChildBlock::clear(OctreeAllocator &allocator, BoundingCube &cube, OctreeChangeHandler * handler) {
+void ChildBlock::clear(OctreeAllocator &allocator, OctreeChangeHandler * handler) {
     for(int i=0; i < 8 ; ++i) {
-        OctreeNode * child = allocator.getOctreeNode(this->children[i]);
-        if(child != NULL) {
-            BoundingCube subCube = cube.getChild(i);
-            ChildBlock * childBlock = child->getBlock(allocator);
-            child->clear(allocator, subCube, handler, childBlock);
-            allocator.deallocateOctreeNode(child, cube);
+        uint childNode = children[i];
+        if(childNode != UINT_MAX) {
+            OctreeNode * child = allocator.get(childNode);
+            if(child != NULL) {
+                child->clear(allocator, handler, NULL);
+                allocator.deallocate(child); // libertar nó
+            }
+            children[i] = UINT_MAX;
         }
-        children[i] = UINT_MAX;
     }
 }
 
-
-void ChildBlock::set(int i, OctreeNode * node, OctreeAllocator * allocator) {
-    children[i] = allocator->getIndex(node);
+void ChildBlock::set(uint i, OctreeNode* node, OctreeAllocator& allocator) {
+    uint newIndex = node ? allocator.getIndex(node) : UINT_MAX;
+    children[i] = newIndex;
 }
 
-OctreeNode * ChildBlock::get(int i, OctreeAllocator * allocator){
-    return allocator->getOctreeNode(children[i]);
-}
 
+OctreeNode * ChildBlock::get(uint i, OctreeAllocator &allocator){
+    uint index = children[i];
+    if(index == UINT_MAX) return NULL;
+
+    OctreeNode * ptr = allocator.get(index);
+    return ptr;
+}
 
 bool ChildBlock::isEmpty() {
     for(int i = 0; i < 8; ++i) {
@@ -44,3 +49,15 @@ bool ChildBlock::isEmpty() {
     }
     return true;
 }
+
+ChildBlock * ChildBlock::deallocate(OctreeAllocator &allocator) {
+    if(this->isEmpty()) {
+        allocator.childAllocator.deallocate(this);
+        return NULL;
+    }
+    else {
+        throw std::runtime_error("ChildBlock::deallocate possible child missing "  );
+        return this;
+    }
+}
+

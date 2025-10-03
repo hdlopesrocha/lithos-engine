@@ -186,6 +186,17 @@ class ImageViewer : public Closable{
     void draw2d(float time) override;
 };
 
+class OctreeExplorer  : public Closable {
+    Octree * tree;
+    std::unordered_set<OctreeNode*> expandedNodes;
+    public:
+    OctreeExplorer(Octree * tree);
+    void recursiveDraw(OctreeNode * node);
+
+    void draw2d(float time) override;
+};
+
+
 class SettingsEditor : public Closable {
     Settings * settings;
     public:

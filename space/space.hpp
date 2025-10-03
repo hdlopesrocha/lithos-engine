@@ -2,6 +2,7 @@
 #define SPACE_HPP
 #include <semaphore>
 #include <thread>
+#include <future>
 #include <unordered_set>
 #include <utility>
 #include <shared_mutex>
@@ -9,6 +10,7 @@
 #include "../sdf/SDF.hpp"
 #include "Allocator.hpp"
 #define SQRT_3_OVER_2 0.866025404f
+#include "ThreadPool.hpp"
 
 class Octree;
 class OctreeNode;
@@ -87,13 +89,9 @@ class OctreeNode {
 		OctreeNode(Vertex vertex);
 		~OctreeNode();
 		OctreeNode * init(Vertex vertex);
-		void clear(OctreeAllocator &allocator, BoundingCube &cube, OctreeChangeHandler * handler, ChildBlock * block);
-		void setChildNode(int i, OctreeNode * node, OctreeAllocator &allocator, ChildBlock * block);
-		void setChildNode(int i, uint newIndex, OctreeAllocator &allocator, ChildBlock * block);
+		ChildBlock * clear(OctreeAllocator &allocator, OctreeChangeHandler * handler, ChildBlock * block);
 		ChildBlock * getBlock(OctreeAllocator &allocator);
-		ChildBlock * createBlock(OctreeAllocator &allocator);
-		OctreeNode * getChildNode(int i, OctreeAllocator &allocator, ChildBlock * block);
-		ChildBlock * deleteBlock(OctreeAllocator &allocator, ChildBlock * block);
+		ChildBlock * allocate(OctreeAllocator &allocator);
 
 		bool isSolid();
 		void setSolid(bool value);
@@ -126,11 +124,14 @@ struct ChildBlock {
 	public:
 	ChildBlock();
 	ChildBlock * init();
-	void clear(OctreeAllocator &allocator, BoundingCube &cube, OctreeChangeHandler * handler);
-	bool isEmpty();
+	void clear(OctreeAllocator &allocator, OctreeChangeHandler * handler);
 
-	void set(int i, OctreeNode * node, OctreeAllocator * allocator);
-	OctreeNode * get(int i, OctreeAllocator * allocator);
+
+
+	bool isEmpty();
+	ChildBlock * deallocate(OctreeAllocator &allocator) ;
+	void set(uint i, OctreeNode * node, OctreeAllocator &allocator);
+	OctreeNode * get(uint i, OctreeAllocator &allocator);
 };
 
 
@@ -162,11 +163,11 @@ class OctreeNodeTriangleHandler {
 
 class OctreeAllocator {
 	public: 
-	Allocator<OctreeNode> nodeAllocator;
-	Allocator<ChildBlock> childAllocator;
-	OctreeNode * allocateOctreeNode(BoundingCube &cube);
-	OctreeNode * getOctreeNode(uint index);
-	void deallocateOctreeNode(OctreeNode * node, BoundingCube &cube);
+	Allocator<OctreeNode> nodeAllocator = Allocator<OctreeNode>(1024);
+	Allocator<ChildBlock> childAllocator = Allocator<ChildBlock>(1024);
+	OctreeNode * allocate();
+	OctreeNode * get(uint index);
+	OctreeNode * deallocate(OctreeNode * node);
 	uint getIndex(OctreeNode * node);
     size_t getBlockSize() const;
     size_t getAllocatedBlocksCount() ;
@@ -179,13 +180,30 @@ struct OctreeNodeFrame {
 	uint level;
 	float sdf[8];
 	int brushIndex = -1;
-	bool interpolated;
-	OctreeNodeFrame(OctreeNode* node, BoundingCube cube, uint level, float * sdf, int brushIndex, bool interpolated) 
-		: node(node), cube(cube), level(level), brushIndex(brushIndex), interpolated(interpolated) {
+	
+	OctreeNodeFrame() {
+				
+	}
+
+	OctreeNodeFrame(const OctreeNodeFrame &t)
+		: node(t.node),
+		cube(t.cube),
+		level(t.level),
+		brushIndex(t.brushIndex)
+	{
+		for (int i = 0; i < 8; ++i) {
+			sdf[i] = t.sdf[i];
+		}
+	}
+		
+	OctreeNodeFrame(OctreeNode* node, BoundingCube cube, uint level, float * sdf, int brushIndex) 
+		: node(node), cube(cube), level(level), brushIndex(brushIndex) {
 			for(int i = 0; i < 8; ++i) {
 				this->sdf[i] = sdf!=NULL ? sdf[i] : 0.0f;
 			}	
 	}
+
+
 };
 
 struct NodeOperationResult {
@@ -197,20 +215,14 @@ struct NodeOperationResult {
     float shapeSDF[8];
 
 	NodeOperationResult() : node(NULL), shapeType(SpaceType::Empty), resultType(SpaceType::Empty), process(false) {
-		for(int i = 0; i < 8; ++i) {
-			this->resultSDF[i] = INFINITY;
-			this->shapeSDF[i] = INFINITY;
-		}
+		SDF::copySDF(NULL, this->resultSDF);	
+		SDF::copySDF(NULL, this->shapeSDF);	
 	};
 
     NodeOperationResult(OctreeNode * node, SpaceType shapeType, SpaceType resultType, float * resultSDF, float * shapeSDF, bool process) 
         : node(node), shapeType(shapeType), resultType(resultType), process(process) {
-		if(resultSDF != NULL) {
-			SDF::copySDF(resultSDF, this->resultSDF);	
-		}
-		if(shapeSDF != NULL) {
-			SDF::copySDF(shapeSDF, this->shapeSDF);	
-		}					
+		SDF::copySDF(resultSDF, this->resultSDF);	
+		SDF::copySDF(shapeSDF, this->shapeSDF);						
     };
 };
 
@@ -272,8 +284,9 @@ class Octree: public BoundingCube {
 		int threadsCreated = 0;
 		std::shared_ptr<std::atomic<int>> shapeCounter = std::make_shared<std::atomic<int>>(0);
 		std::unordered_map<glm::vec3, ThreadContext> chunks;
-
-		Octree(BoundingCube minCube, float chunkSize);
+		ThreadPool threadPool = ThreadPool(std::thread::hardware_concurrency());
+		std::mutex mutex;
+		Octree(BoundingCube mxnCube, float chunkSize);
 		Octree();
 		
 		void expand(const ShapeArgs &args);
@@ -376,10 +389,10 @@ class IteratorHandler {
 		virtual void before(Octree * tree, OctreeNodeData &params) = 0;
 		virtual void after(Octree * tree, OctreeNodeData &params) = 0;
 		virtual void getOrder(Octree * tree, OctreeNodeData &params, uint8_t * order) = 0;
-		void iterate(Octree * tree, OctreeNodeData params);
-		void iterateFlatIn(Octree * tree, OctreeNodeData params);
-		void iterateFlatOut(Octree * tree, OctreeNodeData params);
-		void iterateFlat(Octree * tree, OctreeNodeData params);
+		void iterate(Octree * tree, OctreeNodeData &params);
+		void iterateFlatIn(Octree * tree, OctreeNodeData &params);
+		void iterateFlatOut(Octree * tree, OctreeNodeData &params);
+		void iterateFlat(Octree * tree, OctreeNodeData &params);
 };
 
 template <typename T> class InstanceBuilderHandler {
@@ -399,16 +412,18 @@ template <typename T> class InstanceBuilder : public IteratorHandler{
 			this->context = context;
 		}
 		
-		void before(Octree * tree, OctreeNodeData &params) {	
-			handler->handle(tree, params, instances, context);
+		void before(Octree * tree, OctreeNodeData &params) {
 		}
 		
-		void after(Octree * tree, OctreeNodeData &params) {			
+		void after(Octree * tree, OctreeNodeData &params) {	
+			if(params.node) {
+				handler->handle(tree, params, instances, context);
+			}		
 			return;
 		}
 		
 		bool test(Octree * tree, OctreeNodeData &params) {	
-			return true;
+			return params.node;
 		}
 		
 		void getOrder(Octree * tree, OctreeNodeData &params, uint8_t * order){

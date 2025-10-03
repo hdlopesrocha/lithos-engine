@@ -11,7 +11,6 @@
 #define WIDTH 1680
 #define HEIGHT 1050
 #define DEBUG 1
-#define NDEBUG 1
 
 #include "../math/math.hpp"
 #include "../space/space.hpp"

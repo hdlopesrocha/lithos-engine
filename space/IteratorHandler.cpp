@@ -1,54 +1,70 @@
 #include "space.hpp"
 
-void IteratorHandler::iterate(Octree * tree, OctreeNodeData params) {
+void IteratorHandler::iterate(Octree * tree, OctreeNodeData &params) {
     if(params.node != NULL) {
         before(tree, params);
-        if(test(tree, params)) {
+        if(params.node != NULL && test(tree, params)) {
             uint8_t internalOrder[8];
             getOrder(tree, params, internalOrder);
 
             ChildBlock * block = params.node->getBlock(tree->allocator);
             for(int i=0; i <8 ; ++i) {
                 uint8_t j = internalOrder[i];
-                OctreeNode * child = params.node->getChildNode(j, tree->allocator, block);
-                if(child != NULL) {
-                    this->iterate(tree, OctreeNodeData( params.level+1, child, params.cube.getChild(j) , params.context, child->sdf));
+                OctreeNode * child = block ? block->get(j, tree->allocator) : NULL;
+                if (child == params.node) {
+                    throw std::runtime_error("Wrong pointer @ iter!");
+                }                
+                if(child != NULL && params.node != child) {
+                    OctreeNodeData data( params.level+1, child, params.cube.getChild(j) , params.context, child->sdf);
+                    this->iterate(tree, data);
                 }
             }
+            after(tree, params); // only if test() passed
         }
     }
 }
 
-void IteratorHandler::iterateFlatIn(Octree * tree, OctreeNodeData params) {
+void IteratorHandler::iterateFlatIn(Octree* tree, OctreeNodeData& params) {
     params.context = NULL;
     uint8_t internalOrder[8];
- 
+
     flatData.push(params);
-    while(flatData.size()) {
+    while (!flatData.empty()) {
         OctreeNodeData data = flatData.top();
         flatData.pop();
 
+        OctreeNode* node = data.node;
         before(tree, data);
-        if(data.node && test(tree, data)) {
+
+        if (node != NULL && test(tree, data)) {
             getOrder(tree, data, internalOrder);
-            OctreeNode * node = data.node;
-            ChildBlock * block = node->getBlock(tree->allocator);
-            for(int i=7; i >= 0 ; --i) {
+            ChildBlock* block = node->getBlock(tree->allocator);
+
+            for (int i = 7; i >= 0; --i) {
                 uint8_t j = internalOrder[i];
-                OctreeNode * child = block ? node->getChildNode(j, tree->allocator, block) : NULL;
-                if(child != NULL) {
-                    flatData.push(OctreeNodeData(data.level + 1, child, data.cube.getChild(j), data.context, child->sdf));
-                } else {
-                    //float childSdf[8];
-                    //SDF::getChildSDF(data.node->sdf, j, childSdf);
-                    //flatData.push(OctreeNodeData(data.level + 1, NULL, data.cube.getChild(j), data.context, childSdf));
+                OctreeNode* child = block ? block->get(j, tree->allocator) : NULL;
+
+                if (child == node) {
+                    throw std::runtime_error("Wrong pointer!");
+                }
+
+                if (child != NULL) {
+                    flatData.push(OctreeNodeData(
+                        data.level + 1,
+                        child,
+                        data.cube.getChild(j),
+                        data.context,
+                        child->sdf
+                    ));
                 }
             }
+
+            after(tree, data); // only if test() passed
         }
     }
 }
 
-void IteratorHandler::iterateFlat(Octree * tree, OctreeNodeData params) {
+void IteratorHandler::iterateFlat(Octree * tree, OctreeNodeData &params) {
     if (!params.node) return;
     params.context = NULL;
 
@@ -61,7 +77,7 @@ void IteratorHandler::iterateFlat(Octree * tree, OctreeNodeData params) {
             // First visit: Apply `before()`
             before(tree, frame);
 
-            if (!test(tree, frame)) {
+            if (!(frame.node !=NULL && test(tree, frame))) {
                 stack.pop(); // Skip children, go back up
                 continue;
             }
@@ -76,7 +92,7 @@ void IteratorHandler::iterateFlat(Octree * tree, OctreeNodeData params) {
             uint8_t j = frame.internalOrder[frame.childIndex++];
             OctreeNode * node = frame.node;
             ChildBlock * block = node->getBlock(tree->allocator);
-            OctreeNode* child = node->getChildNode(j, tree->allocator, block);
+            OctreeNode* child = block->get(j, tree->allocator);
 
             if (child) {
                 OctreeNodeData data(frame.level+1, child, frame.cube.getChild(j), frame.context, child->sdf);
@@ -90,7 +106,7 @@ void IteratorHandler::iterateFlat(Octree * tree, OctreeNodeData params) {
     }
 }
 
-void IteratorHandler::iterateFlatOut(Octree * tree, OctreeNodeData params) {
+void IteratorHandler::iterateFlatOut(Octree * tree, OctreeNodeData &params) {
     if (!params.node) return;
     params.context = NULL;
 
@@ -123,7 +139,7 @@ void IteratorHandler::iterateFlatOut(Octree * tree, OctreeNodeData params) {
                 uint8_t j = internalOrder[i];
                 OctreeNode * node = frame.node;
                 ChildBlock * block = node->getBlock(tree->allocator);
-                OctreeNode* child = node->getChildNode(j, tree->allocator, block);
+                OctreeNode* child = block->get(j, tree->allocator);
                 if (child) {
                     stackOut.push(StackFrameOut(OctreeNodeData(frame.level + 1, child, frame.cube.getChild(j), frame.context, child->sdf), false));
                 }

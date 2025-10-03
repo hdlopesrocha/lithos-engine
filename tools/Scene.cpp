@@ -28,27 +28,32 @@ Scene::Scene(Settings * settings, BrushContext * brushContext):
 	}
 
 	liquidSpaceChangeHandler = new LiquidSpaceChangeHandler(&liquidInfo);
-	solidSpaceChangeHandler = new SolidSpaceChangeHandler(&vegetationInfo, &solidInfo);
+	solidSpaceChangeHandler = new SolidSpaceChangeHandler(&vegetationInfo);
 	brushSpaceChangeHandler = new BrushSpaceChangeHandler(&brushInfo, &octreeWireframeInfo);
 	vegetationGeometry = new Vegetation3d(1.0);
 }
 
 template <typename T> bool Scene::loadSpace(Octree* tree, OctreeNodeData& data, OctreeLayer<T>* infos, InstanceGeometry<T>* loadable) {
 	bool emptyChunk = data.node->isEmpty() || data.node->isSolid();
+
 	if(!emptyChunk){
 		if (loadable == NULL) {
+			std::unique_lock(infos->mutex2);
 			// No geometry to load — erase entry if it exists
-			infos->mutex.lock();
+			//TODO check thread safety
 			infos->info.erase(data.node);
-			infos->mutex.unlock();
 			return false;
 		}
+		using MapType   = std::unordered_map<OctreeNode*, NodeInfo<T>>;
+		using Iterator  = typename MapType::iterator;
 
 		// Try to insert a new NodeInfo with loadable
-		infos->mutex.lock();
-		auto [it, inserted] = infos->info.try_emplace(data.node, loadable);
-		infos->mutex.unlock();
+		std::unique_lock(infos->mutex2);
 
+		std::pair<Iterator, bool> iter = infos->info.try_emplace(data.node, loadable);
+		Iterator it = iter.first;
+		bool inserted = iter.second;
+	
 		if (!inserted) {
 			// Already existed — replace existing loadable
 			if (it->second.loadable) {
@@ -71,8 +76,8 @@ bool Scene::processLiquid(OctreeNodeData &data, Octree * tree) {
 	std::vector<OctreeNodeTriangleHandler*> handlers;
 	handlers.push_back(&tesselator);
 	Processor processor(&trianglesCount, &context, &handlers);
-	processor.iterateFlatIn(tree, data);
-	
+	processor.iterate(tree, data);
+
  	if(tesselator.geometry->indices.size() > 0) {
         InstanceGeometry<InstanceData> * pre = new InstanceGeometry<InstanceData>(tesselator.geometry);
         pre->instances.push_back(InstanceData(0, glm::mat4(1.0), 0.0f));
@@ -96,6 +101,8 @@ bool Scene::processLiquid(OctreeNodeData &data, Octree * tree) {
 
 
 bool Scene::processSolid(OctreeNodeData &data, Octree * tree) {
+	//std::cout << "processSolid " << std::to_string((long)&data.node) <<  std::endl;
+
 	bool result = false;
 	ThreadContext context;
 	Tesselator tesselator(&trianglesCount, &context);
@@ -106,13 +113,15 @@ bool Scene::processSolid(OctreeNodeData &data, Octree * tree) {
 	std::vector<OctreeNodeTriangleHandler*> handlers;
 	handlers.push_back(&tesselator);
 	handlers.push_back(&vegetationBuilder);
-
+	//std::cout << "\tprocessor" << std::endl;
 	Processor processor(&trianglesCount, &context, &handlers);
-	processor.iterateFlatIn(tree, data);
+	//std::cout << "\tprocessor.iterateFlatIn" << std::endl;
+	processor.iterate(tree, data);
 
  	if(tesselator.geometry->indices.size() > 0) {
         InstanceGeometry<InstanceData> * pre = new InstanceGeometry<InstanceData>(tesselator.geometry);
         pre->instances.push_back(InstanceData(0, glm::mat4(1.0), 0.0f));
+		//std::cout << "\tloadSpace(solidInfo) " << tesselator.geometry->indices.size() <<  std::endl;
 
 		if(data.node && loadSpace(tree, data, &solidInfo, pre)) {
 			result = true;
@@ -124,12 +133,13 @@ bool Scene::processSolid(OctreeNodeData &data, Octree * tree) {
 		}
 	}
 
+	//std::cout << "\tshuffle " << vegetationInstances.size() <<  std::endl;
 	
     // Shuffle the vector
     if(vegetationInstances.size()) {
         std::shuffle(vegetationInstances.begin(), vegetationInstances.end(), g);
         InstanceGeometry<InstanceData> * pre = new InstanceGeometry<InstanceData>(vegetationGeometry, vegetationInstances);
-
+		//std::cout << "\tloadSpace(vegetationInfo) " << tesselator.geometry->indices.size() <<  std::endl;
 		if(data.node && loadSpace(tree, data, &vegetationInfo, pre)) {
 			result = true;
 		}
@@ -141,11 +151,14 @@ bool Scene::processSolid(OctreeNodeData &data, Octree * tree) {
 	
 	
 	#ifdef DEBUG_OCTREE_WIREFRAME
-	if(data.node && loadSpace(tree, data, &octreeWireframeInfo, debugBuilder->build(tree, data, &context))) {
+	auto debugInstances = debugBuilder->build(tree, data, &context);
+	if(data.node && loadSpace(tree, data, &octreeWireframeInfo, debugInstances)) {
 		result = true;			
 	}
 	#endif
 	
+	
+	//	std::cout << "\tnode.setDirty " << std::to_string((long) data.node) <<  std::endl;
 
 	if(data.node) {
 		data.node->setDirty(false);	
@@ -163,7 +176,7 @@ bool Scene::processBrush(OctreeNodeData &data, Octree * tree) {
 	std::vector<OctreeNodeTriangleHandler*> handlers;
 	handlers.push_back(&tesselator);
 	Processor processor(&trianglesCount, &context, &handlers);
-	processor.iterateFlatIn(tree, data);
+	processor.iterate(tree, data);
 
  	if(tesselator.geometry->indices.size() > 0) {
         InstanceGeometry<InstanceData> * pre = new InstanceGeometry<InstanceData>(tesselator.geometry);
@@ -187,15 +200,6 @@ bool Scene::processBrush(OctreeNodeData &data, Octree * tree) {
 bool Scene::processSpace() {
 	// Set load counts per Processor
 
-
-	std::shared_ptr<std::atomic<int>> loadCountSolid = std::make_shared<std::atomic<int>>(0);
-	std::shared_ptr<std::atomic<int>> loadCountLiquid = std::make_shared<std::atomic<int>>(0);
-	std::shared_ptr<std::atomic<int>> loadCountBrush = std::make_shared<std::atomic<int>>(0);
-
-	int maxSolidThreads = 8;
-	int maxLiquidThreads = 8;
-	int maxBrushThreads = 8;
-
 	std::unordered_set<uint> visibleNodeIds;
 	std::vector<OctreeNodeData*> allVisibleNodes;
 
@@ -206,7 +210,7 @@ bool Scene::processSpace() {
 		}
 	}
 
-	for(int i =0 ; i < SHADOW_MATRIX_COUNT ; ++i) {
+	for(uint i =0 ; i < SHADOW_MATRIX_COUNT ; ++i) {
 		std::vector<OctreeNodeData> &vec = visibleShadowNodes[i];
 		for(OctreeNodeData &data : vec) {
 			if(data.node && data.node->id != UINT_MAX && visibleNodeIds.find(data.node->id) == visibleNodeIds.end()) {
@@ -216,51 +220,46 @@ bool Scene::processSpace() {
 		}
 	}
 
-    std::vector<std::future<void>> threads;
-	threads.reserve(24);
+	int loadCount = 0;
 
+	//std::cout << "process " << std::to_string((long)allVisibleNodes.size()) <<  std::endl;
 
-	for(OctreeNodeData * data : allVisibleNodes) {
-		if(data->node && data->node->id != UINT_MAX && data->node->isDirty() && --maxSolidThreads >= 0) {
-			threads.emplace_back(
-				threadPool.enqueue([this, data, loadCountSolid]() {
-					if(processSolid(*data, &solidSpace)) {
-						(*loadCountSolid)++;
-					}
-				})
-			);
+    std::vector<std::future<bool>> threads;
+	threads.reserve(64);
+
+	// Thread pool zone
+	
+	for (OctreeNodeData* data : allVisibleNodes) {
+		if (data->node && data->node->isDirty()) {
+			threads.emplace_back(threadPool.enqueue([this, data]() {
+				return processSolid(*data, &solidSpace);
+			}));
 		}
 	}
 
-	for(OctreeNodeData &data : visibleBrushNodes) {
-		if(data.node && data.node->id != UINT_MAX && data.node->isDirty()  && --maxBrushThreads >= 0) {
-			threads.emplace_back(
-				threadPool.enqueue([this, &data, loadCountBrush]() {
-					if(processBrush(data, &brushSpace)) {
-						(*loadCountBrush)++;
-					}
-				})
-			);
+	for (OctreeNodeData& brush : visibleBrushNodes) {
+		if (brush.node && brush.node->isDirty()) {
+			threads.emplace_back(threadPool.enqueue([this, &brush]() {
+				return processBrush(brush, &brushSpace);
+			}));
 		}
 	}
 
-	for(OctreeNodeData &data : visibleLiquidNodes) {
-		if(data.node->isDirty() && --maxLiquidThreads >= 0) {
-			threads.emplace_back(
-				threadPool.enqueue([this, &data, loadCountLiquid]() {
-					if(processLiquid(data, &liquidSpace)) {
-						(*loadCountLiquid)++;
-					}
-				})
-			);
+	for (OctreeNodeData& liquid : visibleLiquidNodes) {
+		if (liquid.node && liquid.node->isDirty()) {
+			threads.emplace_back(threadPool.enqueue([this, &liquid]() {
+				return processLiquid(liquid, &liquidSpace);
+			}));
+		}
+	}
+	for(auto &t : threads) {
+		bool ret = t.get();
+		if(ret) {
+			++loadCount;
 		}
 	}
 
-    for(auto &t : threads) {
-        t.get();
-    }
-
-	return *loadCountSolid > 0 || *loadCountLiquid > 0 || *loadCountBrush > 0;
+	return loadCount > 0;
 }
 
 void Scene::setVisibility(glm::mat4 viewProjection, std::vector<std::pair<glm::mat4, glm::vec3>> lightProjection ,Camera &camera) {
@@ -276,16 +275,16 @@ void Scene::setVisibility(glm::mat4 viewProjection, std::vector<std::pair<glm::m
 
 void Scene::setVisibleNodes(Octree * tree, glm::mat4 viewProjection, glm::vec3 sortPosition, OctreeVisibilityChecker &checker) {
 	checker.visibleNodes->clear();
+	//checker.visibleNodes->reserve(128);
 	checker.sortPosition = sortPosition;
 	checker.update(viewProjection);
-	tree->iterateFlat(checker);	//here we get the visible nodes for that LOD + geometryLevel
+	//TODO change to best iterator
+	tree->iterate(checker);	//here we get the visible nodes for that LOD + geometryLevel
 }
 
 template <typename T> DrawableInstanceGeometry<T> * Scene::loadIfNeeded(OctreeLayer<T>* infos, OctreeNode* node, InstanceHandler<T> * handler) {
-	infos->mutex.lock();
 	auto it = infos->info.find(node);
 	auto end = infos->info.end();
-	infos->mutex.unlock();
 	if (it == end) {
 		return NULL;
 	}

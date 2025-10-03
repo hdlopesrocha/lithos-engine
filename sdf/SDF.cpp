@@ -473,7 +473,7 @@ void SDF::getChildSDF(float * sdf, int i , float * result) {
 
 void SDF::copySDF(float * src, float * dst) {
     for (int corner = 0; corner < 8; ++corner) {
-        dst[corner] = src[corner];
+        dst[corner] = src != NULL ? src[corner] : INFINITY;
     }
 }
 

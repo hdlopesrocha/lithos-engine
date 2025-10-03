@@ -13,7 +13,7 @@ void Simplifier::simplify(Octree * tree, BoundingCube chunkCube, const OctreeNod
 	int brushIndex = 0;
 	bool hasSimplifiedChildren = false;
 	for(int i=0; i < 8 ; ++i) {
-		OctreeNode * c = node->getChildNode(i, tree->allocator, block);
+		OctreeNode * c = block->get(i, tree->allocator);
 		if(c != NULL && c->isSimplified()) {
 			hasSimplifiedChildren = true;
 			brushIndex = c->vertex.brushIndex;
@@ -35,7 +35,7 @@ void Simplifier::simplify(Octree * tree, BoundingCube chunkCube, const OctreeNod
 
 		// for leaf nodes shouldn't loop
 		for(int i=0; i < 8 ; ++i) {
-			OctreeNode * child = node->getChildNode(i, tree->allocator, block);
+			OctreeNode * child = block->get(i, tree->allocator);
 			if(child!=NULL && !child->isSolid() && !child->isEmpty()) {
 				if(!child->isSimplified()) {
 					return;	
@@ -70,7 +70,7 @@ void Simplifier::simplify(Octree * tree, BoundingCube chunkCube, const OctreeNod
 			node->vertex.brushIndex = brushIndex;
 
 			for(int i=0; i < 8 ; ++i) {
-				OctreeNode * child = node->getChildNode(i, tree->allocator, block);
+				OctreeNode * child = block->get(i, tree->allocator);
 				if(child!=NULL) {
 					child->setSimplified(false);
 				}

@@ -80,6 +80,7 @@ class MainApplication : public LithosApplication {
 	TextureViewer * textureViewer;
 	ImpostorViewer * impostorViewer;
 	GamepadEditor * gamepadEditor;
+	OctreeExplorer * octreeExplorer;
 
 	TextureLayers atlasLayers;
 	TextureLayers textureLayers;
@@ -523,6 +524,7 @@ public:
 		settingsEditor = new SettingsEditor(settings);
 		textureViewer = new TextureViewer(programTexture, &textureLayers);
 		impostorViewer = new ImpostorViewer(impostorDrawer, &impostors , programTexture, 256, 256, &impostorLayers);
+		octreeExplorer = new OctreeExplorer(&mainScene->solidSpace);
 
 		eventManager.publish<Event>(Event(EVENT_BRUSH_CHANGED));
 		// ImGui
@@ -951,6 +953,9 @@ public:
 				if (ImGui::MenuItem("Impostor Viewer", "Ctrl+B")) {
 					impostorViewer->show();
 				}
+				if (ImGui::MenuItem("Octree Explorer", "Ctrl+B")) {
+					octreeExplorer->show();
+				}
 				if (ImGui::MenuItem("Shadow Map Viewer", "Ctrl+D")) {
 					shadowMapViewer->show();
 				}
@@ -1032,6 +1037,7 @@ public:
 		atlasPainter->draw2dIfOpen(time);
 		textureViewer->draw2dIfOpen(time);
 		impostorViewer->draw2dIfOpen(time);
+		octreeExplorer->draw2dIfOpen(time);
 
 		if(demo) {
 			ImGui::ShowDemoWindow(&demo);

@@ -1,6 +1,7 @@
 #ifndef TOOLS_HPP
 #define TOOLS_HPP
 
+//#define NDEBUG 1
 #define DEBUG_OCTREE_WIREFRAME 1
 #define STARTUP_GENERATE 1
 //#define CLOSE_AFTER_GENERATE 1
@@ -10,9 +11,9 @@
 #include "../gl/gl.hpp"
 #include "../space/space.hpp"
 #include "../handler/handler.hpp"
-#include "../space/ThreadPool.hpp"
 #include <algorithm>
 #include <random>
+
 
 enum Tab {
 	PAGE_ROTATION,
@@ -139,10 +140,10 @@ template <typename T> struct NodeInfo {
 	}
 };
 
-
 template <typename T> struct OctreeLayer {
 	std::unordered_map<OctreeNode*, NodeInfo<T>> info;
-	std::mutex mutex;
+    std::shared_mutex mutex;
+    std::shared_mutex mutex2;
 };
 
 
@@ -161,12 +162,10 @@ class LiquidSpaceChangeHandler : public OctreeChangeHandler {
 
 class SolidSpaceChangeHandler : public OctreeChangeHandler {
 	OctreeLayer<InstanceData> * vegetationInfo;
-	OctreeLayer<InstanceData> * computeInfo;
 
 	public:
 	SolidSpaceChangeHandler(
-		OctreeLayer<InstanceData> * vegetationInfo,
-		OctreeLayer<InstanceData> * computeInfo
+		OctreeLayer<InstanceData> * vegetationInfo
 	);
 
 	void create(OctreeNode* nodeId) override;

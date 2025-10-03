@@ -1,80 +1,117 @@
-#include "space.hpp" // For OctreeNode
+#include <vector>
+#include <unordered_set>
+#include <mutex>
+#include <cassert>
+#include <cstdlib>
+#include <stdexcept>
+#include <iostream>
 
+template <typename T>
+class Allocator {
+private:
+    struct Block {
+        T* data;          // ponteiro para os elementos
+        size_t startIndex; // índice global do primeiro elemento deste bloco
+    };
 
-template <typename T> class Allocator {
-	std::vector<T*> freeList; 
-	std::vector<T*> allocatedBlocks;
-	const size_t blockSize; 
-    std::shared_mutex mutex;
+    std::vector<Block> blocks;
+    std::vector<T*> freeList;
+    std::unordered_set<T*> deallocatedSet;
+    const size_t blockSize;
+    size_t totalAllocated = 0;
+    std::mutex mutex;
 
-    // thread safe
     void allocateBlock() {
-        // Allocate a new block of memory
-        T* block = static_cast<T*>(std::malloc(blockSize * sizeof(T)));
-        assert(block != nullptr && "Failed to allocate memory for Allocator");
-        // Add the new block to the list of allocated blocks
-        allocatedBlocks.push_back(block);
-        // Add all memory blocks in the new block to the free list
+        T* data = static_cast<T*>(std::malloc(blockSize * sizeof(T)));
+        if (!data) throw std::bad_alloc();
+
+        blocks.push_back({ data, totalAllocated });
+
         for (size_t i = 0; i < blockSize; ++i) {
-            freeList.push_back(&block[i]);
+            freeList.push_back(&data[i]);
+            deallocatedSet.insert(&data[i]);
         }
+
+        totalAllocated += blockSize;
     }
 
-	public:
-    Allocator() : blockSize(1024) {
-        freeList.reserve(blockSize);
+public:
+    Allocator(size_t blockSize) : blockSize(blockSize) {
+        std::cout << "Allocator(" << blockSize << ")" << std::endl;
     }
-    
+
     ~Allocator() {
-        // Free all allocated memory blocks
-        for (T* block : allocatedBlocks) {
-            std::free(block);
+        for (auto &b : blocks) std::free(b.data);
+    }
+
+    // -------------------
+    // Alocação / Liberação
+    // -------------------
+    T* allocate() {
+        std::lock_guard<std::mutex> lock(mutex);
+        if (freeList.empty()) allocateBlock();
+
+        T* ptr = freeList.back();
+        freeList.pop_back();
+
+        if (deallocatedSet.find(ptr) == deallocatedSet.end()) {
+            throw std::runtime_error("Double allocate!");
         }
+        deallocatedSet.erase(ptr);
+        return ptr;
     }
 
-    size_t getBlockSize() const {
-        return blockSize;
+    void deallocate(T* ptr) {
+        if (!ptr) return;
+
+        std::lock_guard<std::mutex> lock(mutex);
+        if (deallocatedSet.find(ptr) != deallocatedSet.end()) {
+            throw std::runtime_error("Double deallocate!");
+        }
+
+        // check pointer belongs to a block
+        bool valid = false;
+        for (auto &b : blocks) {
+            if (ptr >= b.data && ptr < b.data + blockSize) { valid = true; break; }
+        }
+        assert(valid && "Pointer does not belong to allocator");
+
+        deallocatedSet.insert(ptr);
+        freeList.push_back(ptr);
     }
 
-    size_t getAllocatedBlocksCount() {
-        std::shared_lock lock(mutex); 
-        size_t result = allocatedBlocks.size();
-        return result;
-    }
-
+    // -------------------
+    // Index <-> Pointer O(1)
+    // -------------------
     uint getIndex(T* ptr) {
-        if(ptr == NULL) {
-            return UINT_MAX;
-        }
-        std::shared_lock lock(mutex); 
-        // Iterate through all allocated blocks to find the block containing the pointer
-        for (size_t blockIndex = 0; blockIndex < allocatedBlocks.size(); ++blockIndex) {
-            T* block = allocatedBlocks[blockIndex];
-            if (ptr >= block && ptr < block + blockSize) {
-                // Calculate the index within the block
-                size_t offset = ptr - block;
-                // Return the global index across all blocks
-                return static_cast<uint>(blockIndex * blockSize + offset);
+        if (!ptr) return UINT_MAX;
+
+        std::lock_guard<std::mutex> lock(mutex);
+
+        for (auto &b : blocks) {
+            if (ptr >= b.data && ptr < b.data + blockSize) {
+                return static_cast<uint>(b.startIndex + (ptr - b.data));
             }
         }
-        // If the pointer is not found, throw an error
-        assert(false && "Pointer does not belong to any allocated block");
-        return static_cast<uint>(UINT_MAX); // Return an invalid index
+        throw std::runtime_error("Pointer does not belong to allocator");
     }
 
-    T * getFromIndex(uint index) {
-        if(index == UINT_MAX) {
-            return NULL;
-        }
-        std::shared_lock lock(mutex); 
-       // Calculate the block index and offset within the block
-        size_t blockIndex = index / blockSize;
+    T* getFromIndex(uint index) {
+        if (index == UINT_MAX) return nullptr;
+
+        std::lock_guard<std::mutex> lock(mutex);
+
+        // encontra o bloco que contém o índice
+        size_t blockIdx = index / blockSize; // simplificação se os blocos forem sequenciais
         size_t offset = index % blockSize;
-        // Check if the block index is valid
-        assert(blockIndex < allocatedBlocks.size() && "Block index out of range");
-        T * result = &allocatedBlocks[blockIndex][offset];
-        // Return the pointer to the requested element
-        return result;
+
+        if (blockIdx >= blocks.size()) throw std::runtime_error("Invalid index");
+
+        T* ptr = &blocks[blockIdx].data[offset];
+        if (deallocatedSet.find(ptr) != deallocatedSet.end())
+            throw std::runtime_error("Accessing deallocated pointer");
+
+        return ptr;
     }
 
     uint allocateIndex() {
@@ -82,32 +119,10 @@ template <typename T> class Allocator {
         return getIndex(ptr);
     }
 
-    T* allocate() {
-        std::unique_lock lock(mutex); // exclusive
-        // If the free list is empty, allocate a new block
-        if (freeList.empty()) {
-            allocateBlock();
-        }
-        // Get a block from the free list
-        T* ptr = freeList.back();
-        freeList.pop_back();
-        return ptr;
+    size_t getAllocatedBlocksCount() {
+        std::lock_guard<std::mutex> lock(mutex);
+        return blocks.size();
     }
 
-    void deallocate(T* ptr) {
-        std::unique_lock lock(mutex); // exclusive
-        // Ensure the pointer belongs to the allocator
-        bool validPointer = false;
-        for (T* block : allocatedBlocks) {
-            if (ptr >= block && ptr < block + blockSize) {
-                validPointer = true;
-                break;
-            }
-        }
-        assert(validPointer && "Attempting to deallocate a pointer not owned by the allocator");
-        // Return the block to the free list
-        freeList.push_back(ptr);
-    }
+    size_t getBlockSize() const { return blockSize; }
 };
-
-

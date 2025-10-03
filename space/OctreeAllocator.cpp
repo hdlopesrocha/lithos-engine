@@ -1,17 +1,18 @@
 #include "space.hpp"
 
 
-OctreeNode * OctreeAllocator::allocateOctreeNode(BoundingCube &cube){
-    OctreeNode * node = nodeAllocator.allocate();
-    return node;
+OctreeNode * OctreeAllocator::allocate(){
+    OctreeNode * result = nodeAllocator.allocate();
+    return result;
 }
 
-OctreeNode * OctreeAllocator::getOctreeNode(uint index){
+OctreeNode * OctreeAllocator::get(uint index){
     return nodeAllocator.getFromIndex(index);
 }
 
-void OctreeAllocator::deallocateOctreeNode(OctreeNode * node, BoundingCube &cube){
+OctreeNode * OctreeAllocator::deallocate(OctreeNode * node){
     nodeAllocator.deallocate(node);
+    return NULL;
 }
 
 uint OctreeAllocator::getIndex(OctreeNode * node){

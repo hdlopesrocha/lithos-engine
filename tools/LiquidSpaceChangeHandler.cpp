@@ -15,7 +15,8 @@ void LiquidSpaceChangeHandler::update(OctreeNode* node) {
 };
 
 void LiquidSpaceChangeHandler::erase(OctreeNode* node) {
-    liquidInfo->mutex.lock();
-    liquidInfo->info.erase(node);
-    liquidInfo->mutex.unlock();
+    if(node!= NULL) {
+        std::unique_lock<std::shared_mutex> lock(liquidInfo->mutex);
+        liquidInfo->info.erase(node);
+    }
 };

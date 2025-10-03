@@ -17,14 +17,17 @@ void BrushSpaceChangeHandler::update(OctreeNode* node) {
 };
 
 void BrushSpaceChangeHandler::erase(OctreeNode* node) {
-    brushInfo->mutex.lock();
-	brushInfo->info.erase(node);
-    brushInfo->mutex.unlock();
+    if(node!=NULL) {
+        {
+            std::unique_lock<std::shared_mutex> lock(brushInfo->mutex);
+            brushInfo->info.erase(node);
+        }
 
-
-    #ifdef DEBUG_OCTREE_WIREFRAME
-    octreeWireframeInfo->mutex.lock();
-    octreeWireframeInfo->info.erase(node);
-    octreeWireframeInfo->mutex.unlock();
-    #endif
+        #ifdef DEBUG_OCTREE_WIREFRAME
+        {
+            std::unique_lock<std::shared_mutex> lock(octreeWireframeInfo->mutex);
+            octreeWireframeInfo->info.erase(node);
+        }
+        #endif
+    }
 };

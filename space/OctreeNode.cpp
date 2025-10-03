@@ -10,6 +10,7 @@ OctreeNode * OctreeNode::init(Vertex vertex) {
 	}
 	this->bits = 0x0;
 	this->setSolid(false);
+	this->setLeaf(false);
 	this->setEmpty(false);
 	this->setSimplified(false);
 	this->setDirty(true);
@@ -23,10 +24,10 @@ ChildBlock * OctreeNode::getBlock(OctreeAllocator &allocator) {
 	return allocator.childAllocator.getFromIndex(this->id);
 }
 
-ChildBlock * OctreeNode::createBlock(OctreeAllocator &allocator) {
+ChildBlock * OctreeNode::allocate(OctreeAllocator &allocator) {
 	ChildBlock * block = NULL;
 	if(this->id == UINT_MAX) {
-		block = allocator.childAllocator.allocate()->init();
+		block = allocator.childAllocator.allocate();
 		this->id = allocator.childAllocator.getIndex(block);
 	}
 	if(block == NULL) {
@@ -35,45 +36,29 @@ ChildBlock * OctreeNode::createBlock(OctreeAllocator &allocator) {
 	return block;
 }
 
-void OctreeNode::setChildNode(int i, uint newIndex, OctreeAllocator &allocator, ChildBlock * block) {
-	if(block->children[i] != newIndex && block->children[i] != UINT_MAX && newIndex != UINT_MAX) {
-		throw std::runtime_error("Lost reference @ OctreeNode::setChildNode " + std::to_string(block->children[i]) + " " + std::to_string(newIndex));
-	}
-	block->children[i] = newIndex;
-}
 
-void OctreeNode::setChildNode(int i, OctreeNode * node, OctreeAllocator &allocator, ChildBlock * block) {
-	if(node == NULL && this->id == UINT_MAX) {
-		return;
-	} 
-	uint newIndex = allocator.getIndex(node);
-	if(block->children[i] != newIndex && block->children[i] != UINT_MAX && newIndex != UINT_MAX) {
-		throw std::runtime_error("Lost reference @ OctreeNode::setChildNode " + std::to_string(block->children[i]) + " " + std::to_string(newIndex));
-	}
-	block->children[i] = newIndex;
-}
-
-OctreeNode * OctreeNode::getChildNode(int i, OctreeAllocator &allocator, ChildBlock * block) {
-	if(block == NULL) {
-		return NULL;
-	}
-	return allocator.getOctreeNode(block->children[i]);
-}
 
 OctreeNode::~OctreeNode() {
 
 }
 
-void OctreeNode::clear(OctreeAllocator &allocator, BoundingCube &cube, OctreeChangeHandler * handler, ChildBlock * block) {
+ChildBlock * OctreeNode::clear(OctreeAllocator &allocator, OctreeChangeHandler * handler, ChildBlock * block) {
 	handler->erase(this);
 	if(this->id != UINT_MAX) {
 		if(block == NULL) {
 			block = getBlock(allocator);
 		}
-		block->clear(allocator, cube, handler);
-		allocator.childAllocator.deallocate(block);
-		this->id = UINT_MAX;
+		bool isEmpty = block!=NULL && block->isEmpty() || block == NULL;
+
+		if(isEmpty && block!=NULL) {	
+			block->clear(allocator, handler);
+			block = block->deallocate(allocator);
+			this->id = UINT_MAX;
+		} else if(block != NULL) {
+			//throw std::runtime_error("OctreeNode::clear possible child missing "  );
+		}
 	}
+	return block;
 }
 
 void OctreeNode::setSDF(float * value) {
@@ -135,11 +120,6 @@ void OctreeNode::setLeaf(bool value) {
 	this->bits = (this->bits & ~mask) | (value ? mask : 0x0);
 }
 
-ChildBlock * OctreeNode::deleteBlock(OctreeAllocator &allocator, ChildBlock * block) {
-	allocator.childAllocator.deallocate(block);
-	this->id = UINT_MAX;
-	return NULL;
-}
 
 SpaceType OctreeNode::getType()  {
 	if(isSolid()) {
@@ -165,7 +145,7 @@ OctreeNode * OctreeNode::compress(OctreeAllocator &allocator, BoundingCube * cub
 	if(intersectingChildCount == 1) {
 		ChildBlock * block = this->getBlock(allocator);
 		if(block != NULL) {
-			OctreeNode * childNode = this->getChildNode(intersectingIndex, allocator, block);
+			OctreeNode * childNode = block->get(intersectingIndex, allocator);
 			if(childNode != NULL) {
 				BoundingCube c = cube->getChild(intersectingIndex);
 				*cube = c;
@@ -192,7 +172,7 @@ uint OctreeNode::exportSerialization(OctreeAllocator &allocator, std::vector<Oct
 	ChildBlock * block = this->getBlock(allocator);
 	if(block != NULL) {
 		for(int i=0; i < 8; ++i) {
-			OctreeNode * childNode = this->getChildNode(i, allocator,block);
+			OctreeNode * childNode = block->get(i, allocator);
 			if(childNode != NULL) {
 				BoundingCube c = cube.getChild(i);
 			    (*nodes)[index].children[i] = childNode->exportSerialization(allocator, nodes, leafNodes, c, chunk, level + 1);
