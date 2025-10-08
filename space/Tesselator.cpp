@@ -30,7 +30,7 @@ glm::vec2 triplanarMapping(glm::vec3 position, int plane) {
 }
 
 
-void Tesselator::handle(OctreeNodeData &data, Vertex &v0, Vertex &v1, Vertex &v2, bool reverse) {
+void Tesselator::handle(const OctreeNodeData &data, Vertex &v0, Vertex &v1, Vertex &v2, bool reverse) {
     if(v0.brushIndex>DISCARD_BRUSH_INDEX && 
         v1.brushIndex>DISCARD_BRUSH_INDEX && 
         v2.brushIndex>DISCARD_BRUSH_INDEX) {

@@ -322,3 +322,18 @@ float Math::brightnessAndContrast(float color, float brightness, float contrast)
     color *= contrast;
     return glm::clamp(color, -1.0f, 1.0f);
 }
+
+// Convert HSV → RGB
+glm::vec3 Math::hsv2rgb(const glm::vec3& c)
+{
+    const glm::vec4 K = glm::vec4(1.0f, 2.0f / 3.0f, 1.0f / 3.0f, 3.0f);
+    glm::vec3 p = glm::abs(glm::fract(glm::vec3(c.x) + glm::vec3(K.x, K.y, K.z)) * 6.0f - glm::vec3(K.w));
+    return c.z * glm::mix(glm::vec3(K.x), glm::clamp(p - glm::vec3(K.x), 0.0f, 1.0f), c.y);
+}
+
+// Generate brush color
+glm::vec3 Math::brushColor(unsigned int i)
+{
+    float hue = glm::fract(float(i) * 0.61803398875f); // Golden ratio spread
+    return hsv2rgb(glm::vec3(hue, 0.7f, 0.9f));
+}

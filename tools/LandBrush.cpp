@@ -14,15 +14,15 @@ LandBrush::LandBrush(){
     this->rockMixSand = 14;
 }
 
-void LandBrush::paint(Vertex &vertex) const {
+int LandBrush::paint(const Vertex &vertex) const {
     glm::vec3 n = glm::normalize(vertex.normal);
     float steepness =glm::dot(glm::vec3(0.0f,1.0f,0.0f), n );
     int grassLevel = 256;
     int sandLevel = 16;
     int softSandLevel = 2;
-    uint brushIndex;
+    int brushIndex;
     if (glm::dot(glm::vec3(0.0f,1.0f,0.0f), n ) <=0 ){
-        brushIndex = DISCARD_BRUSH_INDEX;
+        brushIndex = underground;
     } else if(steepness < 0.980 ){
         brushIndex = rock;
     } else if(steepness < 0.985 ){
@@ -49,5 +49,5 @@ void LandBrush::paint(Vertex &vertex) const {
         brushIndex = snow;
     }
 
-    vertex.brushIndex = brushIndex;
+    return brushIndex;
 }

@@ -498,7 +498,7 @@ private:
 
 class TexturePainter {
 	public:
-	virtual void paint(Vertex &v) const = 0;
+	virtual int paint(const Vertex &v) const = 0;
 };
 
 
@@ -606,6 +606,8 @@ public:
 	static float randomFloat();
 	static glm::vec3 solveLinearSystem(const glm::mat3& A, const glm::vec3& b);
 	static float brightnessAndContrast(float color, float brightness, float contrast);
+	static glm::vec3 hsv2rgb(const glm::vec3& c);
+	static glm::vec3 brushColor(unsigned int i);
 };
 void ensureFolderExists(const std::string& folder);
 

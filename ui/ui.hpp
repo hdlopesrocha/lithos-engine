@@ -189,8 +189,9 @@ class ImageViewer : public Closable{
 class OctreeExplorer  : public Closable {
     Octree * tree;
     public:
+    std::vector<std::pair<BoundingCube,OctreeNode*>> openNodes;
     OctreeExplorer(Octree * tree);
-    void recursiveDraw(OctreeNode * node);
+    void recursiveDraw(OctreeNode * node, BoundingCube cube);
 
     void draw2d(float time) override;
 };

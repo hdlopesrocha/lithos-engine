@@ -3,19 +3,34 @@
 #include<structs.glsl>
 #include<uniforms.glsl>
 
+uniform sampler2D sampler;
 out vec4 color;    // Final fragment color
 in float distance;
 in float scale;
+in vec4 vertexColor;     
+in float brush;
+in vec2 texCoord;
+
+
+
 void main() {
     float logDepth = log2(1.0 + gl_FragCoord.z) / log2(far + 1.0);
     gl_FragDepth = logDepth;
 
-    float r =  abs(distance/scale);
-    if(r > 0.2) {
-        discard;
+
+    if(brush == 0.0) {
+        color = texture(sampler, texCoord);
     }
-    color = vec4(distance < 0.0 ? 1.0 - r : 0.0 ,distance >= 0.0 ? 1.0 - r : 0.0 ,0.0, 0.1*(1.0 - r));
-    //color = vec4(1.0,1.0,1.0, 0.2);
+    else {
+        float r =  abs(distance/scale);
+        float range = 0.2;
+        if(r > range) {
+            discard;
+        }
+        color = distance >=0.0 ? vertexColor : vec4(1.0,1.0,1.0,1.0);
+        color.a =0.2*(1.0 - abs(r)/range);
+    }
+
 }
 
 

@@ -26,7 +26,12 @@ void BrushEditor::draw2d(float time){
 
     ImGui::Checkbox("Enabled", &brush->enabled);
 
+    glm::vec3 rgb = Math::brushColor(brushContext->brushIndex);
+    ImVec4 color(rgb.r,rgb.g,rgb.b, 1.0f);
+    ImGui::PushStyleColor(ImGuiCol_Text, color); // Red text
     ImGui::Text("Selected texture: %d", brushContext->brushIndex);
+    ImGui::PopStyleColor();
+
     ImGui::SameLine();
 
     if (ImGui::ArrowButton("##arrow_left", ImGuiDir_Left)) {

@@ -50,6 +50,7 @@ class MainApplication : public LithosApplication {
 	UniformBlock viewerBlock;
 	UniformBlock uniformBlock;
 
+	TextureImage gridTexture;
 	TextureImage noiseTexture;
 	TextureImage gamepadTexture;
 	TextureBlitter * textureBlitter1024;
@@ -93,7 +94,8 @@ class MainApplication : public LithosApplication {
 	AtlasDrawer * atlasDrawer;
 	GamepadControllerStrategy * gamepadControllerStrategy;
 	KeyboardControllerStrategy * keyboardControllerStrategy;
-
+	SphereGeometry sphereGeometry = SphereGeometry(40,80);
+	BoxGeometry boxGeometry = BoxGeometry(BoundingBox(glm::vec3(0), glm::vec3(1)));
 public:
 	MainApplication() {
 
@@ -258,8 +260,6 @@ public:
 		impostorDrawer = new ImpostorDrawer(programDeferred, 256, 256, &billboardLayers, &impostorLayers, textureBlitter256);
 
 		{
-			SphereGeometry sphereGeometry(40,80);
-			BoxGeometry boxGeometry(BoundingBox(glm::vec3(0), glm::vec3(1)));
 			InstanceDataHandler handler;
 			std::vector<InstanceData> instances;
 			instances.push_back(InstanceData(0,glm::mat4(1.0),0));
@@ -420,8 +420,11 @@ public:
 			impostors.push_back(ImpostorParams(impostorLayers.count++, vegetationMesh));
 		}
 		
+		gridTexture = loadTextureImage("textures/grid.png", false);
 		noiseTexture = loadTextureImage("textures/noise.jpg", false);
 		gamepadTexture = loadTextureImage("textures/gamepad.png", true);
+
+		activeTexture = Texture::bindTexture(programDebug, activeTexture, glGetUniformLocation(programDebug, "sampler"), gridTexture);
 
 		Texture::bindTexture(program3d, activeTexture, glGetUniformLocation(program3d, "noise"), noiseTexture);
 		activeTexture = Texture::bindTexture(programBillboard, activeTexture, glGetUniformLocation(programBillboard, "noise"), noiseTexture);
@@ -765,6 +768,8 @@ public:
 			glUseProgram(programDebug);
 			UniformBlock::uniform(0, &uniformBlock, sizeof(UniformBlock), *uniformBlockData);
 			mainScene->draw3dOctree(camera.position, mainScene->solidRenderer);
+			mainScene->draw3dNodes(&octreeExplorer->openNodes, &boxGeometry);
+			//mainScene->draw3dNodes2(mainScene->solidRenderer ,&boxGeometry);
 		}
 		#endif
 

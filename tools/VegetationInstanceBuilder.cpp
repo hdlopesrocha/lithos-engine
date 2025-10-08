@@ -46,7 +46,7 @@ VegetationInstanceBuilder::VegetationInstanceBuilder(Octree * tree, long * count
     this->scale = scale;
 }
 
-void VegetationInstanceBuilder::handle(OctreeNodeData &data, Vertex &v0, Vertex &v1, Vertex &v2, bool sign){    
+void VegetationInstanceBuilder::handle(const OctreeNodeData &data, Vertex &v0, Vertex &v1, Vertex &v2, bool sign){    
     if(v0.brushIndex == 3 || 
         v1.brushIndex == 3 || 
         v2.brushIndex == 3) {

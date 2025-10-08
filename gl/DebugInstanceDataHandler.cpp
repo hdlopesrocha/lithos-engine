@@ -16,14 +16,22 @@ void DebugInstanceDataHandler::bindInstance(GLuint instanceBuffer, std::vector<D
         glVertexAttribDivisor(4 + i, 1); // Enable instancing
     }
 
-    for (int i = 0; i < 8; i++) {
-        glVertexAttribPointer(8 + i, 1, GL_FLOAT, GL_FALSE, sizeof(DebugInstanceData), 
-            (void*)(offsetof(DebugInstanceData, sdf) + i * sizeof(float)));
-        glEnableVertexAttribArray(8 + i);
-        glVertexAttribDivisor(8 + i, 1); // Enable instancing
-    }
+    // sdf1
+    glVertexAttribPointer(8, 4, GL_FLOAT, GL_FALSE, sizeof(DebugInstanceData),
+        (void*)offsetof(DebugInstanceData, sdf1));
+    glEnableVertexAttribArray(8);
+    glVertexAttribDivisor(8, 1);
 
+    // sdf2
+    glVertexAttribPointer(9, 4, GL_FLOAT, GL_FALSE, sizeof(DebugInstanceData),
+        (void*)offsetof(DebugInstanceData, sdf2));
+    glEnableVertexAttribArray(9);
+    glVertexAttribDivisor(9, 1);
 
+    glVertexAttribIPointer(10, 1, GL_INT, sizeof(DebugInstanceData),
+        (void*)offsetof(DebugInstanceData, brushIndex));
+    glEnableVertexAttribArray(10);
+    glVertexAttribDivisor(10, 1);
 
 }
 

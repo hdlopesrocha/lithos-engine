@@ -28,7 +28,7 @@ void Simplifier::simplify(Octree * tree, BoundingCube chunkCube, const OctreeNod
 		Plane parentPlane(nodeVertex->normal, nodeVertex->position); 
 
 		BoundingCube cube(params.cube.getMin() - params.cube.getLength(), params.cube.getLengthX());
-		if(!chunkCube.contains(cube)){
+		if(!chunkCube.contains(cube)) {
 			return;
 		}
 

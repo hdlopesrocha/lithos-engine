@@ -462,6 +462,8 @@ TextureImage LithosApplication::loadTextureImage(const std::string& filename, bo
         image.format = format;
         image.width = width;
         image.height = height;
+
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
         // Upload the texture to OpenGL
         glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
         if(mipmapEnabled) {

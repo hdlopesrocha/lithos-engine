@@ -165,7 +165,7 @@ class OctreeNodeTriangleHandler {
 	public: 
 	long * count;
 	OctreeNodeTriangleHandler(long * count);
-	virtual void handle(OctreeNodeData &data, Vertex &v0, Vertex &v1, Vertex &v2, bool sign) = 0;
+	virtual void handle(const OctreeNodeData &data, Vertex &v0, Vertex &v1, Vertex &v2, bool sign) = 0;
 };
 
 
@@ -188,8 +188,8 @@ struct OctreeNodeFrame {
     BoundingCube cube;
 	uint level;
 	float sdf[8];
-	int brushIndex = -1;
-	
+	int brushIndex;
+	bool interpolated;
 	OctreeNodeFrame() {
 				
 	}
@@ -198,17 +198,18 @@ struct OctreeNodeFrame {
 		: node(t.node),
 		cube(t.cube),
 		level(t.level),
-		brushIndex(t.brushIndex)
+		brushIndex(t.brushIndex),
+		interpolated(t.interpolated)
 	{
 		for (int i = 0; i < 8; ++i) {
 			sdf[i] = t.sdf[i];
 		}
 	}
 		
-	OctreeNodeFrame(OctreeNode* node, BoundingCube cube, uint level, float * sdf, int brushIndex) 
-		: node(node), cube(cube), level(level), brushIndex(brushIndex) {
+	OctreeNodeFrame(OctreeNode* node, BoundingCube cube, uint level, float * sdf, int brushIndex, bool interpolated) 
+		: node(node), cube(cube), level(level), brushIndex(brushIndex), interpolated(interpolated) {
 			for(int i = 0; i < 8; ++i) {
-				this->sdf[i] = sdf!=NULL ? sdf[i] : 0.0f;
+				this->sdf[i] = sdf!=NULL ? sdf[i] : INFINITY;
 			}	
 	}
 
@@ -275,9 +276,6 @@ class ThreadContext {
 	std::unordered_map<glm::vec4, OctreeNode*> nodeCache;
     std::shared_mutex mutex;
 	BoundingCube cube;
-
-	ThreadContext() : cube(BoundingCube()) {
-	}
 	
 	ThreadContext(BoundingCube cube) : cube(cube) {
 		shapeSdfCache.clear();
@@ -311,8 +309,8 @@ class Octree: public BoundingCube {
 		OctreeNode* getNodeAt(const glm::vec3 &pos, int level, bool simplification);
 		OctreeNode* getNodeAt(const glm::vec3 &pos, bool simplification);
 		float getSdfAt(const glm::vec3 &pos);
-		void handleQuadNodes(OctreeNodeData &data, float * sdf, std::vector<OctreeNodeTriangleHandler*> * handlers, bool simplification, ThreadContext * context);
-		OctreeNode * fetch(OctreeNodeData &data, OctreeNode ** out, int i, bool simplification, ThreadContext * context);
+		void handleQuadNodes(const OctreeNodeData &data, const float * sdf, std::vector<OctreeNodeTriangleHandler*> * handlers, bool simplification, ThreadContext * context);
+		OctreeNode * fetch(const OctreeNodeData &data, OctreeNode ** out, int i, bool simplification, ThreadContext * context);
 		int getMaxLevel(OctreeNode * node, int level);
 
 		uint getMaxLevel(BoundingCube &cube);
@@ -376,14 +374,16 @@ struct alignas(16) InstanceData {
 
 struct DebugInstanceData {
     public:
-	float sdf[8];
-    glm::mat4 matrix;
+    glm::vec4 sdf1;     // 16 bytes
+    glm::vec4 sdf2;     // 16 bytes
+	glm::mat4 matrix;
+	int brushIndex;
 
-    DebugInstanceData(glm::mat4 matrix, float * sdf) {
-		for(int i = 0; i < 8; ++i) {
-			this->sdf[i] = sdf[i];
-		}
+    DebugInstanceData(glm::mat4 matrix, float * sdf, int brushIndex) {
+		sdf1 = glm::vec4(sdf[0], sdf[1], sdf[2], sdf[3]);
+        sdf2 = glm::vec4(sdf[4], sdf[5], sdf[6], sdf[7]);
         this->matrix = matrix;
+		this->brushIndex = brushIndex;
     }
 };
 
@@ -428,17 +428,15 @@ template <typename T> class InstanceBuilder : public IteratorHandler{
 		}
 		
 		void after(Octree * tree, OctreeNodeData *params) {	
-			if(params->node) {
-				handler->handle(tree, *params, instances, context);
-			}		
+			handler->handle(tree, *params, instances, context);
 			return;
 		}
 		
 		bool test(Octree * tree, OctreeNodeData *params) {	
-			return params->node;
+			return params->node != NULL;
 		}
 		
-		void getOrder(Octree * tree, OctreeNodeData *params, uint8_t * order){
+		void getOrder(Octree * tree, OctreeNodeData *params, uint8_t * order) {
 			for(size_t i = 0 ; i < 8 ; ++i) {
 				order[i] = i;
 			}
@@ -451,7 +449,7 @@ class Tesselator : public OctreeNodeTriangleHandler{
 	public:
 		Geometry * geometry;
 		Tesselator(long * count, ThreadContext * context);
-		void handle(OctreeNodeData &data, Vertex &v0, Vertex &v1, Vertex &v2, bool sign) override;
+		void handle(const OctreeNodeData &data, Vertex &v0, Vertex &v1, Vertex &v2, bool sign) override;
 
 };
 
@@ -464,7 +462,7 @@ class Processor : public IteratorHandler {
 		void after(Octree * tree, OctreeNodeData *params) override;
 		bool test(Octree * tree, OctreeNodeData *params) override;
 		void getOrder(Octree * tree, OctreeNodeData *params, uint8_t * order) override;
-		void virtualize(Octree * tree, OctreeNodeData *data, uint levels);
+		void virtualize(Octree * tree, const OctreeNodeData &data, uint levels);
 
 };
 

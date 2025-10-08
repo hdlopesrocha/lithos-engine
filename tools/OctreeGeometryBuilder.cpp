@@ -11,9 +11,9 @@ OctreeGeometryBuilder::OctreeGeometryBuilder(InstanceBuilderHandler<DebugInstanc
 
 InstanceGeometry<DebugInstanceData> * OctreeGeometryBuilder::build(Octree * tree, OctreeNodeData &params, ThreadContext * context){
     std::vector<DebugInstanceData> instances;
-    if(params.node) {
+    if(params.node != NULL) {
         InstanceBuilder<DebugInstanceData> instanceBuilder(handler, &instances, context);
-        instanceBuilder.iterate(tree, &params);
+        instanceBuilder.iterateFlatIn(tree, &params);
     }
     //glm::mat4 mat(1.0);
 	//mat = glm::translate(mat, params.cube.getMin());

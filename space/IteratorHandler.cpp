@@ -2,9 +2,6 @@
 
 void IteratorHandler::iterate(Octree * tree, OctreeNodeData *params) {
     if(params!=NULL && params->node != NULL) {
-        if(params== (void*)0x1){
-           throw std::runtime_error("PQP!");
-        }
         before(tree, params);
         if(params->node != NULL && test(tree, params)) {
             uint8_t internalOrder[8];
