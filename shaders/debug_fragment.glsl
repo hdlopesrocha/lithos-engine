@@ -6,6 +6,9 @@
 out vec4 color;    // Final fragment color
 in float distance;
 in float scale;
+in vec4 vertexColor;     
+
+
 void main() {
     float logDepth = log2(1.0 + gl_FragCoord.z) / log2(far + 1.0);
     gl_FragDepth = logDepth;

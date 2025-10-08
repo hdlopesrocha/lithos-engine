@@ -20,9 +20,9 @@ void LandBrush::paint(Vertex &vertex) const {
     int grassLevel = 256;
     int sandLevel = 16;
     int softSandLevel = 2;
-    uint brushIndex;
+    int brushIndex;
     if (glm::dot(glm::vec3(0.0f,1.0f,0.0f), n ) <=0 ){
-        brushIndex = DISCARD_BRUSH_INDEX;
+        brushIndex = 8;
     } else if(steepness < 0.980 ){
         brushIndex = rock;
     } else if(steepness < 0.985 ){

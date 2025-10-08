@@ -74,12 +74,12 @@ template <typename T> bool Scene::loadSpace(Octree* tree, OctreeNodeData& data, 
 bool Scene::processLiquid(OctreeNodeData &data, Octree * tree) {
 	bool result = false;
 	
-	ThreadContext context;
+	ThreadContext context = ThreadContext(data.cube);
 	Tesselator tesselator(&trianglesCount, &context);
 	std::vector<OctreeNodeTriangleHandler*> handlers;
 	handlers.emplace_back(&tesselator);
 	Processor processor(&trianglesCount, &context, &handlers);
-	processor.iterate(tree, &data);
+	processor.iterateFlatIn(tree, &data);
 
  	if(tesselator.geometry->indices.size() > 0) {
         InstanceGeometry<InstanceData> * pre = new InstanceGeometry<InstanceData>(tesselator.geometry);
@@ -119,7 +119,7 @@ bool Scene::processSolid(OctreeNodeData &data, Octree * tree) {
 	//std::cout << "\tprocessor" << std::endl;
 	Processor processor(&trianglesCount, &context, &handlers);
 	//std::cout << "\tprocessor.iterateFlatIn" << std::endl;
-	processor.iterate(tree, &data);
+	processor.iterateFlatIn(tree, &data);
 
  	if(tesselator.geometry->indices.size() > 0) {
         InstanceGeometry<InstanceData> * pre = new InstanceGeometry<InstanceData>(tesselator.geometry);
@@ -173,13 +173,13 @@ bool Scene::processSolid(OctreeNodeData &data, Octree * tree) {
 bool Scene::processBrush(OctreeNodeData &data, Octree * tree) {
 	bool result = false;
 	
-	ThreadContext context;
+	ThreadContext context = ThreadContext(data.cube);
 	Tesselator tesselator(&trianglesCount, &context);
 
 	std::vector<OctreeNodeTriangleHandler*> handlers;
 	handlers.emplace_back(&tesselator);
 	Processor processor(&trianglesCount, &context, &handlers);
-	processor.iterate(tree, &data);
+	processor.iterateFlatIn(tree, &data);
 
  	if(tesselator.geometry->indices.size() > 0) {
         InstanceGeometry<InstanceData> * pre = new InstanceGeometry<InstanceData>(tesselator.geometry);
@@ -282,7 +282,7 @@ void Scene::setVisibleNodes(Octree * tree, glm::mat4 viewProjection, glm::vec3 s
 	checker->sortPosition = sortPosition;
 	checker->update(viewProjection);
 	//TODO change to best iterator
-	tree->iterate(*checker);	//here we get the visible nodes for that LOD + geometryLevel
+	tree->iterateFlat(*checker);	//here we get the visible nodes for that LOD + geometryLevel
 }
 
 template <typename T> DrawableInstanceGeometry<T> * Scene::loadIfNeeded(OctreeLayer<T>* infos, OctreeNode* node, InstanceHandler<T> * handler) {
@@ -293,7 +293,7 @@ template <typename T> DrawableInstanceGeometry<T> * Scene::loadIfNeeded(OctreeLa
 	}
 	NodeInfo<T>& ni = it->second;
 	if (ni.loadable) {
-		std::cout << "Scene::loadIfNeeded " << std::to_string((long)ni.loadable) << std:: endl;
+		//std::cout << "Scene::loadIfNeeded " << std::to_string((long)ni.loadable) << std:: endl;
 
 		if (ni.drawable) {
 			delete ni.drawable;

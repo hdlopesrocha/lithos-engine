@@ -2,12 +2,13 @@
 
 #include<structs.glsl>
 #include<uniforms.glsl>
+#include<functions.glsl>
 
 // Input from the vertex array
 layout(location = 0) in vec3 position; 
 layout(location = 1) in vec3 normal;    
 layout(location = 2) in vec2 textureCoord;    
-layout(location = 3) in uint brushIndex;     
+layout(location = 3) in int brushIndex;     
 layout(location = 4) in mat4 model; 
 
 layout(location = 8) in float sdf0;
@@ -20,6 +21,7 @@ layout(location = 14) in float sdf6;
 layout(location = 15) in float sdf7;
 out float distance;
 out float scale;
+out vec4 vertexColor;     
 
 void main() {
     float sdf[8];
@@ -40,4 +42,6 @@ void main() {
     scale = length(model[0].xyz);
     mat4 mvp = viewProjection * world * model;
     gl_Position = mvp * vec4(position, 1.0);    
+
+    vertexColor = vec4(brushColor(brushIndex),1.0);
 }

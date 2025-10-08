@@ -197,8 +197,7 @@ struct OctreeNodeFrame {
 	OctreeNodeFrame(const OctreeNodeFrame &t)
 		: node(t.node),
 		cube(t.cube),
-		level(t.level),
-		brushIndex(t.brushIndex)
+		level(t.level)
 	{
 		for (int i = 0; i < 8; ++i) {
 			sdf[i] = t.sdf[i];
@@ -275,9 +274,6 @@ class ThreadContext {
 	std::unordered_map<glm::vec4, OctreeNode*> nodeCache;
     std::shared_mutex mutex;
 	BoundingCube cube;
-
-	ThreadContext() : cube(BoundingCube()) {
-	}
 	
 	ThreadContext(BoundingCube cube) : cube(cube) {
 		shapeSdfCache.clear();
