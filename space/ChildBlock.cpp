@@ -29,6 +29,9 @@ void ChildBlock::clear(OctreeAllocator &allocator, OctreeChangeHandler * handler
 
 void ChildBlock::set(uint i, OctreeNode* node, OctreeAllocator& allocator) {
     uint newIndex = node ? allocator.getIndex(node) : UINT_MAX;
+    if(newIndex!=UINT_MAX && newIndex >3000000){
+        throw std::runtime_error("Ooops!");
+    }
     children[i] = newIndex;
 }
 
@@ -36,7 +39,9 @@ void ChildBlock::set(uint i, OctreeNode* node, OctreeAllocator& allocator) {
 OctreeNode * ChildBlock::get(uint i, OctreeAllocator &allocator){
     uint index = children[i];
     if(index == UINT_MAX) return NULL;
-
+    if(index!=UINT_MAX && index >3000000){
+        throw std::runtime_error("Ooops!");
+    }
     OctreeNode * ptr = allocator.get(index);
     return ptr;
 }
@@ -50,14 +55,4 @@ bool ChildBlock::isEmpty() {
     return true;
 }
 
-ChildBlock * ChildBlock::deallocate(OctreeAllocator &allocator) {
-    if(this->isEmpty()) {
-        allocator.childAllocator.deallocate(this);
-        return NULL;
-    }
-    else {
-        throw std::runtime_error("ChildBlock::deallocate possible child missing "  );
-        return this;
-    }
-}
 

@@ -16,7 +16,9 @@ private:
 
     std::vector<Block> blocks;
     std::vector<T*> freeList;
+    #ifndef NDEBUG
     std::unordered_set<T*> deallocatedSet;
+    #endif
     const size_t blockSize;
     size_t totalAllocated = 0;
     std::mutex mutex;
@@ -29,7 +31,9 @@ private:
 
         for (size_t i = 0; i < blockSize; ++i) {
             freeList.push_back(&data[i]);
+            #ifndef NDEBUG
             deallocatedSet.insert(&data[i]);
+            #endif
         }
 
         totalAllocated += blockSize;
@@ -53,11 +57,13 @@ public:
 
         T* ptr = freeList.back();
         freeList.pop_back();
-
+        
+        #ifndef NDEBUG
         if (deallocatedSet.find(ptr) == deallocatedSet.end()) {
             throw std::runtime_error("Double allocate!");
         }
         deallocatedSet.erase(ptr);
+        #endif
         return ptr;
     }
 
@@ -65,18 +71,20 @@ public:
         if (!ptr) return;
 
         std::lock_guard<std::mutex> lock(mutex);
+        #ifndef NDEBUG
         if (deallocatedSet.find(ptr) != deallocatedSet.end()) {
             throw std::runtime_error("Double deallocate!");
         }
-
+        #endif
         // check pointer belongs to a block
         bool valid = false;
         for (auto &b : blocks) {
             if (ptr >= b.data && ptr < b.data + blockSize) { valid = true; break; }
         }
         assert(valid && "Pointer does not belong to allocator");
-
+        #ifndef NDEBUG
         deallocatedSet.insert(ptr);
+        #endif
         freeList.push_back(ptr);
     }
 
@@ -101,17 +109,19 @@ public:
 
         std::lock_guard<std::mutex> lock(mutex);
 
-        // encontra o bloco que contém o índice
-        size_t blockIdx = index / blockSize; // simplificação se os blocos forem sequenciais
-        size_t offset = index % blockSize;
-
-        if (blockIdx >= blocks.size()) throw std::runtime_error("Invalid index");
-
-        T* ptr = &blocks[blockIdx].data[offset];
-        if (deallocatedSet.find(ptr) != deallocatedSet.end())
-            throw std::runtime_error("Accessing deallocated pointer");
-
-        return ptr;
+        // encontra o bloco que contém o índice usando startIndex (correto)
+        for (auto &b : blocks) {
+            if (index >= b.startIndex && index < b.startIndex + blockSize) {
+                size_t offset = index - b.startIndex;
+                T* ptr = &b.data[offset];
+                #ifndef NDEBUG
+                if (deallocatedSet.find(ptr) != deallocatedSet.end())
+                    throw std::runtime_error("Accessing deallocated pointer");
+                #endif
+                return ptr;
+            }
+        }
+        throw std::runtime_error("Invalid index");
     }
 
     uint allocateIndex() {

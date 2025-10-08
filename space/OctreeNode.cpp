@@ -1,12 +1,16 @@
 #include "space.hpp"
 
+OctreeNode::OctreeNode() {
+	init(glm::vec3());
+}
+
 OctreeNode::OctreeNode(Vertex vertex) {
 	init(vertex);
 }
 
 OctreeNode * OctreeNode::init(Vertex vertex) {
 	for(int i = 0; i < 8; ++i) {
-		this->sdf[i] = MAXFLOAT*0.5f;
+		this->sdf[i] = INFINITY;
 	}
 	this->bits = 0x0;
 	this->setSolid(false);
@@ -36,6 +40,17 @@ ChildBlock * OctreeNode::allocate(OctreeAllocator &allocator) {
 	return block;
 }
 
+ChildBlock * OctreeNode::deallocate(OctreeAllocator &allocator, ChildBlock * block) {
+    if(this->id != UINT_MAX && block->isEmpty()) {
+        allocator.childAllocator.deallocate(block);
+		block = NULL;
+		this->id = UINT_MAX;
+    }
+    else {
+        throw std::runtime_error("ChildBlock::deallocate possible child missing "  );
+    }
+    return block;
+}
 
 
 OctreeNode::~OctreeNode() {
@@ -48,22 +63,22 @@ ChildBlock * OctreeNode::clear(OctreeAllocator &allocator, OctreeChangeHandler *
 		if(block == NULL) {
 			block = getBlock(allocator);
 		}
-		bool isEmpty = block!=NULL && block->isEmpty() || block == NULL;
+		bool isEmpty = (block!=NULL && block->isEmpty()) || block == NULL;
 
 		if(isEmpty && block!=NULL) {	
 			block->clear(allocator, handler);
-			block = block->deallocate(allocator);
-			this->id = UINT_MAX;
+			block = deallocate(allocator, block);
 		} else if(block != NULL) {
 			//throw std::runtime_error("OctreeNode::clear possible child missing "  );
 		}
 	}
+
 	return block;
 }
 
 void OctreeNode::setSDF(float * value) {
 	for(int i = 0; i < 8; ++i) {
-		this->sdf[i] = value[i];
+		this->sdf[i] = value != NULL ? value[i] : INFINITY;
 	}
 }
 

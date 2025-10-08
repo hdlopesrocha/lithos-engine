@@ -1,7 +1,7 @@
 #ifndef TOOLS_HPP
 #define TOOLS_HPP
 
-//#define NDEBUG 1
+#define NDEBUG 1
 #define DEBUG_OCTREE_WIREFRAME 1
 #define STARTUP_GENERATE 1
 //#define CLOSE_AFTER_GENERATE 1
@@ -224,11 +224,6 @@ class Scene {
 	long vegetationInstancesVisible;
 	long debugInstancesVisible;
 
-	std::vector<OctreeNodeData> visibleSolidNodes;
-	std::vector<OctreeNodeData> visibleBrushNodes;
-	std::vector<OctreeNodeData> visibleLiquidNodes;
-	std::vector<OctreeNodeData> visibleShadowNodes[SHADOW_MATRIX_COUNT];
-	
 	OctreeGeometryBuilder * debugBuilder;
 
 	OctreeLayer<InstanceData> brushInfo;
@@ -260,14 +255,14 @@ class Scene {
 	bool processBrush(OctreeNodeData &data, Octree * tree);
 
 	void setVisibility(glm::mat4 viewProjection, std::vector<std::pair<glm::mat4, glm::vec3>> lightProjection ,Camera &camera);
-	void setVisibleNodes(Octree * tree, glm::mat4 viewProjection, glm::vec3 sortPosition, OctreeVisibilityChecker &checker);
+	void setVisibleNodes(Octree * tree, glm::mat4 viewProjection, glm::vec3 sortPosition, OctreeVisibilityChecker * checker);
 
-	template <typename T, typename H> void draw (uint drawableType, int mode, glm::vec3 cameraPosition, const std::vector<OctreeNodeData> &list, OctreeLayer<T> * info,long * count);
-	void drawVegetation(glm::vec3 cameraPosition, const std::vector<OctreeNodeData> &list);
-	void draw3dSolid(glm::vec3 cameraPosition, const std::vector<OctreeNodeData> &list) ;
-	void draw3dLiquid(glm::vec3 cameraPosition, const std::vector<OctreeNodeData> &list);
-	void draw3dOctree(glm::vec3 cameraPosition, const std::vector<OctreeNodeData> &list);
-	void draw3dBrush(glm::vec3 cameraPosition, const std::vector<OctreeNodeData> &list);
+	template <typename T, typename H> void draw (uint drawableType, int mode, glm::vec3 cameraPosition, const OctreeVisibilityChecker * checker, OctreeLayer<T> * info,long * count);
+	void drawVegetation(glm::vec3 cameraPosition, const OctreeVisibilityChecker * checker);
+	void draw3dSolid(glm::vec3 cameraPosition, const OctreeVisibilityChecker * checker) ;
+	void draw3dLiquid(glm::vec3 cameraPosition, const OctreeVisibilityChecker * checker);
+	void draw3dOctree(glm::vec3 cameraPosition, const OctreeVisibilityChecker * checker);
+	void draw3dBrush(glm::vec3 cameraPosition, const OctreeVisibilityChecker * checker);
 
 	void import(const std::string &filename, Camera &camera) ;
 	void generate(Camera &camera) ;

@@ -682,7 +682,7 @@ public:
 
 				UniformBlock::uniform(0, &uniformBlock, sizeof(UniformBlock), *uniformBlockData);
 				if(settings->solidEnabled) {
-					mainScene->draw3dSolid(camera.position, mainScene->visibleShadowNodes[i]);
+					mainScene->draw3dSolid(camera.position, mainScene->shadowRenderer[i]);
 				}
 				
 				if(settings->billboardEnabled) {
@@ -690,7 +690,7 @@ public:
 					uniformBlock.set(OPACITY_FLAG, settings->opacityEnabled);
 					uniformBlock.set(BILLBOARD_FLAG, settings->billboardEnabled); 
 					UniformBlock::uniform(0, &uniformBlock, sizeof(UniformBlock), *uniformBrushData);
-					mainScene->drawVegetation(camera.position, mainScene->visibleShadowNodes[i]);
+					mainScene->drawVegetation(camera.position, mainScene->shadowRenderer[i]);
 				}
 				++i;
 			}
@@ -713,7 +713,7 @@ public:
 			uniformBlock.set(BILLBOARD_FLAG, false); 
 			uniformBlock.set(OPACITY_FLAG, false);
 			UniformBlock::uniform(0, &uniformBlock, sizeof(UniformBlock), *uniformBlockData);
-			mainScene->draw3dSolid(camera.position, mainScene->visibleSolidNodes);
+			mainScene->draw3dSolid(camera.position, mainScene->solidRenderer);
 		}
 
 		if(settings->billboardEnabled) {
@@ -722,7 +722,7 @@ public:
 			uniformBlock.set(BILLBOARD_FLAG, settings->billboardEnabled); 
 			uniformBlock.set(OPACITY_FLAG, settings->opacityEnabled);
 			UniformBlock::uniform(0, &uniformBlock, sizeof(UniformBlock), *uniformBrushData);
-			mainScene->drawVegetation(camera.position, mainScene->visibleSolidNodes);
+			mainScene->drawVegetation(camera.position, mainScene->solidRenderer);
 		}
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -748,7 +748,7 @@ public:
 			uniformBlock.set(BILLBOARD_FLAG, settings->billboardEnabled); 
 			uniformBlock.set(OPACITY_FLAG, settings->opacityEnabled);
 			UniformBlock::uniform(0, &uniformBlock, sizeof(UniformBlock), *uniformBrushData);
-			mainScene->drawVegetation(camera.position, mainScene->visibleSolidNodes);
+			mainScene->drawVegetation(camera.position, mainScene->solidRenderer);
 		}
 
 		if(settings->solidEnabled) {
@@ -757,14 +757,14 @@ public:
 			uniformBlock.set(TESSELATION_FLAG, settings->tesselationEnabled);
 			uniformBlock.set(OPACITY_FLAG, false);
 			UniformBlock::uniform(0, &uniformBlock, sizeof(UniformBlock), *uniformBlockData);
-			mainScene->draw3dSolid(camera.position, mainScene->visibleSolidNodes);
+			mainScene->draw3dSolid(camera.position, mainScene->solidRenderer);
 		}
 
 		#ifdef DEBUG_OCTREE_WIREFRAME
 		if(settings->octreeWireframe) {
 			glUseProgram(programDebug);
 			UniformBlock::uniform(0, &uniformBlock, sizeof(UniformBlock), *uniformBlockData);
-			mainScene->draw3dOctree(camera.position, mainScene->visibleSolidNodes);
+			mainScene->draw3dOctree(camera.position, mainScene->solidRenderer);
 		}
 		#endif
 
@@ -793,12 +793,12 @@ public:
 
 		if(settings->liquidEnabled) {
 			UniformBlock::uniform(0, &uniformBlock, sizeof(UniformBlock), *uniformBlockData);
-			mainScene->draw3dLiquid(camera.position, mainScene->visibleLiquidNodes);
+			mainScene->draw3dLiquid(camera.position, mainScene->liquidRenderer);
 		}
 
 		if(brush3d->enabled) {
 			UniformBlock::uniform(0, &uniformBlock, sizeof(UniformBlock), *uniformBlockData);
-			mainScene->draw3dBrush(camera.position, mainScene->visibleBrushNodes);
+			mainScene->draw3dBrush(camera.position, mainScene->brushRenderer);
 		}	
 
 		if(settings->showBrushVolume) {
@@ -1001,15 +1001,15 @@ public:
 			ImGui::Text("%ld/%ld liquid instances", mainScene->liquidInstancesVisible, mainScene->liquidInfo.info.size());
 			ImGui::Text("%ld/%ld vegetation instances", mainScene->vegetationInstancesVisible, mainScene->vegetationInfo.info.size());
 			ImGui::Text("%ld triangles", mainScene->trianglesCount);
-			ImGui::Text("%ld solid datas", mainScene->solidSpace.allocator.getAllocatedBlocksCount());
-			ImGui::Text("%ld liquid datas", mainScene->liquidSpace.allocator.getAllocatedBlocksCount());
+			ImGui::Text("%ld solid datas", mainScene->solidSpace.allocator->getAllocatedBlocksCount());
+			ImGui::Text("%ld liquid datas", mainScene->liquidSpace.allocator->getAllocatedBlocksCount());
 			ImGui::Text("%f process time", processTime);
 
-			size_t allocatedBlocks = mainScene->solidSpace.allocator.getAllocatedBlocksCount();
-			size_t blockSize = mainScene->solidSpace.allocator.getBlockSize();
+			size_t allocatedBlocks = mainScene->solidSpace.allocator->getAllocatedBlocksCount();
+			size_t blockSize = mainScene->solidSpace.allocator->getBlockSize();
 
-			size_t allocatedChildren = mainScene->solidSpace.allocator.childAllocator.getAllocatedBlocksCount();
-			size_t childrenSize = mainScene->solidSpace.allocator.childAllocator.getBlockSize();
+			size_t allocatedChildren = mainScene->solidSpace.allocator->childAllocator.getAllocatedBlocksCount();
+			size_t childrenSize = mainScene->solidSpace.allocator->childAllocator.getBlockSize();
 
 			ImGui::Text("%ld (%ld KB) allocatted nodes",  allocatedBlocks*blockSize, allocatedBlocks*blockSize* sizeof(OctreeNode)/1024);
 			ImGui::Text("%ld (%ld KB) allocatted children",  allocatedChildren*childrenSize, allocatedChildren*childrenSize* sizeof(ChildBlock)/1024);

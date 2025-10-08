@@ -467,13 +467,13 @@ void SDF::getChildSDF(float * sdf, int i , float * result) {
     BoundingCube canonicalCube = BoundingCube(glm::vec3(0.0f), 1.0f);
     BoundingCube cube = canonicalCube.getChild(i);
     for (int j = 0; j < 8; ++j) {
-        result[j] = interpolate(sdf, cube.getCorner(j), canonicalCube);
+        result[j] = sdf[j] == INFINITY ? INFINITY : interpolate(sdf, cube.getCorner(j), canonicalCube);
     }
 }
 
-void SDF::copySDF(float * src, float * dst) {
+void SDF::copySDF(const float * src, float * dst) {
     for (int corner = 0; corner < 8; ++corner) {
-        dst[corner] = src != NULL ? src[corner] : INFINITY;
+        dst[corner] = src == NULL ? INFINITY : src[corner];
     }
 }
 
@@ -481,7 +481,9 @@ SpaceType SDF::eval(float * sdf) {
     bool hasPositive = false;
     bool hasNegative = false;
     for (int i = 0; i < 8; ++i) {  
-        if (sdf[i] >= 0.0f) {
+        if(sdf[i] == INFINITY) {
+            return SpaceType::Empty;
+        } else if (sdf[i] >= 0.0f) {
             hasPositive = true;
         } else {
             hasNegative = true;

@@ -20,11 +20,14 @@ Scene::Scene(Settings * settings, BrushContext * brushContext):
 	brushInstancesVisible = 0;
 	debugInstancesVisible = 0;	
 	debugBuilder = new OctreeGeometryBuilder(new OctreeInstanceBuilderHandler());
-	solidRenderer = new OctreeVisibilityChecker(&visibleSolidNodes);
-	brushRenderer = new OctreeVisibilityChecker(&visibleBrushNodes);
-	liquidRenderer = new OctreeVisibilityChecker(&visibleLiquidNodes);
+
+
+	
+	solidRenderer = new OctreeVisibilityChecker();
+	brushRenderer = new OctreeVisibilityChecker();
+	liquidRenderer = new OctreeVisibilityChecker();
 	for(int i = 0 ; i < SHADOW_MATRIX_COUNT ; ++i) {
-		shadowRenderer[i]= new OctreeVisibilityChecker(&visibleShadowNodes[i]);
+		shadowRenderer[i]= new OctreeVisibilityChecker();
 	}
 
 	liquidSpaceChangeHandler = new LiquidSpaceChangeHandler(&liquidInfo);
@@ -34,9 +37,9 @@ Scene::Scene(Settings * settings, BrushContext * brushContext):
 }
 
 template <typename T> bool Scene::loadSpace(Octree* tree, OctreeNodeData& data, OctreeLayer<T>* infos, InstanceGeometry<T>* loadable) {
-	bool emptyChunk = data.node->isEmpty() || data.node->isSolid();
+	bool isSurface = !data.node->isEmpty() && !data.node->isSolid();
 
-	if(!emptyChunk){
+	if(isSurface){
 		if (loadable == NULL) {
 			std::unique_lock(infos->mutex2);
 			// No geometry to load — erase entry if it exists
@@ -74,13 +77,13 @@ bool Scene::processLiquid(OctreeNodeData &data, Octree * tree) {
 	ThreadContext context;
 	Tesselator tesselator(&trianglesCount, &context);
 	std::vector<OctreeNodeTriangleHandler*> handlers;
-	handlers.push_back(&tesselator);
+	handlers.emplace_back(&tesselator);
 	Processor processor(&trianglesCount, &context, &handlers);
-	processor.iterate(tree, data);
+	processor.iterate(tree, &data);
 
  	if(tesselator.geometry->indices.size() > 0) {
         InstanceGeometry<InstanceData> * pre = new InstanceGeometry<InstanceData>(tesselator.geometry);
-        pre->instances.push_back(InstanceData(0, glm::mat4(1.0), 0.0f));
+        pre->instances.emplace_back(InstanceData(0, glm::mat4(1.0), 0.0f));
 
 		if(loadSpace(tree, data, &liquidInfo, pre)) {
 			result = true;
@@ -104,23 +107,23 @@ bool Scene::processSolid(OctreeNodeData &data, Octree * tree) {
 	//std::cout << "processSolid " << std::to_string((long)&data.node) <<  std::endl;
 
 	bool result = false;
-	ThreadContext context;
+	ThreadContext context = ThreadContext(data.cube);
 	Tesselator tesselator(&trianglesCount, &context);
 	std::vector<InstanceData> vegetationInstances; 
 	long count = 0;
 	VegetationInstanceBuilder vegetationBuilder(tree, &count, &vegetationInstances, 0.1, 4);
 
 	std::vector<OctreeNodeTriangleHandler*> handlers;
-	handlers.push_back(&tesselator);
-	handlers.push_back(&vegetationBuilder);
+	handlers.emplace_back(&tesselator);
+	handlers.emplace_back(&vegetationBuilder);
 	//std::cout << "\tprocessor" << std::endl;
 	Processor processor(&trianglesCount, &context, &handlers);
 	//std::cout << "\tprocessor.iterateFlatIn" << std::endl;
-	processor.iterate(tree, data);
+	processor.iterate(tree, &data);
 
  	if(tesselator.geometry->indices.size() > 0) {
         InstanceGeometry<InstanceData> * pre = new InstanceGeometry<InstanceData>(tesselator.geometry);
-        pre->instances.push_back(InstanceData(0, glm::mat4(1.0), 0.0f));
+        pre->instances.emplace_back(InstanceData(0, glm::mat4(1.0), 0.0f));
 		//std::cout << "\tloadSpace(solidInfo) " << tesselator.geometry->indices.size() <<  std::endl;
 
 		if(data.node && loadSpace(tree, data, &solidInfo, pre)) {
@@ -174,13 +177,13 @@ bool Scene::processBrush(OctreeNodeData &data, Octree * tree) {
 	Tesselator tesselator(&trianglesCount, &context);
 
 	std::vector<OctreeNodeTriangleHandler*> handlers;
-	handlers.push_back(&tesselator);
+	handlers.emplace_back(&tesselator);
 	Processor processor(&trianglesCount, &context, &handlers);
-	processor.iterate(tree, data);
+	processor.iterate(tree, &data);
 
  	if(tesselator.geometry->indices.size() > 0) {
         InstanceGeometry<InstanceData> * pre = new InstanceGeometry<InstanceData>(tesselator.geometry);
-        pre->instances.push_back(InstanceData(0, glm::mat4(1.0), 0.0f));
+        pre->instances.emplace_back(InstanceData(0, glm::mat4(1.0), 0.0f));
 
 		if(data.node && loadSpace(tree, data, &brushInfo, pre)) {
 			result = true;
@@ -203,18 +206,18 @@ bool Scene::processSpace() {
 	std::unordered_set<uint> visibleNodeIds;
 	std::vector<OctreeNodeData*> allVisibleNodes;
 
-	for(OctreeNodeData &data : visibleSolidNodes) {
+	for(OctreeNodeData &data : solidRenderer->visibleNodes) {
 		if(data.node && data.node->id != UINT_MAX && visibleNodeIds.find(data.node->id) == visibleNodeIds.end()) {
-			allVisibleNodes.push_back(&data);
+			allVisibleNodes.emplace_back(&data);
 			visibleNodeIds.insert(data.node->id);
 		}
 	}
 
 	for(uint i =0 ; i < SHADOW_MATRIX_COUNT ; ++i) {
-		std::vector<OctreeNodeData> &vec = visibleShadowNodes[i];
+		std::vector<OctreeNodeData> &vec = shadowRenderer[i]->visibleNodes;
 		for(OctreeNodeData &data : vec) {
 			if(data.node && data.node->id != UINT_MAX && visibleNodeIds.find(data.node->id) == visibleNodeIds.end()) {
-				allVisibleNodes.push_back(&data);
+				allVisibleNodes.emplace_back(&data);
 				visibleNodeIds.insert(data.node->id);
 			}
 		}
@@ -237,7 +240,7 @@ bool Scene::processSpace() {
 		}
 	}
 
-	for (OctreeNodeData& brush : visibleBrushNodes) {
+	for (OctreeNodeData& brush : brushRenderer->visibleNodes) {
 		if (brush.node && brush.node->isDirty()) {
 			threads.emplace_back(threadPool.enqueue([this, &brush]() {
 				return processBrush(brush, &brushSpace);
@@ -245,7 +248,7 @@ bool Scene::processSpace() {
 		}
 	}
 
-	for (OctreeNodeData& liquid : visibleLiquidNodes) {
+	for (OctreeNodeData& liquid : liquidRenderer->visibleNodes) {
 		if (liquid.node && liquid.node->isDirty()) {
 			threads.emplace_back(threadPool.enqueue([this, &liquid]() {
 				return processLiquid(liquid, &liquidSpace);
@@ -263,23 +266,23 @@ bool Scene::processSpace() {
 }
 
 void Scene::setVisibility(glm::mat4 viewProjection, std::vector<std::pair<glm::mat4, glm::vec3>> lightProjection ,Camera &camera) {
-	setVisibleNodes(&solidSpace, viewProjection, camera.position, *solidRenderer);
-	setVisibleNodes(&liquidSpace, viewProjection, camera.position, *liquidRenderer);
-	setVisibleNodes(&brushSpace, viewProjection, camera.position, *brushRenderer);
+	setVisibleNodes(&solidSpace, viewProjection, camera.position, solidRenderer);
+	setVisibleNodes(&liquidSpace, viewProjection, camera.position, liquidRenderer);
+	setVisibleNodes(&brushSpace, viewProjection, camera.position, brushRenderer);
 
 	int i =0;
 	for(std::pair<glm::mat4, glm::vec3> pair :  lightProjection){
-		setVisibleNodes(&solidSpace, pair.first, pair.second, *shadowRenderer[i++]);
+		setVisibleNodes(&solidSpace, pair.first, pair.second, shadowRenderer[i++]);
 	}
 }
 
-void Scene::setVisibleNodes(Octree * tree, glm::mat4 viewProjection, glm::vec3 sortPosition, OctreeVisibilityChecker &checker) {
-	checker.visibleNodes->clear();
+void Scene::setVisibleNodes(Octree * tree, glm::mat4 viewProjection, glm::vec3 sortPosition, OctreeVisibilityChecker * checker) {
+	checker->visibleNodes.clear();
 	//checker.visibleNodes->reserve(128);
-	checker.sortPosition = sortPosition;
-	checker.update(viewProjection);
+	checker->sortPosition = sortPosition;
+	checker->update(viewProjection);
 	//TODO change to best iterator
-	tree->iterate(checker);	//here we get the visible nodes for that LOD + geometryLevel
+	tree->iterate(*checker);	//here we get the visible nodes for that LOD + geometryLevel
 }
 
 template <typename T> DrawableInstanceGeometry<T> * Scene::loadIfNeeded(OctreeLayer<T>* infos, OctreeNode* node, InstanceHandler<T> * handler) {
@@ -290,6 +293,8 @@ template <typename T> DrawableInstanceGeometry<T> * Scene::loadIfNeeded(OctreeLa
 	}
 	NodeInfo<T>& ni = it->second;
 	if (ni.loadable) {
+		std::cout << "Scene::loadIfNeeded " << std::to_string((long)ni.loadable) << std:: endl;
+
 		if (ni.drawable) {
 			delete ni.drawable;
 		}
@@ -297,56 +302,65 @@ template <typename T> DrawableInstanceGeometry<T> * Scene::loadIfNeeded(OctreeLa
 		delete ni.loadable;
 		ni.loadable = NULL;
 	}
+	
 	return ni.drawable;
 }
 
-template <typename T, typename H> void Scene::draw(uint drawableType, int mode, glm::vec3 cameraPosition, const std::vector<OctreeNodeData> &list, OctreeLayer<T> * info, long * count) {
-	H handler;
-	for(const OctreeNodeData &data : list) {
-		OctreeNode * node = data.node;
-		DrawableInstanceGeometry<T> * drawable = loadIfNeeded(info, node, &handler);
-		if(drawable != NULL) {
-			if(drawableType == TYPE_INSTANCE_AMOUNT_DRAWABLE) {
-				float amount = glm::clamp( 1.0 - glm::length(cameraPosition -  drawable->center)/(float(settings->billboardRange)), 0.0, 1.0);
-				if(amount > 0.8){
-					amount = 1.0;
-				}
-				//std::cout << "Scene.draw() " << std::to_string(drawableType) << "|" << std::to_string(amount) << std::endl;
-				drawable->draw(mode, amount, count);
-			}
-			else if(drawableType == TYPE_INSTANCE_FULL_DRAWABLE) {
-				drawable->draw(mode, 1.0, count);
-			}	
-		}
-	}
+template <typename T, typename H>
+void Scene::draw(uint drawableType, int mode, glm::vec3 cameraPosition,
+                 const OctreeVisibilityChecker* checker,
+                 OctreeLayer<T>* info, long* count) {
+    H handler;
+    if (checker == NULL) return;
+
+    for (const auto& data : checker->visibleNodes) {
+        if (!data.node) continue;
+
+        OctreeNode* node = data.node;
+        DrawableInstanceGeometry<T>* drawable = loadIfNeeded(info, node, &handler);
+        if (!drawable) continue;
+		
+        if (drawableType == TYPE_INSTANCE_AMOUNT_DRAWABLE) {
+            float amount = glm::clamp(
+                1.0f - glm::length(cameraPosition - drawable->center) /
+                        static_cast<float>(settings->billboardRange),
+                0.0f, 1.0f
+            );
+            if (amount > 0.8f) amount = 1.0f;
+            drawable->draw(mode, amount, count);
+        }
+        else if (drawableType == TYPE_INSTANCE_FULL_DRAWABLE) {
+            drawable->draw(mode, 1.0f, count);
+        }
+    }
 }
 
-void Scene::drawVegetation(glm::vec3 cameraPosition, const std::vector<OctreeNodeData> &list) {
+void Scene::drawVegetation(glm::vec3 cameraPosition, const OctreeVisibilityChecker * checker) {
 	glDisable(GL_CULL_FACE);
 	vegetationInstancesVisible = 0;
-	draw<InstanceData, InstanceDataHandler>(TYPE_INSTANCE_AMOUNT_DRAWABLE, GL_PATCHES, cameraPosition, list, &vegetationInfo, &vegetationInstancesVisible);
+	draw<InstanceData, InstanceDataHandler>(TYPE_INSTANCE_AMOUNT_DRAWABLE, GL_PATCHES, cameraPosition, checker, &vegetationInfo, &vegetationInstancesVisible);
 	glEnable(GL_CULL_FACE);
 }
 
-void Scene::draw3dSolid(glm::vec3 cameraPosition, const std::vector<OctreeNodeData> &list) {
+void Scene::draw3dSolid(glm::vec3 cameraPosition, const OctreeVisibilityChecker * checker) {
 	solidInstancesVisible = 0;
-	draw<InstanceData, InstanceDataHandler>(TYPE_INSTANCE_FULL_DRAWABLE, GL_PATCHES, cameraPosition, list, &solidInfo, &solidInstancesVisible);
+	draw<InstanceData, InstanceDataHandler>(TYPE_INSTANCE_FULL_DRAWABLE, GL_PATCHES, cameraPosition, checker, &solidInfo, &solidInstancesVisible);
 }
 
-void Scene::draw3dBrush(glm::vec3 cameraPosition, const std::vector<OctreeNodeData> &list) {
+void Scene::draw3dBrush(glm::vec3 cameraPosition, const OctreeVisibilityChecker * checker) {
 	brushInstancesVisible = 0;
-	draw<InstanceData, InstanceDataHandler>(TYPE_INSTANCE_FULL_DRAWABLE, GL_PATCHES, cameraPosition, list, &brushInfo, &brushInstancesVisible);
+	draw<InstanceData, InstanceDataHandler>(TYPE_INSTANCE_FULL_DRAWABLE, GL_PATCHES, cameraPosition, checker, &brushInfo, &brushInstancesVisible);
 }
 
-void Scene::draw3dLiquid(glm::vec3 cameraPosition, const std::vector<OctreeNodeData> &list) {
+void Scene::draw3dLiquid(glm::vec3 cameraPosition, const OctreeVisibilityChecker * checker) {
 	liquidInstancesVisible = 0;
-	draw<InstanceData, InstanceDataHandler>(TYPE_INSTANCE_FULL_DRAWABLE, GL_PATCHES, cameraPosition, list, &liquidInfo, &liquidInstancesVisible);
+	draw<InstanceData, InstanceDataHandler>(TYPE_INSTANCE_FULL_DRAWABLE, GL_PATCHES, cameraPosition, checker, &liquidInfo, &liquidInstancesVisible);
 }
 
-void Scene::draw3dOctree(glm::vec3 cameraPosition, const std::vector<OctreeNodeData> &list) {
+void Scene::draw3dOctree(glm::vec3 cameraPosition, const OctreeVisibilityChecker * checker) {
 	glDisable(GL_CULL_FACE);
 	debugInstancesVisible = 0;
-	draw<DebugInstanceData, DebugInstanceDataHandler>(TYPE_INSTANCE_FULL_DRAWABLE, GL_TRIANGLES, cameraPosition, list, &octreeWireframeInfo, &debugInstancesVisible);
+	draw<DebugInstanceData, DebugInstanceDataHandler>(TYPE_INSTANCE_FULL_DRAWABLE, GL_TRIANGLES, cameraPosition, checker, &octreeWireframeInfo, &debugInstancesVisible);
 	glEnable(GL_CULL_FACE);
 }
 

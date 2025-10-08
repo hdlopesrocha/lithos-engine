@@ -188,7 +188,6 @@ class ImageViewer : public Closable{
 
 class OctreeExplorer  : public Closable {
     Octree * tree;
-    std::unordered_set<OctreeNode*> expandedNodes;
     public:
     OctreeExplorer(Octree * tree);
     void recursiveDraw(OctreeNode * node);
