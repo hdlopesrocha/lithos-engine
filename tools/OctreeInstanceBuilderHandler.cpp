@@ -17,13 +17,13 @@ void OctreeInstanceBuilderHandler::handle(Octree * tree, OctreeNodeData &data, s
 				glm::mat4 mat(1.0);
 				mat = glm::translate(mat, c.getMin());
 				mat = glm::scale(mat, c.getLength());
-				instances->push_back(DebugInstanceData(mat, s));
+				instances->push_back(DebugInstanceData(mat, s, data.node->vertex.brushIndex));
 			}
 		} else {
 			glm::mat4 mat(1.0);
 			mat = glm::translate(mat, data.cube.getMin());
 			mat = glm::scale(mat, data.cube.getLength());
-			instances->push_back(DebugInstanceData(mat, data.node->sdf));
+			instances->push_back(DebugInstanceData(mat, data.node->sdf, data.node->vertex.brushIndex));
 		}
 	}
 }

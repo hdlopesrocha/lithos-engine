@@ -1,7 +1,6 @@
 #ifndef TOOLS_HPP
 #define TOOLS_HPP
 
-#define NDEBUG 1
 #define DEBUG_OCTREE_WIREFRAME 1
 #define STARTUP_GENERATE 1
 //#define CLOSE_AFTER_GENERATE 1
@@ -50,7 +49,7 @@ class LandBrush : public TexturePainter {
 
 	public: 
 	LandBrush();
-	void paint(Vertex &vertex) const override;
+	int paint(const Vertex &vertex) const override;
 };
 
 
@@ -69,7 +68,7 @@ class DerivativeLandBrush : public TexturePainter {
 
 	public: 
 	DerivativeLandBrush();
-	void paint(Vertex &vertex) const override;
+	int paint(const Vertex &vertex) const override;
 };
 
 
@@ -78,7 +77,7 @@ class SimpleBrush : public TexturePainter {
 
 	public: 
 	SimpleBrush(int brush);
-	void paint(Vertex &vertex) const override;
+	int paint(const Vertex &vertex) const override;
 };
 
 class WaterBrush : public TexturePainter {
@@ -86,7 +85,7 @@ class WaterBrush : public TexturePainter {
 
 	public: 
 	WaterBrush(int water);
-	void paint(Vertex &vertex) const override;
+	int paint(const Vertex &vertex) const override;
 };
 
 class OctreeInstanceBuilderHandler : public InstanceBuilderHandler<DebugInstanceData>  {

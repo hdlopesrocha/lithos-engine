@@ -498,7 +498,7 @@ private:
 
 class TexturePainter {
 	public:
-	virtual void paint(Vertex &v) const = 0;
+	virtual int paint(const Vertex &v) const = 0;
 };
 
 

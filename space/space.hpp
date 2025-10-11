@@ -188,8 +188,8 @@ struct OctreeNodeFrame {
     BoundingCube cube;
 	uint level;
 	float sdf[8];
-	int brushIndex = -1;
-	
+	int brushIndex;
+	bool interpolated;
 	OctreeNodeFrame() {
 				
 	}
@@ -197,17 +197,19 @@ struct OctreeNodeFrame {
 	OctreeNodeFrame(const OctreeNodeFrame &t)
 		: node(t.node),
 		cube(t.cube),
-		level(t.level)
+		level(t.level),
+		brushIndex(t.brushIndex),
+		interpolated(t.interpolated)
 	{
 		for (int i = 0; i < 8; ++i) {
 			sdf[i] = t.sdf[i];
 		}
 	}
 		
-	OctreeNodeFrame(OctreeNode* node, BoundingCube cube, uint level, float * sdf, int brushIndex) 
-		: node(node), cube(cube), level(level), brushIndex(brushIndex) {
+	OctreeNodeFrame(OctreeNode* node, BoundingCube cube, uint level, float * sdf, int brushIndex, bool interpolated) 
+		: node(node), cube(cube), level(level), brushIndex(brushIndex), interpolated(interpolated) {
 			for(int i = 0; i < 8; ++i) {
-				this->sdf[i] = sdf!=NULL ? sdf[i] : 0.0f;
+				this->sdf[i] = sdf!=NULL ? sdf[i] : INFINITY;
 			}	
 	}
 
@@ -318,7 +320,8 @@ class Octree: public BoundingCube {
 		void exportOctreeSerialization(OctreeSerialized * octree);
 		void exportNodesSerialization(std::vector<OctreeNodeCubeSerialized> * nodes);
 	private:
-		void buildSDF(const ShapeArgs &args, BoundingCube &cube, float * shapeSDF, float * resultSDF, float * inheritedShapeSDF, float * inheritedResultSDF, float * existingResultSDF, ThreadContext * threadContext) const;
+		void buildSDF(const ShapeArgs &args, BoundingCube &cube, float * shapeSDF, float * resultSDF, float * existingResultSDF, ThreadContext * threadContext) const;
+		float inheritSDF(float sdf, float inheritedSDF) const;
 		float evaluateSDF(const ShapeArgs &args, std::unordered_map<glm::vec3, float> * threadContext, glm::vec3 p) const;
 	};
 
@@ -372,14 +375,16 @@ struct alignas(16) InstanceData {
 
 struct DebugInstanceData {
     public:
-	float sdf[8];
-    glm::mat4 matrix;
+    glm::vec4 sdf1;     // 16 bytes
+    glm::vec4 sdf2;     // 16 bytes
+	glm::mat4 matrix;
+	int brushIndex;
 
-    DebugInstanceData(glm::mat4 matrix, float * sdf) {
-		for(int i = 0; i < 8; ++i) {
-			this->sdf[i] = sdf[i];
-		}
+    DebugInstanceData(glm::mat4 matrix, float * sdf, int brushIndex) {
+		sdf1 = glm::vec4(sdf[0], sdf[1], sdf[2], sdf[3]);
+        sdf2 = glm::vec4(sdf[4], sdf[5], sdf[6], sdf[7]);
         this->matrix = matrix;
+		this->brushIndex = brushIndex;
     }
 };
 

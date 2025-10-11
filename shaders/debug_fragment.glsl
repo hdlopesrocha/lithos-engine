@@ -14,10 +14,13 @@ void main() {
     gl_FragDepth = logDepth;
 
     float r =  abs(distance/scale);
-    if(r > 0.2) {
+    float range = 0.2;
+    if(r > range) {
         discard;
     }
-    color = vec4(distance < 0.0 ? 1.0 - r : 0.0 ,distance >= 0.0 ? 1.0 - r : 0.0 ,0.0, 0.1*(1.0 - r));
+    color = distance >=0.0 ? vertexColor : vec4(1.0,1.0,1.0,1.0);
+
+    color.a =0.2*(1.0 - abs(r)/range);
     //color = vec4(1.0,1.0,1.0, 0.2);
 }
 

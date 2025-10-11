@@ -224,32 +224,31 @@ bool Scene::processSpace() {
 	}
 
 	int loadCount = 0;
-
 	//std::cout << "process " << std::to_string((long)allVisibleNodes.size()) <<  std::endl;
 
     std::vector<std::future<bool>> threads;
 	threads.reserve(64);
 
 	// Thread pool zone
-	
+	int workCount = 8;	
 	for (OctreeNodeData* data : allVisibleNodes) {
-		if (data->node && data->node->isDirty()) {
+		if (data->node && data->node->isDirty() && --workCount>=0) {
 			threads.emplace_back(threadPool.enqueue([this, data]() {
 				return processSolid(*data, &solidSpace);
 			}));
 		}
 	}
-
+	workCount = 8;
 	for (OctreeNodeData& brush : brushRenderer->visibleNodes) {
-		if (brush.node && brush.node->isDirty()) {
+		if (brush.node && brush.node->isDirty() && --workCount>=0) {
 			threads.emplace_back(threadPool.enqueue([this, &brush]() {
 				return processBrush(brush, &brushSpace);
 			}));
 		}
 	}
-
+	workCount = 8;
 	for (OctreeNodeData& liquid : liquidRenderer->visibleNodes) {
-		if (liquid.node && liquid.node->isDirty()) {
+		if (liquid.node && liquid.node->isDirty() && --workCount>=0) {
 			threads.emplace_back(threadPool.enqueue([this, &liquid]() {
 				return processLiquid(liquid, &liquidSpace);
 			}));

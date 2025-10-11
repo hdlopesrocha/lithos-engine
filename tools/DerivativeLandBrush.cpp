@@ -14,7 +14,7 @@ DerivativeLandBrush::DerivativeLandBrush(){
     this->rockMixSand = 14;
 }
 
-void DerivativeLandBrush::paint(Vertex &vertex) const {
+int DerivativeLandBrush::paint(const Vertex &vertex) const {
     glm::vec3 n = glm::normalize(vertex.normal);
     float steepness =glm::dot(glm::vec3(0.0f,1.0f,0.0f), n );
     int grassLevel = 256;
@@ -22,7 +22,7 @@ void DerivativeLandBrush::paint(Vertex &vertex) const {
     int softSandLevel = 54;
     int brushIndex;
     if (glm::dot(glm::vec3(0.0f,1.0f,0.0f), n ) <=0 ){
-        brushIndex = DISCARD_BRUSH_INDEX;
+        brushIndex = underground;
     } else if(steepness < 0.980 ){
         brushIndex = rock;
     } else if(steepness < 0.985 ){
@@ -48,6 +48,5 @@ void DerivativeLandBrush::paint(Vertex &vertex) const {
     } else {
         brushIndex = snow;
     }
-
-    vertex.brushIndex = brushIndex;
+    return brushIndex;
 }

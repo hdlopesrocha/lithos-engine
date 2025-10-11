@@ -11,28 +11,24 @@ layout(location = 2) in vec2 textureCoord;
 layout(location = 3) in int brushIndex;     
 layout(location = 4) in mat4 model; 
 
-layout(location = 8) in float sdf0;
-layout(location = 9) in float sdf1;
-layout(location = 10) in float sdf2;
-layout(location = 11) in float sdf3;
-layout(location = 12) in float sdf4;
-layout(location = 13) in float sdf5;
-layout(location = 14) in float sdf6;
-layout(location = 15) in float sdf7;
+layout(location = 8) in vec4 sdf1;     // 16 bytes
+layout(location = 9) in vec4 sdf2;     // 16 bytes
+layout(location = 10) in int brushIndex2;     
+
 out float distance;
 out float scale;
 out vec4 vertexColor;     
 
 void main() {
     float sdf[8];
-    sdf[0] = sdf0;
-    sdf[1] = sdf1;
-    sdf[2] = sdf2;
-    sdf[3] = sdf3;
-    sdf[4] = sdf4;
-    sdf[5] = sdf5;
-    sdf[6] = sdf6;
-    sdf[7] = sdf7;
+    sdf[0] = sdf1[0];
+    sdf[1] = sdf1[1];
+    sdf[2] = sdf1[2];
+    sdf[3] = sdf1[3];
+    sdf[4] = sdf2[0];
+    sdf[5] = sdf2[1];
+    sdf[6] = sdf2[2];
+    sdf[7] = sdf2[3];
 
     uint ix = clamp(uint(position.x),0u,1u);
     uint iy = clamp(uint(position.y),0u,1u);
@@ -43,5 +39,5 @@ void main() {
     mat4 mvp = viewProjection * world * model;
     gl_Position = mvp * vec4(position, 1.0);    
 
-    vertexColor = vec4(brushColor(brushIndex),1.0);
+    vertexColor = vec4(brushColor(brushIndex2),1.0);
 }
