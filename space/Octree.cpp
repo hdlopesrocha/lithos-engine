@@ -223,21 +223,17 @@ float Octree::evaluateSDF(const ShapeArgs &args, std::unordered_map<glm::vec3, f
     }
 }
 
-void Octree::buildSDF(const ShapeArgs &args, BoundingCube &cube, float * shapeSDF, float * resultSDF, float * inheritedShapeSDF, float * inheritedResultSDF, float * existingResultSDF, ThreadContext * threadContext) const {
+void Octree::buildSDF(const ShapeArgs &args, BoundingCube &cube, float * shapeSDF, float * resultSDF, float * existingResultSDF, ThreadContext * threadContext) const {
     const glm::vec3 min = cube.getMin();
     const glm::vec3 length = cube.getLength();
     std::unordered_map<glm::vec3, float> * shapeSdfCache = &threadContext->shapeSdfCache;
 
     for (int i = 0; i < 8; ++i) {
-        if(inheritedShapeSDF != NULL && inheritedShapeSDF[i] != INFINITY) {
-            shapeSDF[i] = inheritedShapeSDF[i];
-        } else {
+        if(shapeSDF[i] == INFINITY) {
             glm::vec3 p = min + length * Octree::getShift(i);
             shapeSDF[i] = evaluateSDF(args, shapeSdfCache, p);
         }
-        if(inheritedResultSDF != NULL && inheritedResultSDF[i] != INFINITY) {
-            resultSDF[i] = inheritedResultSDF[i];
-        } else {
+        if(resultSDF[i] == INFINITY) {
             float r = args.operation(existingResultSDF[i], shapeSDF[i]);
             resultSDF[i] = r;
         }
@@ -414,67 +410,46 @@ NodeOperationResult Octree::shape(OctreeNodeFrame frame, const ShapeArgs &args, 
     // Inherit SDFs from children
     // ------------------------------
             
-    float inheritedShapeSDF[8];
-    float inheritedResultSDF[8];
+
+    float shapeSDF[8] = {INFINITY,INFINITY,INFINITY,INFINITY,INFINITY,INFINITY,INFINITY,INFINITY};
+    float resultSDF[8] = {INFINITY,INFINITY,INFINITY,INFINITY,INFINITY,INFINITY,INFINITY,INFINITY};
     bool childResultSolid = true;
     bool childResultEmpty = true;
     bool childShapeSolid = true;
     bool childShapeEmpty = true;
-    for(int i = 0; i < 8; ++i) {
-        NodeOperationResult & child = children[i];
-     
-        inheritedShapeSDF[i] = isLeaf || child.process ? child.shapeSDF[i] : INFINITY;
-        inheritedResultSDF[i] = isLeaf || child.process ? child.resultSDF[i] : INFINITY;
-        
-        childResultEmpty &= child.resultType == SpaceType::Empty;
-        childResultSolid &= child.resultType == SpaceType::Solid;
-        childShapeEmpty &= child.shapeType == SpaceType::Empty;
-        childShapeSolid &= child.shapeType == SpaceType::Solid;
+    if(!isLeaf) {
+        for(int i = 0; i < 8; ++i) {
+            NodeOperationResult & child = children[i];
+            if(child.process) {
+                shapeSDF[i] = child.shapeSDF[i];
+                resultSDF[i] = child.resultSDF[i];
+            }
+            childResultEmpty &= child.resultType == SpaceType::Empty;
+            childResultSolid &= child.resultType == SpaceType::Solid;
+            childShapeEmpty &= child.shapeType == SpaceType::Empty;
+            childShapeSolid &= child.shapeType == SpaceType::Solid;
+        }
     }
 
     // ------------------------------
     // Build SDFs based on inheritance/execution
     // ------------------------------
 
-    float shapeSDF[8];
-    float resultSDF[8];
-
-    buildSDF(args, frame.cube, shapeSDF, resultSDF, inheritedShapeSDF, inheritedResultSDF, frame.sdf, threadContext);
+    buildSDF(args, frame.cube, shapeSDF, resultSDF, frame.sdf, threadContext);
     
     SpaceType shapeType = isLeaf ? SDF::eval(shapeSDF) : childToParent(childShapeSolid, childShapeEmpty);
     SpaceType resultType = isLeaf ? SDF::eval(resultSDF) : childToParent(childResultSolid, childResultEmpty);
 
 
-    if(false && resultType == SpaceType::Empty) {
+    if(false && resultType != SpaceType::Surface) {
         // ------------------------------
         // Delete nodes if result is Empty
         // ------------------------------
-        if(node != NULL) {
-            if(isChunk && args.changeHandler != NULL) {
-                args.changeHandler->erase(node);
-            }
-            if(block) {
-                for(int i = 0; i < 8; ++i) {
-                    NodeOperationResult * childResult = &children[i];
-                    OctreeNode * child = childResult->node;
-                    if(child && childResult->process) {
-                        BoundingCube childCube = frame.cube.getChild(i);
-                        child->clear(*allocator, args.changeHandler, block);
-                        allocator->deallocate(child);
-                        block->set(i, (OctreeNode*) NULL, *allocator);
-                        children[i].node = NULL;
-                    }
-                }
-                if(block->isEmpty()) {
-                    block = node->deallocate(*allocator, block);
-                }
-            }
-            if(block == NULL) {
-                allocator->deallocate(node);
-                node = NULL;
-                frame.interpolated = true;     
-            }     
-        }
+        block = node ? node->clear(*allocator, args.changeHandler, block) : NULL;
+        if(resultType == SpaceType::Empty) {
+            node = node ? allocator->deallocate(node) : NULL;
+            return NodeOperationResult(node, shapeType, resultType, resultSDF, shapeSDF, true);
+        }     
     }
     
     if(shapeType != SpaceType::Empty || (frame.interpolated && node == NULL)) {   
@@ -507,7 +482,7 @@ NodeOperationResult Octree::shape(OctreeNodeFrame frame, const ShapeArgs &args, 
 
             node->vertex.brushIndex = nodeBrushIndex;
 
-            if(!isLeaf) {
+            if(!isLeaf && resultType == SpaceType::Surface) {
                 // ------------------------------
                 // Created at least one solid child
                 // ------------------------------
@@ -532,6 +507,7 @@ NodeOperationResult Octree::shape(OctreeNodeFrame frame, const ShapeArgs &args, 
                             childNode->setChunk(false);
                             childNode->vertex.brushIndex = args.painter.paint(childNode->vertex);
                         }
+                        block->set(i, childNode, *allocator);
                     }
                     if(childNode != currentChildNode && childNode!=NULL && currentChildNode!=NULL) {
                     	throw std::runtime_error("OctreeNode mismatch! " + std::to_string((long) childNode) + " " + std::to_string((long)currentChildNode) );
@@ -539,18 +515,12 @@ NodeOperationResult Octree::shape(OctreeNodeFrame frame, const ShapeArgs &args, 
                     if(frame.node != NULL && childNode == node) {
                     	throw std::runtime_error("Infinite recursion! " + std::to_string((long) childNode) + " " + std::to_string((long)node) );
                     }
-                    block->set(i, childNode, *allocator);
                 }
             }
 
             // ------------------------------
             // Erase / Update handlers
-            // ------------------------------
-            if(block != NULL && block->isEmpty()) {
-                block = node->deallocate(*allocator, block);
-                node->setLeaf(true);
-            }
-           
+            // ------------------------------           
             if(resultType != SpaceType::Surface) {
                 if(isChunk && args.changeHandler != NULL) {
                     args.changeHandler->erase(node);
