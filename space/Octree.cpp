@@ -334,7 +334,7 @@ NodeOperationResult Octree::shape(OctreeNodeFrame frame, const ShapeArgs &args, 
 
     if(check == ContainmentType::Disjoint) {
         SpaceType resultType = node ? node->getType() : SDF::eval(frame.sdf);
-        return NodeOperationResult(node, SpaceType::Empty, resultType, NULL, NULL, false);  // Skip this node
+        return NodeOperationResult(node, SpaceType::Empty, resultType, NULL, NULL, false, false, DISCARD_BRUSH_INDEX);  // Skip this node
     }
 
     ChildBlock * block = NULL;
@@ -363,12 +363,12 @@ NodeOperationResult Octree::shape(OctreeNodeFrame frame, const ShapeArgs &args, 
             }
             
             float childSDF[8];
-            bool interpolated = false;
+            bool interpolated = frame.interpolated;
             if(childNode) {
                 SDF::copySDF(childNode->sdf, childSDF);
             } else {
                 SDF::getChildSDF(frame.sdf, i, childSDF);
-                interpolated = true;
+                interpolated |= true;
             }
 
             OctreeNodeFrame childFrame(
@@ -377,7 +377,7 @@ NodeOperationResult Octree::shape(OctreeNodeFrame frame, const ShapeArgs &args, 
                 frame.level + 1, 
                 childSDF,
                 node != NULL ? node->vertex.brushIndex : frame.brushIndex,
-                interpolated || frame.interpolated
+                interpolated
             );
 
             if(isChildThread) {
@@ -417,6 +417,9 @@ NodeOperationResult Octree::shape(OctreeNodeFrame frame, const ShapeArgs &args, 
     bool childResultEmpty = true;
     bool childShapeSolid = true;
     bool childShapeEmpty = true;
+    bool isSimplified = isLeaf;
+    int brushIndex = frame.brushIndex;
+
     if(!isLeaf) {
         for(int i = 0; i < 8; ++i) {
             NodeOperationResult & child = children[i];
@@ -448,7 +451,7 @@ NodeOperationResult Octree::shape(OctreeNodeFrame frame, const ShapeArgs &args, 
         block = node ? node->clear(*allocator, args.changeHandler, block) : NULL;
         if(resultType == SpaceType::Empty) {
             node = node ? allocator->deallocate(node) : NULL;
-            return NodeOperationResult(node, shapeType, resultType, resultSDF, shapeSDF, true);
+            return NodeOperationResult(node, shapeType, resultType, resultSDF, shapeSDF, true, false, DISCARD_BRUSH_INDEX);
         }     
     }
     
@@ -466,6 +469,7 @@ NodeOperationResult Octree::shape(OctreeNodeFrame frame, const ShapeArgs &args, 
             node->setChunk(isChunk);
             node->setSimplified(isLeaf);
             node->setLeaf(isLeaf);
+            
             if(isChunk) {
                 node->setDirty(true);
             }
@@ -474,13 +478,14 @@ NodeOperationResult Octree::shape(OctreeNodeFrame frame, const ShapeArgs &args, 
                 node->vertex.normal = glm::vec4(SDF::getNormalFromPosition(node->sdf, frame.cube, node->vertex.position), 0.0f);
             }
 
-            int nodeBrushIndex = frame.brushIndex;
 
             if(shapeType != SpaceType::Empty) {
-                nodeBrushIndex = args.painter.paint(node->vertex);
+                brushIndex = args.painter.paint(node->vertex);
             } 
-
-            node->vertex.brushIndex = nodeBrushIndex;
+            if(brushIndex == DISCARD_BRUSH_INDEX) {
+                brushIndex = 0;
+            }
+            node->vertex.brushIndex = brushIndex;
 
             if(!isLeaf && resultType == SpaceType::Surface) {
                 // ------------------------------
@@ -534,13 +539,16 @@ NodeOperationResult Octree::shape(OctreeNodeFrame frame, const ShapeArgs &args, 
             // ------------------------------
             // Simplification & Painting
             // ------------------------------
-            if(false && !node->isSimplified() && block) {
-                args.simplifier.simplify(this, threadContext->cube, OctreeNodeData(frame.level, node, frame.cube, NULL, frame.sdf), block);
+            if(!isSimplified && block) {
+                isSimplified = args.simplifier.simplify(threadContext->cube, frame.cube, resultSDF, children);
+                if(isSimplified) {
+                    node->setSimplified(true);
+                }
             }
         }
         
     }
-    return NodeOperationResult(node, shapeType, resultType, resultSDF, shapeSDF, true);
+    return NodeOperationResult(node, shapeType, resultType, resultSDF, shapeSDF, true, isSimplified, brushIndex);
 }
 
 

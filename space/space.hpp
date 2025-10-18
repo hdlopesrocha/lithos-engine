@@ -223,14 +223,16 @@ struct NodeOperationResult {
 	bool process;
  	float resultSDF[8];
     float shapeSDF[8];
+	bool isSimplified;
+	int brushIndex;
 
-	NodeOperationResult() : node(NULL), shapeType(SpaceType::Empty), resultType(SpaceType::Empty), process(false) {
+	NodeOperationResult() : node(NULL), shapeType(SpaceType::Empty), resultType(SpaceType::Empty), process(false), isSimplified(false), brushIndex(DISCARD_BRUSH_INDEX) {
 		SDF::copySDF(NULL, this->resultSDF);	
 		SDF::copySDF(NULL, this->shapeSDF);	
 	};
 
-    NodeOperationResult(OctreeNode * node, SpaceType shapeType, SpaceType resultType, float * resultSDF, float * shapeSDF, bool process) 
-        : node(node), shapeType(shapeType), resultType(resultType), process(process) {
+    NodeOperationResult(OctreeNode * node, SpaceType shapeType, SpaceType resultType, float * resultSDF, float * shapeSDF, bool process, bool isSimplified, int brushIndex) 
+        : node(node), shapeType(shapeType), resultType(resultType), process(process), isSimplified(isSimplified), brushIndex(brushIndex) {
 		SDF::copySDF(resultSDF, this->resultSDF);	
 		SDF::copySDF(shapeSDF, this->shapeSDF);						
     };
@@ -330,8 +332,7 @@ class Simplifier {
 	bool texturing;
 	public:
 		Simplifier(float angle, float distance, bool texturing);
-		void simplify(Octree * tree, BoundingCube chunkCube, const OctreeNodeData &params, ChildBlock * block);
-
+		bool simplify(const BoundingCube chunkCube, const BoundingCube cube, const float * sdf, NodeOperationResult * children);
 };
 
 struct StackFrame : public OctreeNodeData {

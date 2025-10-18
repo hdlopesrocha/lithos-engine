@@ -8,28 +8,21 @@ Simplifier::Simplifier(float angle, float distance, bool texturing) {
 }	
 
 
-void Simplifier::simplify(Octree * tree, BoundingCube chunkCube, const OctreeNodeData &params, ChildBlock * block){
-	OctreeNode * node = params.node;
+bool Simplifier::simplify(const BoundingCube chunkCube, const BoundingCube cube, const float * sdf, NodeOperationResult * children){	
 	int brushIndex = 0;
 	bool hasSimplifiedChildren = false;
-	if(block!=NULL) {
-		for(int i=0; i < 8 ; ++i) {
-			OctreeNode * c = block->get(i, *tree->allocator);
-			if(c != NULL && c->isSimplified()) {
-				hasSimplifiedChildren = true;
-				brushIndex = c->vertex.brushIndex;
-				break;
-			}
+	for(int i=0; i < 8 ; ++i) {
+		NodeOperationResult * child = &children[i];
+		if(child->isSimplified) {
+			hasSimplifiedChildren = true;
+			brushIndex = child->brushIndex;
+			break;
 		}
 	}
-	if(hasSimplifiedChildren) {
-		// The parentNode plane
-		Vertex * nodeVertex = &node->vertex;
-		Plane parentPlane(nodeVertex->normal, nodeVertex->position); 
 
-		BoundingCube cube(params.cube.getMin() - params.cube.getLength(), params.cube.getLengthX());
-		if(!chunkCube.contains(cube)) {
-			return;
+	if(hasSimplifiedChildren) {
+		if(!chunkCube.contains(BoundingCube(cube.getMin() - cube.getLength(), cube.getLengthX()))) {
+			return false;
 		}
 
 		//uint mask = 0xff;
@@ -37,47 +30,33 @@ void Simplifier::simplify(Octree * tree, BoundingCube chunkCube, const OctreeNod
 
 		// for leaf nodes shouldn't loop
 		for(int i=0; i < 8 ; ++i) {
-			OctreeNode * child = block->get(i, *tree->allocator);
-			if(child!=NULL && !child->isSolid() && !child->isEmpty()) {
-				if(!child->isSimplified()) {
-					return;	
+			NodeOperationResult * child = &children[i];
+			if(child->resultType == SpaceType::Surface) {
+				if(!child->isSimplified) {
+					return false;	
 				}
-				if(texturing && child->vertex.brushIndex != brushIndex) {
-					return;	
+				if(texturing && child->brushIndex != brushIndex) {
+					return false;	
 				}
-				BoundingCube childCube = params.cube.getChild(i);
+				BoundingCube childCube = cube.getChild(i);
 
-
-				
 				for(int j = 0 ; j < 8 ; ++j) {
 					glm::vec3 corner = childCube.getCorner(j);
-					float d = SDF::interpolate(params.node->sdf, corner , params.cube);
-					float dif = glm::abs(d - child->sdf[j]);
+					float d = SDF::interpolate(sdf, corner , cube);
+					float dif = glm::abs(d - child->resultSDF[j]);
 
-					if(dif > params.cube.getLengthX() * 0.05) {
-						return;
+					if(dif > cube.getLengthX() * 0.05) {
+						return false;
 					}
 				}
-
-
 
 				++nodeCount;
 			}
 		}
 		
-
 		if(nodeCount > 0) {	
-			//std::cout << "Simplifying node " << node->id << " with " << nodeCount << " children." << std::endl;
-			node->setSimplified(true);
-			node->vertex.brushIndex = brushIndex;
-
-			for(int i=0; i < 8 ; ++i) {
-				OctreeNode * child = block->get(i, *tree->allocator);
-				if(child!=NULL) {
-					child->setSimplified(false);
-				}
-			}
+			return true;
 		}
 	}
-	return;
+	return false;
 }
