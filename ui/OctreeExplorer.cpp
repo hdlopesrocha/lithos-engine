@@ -4,7 +4,7 @@
 OctreeExplorer::OctreeExplorer(Octree * tree) : tree(tree) {
 }   
 
-void OctreeExplorer::recursiveDraw(OctreeNode * node, BoundingCube cube) {
+void OctreeExplorer::recursiveDraw(OctreeNode * node, BoundingCube cube, uint level) {
     std::string blockId ="blockId = " + std::to_string(node->id);
     ImGui::Text(blockId.c_str());
     openNodes.push_back({cube, node});
@@ -19,9 +19,9 @@ void OctreeExplorer::recursiveDraw(OctreeNode * node, BoundingCube cube) {
         flags += node->isEmpty() ? "E":"_";
         flags += node->isLeaf() ? "/":"_";
         flags += node->isSimplified() ? "#":"_"; 
-        std::string bitsText ="bits = " + flags ;
+        std::string text ="bits = " + flags ;
         ImGui::PushStyleColor(ImGuiCol_Text, color); // Red text
-        ImGui::Text(bitsText.c_str());
+        ImGui::Text(text.c_str());
         ImGui::PopStyleColor();
     }
     {
@@ -34,18 +34,21 @@ void OctreeExplorer::recursiveDraw(OctreeNode * node, BoundingCube cube) {
             sdf += s == INFINITY ? "inf" : std::to_string(s);
         }
         sdf += "]";
-        std::string sdfText ="sdf = " + sdf ;
-        ImGui::Text(sdfText.c_str());
+        std::string text ="sdf = " + sdf ;
+        ImGui::Text(text.c_str());
     }
     {
         glm::vec3 rgb = Math::brushColor(node->vertex.brushIndex);
         ImVec4 color(rgb.r, rgb.g, rgb.b, 1.0f);
         ImGui::PushStyleColor(ImGuiCol_Text, color); // Red text
-        std::string brushText ="brush = " + std::to_string(node->vertex.brushIndex);
-        ImGui::Text(brushText.c_str());
+        std::string text ="brush = " + std::to_string(node->vertex.brushIndex);
+        ImGui::Text(text.c_str());
         ImGui::PopStyleColor();
     }
-
+    {
+        std::string text ="level = " + std::to_string(level) + "/" + std::to_string(tree->getMaxLevel(cube));
+        ImGui::Text(text.c_str());
+    }
     ChildBlock * block = node->getBlock(*tree->allocator);
     if(block != NULL) {
         for(int i =0 ; i < 8 ; ++i) {
@@ -53,7 +56,7 @@ void OctreeExplorer::recursiveDraw(OctreeNode * node, BoundingCube cube) {
             if(child != NULL) {
                 std::string nodeName = "children[" + std::to_string(i) + "] = " + std::to_string(block->children[i]);     
                 if (ImGui::TreeNode(nodeName.c_str())) {
-                    recursiveDraw(child, cube.getChild(i));
+                    recursiveDraw(child, cube.getChild(i), level +1);
                     ImGui::TreePop();
                 }
             }
@@ -67,7 +70,7 @@ void OctreeExplorer::draw2d(float time){
 
     ImGui::Begin("Octree Explorer", &open, ImGuiWindowFlags_AlwaysAutoResize);
     openNodes.clear();
-    recursiveDraw(tree->root, *tree);
+    recursiveDraw(tree->root, *tree, 0);
 
 	ImGui::End();
 }

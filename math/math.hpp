@@ -74,11 +74,11 @@ struct alignas(16)  Vertex {
     }
 
     Vertex() : 
-		Vertex(glm::vec4(0), glm::vec4(0), glm::vec2(0), DISCARD_BRUSH_INDEX) {
+		Vertex(glm::vec4(0), glm::vec4(0), glm::vec2(0), 0) {
     }
 
     Vertex(glm::vec3 pos) : 
-		Vertex(glm::vec4(pos, 0.0f), glm::vec4(0), glm::vec2(0), DISCARD_BRUSH_INDEX) {
+		Vertex(glm::vec4(pos, 0.0f), glm::vec4(0), glm::vec2(0), 0) {
     }
 
 	bool operator<(const Vertex& other) const {

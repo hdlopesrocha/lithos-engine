@@ -114,7 +114,7 @@ class VegetationInstanceBuilder : public OctreeNodeTriangleHandler {
 	
 	using OctreeNodeTriangleHandler::OctreeNodeTriangleHandler;
 	VegetationInstanceBuilder(Octree * tree, long * count,std::vector<InstanceData> * instances, float pointsPerArea, float scale);
-	void handle(const OctreeNodeData &data, Vertex &v0, Vertex &v1, Vertex &v2, bool signn) override;
+	void handle(Vertex &v0, Vertex &v1, Vertex &v2, bool signn) override;
 };
 
 

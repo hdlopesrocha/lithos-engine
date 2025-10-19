@@ -165,7 +165,7 @@ class OctreeNodeTriangleHandler {
 	public: 
 	long * count;
 	OctreeNodeTriangleHandler(long * count);
-	virtual void handle(const OctreeNodeData &data, Vertex &v0, Vertex &v1, Vertex &v2, bool sign) = 0;
+	virtual void handle(Vertex &v0, Vertex &v1, Vertex &v2, bool sign) = 0;
 };
 
 
@@ -190,6 +190,7 @@ struct OctreeNodeFrame {
 	float sdf[8];
 	int brushIndex;
 	bool interpolated;
+	BoundingCube chunkCube;
 	OctreeNodeFrame() {
 				
 	}
@@ -199,15 +200,16 @@ struct OctreeNodeFrame {
 		cube(t.cube),
 		level(t.level),
 		brushIndex(t.brushIndex),
-		interpolated(t.interpolated)
+		interpolated(t.interpolated),
+		chunkCube(t.chunkCube)
 	{
 		for (int i = 0; i < 8; ++i) {
 			sdf[i] = t.sdf[i];
 		}
 	}
 		
-	OctreeNodeFrame(OctreeNode* node, BoundingCube cube, uint level, float * sdf, int brushIndex, bool interpolated) 
-		: node(node), cube(cube), level(level), brushIndex(brushIndex), interpolated(interpolated) {
+	OctreeNodeFrame(OctreeNode* node, BoundingCube cube, uint level, float * sdf, int brushIndex, bool interpolated, BoundingCube chunkCube) 
+		: node(node), cube(cube), level(level), brushIndex(brushIndex), interpolated(interpolated), chunkCube(chunkCube) {
 			for(int i = 0; i < 8; ++i) {
 				this->sdf[i] = sdf!=NULL ? sdf[i] : INFINITY;
 			}	
@@ -225,14 +227,15 @@ struct NodeOperationResult {
     float shapeSDF[8];
 	bool isSimplified;
 	int brushIndex;
+	bool interpolated;
 
-	NodeOperationResult() : node(NULL), shapeType(SpaceType::Empty), resultType(SpaceType::Empty), process(false), isSimplified(false), brushIndex(DISCARD_BRUSH_INDEX) {
+	NodeOperationResult() : node(NULL), shapeType(SpaceType::Empty), resultType(SpaceType::Empty), process(false), isSimplified(false), brushIndex(DISCARD_BRUSH_INDEX), interpolated(false) {
 		SDF::copySDF(NULL, this->resultSDF);	
 		SDF::copySDF(NULL, this->shapeSDF);	
 	};
 
-    NodeOperationResult(OctreeNode * node, SpaceType shapeType, SpaceType resultType, float * resultSDF, float * shapeSDF, bool process, bool isSimplified, int brushIndex) 
-        : node(node), shapeType(shapeType), resultType(resultType), process(process), isSimplified(isSimplified), brushIndex(brushIndex) {
+    NodeOperationResult(OctreeNode * node, SpaceType shapeType, SpaceType resultType, float * resultSDF, float * shapeSDF, bool process, bool isSimplified, int brushIndex, bool interpolated) 
+        : node(node), shapeType(shapeType), resultType(resultType), process(process), isSimplified(isSimplified), brushIndex(brushIndex), interpolated(interpolated) {
 		SDF::copySDF(resultSDF, this->resultSDF);	
 		SDF::copySDF(shapeSDF, this->shapeSDF);						
     };
@@ -311,8 +314,8 @@ class Octree: public BoundingCube {
 		OctreeNode* getNodeAt(const glm::vec3 &pos, int level, bool simplification);
 		OctreeNode* getNodeAt(const glm::vec3 &pos, bool simplification);
 		float getSdfAt(const glm::vec3 &pos);
-		void handleQuadNodes(const OctreeNodeData &data, const float * sdf, std::vector<OctreeNodeTriangleHandler*> * handlers, bool simplification, ThreadContext * context);
-		OctreeNode * fetch(const OctreeNodeData &data, OctreeNode ** out, int i, bool simplification, ThreadContext * context);
+		void handleQuadNodes(const BoundingCube &cube, uint level, const float * sdf, std::vector<OctreeNodeTriangleHandler*> * handlers, bool simplification, ThreadContext * context);
+		OctreeNode * fetch(const BoundingCube &cube, uint level, OctreeNode ** out, int i, bool simplification, ThreadContext * context);
 		int getMaxLevel(OctreeNode * node, int level);
 
 		uint getMaxLevel(BoundingCube &cube);
@@ -332,7 +335,7 @@ class Simplifier {
 	bool texturing;
 	public:
 		Simplifier(float angle, float distance, bool texturing);
-		bool simplify(const BoundingCube chunkCube, const BoundingCube cube, const float * sdf, NodeOperationResult * children);
+		std::pair<bool,int> simplify(const BoundingCube chunkCube, const BoundingCube cube, const float * sdf, NodeOperationResult * children);
 };
 
 struct StackFrame : public OctreeNodeData {
@@ -450,7 +453,7 @@ class Tesselator : public OctreeNodeTriangleHandler{
 	public:
 		Geometry * geometry;
 		Tesselator(long * count, ThreadContext * context);
-		void handle(const OctreeNodeData &data, Vertex &v0, Vertex &v1, Vertex &v2, bool sign) override;
+		void handle(Vertex &v0, Vertex &v1, Vertex &v2, bool sign) override;
 
 };
 
@@ -463,7 +466,7 @@ class Processor : public IteratorHandler {
 		void after(Octree * tree, OctreeNodeData *params) override;
 		bool test(Octree * tree, OctreeNodeData *params) override;
 		void getOrder(Octree * tree, OctreeNodeData *params, uint8_t * order) override;
-		void virtualize(Octree * tree, const OctreeNodeData &data, uint levels);
+		void virtualize(Octree * tree, const BoundingCube &cube, float * sdf, uint level, uint levels);
 
 };
 

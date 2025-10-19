@@ -21,7 +21,7 @@ void main() {
     if(brush == 0.0) {
         color = texture(sampler, texCoord);
     }
-    else {
+    else if(false) {
         float r =  abs(distance/scale);
         float range = 0.2;
         if(r > range) {
@@ -29,6 +29,11 @@ void main() {
         }
         color = distance >=0.0 ? vertexColor : vec4(1.0,1.0,1.0,1.0);
         color.a =0.2*(1.0 - abs(r)/range);
+    } else if(true) {
+        color = texture(sampler, texCoord) * vertexColor;
+        if(color.a <= 0.1) {
+            discard;
+        }
     }
 
 }
