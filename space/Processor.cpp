@@ -12,12 +12,10 @@ void Processor::virtualize(Octree * tree, const BoundingCube &cube, float * sdf,
         tree->handleQuadNodes(cube, level, sdf, handlers, true, context);
         return;
     } else {
-
+        float childSDF[8];
         for(int i = 0 ; i < 8 ; ++i) {
-            float childSDF[8];
             SDF::getChildSDF(sdf, i, childSDF);
-
-            virtualize(tree, cube.getChild(i), childSDF ,level + 1, levels);                  
+            virtualize(tree, cube.getChild(i), childSDF, level + 1, levels);                  
         }
         return;
     }
