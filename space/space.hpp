@@ -190,6 +190,7 @@ struct OctreeNodeFrame {
 	float sdf[8];
 	int brushIndex;
 	bool interpolated;
+	bool isParentLeaf;
 	BoundingCube chunkCube;
 	OctreeNodeFrame() {
 				
@@ -201,6 +202,7 @@ struct OctreeNodeFrame {
 		level(t.level),
 		brushIndex(t.brushIndex),
 		interpolated(t.interpolated),
+		isParentLeaf(t.isParentLeaf),
 		chunkCube(t.chunkCube)
 	{
 		for (int i = 0; i < 8; ++i) {
@@ -208,8 +210,8 @@ struct OctreeNodeFrame {
 		}
 	}
 		
-	OctreeNodeFrame(OctreeNode* node, BoundingCube cube, uint level, float * sdf, int brushIndex, bool interpolated, BoundingCube chunkCube) 
-		: node(node), cube(cube), level(level), brushIndex(brushIndex), interpolated(interpolated), chunkCube(chunkCube) {
+	OctreeNodeFrame(OctreeNode* node, BoundingCube cube, uint level, float * sdf, int brushIndex, bool interpolated, bool isParentLeaf, BoundingCube chunkCube) 
+		: node(node), cube(cube), level(level), brushIndex(brushIndex), interpolated(interpolated), isParentLeaf(isParentLeaf), chunkCube(chunkCube) {
 			for(int i = 0; i < 8; ++i) {
 				this->sdf[i] = sdf!=NULL ? sdf[i] : INFINITY;
 			}	
