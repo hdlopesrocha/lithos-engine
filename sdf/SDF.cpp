@@ -445,7 +445,7 @@ float SDF::opSmoothIntersection(float d1, float d2, float k) {
     return glm::mix( d1, d2, h ) + k*h*(1.0-h);
 }
 
-float SDF::interpolate(const float * sdf, glm::vec3 position, BoundingCube cube) {
+float SDF::interpolate(const float *sdf, glm::vec3 position, const BoundingCube &cube) {
     glm::vec3 local = (position - cube.getMin()) / cube.getLength(); // [0,1]^3
     float x = local.x, y = local.y, z = local.z;
 
@@ -467,7 +467,12 @@ void SDF::getChildSDF(const float * sdf, int i , float * result) {
     BoundingCube canonicalCube = BoundingCube(glm::vec3(0.0f), 1.0f);
     BoundingCube cube = canonicalCube.getChild(i);
     for (int j = 0; j < 8; ++j) {
-        result[j] = sdf[j] == INFINITY ? INFINITY : interpolate(sdf, cube.getCorner(j), canonicalCube);
+        if(sdf[j] == INFINITY) {
+            return;
+        }
+    }
+    for (int j = 0; j < 8; ++j) {
+        result[j] = interpolate(sdf, cube.getCorner(j), canonicalCube);
     }
 }
 
