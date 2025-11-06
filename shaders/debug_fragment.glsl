@@ -19,7 +19,11 @@ void main() {
 
 
     if(brush == 0.0) {
-        color = texture(sampler, texCoord);
+        vec4 c = texture(sampler, texCoord);
+        if(c.a <= 0.1) {
+            discard;
+        }
+        color = c;    
     }
     else if(true) {
         float r =  abs(distance/scale);

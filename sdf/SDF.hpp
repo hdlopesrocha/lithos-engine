@@ -72,16 +72,15 @@ public:
     static glm::vec3 distortPerlin(glm::vec3 p, float amplitude, float frequency);
     static glm::vec3 distortPerlinFractal(glm::vec3 p, float frequency, int octaves, float lacunarity, float gain);
     static float distortedCarveFractalSDF(glm::vec3 p, float threshold, float frequency, int octaves, float lacunarity, float gain);
-    static glm::vec3 getPosition(float *sdf, const BoundingCube &cube);
-    static glm::vec3 getAveragePosition(float *sdf, const BoundingCube &cube);
-    static glm::vec3 getAveragePosition2(float *sdf, const BoundingCube &cube);
-    static glm::vec3 getNormal(float* sdf, const BoundingCube& cube);
-    static glm::vec3 getNormalFromPosition(float* sdf, const BoundingCube& cube, const glm::vec3& position);
-    static void getChildSDF(const float * sdf, int i , float * result);
-    static void copySDF(const float * src, float * dst);
-    static float interpolate(const float * sdf, glm::vec3 position, const BoundingCube &cube);
-
-    static SpaceType eval(float * sdf);
+    static glm::vec3 getPosition(float sdf[8], const BoundingCube &cube);
+    static glm::vec3 getAveragePosition(float sdf[8], const BoundingCube &cube);
+    static glm::vec3 getAveragePosition2(float sdf[8], const BoundingCube &cube);
+    static glm::vec3 getNormal(float sdf[8], const BoundingCube& cube);
+    static glm::vec3 getNormalFromPosition(float sdf[8], const BoundingCube& cube, const glm::vec3& position);
+    static void getChildSDF(const float sdf[8], int i , float * result);
+    static void copySDF(const float src[8], float dst[8]);
+    static float interpolate(const float sdf[8], glm::vec3 position, const BoundingCube &cube);
+    static SpaceType eval(float sdf[8]);
 };
 
 class SignedDistanceFunction {

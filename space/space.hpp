@@ -227,15 +227,14 @@ struct NodeOperationResult {
     float shapeSDF[8];
 	bool isSimplified;
 	int brushIndex;
-	bool interpolated;
 
-	NodeOperationResult() : node(NULL), shapeType(SpaceType::Empty), resultType(SpaceType::Empty), process(false), isSimplified(false), brushIndex(DISCARD_BRUSH_INDEX), interpolated(false) {
+	NodeOperationResult() : node(NULL), shapeType(SpaceType::Empty), resultType(SpaceType::Empty), process(false), isSimplified(false), brushIndex(DISCARD_BRUSH_INDEX) {
 		SDF::copySDF(NULL, this->resultSDF);	
 		SDF::copySDF(NULL, this->shapeSDF);	
 	};
 
-    NodeOperationResult(OctreeNode * node, SpaceType shapeType, SpaceType resultType, float * resultSDF, float * shapeSDF, bool process, bool isSimplified, int brushIndex, bool interpolated) 
-        : node(node), shapeType(shapeType), resultType(resultType), process(process), isSimplified(isSimplified), brushIndex(brushIndex), interpolated(interpolated) {
+    NodeOperationResult(OctreeNode * node, SpaceType shapeType, SpaceType resultType, float * resultSDF, float * shapeSDF, bool process, bool isSimplified, int brushIndex) 
+        : node(node), shapeType(shapeType), resultType(resultType), process(process), isSimplified(isSimplified), brushIndex(brushIndex) {
 		SDF::copySDF(resultSDF, this->resultSDF);	
 		SDF::copySDF(shapeSDF, this->shapeSDF);						
     };
@@ -307,7 +306,7 @@ class Octree: public BoundingCube {
 		void expand(const ShapeArgs &args);
 		void add(WrappedSignedDistanceFunction *function, const Transformation model, const TexturePainter &painter, float minSize, Simplifier &simplifier, OctreeChangeHandler * changeHandler);
 		void del(WrappedSignedDistanceFunction *function, const Transformation model, const TexturePainter &painter, float minSize, Simplifier &simplifier, OctreeChangeHandler * changeHandler);
-		NodeOperationResult shape(OctreeNodeFrame frame, const ShapeArgs &args, ThreadContext * threadContext);
+		NodeOperationResult shape(OctreeNodeFrame frame, const ShapeArgs &args, ThreadContext * threadContext, std::string coords);
 		void iterate(IteratorHandler &handler);
 		void iterateFlat(IteratorHandler &handler);
 

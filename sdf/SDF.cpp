@@ -1,6 +1,6 @@
 #include "SDF.hpp"
 
-glm::vec3 SDF::getPosition(float * sdf, const BoundingCube &cube) {
+glm::vec3 SDF::getPosition(float sdf[8], const BoundingCube &cube) {
     // Early exit if there's no surface inside this cube
     SpaceType eval = SDF::eval(sdf);
     if(eval != SpaceType::Surface) {
@@ -43,7 +43,7 @@ glm::vec3 SDF::getPosition(float * sdf, const BoundingCube &cube) {
     }
 }
 
-glm::vec3 SDF::getAveragePosition(float *sdf, const BoundingCube &cube) {
+glm::vec3 SDF::getAveragePosition(float sdf[8], const BoundingCube &cube) {
     // Early exit if there's no surface inside this cube
     SpaceType eval = SDF::eval(sdf);
     if(eval != SpaceType::Surface) {
@@ -79,14 +79,14 @@ glm::vec3 SDF::getAveragePosition(float *sdf, const BoundingCube &cube) {
     return sum / static_cast<float>(positions.size());
 }
 
-glm::vec3 SDF::getAveragePosition2(float * sdf, const BoundingCube &cube) {
+glm::vec3 SDF::getAveragePosition2(float sdf[8], const BoundingCube &cube) {
     glm::vec3 avg = getAveragePosition(sdf, cube);
     glm::vec3 normal = getNormalFromPosition(sdf, cube, avg);
     float d = interpolate(sdf, avg, cube);
     return avg - normal * d;
 }
 
-glm::vec3 SDF::getNormal(float * sdf, const BoundingCube& cube) {
+glm::vec3 SDF::getNormal(float sdf[8], const BoundingCube& cube) {
     const float dx = cube.getLengthX(); // or half size if your sdf spacing is half
     const float inv2dx = 1.0f / (2.0f * dx);
 
@@ -99,7 +99,7 @@ glm::vec3 SDF::getNormal(float * sdf, const BoundingCube& cube) {
     return glm::normalize(normal * inv2dx);
 }
 
-glm::vec3 SDF::getNormalFromPosition(float * sdf, const BoundingCube& cube, const glm::vec3& position) {
+glm::vec3 SDF::getNormalFromPosition(float sdf[8], const BoundingCube& cube, const glm::vec3& position) {
     glm::vec3 local = (position - cube.getMin()) / cube.getLength(); // Convert to [0,1]^3 within cube
 
     // Trilinear interpolation gradient
@@ -445,7 +445,7 @@ float SDF::opSmoothIntersection(float d1, float d2, float k) {
     return glm::mix( d1, d2, h ) + k*h*(1.0-h);
 }
 
-float SDF::interpolate(const float *sdf, glm::vec3 position, const BoundingCube &cube) {
+float SDF::interpolate(const float sdf[8], glm::vec3 position, const BoundingCube &cube) {
     glm::vec3 local = (position - cube.getMin()) / cube.getLength(); // [0,1]^3
     float x = local.x, y = local.y, z = local.z;
 
@@ -463,26 +463,26 @@ float SDF::interpolate(const float *sdf, glm::vec3 position, const BoundingCube 
     return glm::mix(v00, v10, x);
 }
 
-void SDF::getChildSDF(const float * sdf, int i , float * result) {
+void SDF::getChildSDF(const float sdf[8], int i , float * result) {
     BoundingCube canonicalCube = BoundingCube(glm::vec3(0.0f), 1.0f);
     BoundingCube cube = canonicalCube.getChild(i);
-    for (int j = 0; j < 8; ++j) {
+    for (uint j = 0; j < 8; ++j) {
         if(sdf[j] == INFINITY) {
             return;
         }
     }
-    for (int j = 0; j < 8; ++j) {
+    for (uint j = 0; j < 8; ++j) {
         result[j] = interpolate(sdf, cube.getCorner(j), canonicalCube);
     }
 }
 
-void SDF::copySDF(const float * src, float * dst) {
+void SDF::copySDF(const float src[8], float dst[8]) {
     for (int corner = 0; corner < 8; ++corner) {
         dst[corner] = src == NULL ? INFINITY : src[corner];
     }
 }
 
-SpaceType SDF::eval(float * sdf) {
+SpaceType SDF::eval(float sdf[8]) {
     bool hasPositive = false;
     bool hasNegative = false;
     for (int i = 0; i < 8; ++i) {  

@@ -295,7 +295,7 @@ void Octree::add(
   	expand(args);
     OctreeNodeFrame frame = OctreeNodeFrame(root, *this, 0, root->sdf, DISCARD_BRUSH_INDEX, false, *this);
     ThreadContext localChunkContext = ThreadContext(*this);
-    shape(frame, args, &localChunkContext);
+    shape(frame, args, &localChunkContext, "");
     std::cout << "\t\tOctree::add Ok! threads=" << threadsCreated << ", works=" << *shapeCounter << std::endl; 
 }
 
@@ -310,7 +310,7 @@ void Octree::del(
     ShapeArgs args = ShapeArgs(SDF::opSubtraction, function, painter, model, simplifier, changeHandler, minSize);
     OctreeNodeFrame frame = OctreeNodeFrame(root, *this, 0, root->sdf, DISCARD_BRUSH_INDEX, false, *this);
     ThreadContext localChunkContext = ThreadContext(*this);
-    shape(frame, args, &localChunkContext);
+    shape(frame, args, &localChunkContext, "");
     std::cout << "\t\tOctree::del Ok! threads=" << threadsCreated << ", works=" << *shapeCounter << std::endl; 
 }
 
@@ -332,13 +332,13 @@ bool Octree::isThreadNode(float length, float minSize, int threadSize) const {
     return minSize*threadSize < length;
 }
 
-NodeOperationResult Octree::shape(OctreeNodeFrame frame, const ShapeArgs &args, ThreadContext * threadContext) {    
+NodeOperationResult Octree::shape(OctreeNodeFrame frame, const ShapeArgs &args, ThreadContext * threadContext, std::string coords) {    
     ContainmentType check = args.function->check(frame.cube, args.model, args.minSize);
     OctreeNode * node = frame.node;
 
     if(check == ContainmentType::Disjoint) {
         SpaceType resultType = node ? node->getType() : SDF::eval(frame.sdf);
-        return NodeOperationResult(node, SpaceType::Empty, resultType, frame.sdf, NULL, false, false, DISCARD_BRUSH_INDEX, frame.interpolated);  // Skip this node
+        return NodeOperationResult(node, SpaceType::Empty, resultType, frame.sdf, NULL, false, false, DISCARD_BRUSH_INDEX);  // Skip this node
     }
 
     ChildBlock * block = NULL;
@@ -360,7 +360,7 @@ NodeOperationResult Octree::shape(OctreeNodeFrame frame, const ShapeArgs &args, 
         // --------------------------------
         // Iterate nodes and create threads
         // --------------------------------
-        bool isParentLeaf = node ? node->isLeaf() && !node->isEmpty() : false;
+        bool isParentLeaf = node != NULL && node->isLeaf();
         bool isChildInterpolated = isParentLeaf || frame.interpolated;
 
         for (int i = 0; i < 8; ++i) {
@@ -394,10 +394,10 @@ NodeOperationResult Octree::shape(OctreeNodeFrame frame, const ShapeArgs &args, 
                 NodeOperationResult * result = &children[i];
                 threads.emplace_back([this, childFrame, args, result]() {
                    ThreadContext localThreadContext(childFrame.cube);
-                   *result = shape(childFrame, args, &localThreadContext);
+                   *result = shape(childFrame, args, &localThreadContext, "");
                 });
             } else {
-                children[i] = shape(childFrame, args, threadContext);
+                children[i] = shape(childFrame, args, threadContext, coords + std::to_string(i));
             }
             
             (*shapeCounter)++;
@@ -418,7 +418,6 @@ NodeOperationResult Octree::shape(OctreeNodeFrame frame, const ShapeArgs &args, 
     // Inherit SDFs from children
     // ------------------------------
 
-    float existingSDF[8] = {INFINITY,INFINITY,INFINITY,INFINITY,INFINITY,INFINITY,INFINITY,INFINITY};
     float shapeSDF[8] = {INFINITY,INFINITY,INFINITY,INFINITY,INFINITY,INFINITY,INFINITY,INFINITY};
     float resultSDF[8] = {INFINITY,INFINITY,INFINITY,INFINITY,INFINITY,INFINITY,INFINITY,INFINITY};
     bool childResultSolid = true;
@@ -429,15 +428,13 @@ NodeOperationResult Octree::shape(OctreeNodeFrame frame, const ShapeArgs &args, 
     bool isSimplified = isLeaf;
     int brushIndex = frame.brushIndex;
 
-    if(isLeaf) {
-        SDF::copySDF(frame.sdf, existingSDF);
-    } else {
+    if(!isLeaf) {
         for(int i = 0; i < 8; ++i) {
             NodeOperationResult & child = children[i];
             if(child.process) {
                 shapeSDF[i] = child.shapeSDF[i];
-                resultSDF[i] = child.resultSDF[i];
             }
+            resultSDF[i] = child.resultSDF[i];
             childResultEmpty &= child.resultType == SpaceType::Empty;
             childResultSolid &= child.resultType == SpaceType::Solid;
             childShapeEmpty &= child.shapeType == SpaceType::Empty;
@@ -451,11 +448,14 @@ NodeOperationResult Octree::shape(OctreeNodeFrame frame, const ShapeArgs &args, 
     // ------------------------------
     // Build SDFs based on inheritance/execution
     // ------------------------------
-
-    buildSDF(args, frame.cube, shapeSDF, resultSDF, existingSDF, threadContext);
+    buildSDF(args, frame.cube, shapeSDF, resultSDF, frame.sdf, threadContext);
     
     SpaceType shapeType = isLeaf ? SDF::eval(shapeSDF) : childToParent(childShapeSolid, childShapeEmpty);
     SpaceType resultType = isLeaf ? SDF::eval(resultSDF) : childToParent(childResultSolid, childResultEmpty);
+
+    if(coords.rfind("1657277", 0) == 0 && isLeaf && shapeType == SpaceType::Surface) {
+        std::cout << "Break point @ " << coords << std::endl;
+    }
 
     if(shapeType == SpaceType::Empty && !frame.interpolated) {
         // Do nothing
@@ -511,7 +511,6 @@ NodeOperationResult Octree::shape(OctreeNodeFrame frame, const ShapeArgs &args, 
                     OctreeNode * childNode = child.node;
                     if(child.process) {
                         if(child.resultType == SpaceType::Solid) {
-                            //TODO: Build only solid nodes
                             BoundingCube childCube = frame.cube.getChild(i);
                             if(childNode == NULL) {
                                 childNode = allocator->allocate()->init(Vertex(childCube.getCenter()));
@@ -561,7 +560,7 @@ NodeOperationResult Octree::shape(OctreeNodeFrame frame, const ShapeArgs &args, 
             node->setLeaf(true);
         }
     }
-    return NodeOperationResult(node, shapeType, resultType, resultSDF, shapeSDF, true, isSimplified, brushIndex, frame.interpolated);
+    return NodeOperationResult(node, shapeType, resultType, resultSDF, shapeSDF, true, isSimplified, brushIndex);
 }
 
 
