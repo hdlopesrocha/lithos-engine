@@ -416,11 +416,9 @@ void Scene::generate(Camera &camera) {
 
 
 	BoundingBox mapBox = BoundingBox(glm::vec3(-sizePerTile*tiles*0.5,-height*0.5,-sizePerTile*tiles*0.5), glm::vec3(sizePerTile*tiles*0.5,height*0.5,sizePerTile*tiles*0.5));
-	camera.position.x = mapBox.getCenter().x;
-	camera.position.y = mapBox.getMaxY();
-	camera.position.z = mapBox.getCenter().z;
-
-
+	//camera.position.x = mapBox.getCenter().x;
+	//camera.position.y = mapBox.getMaxY();
+	//camera.position.z = mapBox.getCenter().z;
 
 	{
 		Transformation model = Transformation();
@@ -484,7 +482,7 @@ void Scene::generate(Camera &camera) {
 		WrappedSphere wrappedFunction = WrappedSphere(&function);
 		solidSpace.del(&wrappedFunction, model, SimpleBrush(2), minSize, *brushContext->simplifier, solidSpaceChangeHandler);
 	}
-
+	
 	{
 		Transformation model = Transformation();
 		std::cout << "\tsolidSpace.del(capsule)"<< std::endl;

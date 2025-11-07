@@ -22,11 +22,11 @@ class MainApplication : public LithosApplication {
 	glm::mat4 worldModel = glm::mat4(1.0f); // Identity matrix
 
 	//glm::quat quaternion = glm::normalize(glm::quat(1.0f, 1.0f, 1.0f, 1.0f));
-	glm::quat quaternion =  Math::eulerToQuat(0, 45, 0);
+	glm::quat quaternion = Math::eulerToQuat(-90, 0, -45);
 	// pitch yaw roll
 	
 	//Camera camera = Camera(glm::vec3(21649, 600, 5271), quaternion , 0.1f, 8192.0f);
-	Camera camera = Camera(glm::vec3(0, 500, 0), quaternion , 1.0f, 8192.0f);
+	Camera camera = Camera(glm::vec3(3456, 915, -750), quaternion , 1.0f, 8192.0f);
 	DirectionalLight light;
 
 	GLuint programSwap;

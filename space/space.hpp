@@ -313,7 +313,7 @@ class Octree: public BoundingCube {
 		OctreeNode* getNodeAt(const glm::vec3 &pos, int level, bool simplification);
 		OctreeNode* getNodeAt(const glm::vec3 &pos, bool simplification);
 		float getSdfAt(const glm::vec3 &pos);
-		void handleQuadNodes(const BoundingCube &cube, uint level, const float * sdf, std::vector<OctreeNodeTriangleHandler*> * handlers, bool simplification, ThreadContext * context);
+		void handleQuadNodes(const BoundingCube &cube, uint level, const float sdf[8], std::vector<OctreeNodeTriangleHandler*> * handlers, bool simplification, ThreadContext * context);
 		OctreeNode * fetch(const BoundingCube &cube, uint level, OctreeNode ** out, int i, bool simplification, ThreadContext * context);
 		int getMaxLevel(OctreeNode * node, int level);
 
@@ -324,7 +324,7 @@ class Octree: public BoundingCube {
 		void exportOctreeSerialization(OctreeSerialized * octree);
 		void exportNodesSerialization(std::vector<OctreeNodeCubeSerialized> * nodes);
 	private:
-		void buildSDF(const ShapeArgs &args, BoundingCube &cube, float * shapeSDF, float * resultSDF, float * existingResultSDF, ThreadContext * threadContext) const;
+		void buildSDF(const ShapeArgs &args, BoundingCube &cube, float shapeSDF[8], float resultSDF[8], float existingResultSDF[8], ThreadContext * threadContext) const;
 		float evaluateSDF(const ShapeArgs &args, std::unordered_map<glm::vec3, float> * threadContext, glm::vec3 p) const;
 	};
 
