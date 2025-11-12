@@ -374,7 +374,7 @@ struct alignas(16) InstanceData {
 		this->animation = 0u;
     }
 
-    InstanceData(uint animation, glm::mat4 matrix, float shift) {
+    InstanceData(uint animation, const glm::mat4 &matrix, float shift) {
         this->matrix = matrix;
         this->shift = shift;
 		this->animation = animation;
@@ -388,7 +388,7 @@ struct DebugInstanceData {
 	glm::mat4 matrix;
 	int brushIndex;
 
-    DebugInstanceData(glm::mat4 matrix, float * sdf, int brushIndex) {
+    DebugInstanceData(const glm::mat4 &matrix, float sdf[8], int brushIndex) {
 		sdf1 = glm::vec4(sdf[0], sdf[1], sdf[2], sdf[3]);
         sdf2 = glm::vec4(sdf[4], sdf[5], sdf[6], sdf[7]);
         this->matrix = matrix;

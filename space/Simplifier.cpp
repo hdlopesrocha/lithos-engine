@@ -9,9 +9,9 @@ Simplifier::Simplifier(float angle, float distance, bool texturing) {
 
 
 std::pair<bool,int> Simplifier::simplify(const BoundingCube chunkCube, const BoundingCube cube, const float * sdf, NodeOperationResult * children){	
-	int brushIndex = 0;
+	int brushIndex = DISCARD_BRUSH_INDEX;
 	bool hasSimplifiedChildren = false;
-	for(int i=0; i < 8 ; ++i) {
+	for(uint i=0; i < 8 ; ++i) {
 		NodeOperationResult * child = &children[i];
 		if(!child->process)	 continue;
 		if(child->isSimplified && child->resultType == SpaceType::Surface) {
@@ -30,7 +30,7 @@ std::pair<bool,int> Simplifier::simplify(const BoundingCube chunkCube, const Bou
 		int nodeCount=0;
 
 		// for leaf nodes shouldn't loop
-		for(int i=0; i < 8 ; ++i) {
+		for(uint i=0; i < 8 ; ++i) {
 			NodeOperationResult * child = &children[i];
 			if(!child->process)	 continue;
 			if(child->resultType == SpaceType::Surface) {

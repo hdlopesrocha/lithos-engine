@@ -5,7 +5,7 @@ SphereDistanceFunction::SphereDistanceFunction() {
     
 }
 
-float SphereDistanceFunction::distance(const glm::vec3 p, const Transformation &model) {
+float SphereDistanceFunction::distance(const glm::vec3 &p, const Transformation &model) {
     glm::vec3 pos = p - model.translate;
     pos = glm::inverse(model.quaternion) * pos;
 

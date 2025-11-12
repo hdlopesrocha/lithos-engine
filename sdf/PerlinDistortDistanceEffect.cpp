@@ -12,7 +12,7 @@ const char* WrappedPerlinDistortDistanceEffect::getLabel() const {
     return "Perlin Distort";
 }
 
-float WrappedPerlinDistortDistanceEffect::distance(const glm::vec3 p, const Transformation &model) {
+float WrappedPerlinDistortDistanceEffect::distance(const glm::vec3 &p, const Transformation &model) {
     glm::vec3 noise = SDF::distortPerlinFractal(p+offset, frequency, 6, 2.0f, 0.5f);
     noise.x = Math::brightnessAndContrast(noise.x, brightness, contrast);
     noise.y = Math::brightnessAndContrast(noise.y, brightness, contrast);

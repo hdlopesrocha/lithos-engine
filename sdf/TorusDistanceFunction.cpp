@@ -4,7 +4,7 @@ TorusDistanceFunction::TorusDistanceFunction(glm::vec2 radius): radius(radius) {
     
 }
 
-float TorusDistanceFunction::distance(const glm::vec3 p, const Transformation &model) {
+float TorusDistanceFunction::distance(const glm::vec3 &p, const Transformation &model) {
      glm::vec3 pos = p - getCenter(model);
     pos = glm::inverse(model.quaternion) * pos;
 

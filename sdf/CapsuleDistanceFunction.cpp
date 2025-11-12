@@ -6,7 +6,7 @@ CapsuleDistanceFunction::CapsuleDistanceFunction(glm::vec3 a, glm::vec3 b, float
     this->radius = r;
 }
 
-float CapsuleDistanceFunction::distance(const glm::vec3 p, const Transformation &model) {
+float CapsuleDistanceFunction::distance(const glm::vec3 &p, const Transformation &model) {
     glm::vec3 pos = p - model.translate; // Move point into model space
     pos = glm::inverse(model.quaternion) * pos;
     return SDF::capsule(pos/model.scale, a, b, radius);

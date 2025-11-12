@@ -12,7 +12,7 @@ const char* WrappedVoronoiCarveDistanceEffect::getLabel() const {
     return "Voronoi Carve";
 }
 
-float WrappedVoronoiCarveDistanceEffect::distance(const glm::vec3 p, const Transformation &model) {
+float WrappedVoronoiCarveDistanceEffect::distance(const glm::vec3 &p, const Transformation &model) {
     glm::vec3 pp = p + offset; // apply offset
     float d = function->distance(p, model);
 

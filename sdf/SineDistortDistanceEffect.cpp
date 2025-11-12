@@ -12,7 +12,7 @@ const char* WrappedSineDistortDistanceEffect::getLabel() const {
     return "Sine Distort";
 }
 
-float WrappedSineDistortDistanceEffect::distance(const glm::vec3 p, const Transformation &model) {
+float WrappedSineDistortDistanceEffect::distance(const glm::vec3 &p, const Transformation &model) {
     glm::vec3 pp = p + offset; // apply offset
 
     float dx = sin(pp.x * frequency) * cos(pp.y * frequency) * sin(pp.z * frequency);

@@ -186,14 +186,14 @@ bool allDifferent(const T& first, const Args&... args) {
 void Octree::handleQuadNodes(const BoundingCube &cube, uint level, const float sdf[8], std::vector<OctreeNodeTriangleHandler*> * handlers, bool simplification, ThreadContext * context) {
     OctreeNode * neighbors[8] = {NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL};
     for(size_t k =0 ; k < TESSELATION_EDGES.size(); ++k) {
-		glm::ivec2 edge = TESSELATION_EDGES[k];
+		glm::ivec2 &edge = TESSELATION_EDGES[k];
 		bool sign0 = sdf[edge[0]] < 0.0f;
 		bool sign1 = sdf[edge[1]] < 0.0f;
 
 		if(sign0 != sign1) {
-			glm::ivec4 quad = TESSELATION_ORDERS[k];
+			glm::ivec4 &quad = TESSELATION_ORDERS[k];
             Vertex vertices[4] = { Vertex(), Vertex(), Vertex(), Vertex() };
-			for(int i =0; i < 4 ; ++i) {
+			for(uint i =0; i < 4 ; ++i) {
 				OctreeNode * childNode = fetch(cube, level, neighbors, quad[i], simplification, context);
                 if(childNode != NULL && !childNode->isSolid() && !childNode->isEmpty()) {
                     vertices[i] = childNode->vertex;

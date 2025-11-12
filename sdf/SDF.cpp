@@ -144,34 +144,34 @@ float SDF::opXor(float d1, float d2) {
     return glm::max(glm::min(d1,d2),-glm::max(d1,d2));
 }
 
-float SDF::box(glm::vec3 p, const glm::vec3 len) {
+float SDF::box(const glm::vec3 &p, const glm::vec3 len) {
     glm::vec3 q = abs(p) - len;
     return glm::length(glm::max(q, glm::vec3(0.0))) + glm::min(glm::max(q.x,glm::max(q.y,q.z)),0.0f);
 }
 
-float SDF::cylinder(glm::vec3 p, float r, float h) {
+float SDF::cylinder(const glm::vec3 &p, float r, float h) {
     glm::vec2 d = glm::vec2(glm::length(glm::vec2(p.x, p.z)) - r, glm::abs(p.y) - h);
     return glm::min(glm::max(d.x, d.y), 0.0f) + glm::length(glm::max(d, 0.0f));
 }
 
-float SDF::capsule(glm::vec3 p, glm::vec3 a, glm::vec3 b, float r ) {
+float SDF::capsule(const glm::vec3 &p, glm::vec3 a, glm::vec3 b, float r ) {
     glm::vec3 pa = p - a, ba = b - a;
     float h = glm::clamp( glm::dot(pa,ba)/glm::dot(ba,ba), 0.0f, 1.0f );
     return glm::length( pa - ba*h ) - r;
 }
 
-float SDF::torus(glm::vec3 p, glm::vec2 t ) {
+float SDF::torus(const glm::vec3 &p, glm::vec2 t ) {
   glm::vec2 q = glm::vec2(glm::length(glm::vec2(p.x,p.z))-t.x,p.y);
   return glm::length(q)-t.y;
 }
 
-float SDF::octahedron(glm::vec3 p, float s ) {
-  p = abs(p);
-  float m = p.x+p.y+p.z-s;
+float SDF::octahedron(const glm::vec3 &p, float s ) {
+  glm::vec3 p2 = abs(p);
+  float m = p2.x+p2.y+p2.z-s;
   glm::vec3 q;
-       if( 3.0*p.x < m ) q = glm::vec3(p.x, p.y, p.z);
-  else if( 3.0*p.y < m ) q = glm::vec3(p.y, p.z, p.x);
-  else if( 3.0*p.z < m ) q = glm::vec3(p.z, p.x, p.y);
+       if( 3.0*p2.x < m ) q = glm::vec3(p2.x, p2.y, p2.z);
+  else if( 3.0*p2.y < m ) q = glm::vec3(p2.y, p2.z, p2.x);
+  else if( 3.0*p2.z < m ) q = glm::vec3(p2.z, p2.x, p2.y);
   else return m*0.57735027;
     
   float k = glm::clamp(0.5f*(q.z-q.y+s),0.0f,s); 
@@ -334,7 +334,7 @@ float SDF::pyramid(const glm::vec3 &p, float h, float a) {
 }
 
 
-float SDF::cone(glm::vec3 p) {
+float SDF::cone(const glm::vec3 &p) {
     // Unit cone: apex at origin, base radius = height = 1
     // q vector derived from Inigo Quilez's formula
     const glm::vec2 q(1.0f, -1.0f);
@@ -354,14 +354,14 @@ float SDF::cone(glm::vec3 p) {
     return glm::sqrt(d) * glm::sign(s);
 }
 
-glm::vec3 SDF::distortPerlin(glm::vec3 p, float amplitude, float frequency) {
+glm::vec3 SDF::distortPerlin(const glm::vec3 &p, float amplitude, float frequency) {
     float noiseX = stb_perlin_noise3(p.x*frequency, p.y*frequency, p.z*frequency, 0, 0, 0);
     float noiseY = stb_perlin_noise3((p.x+100)*frequency, (p.y+100)*frequency, (p.z+100)*frequency, 0, 0, 0);
     float noiseZ = stb_perlin_noise3((p.x+200)*frequency, (p.y+200)*frequency, (p.z+200)*frequency, 0, 0, 0);
     return p + amplitude * glm::vec3(noiseX, noiseY, noiseZ);
 }
 
-glm::vec3 SDF::distortPerlinFractal(glm::vec3 p, float frequency, int octaves, float lacunarity = 2.0f, float gain = 0.5f) {
+glm::vec3 SDF::distortPerlinFractal(const glm::vec3 &p, float frequency, int octaves, float lacunarity = 2.0f, float gain = 0.5f) {
     glm::vec3 totalNoise(0.0f);
     float freq = frequency;
     float amp = 1.0f;
@@ -400,7 +400,7 @@ glm::vec3 SDF::distortPerlinFractal(glm::vec3 p, float frequency, int octaves, f
     return totalNoise;
 }
 
-float SDF::distortedCarveFractalSDF(glm::vec3 p, 
+float SDF::distortedCarveFractalSDF(const glm::vec3 &p, 
                                     float threshold, 
                                     float frequency, 
                                     int octaves = 4, 
@@ -445,7 +445,7 @@ float SDF::opSmoothIntersection(float d1, float d2, float k) {
     return glm::mix( d1, d2, h ) + k*h*(1.0-h);
 }
 
-float SDF::interpolate(const float sdf[8], glm::vec3 position, const BoundingCube &cube) {
+float SDF::interpolate(const float sdf[8], const glm::vec3 &position, const BoundingCube &cube) {
     glm::vec3 local = (position - cube.getMin()) / cube.getLength(); // [0,1]^3
     float x = local.x, y = local.y, z = local.z;
 
@@ -463,7 +463,7 @@ float SDF::interpolate(const float sdf[8], glm::vec3 position, const BoundingCub
     return glm::mix(v00, v10, x);
 }
 
-void SDF::getChildSDF(const float sdf[8], int i , float * result) {
+void SDF::getChildSDF(const float sdf[8], int i , float result[8]) {
     BoundingCube canonicalCube = BoundingCube(glm::vec3(0.0f), 1.0f);
     BoundingCube cube = canonicalCube.getChild(i);
     for (uint j = 0; j < 8; ++j) {
@@ -472,7 +472,8 @@ void SDF::getChildSDF(const float sdf[8], int i , float * result) {
         }
     }
     for (uint j = 0; j < 8; ++j) {
-        result[j] = interpolate(sdf, cube.getCorner(j), canonicalCube);
+        glm::vec3 corner = cube.getCorner(j);
+        result[j] = interpolate(sdf, corner, canonicalCube);
     }
 }
 

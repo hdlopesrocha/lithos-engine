@@ -339,7 +339,7 @@ class OctreeDifferenceFunction : public SignedDistanceFunction {
     BoundingBox box;
 	float bias;
     OctreeDifferenceFunction(Octree * tree, BoundingBox box, float bias);
-    float distance(const glm::vec3 p, const Transformation &model) override;
+    float distance(const glm::vec3 &p, const Transformation &model) override;
 	SdfType getType() const override;
 	glm::vec3 getCenter(const Transformation &model) const override;
 

@@ -5,7 +5,7 @@ ConeDistanceFunction::ConeDistanceFunction() {
     
 }
 
-float ConeDistanceFunction::distance(const glm::vec3 p, const Transformation &model) {
+float ConeDistanceFunction::distance(const glm::vec3 &p, const Transformation &model) {
  // Transform point into local space
     glm::vec3 pos = p - getCenter(model);
     pos = glm::inverse(model.quaternion) * pos;

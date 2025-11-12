@@ -59,33 +59,32 @@ public:
     static float opSmoothSubtraction( float d1, float d2, float k );
     static float opSmoothIntersection( float d1, float d2, float k );
 
-	static float box(glm::vec3 p, const glm::vec3 len);
-    static float cylinder(glm::vec3 p, float r, float h);
-
-    static float torus(glm::vec3 p, glm::vec2 t );
-    static float capsule(glm::vec3 p, glm::vec3 a, glm::vec3 b, float r );
-    static float octahedron(glm::vec3 p, float s);
+	static float box(const glm::vec3 &p, const glm::vec3 len);
+    static float cylinder(const glm::vec3 &p, float r, float h);
+    static float torus(const glm::vec3 &p, glm::vec2 t );
+    static float capsule(const glm::vec3 &p, glm::vec3 a, glm::vec3 b, float r );
+    static float octahedron(const glm::vec3 &p, float s);
     static float pyramid(const glm::vec3 &p, float h, float a);
-    static float cone(glm::vec3 p);
+    static float cone(const glm::vec3 &p);
     static float voronoi3D(const glm::vec3& p, float cellSize, float seed);
-    static glm::vec3 distortPerlin(glm::vec3 p, float amplitude, float frequency);
-    static glm::vec3 distortPerlinFractal(glm::vec3 p, float frequency, int octaves, float lacunarity, float gain);
-    static float distortedCarveFractalSDF(glm::vec3 p, float threshold, float frequency, int octaves, float lacunarity, float gain);
+    static glm::vec3 distortPerlin(const glm::vec3 &p, float amplitude, float frequency);
+    static glm::vec3 distortPerlinFractal(const glm::vec3 &p, float frequency, int octaves, float lacunarity, float gain);
+    static float distortedCarveFractalSDF(const glm::vec3 &p, float threshold, float frequency, int octaves, float lacunarity, float gain);
     static glm::vec3 getPosition(float sdf[8], const BoundingCube &cube);
     static glm::vec3 getAveragePosition(float sdf[8], const BoundingCube &cube);
     static glm::vec3 getAveragePosition2(float sdf[8], const BoundingCube &cube);
     static glm::vec3 getNormal(float sdf[8], const BoundingCube& cube);
-    static glm::vec3 getNormalFromPosition(float sdf[8], const BoundingCube& cube, const glm::vec3& position);
-    static void getChildSDF(const float sdf[8], int i , float * result);
+    static glm::vec3 getNormalFromPosition(float sdf[8], const BoundingCube& cube, const glm::vec3 &position);
+    static void getChildSDF(const float sdf[8], int i , float result[8]);
     static void copySDF(const float src[8], float dst[8]);
-    static float interpolate(const float sdf[8], glm::vec3 position, const BoundingCube &cube);
+    static float interpolate(const float sdf[8], const glm::vec3 &position, const BoundingCube &cube);
     static SpaceType eval(float sdf[8]);
 };
 
 class SignedDistanceFunction {
     public:
     virtual SdfType getType() const = 0; 
-	virtual float distance(const glm::vec3 p, const Transformation &model) = 0;
+	virtual float distance(const glm::vec3 &p, const Transformation &model) = 0;
     virtual glm::vec3 getCenter(const Transformation &model) const = 0;
 };
 
@@ -118,7 +117,7 @@ class WrappedSignedDistanceFunction : public SignedDistanceFunction {
         return function;
     }
 
-	float distance(const glm::vec3 p, const Transformation &model) override {
+	float distance(const glm::vec3 &p, const Transformation &model) override {
         if(cacheEnabled){
             mtx.lock();
             auto it = cacheSDF.find(p);
@@ -152,7 +151,7 @@ class SphereDistanceFunction : public SignedDistanceFunction {
     public:
 	
 	SphereDistanceFunction();
-	float distance(const glm::vec3 p, const Transformation &model) override;
+	float distance(const glm::vec3 &p, const Transformation &model) override;
     SdfType getType() const override; 
     glm::vec3 getCenter(const Transformation &model) const override;
 };
@@ -173,7 +172,7 @@ class CylinderDistanceFunction : public SignedDistanceFunction {
     public:
 	
 	CylinderDistanceFunction();
-	float distance(const glm::vec3 p, const Transformation &model) override;
+	float distance(const glm::vec3 &p, const Transformation &model) override;
     SdfType getType() const override; 
     glm::vec3 getCenter(const Transformation &model) const override;
 };
@@ -195,7 +194,7 @@ class TorusDistanceFunction : public SignedDistanceFunction {
     glm::vec2 radius;	
 
 	TorusDistanceFunction(glm::vec2 radius);
-	float distance(const glm::vec3 p, const Transformation &model) override;
+	float distance(const glm::vec3 &p, const Transformation &model) override;
     SdfType getType() const override; 
     glm::vec3 getCenter(const Transformation &model) const override;
 
@@ -217,7 +216,7 @@ class BoxDistanceFunction : public SignedDistanceFunction {
     public:
 
 	BoxDistanceFunction();
-	float distance(const glm::vec3 p, const Transformation &model) override;
+	float distance(const glm::vec3 &p, const Transformation &model) override;
     SdfType getType() const override; 
     glm::vec3 getCenter(const Transformation &model) const override;
 
@@ -242,7 +241,7 @@ class CapsuleDistanceFunction : public SignedDistanceFunction {
     float radius;
 
     CapsuleDistanceFunction(glm::vec3 a, glm::vec3 b, float r);
-	float distance(const glm::vec3 p, const Transformation &model) override;
+	float distance(const glm::vec3 &p, const Transformation &model) override;
     SdfType getType() const override; 
     glm::vec3 getCenter(const Transformation &model) const override;
 
@@ -264,7 +263,7 @@ class HeightMapDistanceFunction : public SignedDistanceFunction {
 	public:
 	HeightMap * map;
 	HeightMapDistanceFunction(HeightMap * map);
-	float distance(const glm::vec3 p, const Transformation &model) override;
+	float distance(const glm::vec3 &p, const Transformation &model) override;
     SdfType getType() const override; 
     glm::vec3 getCenter(const Transformation &model) const override;
 
@@ -286,7 +285,7 @@ class OctahedronDistanceFunction : public SignedDistanceFunction {
     public:
  
 	OctahedronDistanceFunction();
-	float distance(const glm::vec3 p, const Transformation &model) override;
+	float distance(const glm::vec3 &p, const Transformation &model) override;
     SdfType getType() const override; 
     glm::vec3 getCenter(const Transformation &model) const override;
 
@@ -308,7 +307,7 @@ class PyramidDistanceFunction : public SignedDistanceFunction {
     public:
 
 	PyramidDistanceFunction();
-	float distance(const glm::vec3 p, const Transformation &model) override;
+	float distance(const glm::vec3 &p, const Transformation &model) override;
     SdfType getType() const override; 
     glm::vec3 getCenter(const Transformation &model) const override;
 
@@ -331,7 +330,7 @@ class ConeDistanceFunction : public SignedDistanceFunction {
     public:
 	
 	ConeDistanceFunction();
-	float distance(const glm::vec3 p, const Transformation &model) override;
+	float distance(const glm::vec3 &p, const Transformation &model) override;
     SdfType getType() const override; 
     glm::vec3 getCenter(const Transformation &model) const override;
 };
@@ -371,7 +370,7 @@ class WrappedPerlinDistortDistanceEffect : public WrappedSignedDistanceEffect {
     ~WrappedPerlinDistortDistanceEffect();
     BoundingSphere getSphere(const Transformation &model, float bias) const;
     const char* getLabel() const override;
-  	float distance(const glm::vec3 p, const Transformation &model) override;
+  	float distance(const glm::vec3 &p, const Transformation &model) override;
     ContainmentType check(const BoundingCube &cube, const Transformation &model, float bias) const override;
     SdfType getType() const override { return SdfType::DISTORT_PERLIN; }
 };
@@ -387,7 +386,7 @@ class WrappedPerlinCarveDistanceEffect : public WrappedSignedDistanceEffect {
     WrappedPerlinCarveDistanceEffect(WrappedSignedDistanceFunction * function, float amplitude, float frequency, float threshold, glm::vec3 offset, float brightness, float contrast);
     ~WrappedPerlinCarveDistanceEffect();
     const char* getLabel() const override;
-  	float distance(const glm::vec3 p, const Transformation &model) override;
+  	float distance(const glm::vec3 &p, const Transformation &model) override;
     ContainmentType check(const BoundingCube &cube, const Transformation &model, float bias) const override;
     SdfType getType() const override { return SdfType::CARVE_PERLIN; }
 };
@@ -401,7 +400,7 @@ class WrappedSineDistortDistanceEffect : public WrappedSignedDistanceEffect {
     ~WrappedSineDistortDistanceEffect();
     BoundingSphere getSphere(const Transformation &model, float bias) const;
     const char* getLabel() const override;
-  	float distance(const glm::vec3 p, const Transformation &model) override;
+  	float distance(const glm::vec3 &p, const Transformation &model) override;
     SdfType getType() const override { return SdfType::DISTORT_SINE; }
 };
 
@@ -416,7 +415,7 @@ class WrappedVoronoiCarveDistanceEffect : public WrappedSignedDistanceEffect {
     ~WrappedVoronoiCarveDistanceEffect();
     BoundingSphere getSphere(const Transformation &model, float bias) const;
     const char* getLabel() const override;
-  	float distance(const glm::vec3 p, const Transformation &model) override;
+  	float distance(const glm::vec3 &p, const Transformation &model) override;
     ContainmentType check(const BoundingCube &cube, const Transformation &model, float bias) const override;
     SdfType getType() const override { return SdfType::CARVE_VORONOI; }
 };

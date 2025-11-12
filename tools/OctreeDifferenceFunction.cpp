@@ -4,7 +4,7 @@ OctreeDifferenceFunction::OctreeDifferenceFunction(Octree * tree, BoundingBox bo
 
 }
 
-float OctreeDifferenceFunction::distance(const glm::vec3 p, const Transformation &model) {
+float OctreeDifferenceFunction::distance(const glm::vec3 &p, const Transformation &model) {
     glm::vec3 len = box.getLength()*0.5f;
     glm::vec3 pos = p - box.getCenter()+model.translate;
     return SDF::opSubtraction(
