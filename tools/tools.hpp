@@ -49,7 +49,7 @@ class LandBrush : public TexturePainter {
 
 	public: 
 	LandBrush();
-	int paint(const Vertex &vertex) const override;
+	int paint(const Vertex &vertex, glm::vec4 translate, glm::vec4 scale) const override;
 };
 
 
@@ -68,7 +68,7 @@ class DerivativeLandBrush : public TexturePainter {
 
 	public: 
 	DerivativeLandBrush();
-	int paint(const Vertex &vertex) const override;
+	int paint(const Vertex &vertex, glm::vec4 translate, glm::vec4 scale) const override;
 };
 
 
@@ -77,7 +77,7 @@ class SimpleBrush : public TexturePainter {
 
 	public: 
 	SimpleBrush(int brush);
-	int paint(const Vertex &vertex) const override;
+	int paint(const Vertex &vertex, glm::vec4 translate, glm::vec4 scale) const override;
 };
 
 class WaterBrush : public TexturePainter {
@@ -85,7 +85,7 @@ class WaterBrush : public TexturePainter {
 
 	public: 
 	WaterBrush(int water);
-	int paint(const Vertex &vertex) const override;
+	int paint(const Vertex &vertex, glm::vec4 translate, glm::vec4 scale) const override;
 };
 
 class OctreeInstanceBuilderHandler : public InstanceBuilderHandler<DebugInstanceData>  {
@@ -191,6 +191,8 @@ class BrushContext {
 	BrushMode mode;
 	std::vector<WrappedSignedDistanceFunction*> functions;
 	WrappedSignedDistanceFunction * currentFunction;
+	glm::vec4 translate;
+	glm::vec4 scale;
 	std::vector<WrappedSignedDistanceEffect*> effects;
 	WrappedSignedDistanceEffect * currentEffect;
 	Simplifier * simplifier;

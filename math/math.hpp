@@ -498,7 +498,7 @@ private:
 
 class TexturePainter {
 	public:
-	virtual int paint(const Vertex &v) const = 0;
+	virtual int paint(const Vertex &v, glm::vec4 translate, glm::vec4 scale) const = 0;
 };
 
 

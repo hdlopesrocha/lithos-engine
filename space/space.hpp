@@ -245,6 +245,8 @@ struct ShapeArgs {
     WrappedSignedDistanceFunction * function; 
     const TexturePainter &painter;
     const Transformation model;
+	glm::vec4 translate;
+	glm::vec4 scale;
     Simplifier &simplifier; 
     OctreeChangeHandler * changeHandler;
 	float minSize;
@@ -254,6 +256,8 @@ struct ShapeArgs {
         WrappedSignedDistanceFunction * function, 
         const TexturePainter &painter,
         const Transformation model,
+		glm::vec4 translate,
+		glm::vec4 scale,
         Simplifier &simplifier, 
         OctreeChangeHandler * changeHandler,
 	    float minSize
@@ -262,6 +266,8 @@ struct ShapeArgs {
         function(function),
         painter(painter),
         model(model),
+		translate(translate),
+		scale(scale),
         simplifier(simplifier),
         changeHandler(changeHandler),
 		minSize(minSize)
@@ -304,8 +310,8 @@ class Octree: public BoundingCube {
 		Octree();
 		
 		void expand(const ShapeArgs &args);
-		void add(WrappedSignedDistanceFunction *function, const Transformation model, const TexturePainter &painter, float minSize, Simplifier &simplifier, OctreeChangeHandler * changeHandler);
-		void del(WrappedSignedDistanceFunction *function, const Transformation model, const TexturePainter &painter, float minSize, Simplifier &simplifier, OctreeChangeHandler * changeHandler);
+		void add(WrappedSignedDistanceFunction *function, const Transformation model, glm::vec4 translate, glm::vec4 scale, const TexturePainter &painter, float minSize, Simplifier &simplifier, OctreeChangeHandler * changeHandler);
+		void del(WrappedSignedDistanceFunction *function, const Transformation model, glm::vec4 translate, glm::vec4 scale, const TexturePainter &painter, float minSize, Simplifier &simplifier, OctreeChangeHandler * changeHandler);
 		NodeOperationResult shape(OctreeNodeFrame frame, const ShapeArgs &args, ThreadContext * threadContext, std::string coords);
 		void iterate(IteratorHandler &handler);
 		void iterateFlat(IteratorHandler &handler);

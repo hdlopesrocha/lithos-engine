@@ -413,7 +413,8 @@ void Scene::generate(Camera &camera) {
 	int tiles= 256;
 	int height = 2048;
 	float minSize = 30;
-
+	glm::vec4 translate(0.0f);
+	glm::vec4 scale(1.0f);
 
 	BoundingBox mapBox = BoundingBox(glm::vec3(-sizePerTile*tiles*0.5,-height*0.5,-sizePerTile*tiles*0.5), glm::vec3(sizePerTile*tiles*0.5,height*0.5,sizePerTile*tiles*0.5));
 	//camera.position.x = mapBox.getCenter().x;
@@ -435,7 +436,7 @@ void Scene::generate(Camera &camera) {
 		//wrappedFunction.cacheEnabled = true;
 		
 		std::cout << "\tsolidSpace.add(heightmap)"<< std::endl;
-		solidSpace.add(&wrappedFunction, model, LandBrush(), minSize, *brushContext->simplifier, solidSpaceChangeHandler);
+		solidSpace.add(&wrappedFunction, model, translate, scale, LandBrush(), minSize, *brushContext->simplifier, solidSpaceChangeHandler);
 	}
 
 
@@ -447,7 +448,7 @@ void Scene::generate(Camera &camera) {
 		BoxDistanceFunction function = BoxDistanceFunction();
 		Transformation model = Transformation(box.getLength()*0.5f, box.getCenter(), 0, 0, 0);
 		WrappedBox wrappedFunction = WrappedBox(&function);
-		solidSpace.add(&wrappedFunction, model, SimpleBrush(9), minSize*2.0f, *brushContext->simplifier, solidSpaceChangeHandler);
+		solidSpace.add(&wrappedFunction, model, translate, scale, SimpleBrush(9), minSize*2.0f, *brushContext->simplifier, solidSpaceChangeHandler);
 	}
 
 	{
@@ -458,7 +459,7 @@ void Scene::generate(Camera &camera) {
 		SphereDistanceFunction function = SphereDistanceFunction();
 		Transformation model = Transformation(glm::vec3(sphere.radius), sphere.center, 0, 0, 0);
 		WrappedSphere wrappedFunction = WrappedSphere(&function);
-		solidSpace.add(&wrappedFunction, model, SimpleBrush(7), minSize*0.5f, *brushContext->simplifier, solidSpaceChangeHandler);
+		solidSpace.add(&wrappedFunction, model, translate, scale, SimpleBrush(7), minSize*0.5f, *brushContext->simplifier, solidSpaceChangeHandler);
 	}
 
 	{
@@ -469,7 +470,7 @@ void Scene::generate(Camera &camera) {
 		SphereDistanceFunction function;
 		Transformation model = Transformation(glm::vec3(sphere.radius), sphere.center, 0, 0, 0);
 		WrappedSphere wrappedFunction = WrappedSphere(&function);
-		solidSpace.del(&wrappedFunction, model, SimpleBrush(5), minSize*0.25f, *brushContext->simplifier, solidSpaceChangeHandler);
+		solidSpace.del(&wrappedFunction, model, translate, scale, SimpleBrush(5), minSize*0.25f, *brushContext->simplifier, solidSpaceChangeHandler);
 	}
 
 	{
@@ -480,7 +481,7 @@ void Scene::generate(Camera &camera) {
 		SphereDistanceFunction function = SphereDistanceFunction();
 		Transformation model = Transformation(glm::vec3(sphere.radius), sphere.center, 0, 0, 0);
 		WrappedSphere wrappedFunction = WrappedSphere(&function);
-		solidSpace.del(&wrappedFunction, model, SimpleBrush(2), minSize, *brushContext->simplifier, solidSpaceChangeHandler);
+		solidSpace.del(&wrappedFunction, model, translate, scale, SimpleBrush(2), minSize, *brushContext->simplifier, solidSpaceChangeHandler);
 	}
 	
 	{
@@ -492,7 +493,7 @@ void Scene::generate(Camera &camera) {
 		CapsuleDistanceFunction function(a, b, r);
 		WrappedCapsule wrappedFunction = WrappedCapsule(&function);
 		WrappedPerlinDistortDistanceEffect distortedFunction = WrappedPerlinDistortDistanceEffect(&wrappedFunction, 64.0f, 0.1f/32.0f, glm::vec3(0), 0.0f, 1.0f);
-		solidSpace.del(&distortedFunction, model, SimpleBrush(5), minSize, *brushContext->simplifier, solidSpaceChangeHandler);
+		solidSpace.del(&distortedFunction, model, translate, scale, SimpleBrush(5), minSize, *brushContext->simplifier, solidSpaceChangeHandler);
 	}
 
 	{
@@ -503,7 +504,7 @@ void Scene::generate(Camera &camera) {
 		SphereDistanceFunction function = SphereDistanceFunction();
 		Transformation model = Transformation(glm::vec3(sphere.radius), sphere.center, 0, 0, 0);
 		WrappedSphere wrappedFunction = WrappedSphere(&function);
-		liquidSpace.add(&wrappedFunction, model, SimpleBrush(1), minSize*0.1f, *brushContext->simplifier, liquidSpaceChangeHandler);
+		liquidSpace.add(&wrappedFunction, model, translate, scale, SimpleBrush(1), minSize*0.1f, *brushContext->simplifier, liquidSpaceChangeHandler);
 	}
 
 	{
@@ -513,7 +514,7 @@ void Scene::generate(Camera &camera) {
 		OctahedronDistanceFunction function = OctahedronDistanceFunction();
 		Transformation model = Transformation(glm::vec3(radius), center, 0, 0, 0);
 		WrappedOctahedron wrappedFunction = WrappedOctahedron(&function);
-		solidSpace.add(&wrappedFunction, model, SimpleBrush(5), minSize, *brushContext->simplifier, solidSpaceChangeHandler);
+		solidSpace.add(&wrappedFunction, model, translate, scale, SimpleBrush(5), minSize, *brushContext->simplifier, solidSpaceChangeHandler);
 	}
 
 	{
@@ -523,7 +524,7 @@ void Scene::generate(Camera &camera) {
 		PyramidDistanceFunction function = PyramidDistanceFunction();
 		Transformation model(glm::vec3(radius), center, 0,0,0);
 		WrappedPyramid wrappedFunction = WrappedPyramid(&function);
-		solidSpace.add(&wrappedFunction, model, SimpleBrush(5), minSize, *brushContext->simplifier, solidSpaceChangeHandler);
+		solidSpace.add(&wrappedFunction, model, translate, scale, SimpleBrush(5), minSize, *brushContext->simplifier, solidSpaceChangeHandler);
 	}
 
 	{
@@ -533,7 +534,7 @@ void Scene::generate(Camera &camera) {
 		TorusDistanceFunction function = TorusDistanceFunction(glm::vec2(0.5, 0.25));
 		Transformation model(glm::vec3(radius), center, 0,0,0);
 		WrappedTorus wrappedFunction = WrappedTorus(&function);
-		solidSpace.add(&wrappedFunction, model, SimpleBrush(5), minSize, *brushContext->simplifier, solidSpaceChangeHandler);
+		solidSpace.add(&wrappedFunction, model, translate, scale, SimpleBrush(5), minSize, *brushContext->simplifier, solidSpaceChangeHandler);
 	}
 
 
@@ -544,7 +545,7 @@ void Scene::generate(Camera &camera) {
 		ConeDistanceFunction function = ConeDistanceFunction();
 		Transformation model(glm::vec3(radius), center, 0,0,0);
 		WrappedCone wrappedFunction = WrappedCone(&function);
-		solidSpace.add(&wrappedFunction, model, SimpleBrush(5), minSize, *brushContext->simplifier, solidSpaceChangeHandler);
+		solidSpace.add(&wrappedFunction, model, translate, scale, SimpleBrush(5), minSize, *brushContext->simplifier, solidSpaceChangeHandler);
 	}
 
 	{
@@ -554,7 +555,7 @@ void Scene::generate(Camera &camera) {
 		CylinderDistanceFunction function = CylinderDistanceFunction();
 		Transformation model(glm::vec3(radius), center, 0,0,0);
 		WrappedCylinder wrappedFunction = WrappedCylinder(&function);
-		solidSpace.add(&wrappedFunction, model, SimpleBrush(5), minSize, *brushContext->simplifier, solidSpaceChangeHandler);
+		solidSpace.add(&wrappedFunction, model, translate, scale, SimpleBrush(5), minSize, *brushContext->simplifier, solidSpaceChangeHandler);
 	}
 
 
@@ -567,7 +568,7 @@ void Scene::generate(Camera &camera) {
 		WrappedSphere wrappedFunction = WrappedSphere(&function);
 		WrappedPerlinDistortDistanceEffect distortedFunction = WrappedPerlinDistortDistanceEffect(&wrappedFunction, 48.0f, 0.1f/32.0f, glm::vec3(0), 0.0f, 1.0f);
 		//distortedFunction.cacheEnabled = true;
-		solidSpace.add(&distortedFunction, model, SimpleBrush(5), minSize*0.25f, *brushContext->simplifier, solidSpaceChangeHandler);
+		solidSpace.add(&distortedFunction, model, translate, scale, SimpleBrush(5), minSize*0.25f, *brushContext->simplifier, solidSpaceChangeHandler);
 	}
 
 	{
@@ -579,7 +580,7 @@ void Scene::generate(Camera &camera) {
 		WrappedSphere wrappedFunction = WrappedSphere(&function);
 		WrappedPerlinCarveDistanceEffect carvedFunction = WrappedPerlinCarveDistanceEffect(&wrappedFunction, 64.0f, 0.1f/32.0f, 0.1f, glm::vec3(0), 0.0f, 1.0f);
 		//carvedFunction.cacheEnabled = true;
-		solidSpace.add(&carvedFunction, model, SimpleBrush(5), minSize*0.2f, *brushContext->simplifier, solidSpaceChangeHandler);
+		solidSpace.add(&carvedFunction, model, translate, scale, SimpleBrush(5), minSize*0.2f, *brushContext->simplifier, solidSpaceChangeHandler);
 	}
 	{
 		std::cout << "\tsolidSpace.add(sineDistort)"<< std::endl;
@@ -590,7 +591,7 @@ void Scene::generate(Camera &camera) {
 		WrappedSphere wrappedFunction = WrappedSphere(&function);
 		WrappedSineDistortDistanceEffect carvedFunction = WrappedSineDistortDistanceEffect(&wrappedFunction, 32.0f, 0.1f/2.0f, glm::vec3(0));
 		//carvedFunction.cacheEnabled = true;
-		solidSpace.add(&carvedFunction, model, SimpleBrush(5), minSize*0.25f, *brushContext->simplifier, solidSpaceChangeHandler);
+		solidSpace.add(&carvedFunction, model, translate, scale, SimpleBrush(5), minSize*0.25f, *brushContext->simplifier, solidSpaceChangeHandler);
 	}
 	{
 		std::cout << "\tsolidSpace.add(voronoiDistort)"<< std::endl;
@@ -600,7 +601,7 @@ void Scene::generate(Camera &camera) {
 		Transformation model(glm::vec3(radius), center, 0,0,0);
 		WrappedSphere wrappedFunction = WrappedSphere(&function);
 		WrappedVoronoiCarveDistanceEffect distortFunction = WrappedVoronoiCarveDistanceEffect(&wrappedFunction, 64.0f, 64.0f, glm::vec3(0), 0.0f, 1.0f);
-		solidSpace.add(&distortFunction, model, SimpleBrush(5), minSize*0.25f, *brushContext->simplifier, solidSpaceChangeHandler);
+		solidSpace.add(&distortFunction, model, translate, scale, SimpleBrush(5), minSize*0.25f, *brushContext->simplifier, solidSpaceChangeHandler);
 	}
 	{
 		std::cout << "\tsolidSpace.add(voronoiDistort)"<< std::endl;
@@ -610,7 +611,7 @@ void Scene::generate(Camera &camera) {
 		Transformation model(glm::vec3(radius), center, 0,0,0);
 		WrappedSphere wrappedFunction = WrappedSphere(&function);
 		WrappedVoronoiCarveDistanceEffect distortFunction = WrappedVoronoiCarveDistanceEffect(&wrappedFunction, 64.0f, 64.0f, glm::vec3(0), 0.0f, -1.0f);
-		solidSpace.add(&distortFunction, model, SimpleBrush(5), minSize*0.25f, *brushContext->simplifier, solidSpaceChangeHandler);
+		solidSpace.add(&distortFunction, model, translate, scale, SimpleBrush(5), minSize*0.25f, *brushContext->simplifier, solidSpaceChangeHandler);
 	}
 	{
 		Transformation model = Transformation();
@@ -621,7 +622,7 @@ void Scene::generate(Camera &camera) {
 		OctreeDifferenceFunction function(&solidSpace, waterBox, minSize*2.0f);
 		WrappedOctreeDifference wrappedFunction = WrappedOctreeDifference(&function);
 		//wrappedFunction.cacheEnabled = true;
-		liquidSpace.add(&wrappedFunction, model, WaterBrush(1), minSize, *brushContext->simplifier, liquidSpaceChangeHandler);
+		liquidSpace.add(&wrappedFunction, model, translate, scale, WaterBrush(1), minSize, *brushContext->simplifier, liquidSpaceChangeHandler);
 	}
 
 	{
@@ -632,7 +633,7 @@ void Scene::generate(Camera &camera) {
 		BoxDistanceFunction function = BoxDistanceFunction();
 		Transformation model = Transformation(box.getLength()*0.5f, box.getCenter(), 0, 0, 0);
 		WrappedBox wrappedFunction = WrappedBox(&function);
-		solidSpace.add(&wrappedFunction, model, SimpleBrush(9), minSize*4, *brushContext->simplifier, solidSpaceChangeHandler);
+		solidSpace.add(&wrappedFunction, model, translate, scale, SimpleBrush(9), minSize*4, *brushContext->simplifier, solidSpaceChangeHandler);
 	}
 
 	{
@@ -643,7 +644,7 @@ void Scene::generate(Camera &camera) {
 		BoxDistanceFunction function = BoxDistanceFunction();
 		Transformation model = Transformation(box.getLength()*0.5f, box.getCenter(), 0, 0, 0);
 		WrappedBox wrappedFunction = WrappedBox(&function);
-		solidSpace.add(&wrappedFunction, model, SimpleBrush(9), minSize*0.25, *brushContext->simplifier, solidSpaceChangeHandler);
+		solidSpace.add(&wrappedFunction, model, translate, scale, SimpleBrush(9), minSize*0.25, *brushContext->simplifier, solidSpaceChangeHandler);
 	}
 
 	//exportOctree();
@@ -660,6 +661,8 @@ void Scene::import(const std::string &filename, Camera &camera) {
 	int tiles= 1024;
 	int height = 2048;
 	float minSize = 30;
+	glm::vec4 translate, scale(1.0f);
+
 	Transformation model = Transformation(glm::vec3(1.0f),glm::vec3(0.0f), 0.0f, 0.0f, 0.0f);
 
 	BoundingBox mapBox = BoundingBox(glm::vec3(-sizePerTile*tiles*0.5,-height*0.5,-sizePerTile*tiles*0.5), glm::vec3(sizePerTile*tiles*0.5,height*0.5,sizePerTile*tiles*0.5));
@@ -672,7 +675,7 @@ void Scene::import(const std::string &filename, Camera &camera) {
 	HeightMap heightMap = HeightMap(cache, mapBox, sizePerTile);
 	HeightMapDistanceFunction function = HeightMapDistanceFunction(&heightMap);
 	WrappedHeightMap wrappedFunction = WrappedHeightMap(&function);
-	solidSpace.add(&wrappedFunction, model, DerivativeLandBrush(), minSize, *brushContext->simplifier, solidSpaceChangeHandler);
+	solidSpace.add(&wrappedFunction, model, translate, scale, DerivativeLandBrush(), minSize, *brushContext->simplifier, solidSpaceChangeHandler);
 
 	BoundingBox waterBox = mapBox;
 	waterBox.setMaxY(0);

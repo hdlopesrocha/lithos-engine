@@ -62,7 +62,6 @@ public:
 	static float box(glm::vec3 p, const glm::vec3 len);
     static float cylinder(glm::vec3 p, float r, float h);
 
-	static float sphere(glm::vec3 p, const float r);
     static float torus(glm::vec3 p, glm::vec2 t );
     static float capsule(glm::vec3 p, glm::vec3 a, glm::vec3 b, float r );
     static float octahedron(glm::vec3 p, float s);

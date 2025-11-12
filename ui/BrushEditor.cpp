@@ -155,7 +155,21 @@ void BrushEditor::draw2d(float time){
     if(ImGui::InputFloat3("m##translate", &(brushContext->model.translate[0]))) {
         changed = true; 
     }  
+    
+    ImGui::Text("Texture Translate: ");
+    if(ImGui::InputFloat4("m##textureTranslate", &(brushContext->translate[0]))) {
+        changed = true; 
+    }  
+    
+    ImGui::Text("Texture Scale: ");
+    if(ImGui::InputFloat4("m##textureScale", &(brushContext->scale[0]))) {
+        changed = true; 
+    }  
+
     ImGui::Separator();
+
+
+
 
     ImGui::Text("Effect: ");
 

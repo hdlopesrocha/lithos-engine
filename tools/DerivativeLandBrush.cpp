@@ -14,7 +14,7 @@ DerivativeLandBrush::DerivativeLandBrush(){
     this->rockMixSand = 14;
 }
 
-int DerivativeLandBrush::paint(const Vertex &vertex) const {
+int DerivativeLandBrush::paint(const Vertex &vertex, glm::vec4 translate, glm::vec4 scale) const {
     glm::vec3 n = glm::normalize(vertex.normal);
     float steepness =glm::dot(glm::vec3(0.0f,1.0f,0.0f), n );
     int grassLevel = 256;

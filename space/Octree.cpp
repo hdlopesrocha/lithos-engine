@@ -282,6 +282,8 @@ void Octree::expand(const ShapeArgs &args) {
 void Octree::add(
         WrappedSignedDistanceFunction *function, 
         const Transformation model, 
+        glm::vec4 translate,
+        glm::vec4 scale,
         const TexturePainter &painter,
         float minSize, 
         Simplifier &simplifier, 
@@ -289,7 +291,7 @@ void Octree::add(
     ) {
     threadsCreated = 0;
     *shapeCounter = 0;
-    ShapeArgs args = ShapeArgs(SDF::opUnion, function, painter, model, simplifier, changeHandler, minSize);	
+    ShapeArgs args = ShapeArgs(SDF::opUnion, function, painter, model, translate, scale, simplifier, changeHandler, minSize);	
   	expand(args);
     OctreeNodeFrame frame = OctreeNodeFrame(root, *this, 0, root->sdf, DISCARD_BRUSH_INDEX, false, *this);
     ThreadContext localChunkContext = ThreadContext(*this);
@@ -300,12 +302,14 @@ void Octree::add(
 void Octree::del(
         WrappedSignedDistanceFunction * function, 
         const Transformation model, 
+        glm::vec4 translate,
+        glm::vec4 scale,
         const TexturePainter &painter,
         float minSize, Simplifier &simplifier, OctreeChangeHandler  * changeHandler
     ) {
     threadsCreated = 0;
     *shapeCounter = 0;
-    ShapeArgs args = ShapeArgs(SDF::opSubtraction, function, painter, model, simplifier, changeHandler, minSize);
+    ShapeArgs args = ShapeArgs(SDF::opSubtraction, function, painter, model, translate, scale, simplifier, changeHandler, minSize);
     OctreeNodeFrame frame = OctreeNodeFrame(root, *this, 0, root->sdf, DISCARD_BRUSH_INDEX, false, *this);
     ThreadContext localChunkContext = ThreadContext(*this);
     shape(frame, args, &localChunkContext, "");
@@ -336,7 +340,7 @@ NodeOperationResult Octree::shape(OctreeNodeFrame frame, const ShapeArgs &args, 
 
     if(check == ContainmentType::Disjoint) {
         SpaceType resultType = node ? node->getType() : SDF::eval(frame.sdf);
-        return NodeOperationResult(node, SpaceType::Empty, resultType, frame.sdf, NULL, false, false, DISCARD_BRUSH_INDEX);  // Skip this node
+        return NodeOperationResult(node, SpaceType::Empty, resultType, frame.sdf, NULL, false, node ? node->isSimplified() : true, DISCARD_BRUSH_INDEX);  // Skip this node
     }
 
     ChildBlock * block = NULL;
@@ -351,7 +355,7 @@ NodeOperationResult Octree::shape(OctreeNodeFrame frame, const ShapeArgs &args, 
     std::vector<std::thread> threads;
     threads.reserve(8);
     if (!isLeaf) {
-        bool isChildThread = false && isThreadNode(length*0.5f, args.minSize, 16);
+        bool isChildThread = isThreadNode(length*0.5f, args.minSize, 16);
         bool isChildChunk = isChunkNode(length*0.5f);
         block = node ? node->getBlock(*allocator) : NULL;
 
@@ -396,7 +400,7 @@ NodeOperationResult Octree::shape(OctreeNodeFrame frame, const ShapeArgs &args, 
                    *result = shape(childFrame, args, &localThreadContext, "");
                 });
             } else {
-                children[i] = shape(childFrame, args, threadContext, coords + std::to_string(i));
+                children[i] = shape(childFrame, args, threadContext, coords/* + std::to_string(i) */);
             }
             
             (*shapeCounter)++;
@@ -430,16 +434,16 @@ NodeOperationResult Octree::shape(OctreeNodeFrame frame, const ShapeArgs &args, 
     if(!isLeaf) {
         for(int i = 0; i < 8; ++i) {
             NodeOperationResult & child = children[i];   
-            shapeSDF[i] = child.shapeSDF[i];
-            resultSDF[i] = child.resultSDF[i];
 
             childResultEmpty &= child.resultType == SpaceType::Empty;
             childResultSolid &= child.resultType == SpaceType::Solid;
             childShapeEmpty &= child.shapeType == SpaceType::Empty;
             childShapeSolid &= child.shapeType == SpaceType::Solid;
-            if(child.resultType == SpaceType::Surface) {
-                childSimplified &= child.isSimplified;
-            }
+            childSimplified &= child.isSimplified;
+            if(child.process) {
+                resultSDF[i] = child.resultSDF[i];
+                shapeSDF[i] = child.shapeSDF[i];
+            } 
         }
     }
 
@@ -480,12 +484,12 @@ NodeOperationResult Octree::shape(OctreeNodeFrame frame, const ShapeArgs &args, 
             // Simplification & Painting
             // ------------------------------
             if(isLeaf) {
+                isSimplified = true;
                 if(shapeType != SpaceType::Empty) {
-                    isSimplified = true;
-                    brushIndex = args.painter.paint(node->vertex);
+                    brushIndex = args.painter.paint(node->vertex, args.translate, args.scale);
                 }            
             } else {
-                if(false && childSimplified && !isChunk) {
+                if(childSimplified && !isChunk) {
                     std::pair<bool,int> simplificationResult = args.simplifier.simplify(frame.chunkCube, frame.cube, resultSDF, children);
                     isSimplified = simplificationResult.first;
                     brushIndex = simplificationResult.second;
@@ -504,21 +508,32 @@ NodeOperationResult Octree::shape(OctreeNodeFrame frame, const ShapeArgs &args, 
                 }
 
                 bool isChildChunk = isChunkNode(length*0.5f);
+
+
                 for(int i =0 ; i < 8 ; ++i) {
                     NodeOperationResult & child = children[i];
                     OctreeNode * childNode = child.node;
                     if(child.process) {
+
+         
                         if(child.resultType != SpaceType::Surface) {
                             BoundingCube childCube = frame.cube.getChild(i);
+                   
+                            bool childIsLeaf = length *0.5f <= args.minSize;
+                            if(childNode != NULL && !childNode->isLeaf()) {
+                                childIsLeaf = false;
+                            }
+                           
                             if(childNode == NULL) {
                                 childNode = allocator->allocate()->init(Vertex(childCube.getCenter()));
                                 children[i].node = childNode;
                             }
+           
                             childNode->setSolid(child.resultType == SpaceType::Solid);
                             childNode->setEmpty(child.resultType == SpaceType::Empty);
                             childNode->setSDF(child.resultSDF);
-                            childNode->setLeaf(true);
-                            childNode->setSimplified(true);
+                            childNode->setLeaf(childIsLeaf);
+                            childNode->setSimplified(childIsLeaf);
                             childNode->setChunk(isChildChunk);
                             childNode->setDirty(true);
                         }
@@ -545,10 +560,10 @@ NodeOperationResult Octree::shape(OctreeNodeFrame frame, const ShapeArgs &args, 
         // ------------------------------
         block = node ? node->clear(*allocator, args.changeHandler, block) : NULL;
 
-        if(resultType == SpaceType::Empty) {
+        /*if(resultType == SpaceType::Empty) {
             node = node ? allocator->deallocate(node) : NULL;
         }
-        else if(node!= NULL) {
+        else*/ if(node!= NULL) {
             node->setSDF(resultSDF);
             node->setSolid(resultType == SpaceType::Solid);
             node->setEmpty(resultType == SpaceType::Empty);
