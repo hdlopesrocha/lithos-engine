@@ -30,7 +30,7 @@ bool Processor::test(Octree * tree, OctreeNodeData *data) {
         return false;
     }
     else {	
-        if(data->node->isSimplified()) {
+        if(data->node->isLeaf()) {
             data->context = data->node;
         }
         return true;
