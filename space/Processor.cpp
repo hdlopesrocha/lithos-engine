@@ -6,16 +6,15 @@ Processor::Processor(long * count, ThreadContext * context, std::vector<OctreeNo
 }
 
 void Processor::virtualize(Octree * tree, const BoundingCube &cube, float * sdf, uint level, uint levels) {
-     //std::cout << "Virtualize " << " " << std::to_string((long) &data)  << " " <<data.level << "/" << levels << std::endl;
-
     if(level >= levels) {
         tree->handleQuadNodes(cube, level, sdf, handlers, true, context);
         return;
     } else {
-        float childSDF[8];
-        for(int i = 0 ; i < 8 ; ++i) {
+        float childSDF[8] = {INFINITY,INFINITY,INFINITY,INFINITY,INFINITY,INFINITY,INFINITY,INFINITY};
+        for(uint i = 0 ; i < 8 ; ++i) {
             SDF::getChildSDF(sdf, i, childSDF);
-            virtualize(tree, cube.getChild(i), childSDF, level + 1, levels);                  
+            BoundingCube childCube = cube.getChild(i);
+            virtualize(tree, childCube, childSDF, level + 1, levels);                  
         }
         return;
     }
@@ -23,9 +22,9 @@ void Processor::virtualize(Octree * tree, const BoundingCube &cube, float * sdf,
 
 
 bool Processor::test(Octree * tree, OctreeNodeData *data) {
-    if(data == NULL){
+    if(data == NULL) {
         return false;
-    } 
+    }
     if(data->context != NULL) {
         return false;
     }

@@ -75,7 +75,7 @@ public:
     static glm::vec3 getAveragePosition2(float sdf[8], const BoundingCube &cube);
     static glm::vec3 getNormal(float sdf[8], const BoundingCube& cube);
     static glm::vec3 getNormalFromPosition(float sdf[8], const BoundingCube& cube, const glm::vec3 &position);
-    static void getChildSDF(const float sdf[8], int i , float result[8]);
+    static void getChildSDF(const float sdf[8], uint i , float result[8]);
     static void copySDF(const float src[8], float dst[8]);
     static float interpolate(const float sdf[8], const glm::vec3 &position, const BoundingCube &cube);
     static SpaceType eval(float sdf[8]);

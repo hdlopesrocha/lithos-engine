@@ -1,5 +1,6 @@
 #include "space.hpp"
 
+
 OctreeNode::OctreeNode() {
 	init(glm::vec3());
 }
@@ -9,9 +10,7 @@ OctreeNode::OctreeNode(Vertex vertex) {
 }
 
 OctreeNode * OctreeNode::init(Vertex vertex) {
-	for(int i = 0; i < 8; ++i) {
-		this->sdf[i] = INFINITY;
-	}
+	memcpy(this->sdf, INFINITY_ARRAY, sizeof(float)*8);
 	this->bits = 0x0;
 	this->setSolid(false);
 	this->setLeaf(false);
@@ -76,10 +75,8 @@ ChildBlock * OctreeNode::clear(OctreeAllocator &allocator, OctreeChangeHandler *
 	return block;
 }
 
-void OctreeNode::setSDF(float * value) {
-	for(int i = 0; i < 8; ++i) {
-		this->sdf[i] = value != NULL ? value[i] : INFINITY;
-	}
+void OctreeNode::setSDF(float value[8]) {
+	memcpy(this->sdf, value, sizeof(float)*8);
 }
 
 bool OctreeNode::isSolid(){

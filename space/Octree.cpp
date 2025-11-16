@@ -340,7 +340,7 @@ NodeOperationResult Octree::shape(OctreeNodeFrame frame, const ShapeArgs &args, 
 
     if(check == ContainmentType::Disjoint) {
         SpaceType resultType = node ? node->getType() : SDF::eval(frame.sdf);
-        return NodeOperationResult(node, SpaceType::Empty, resultType, frame.sdf, NULL, false, node ? node->isSimplified() : true, DISCARD_BRUSH_INDEX);  // Skip this node
+        return NodeOperationResult(node, SpaceType::Empty, resultType, frame.sdf, INFINITY_ARRAY, false, node ? node->isSimplified() : true, DISCARD_BRUSH_INDEX);  // Skip this node
     }
 
     ChildBlock * block = NULL;

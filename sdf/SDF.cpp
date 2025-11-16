@@ -463,7 +463,7 @@ float SDF::interpolate(const float sdf[8], const glm::vec3 &position, const Boun
     return glm::mix(v00, v10, x);
 }
 
-void SDF::getChildSDF(const float sdf[8], int i , float result[8]) {
+void SDF::getChildSDF(const float sdf[8], uint i , float result[8]) {
     BoundingCube canonicalCube = BoundingCube(glm::vec3(0.0f), 1.0f);
     BoundingCube cube = canonicalCube.getChild(i);
     for (uint j = 0; j < 8; ++j) {
@@ -478,9 +478,7 @@ void SDF::getChildSDF(const float sdf[8], int i , float result[8]) {
 }
 
 void SDF::copySDF(const float src[8], float dst[8]) {
-    for (int corner = 0; corner < 8; ++corner) {
-        dst[corner] = src == NULL ? INFINITY : src[corner];
-    }
+    memcpy(dst, src, sizeof(float)*8);
 }
 
 SpaceType SDF::eval(float sdf[8]) {

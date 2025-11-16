@@ -11,6 +11,7 @@
 #define SQRT_3_OVER_2 0.866025404f
 #include "ThreadPool.hpp"
 #include "Allocator.hpp"
+const float INFINITY_ARRAY [8] = {INFINITY,INFINITY,INFINITY,INFINITY,INFINITY,INFINITY,INFINITY,INFINITY};
 
 class Octree;
 class OctreeNode;
@@ -115,7 +116,7 @@ class OctreeNode {
 
 		SpaceType getType();
 
-		void setSDF(float * sdf);
+		void setSDF(float value[8]);
 		uint exportSerialization(OctreeAllocator &allocator, std::vector<OctreeNodeCubeSerialized> * nodes, int * leafNodes, BoundingCube cube, BoundingCube chunk, uint level);
 		OctreeNode * compress(OctreeAllocator &allocator, BoundingCube * cube, BoundingCube chunk);
 };
@@ -229,11 +230,11 @@ struct NodeOperationResult {
 	int brushIndex;
 
 	NodeOperationResult() : node(NULL), shapeType(SpaceType::Empty), resultType(SpaceType::Empty), process(false), isSimplified(false), brushIndex(DISCARD_BRUSH_INDEX) {
-		SDF::copySDF(NULL, this->resultSDF);	
-		SDF::copySDF(NULL, this->shapeSDF);	
+		SDF::copySDF(INFINITY_ARRAY, this->resultSDF);	
+		SDF::copySDF(INFINITY_ARRAY, this->shapeSDF);	
 	};
 
-    NodeOperationResult(OctreeNode * node, SpaceType shapeType, SpaceType resultType, float * resultSDF, float * shapeSDF, bool process, bool isSimplified, int brushIndex) 
+    NodeOperationResult(OctreeNode * node, SpaceType shapeType, SpaceType resultType, const float * resultSDF, const float * shapeSDF, bool process, bool isSimplified, int brushIndex) 
         : node(node), shapeType(shapeType), resultType(resultType), process(process), isSimplified(isSimplified), brushIndex(brushIndex) {
 		SDF::copySDF(resultSDF, this->resultSDF);	
 		SDF::copySDF(shapeSDF, this->shapeSDF);						
