@@ -119,11 +119,11 @@ bool AbstractBoundingBox::intersects(const AbstractBoundingBox& box) const {
     return true;
 }
 
-glm::vec3 AbstractBoundingBox::getShift(int i) {
+glm::vec3 AbstractBoundingBox::getShift(uint i) {
     return CUBE_CORNERS[i];
 }
 
-glm::vec3 AbstractBoundingBox::getCorner(int i) const {
+glm::vec3 AbstractBoundingBox::getCorner(uint i) const {
     return getMin() + AbstractBoundingBox::getShift(i) * getLength();
 }
 

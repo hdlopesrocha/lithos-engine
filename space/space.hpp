@@ -35,7 +35,6 @@ struct alignas(16) OctreeNodeCubeSerialized {
     glm::vec4 normal;
     glm::vec2 texCoord;
     int brushIndex;
-	uint sign;
     uint children[8];
     glm::vec3 min;
     uint bits;
@@ -44,10 +43,8 @@ struct alignas(16) OctreeNodeCubeSerialized {
 
 	OctreeNodeCubeSerialized();
 	OctreeNodeCubeSerialized(float * sdf, BoundingCube cube, Vertex vertex, uint bits, uint level) {
-		this->sign = 0u;
 		for(int i = 0; i < 8; ++i) {
 			this->children[i] = 0;
-			this->sign |= sdf[i] < 0.0f ? (1u << i) : 0;
 		}
 		this->position = vertex.position;
 		this->normal = vertex.normal;
@@ -119,6 +116,20 @@ class OctreeNode {
 		void setSDF(float value[8]);
 		uint exportSerialization(OctreeAllocator &allocator, std::vector<OctreeNodeCubeSerialized> * nodes, int * leafNodes, BoundingCube cube, BoundingCube chunk, uint level);
 		OctreeNode * compress(OctreeAllocator &allocator, BoundingCube * cube, BoundingCube chunk);
+};
+
+struct OctreeNodeLevel
+{
+    OctreeNode* node;
+    uint level;
+
+	OctreeNodeLevel() : node(NULL), level(0) {
+		
+	}
+
+    OctreeNodeLevel(OctreeNode* node, uint level) : node(node), level(level) {
+        
+    }
 };
 
 struct ChildBlock {
@@ -284,7 +295,7 @@ struct ShapeArgs {
 class ThreadContext {
 	public:
 	std::unordered_map<glm::vec3, float> shapeSdfCache;
-	std::unordered_map<glm::vec4, OctreeNode*> nodeCache;
+	std::unordered_map<glm::vec4, OctreeNodeLevel> nodeCache;
     std::shared_mutex mutex;
 	BoundingCube cube;
 	
@@ -317,11 +328,11 @@ class Octree: public BoundingCube {
 		void iterate(IteratorHandler &handler);
 		void iterateFlat(IteratorHandler &handler);
 
-		OctreeNode* getNodeAt(const glm::vec3 &pos, int level, bool simplification);
+		OctreeNodeLevel getNodeAt(const glm::vec3 &pos, int level, bool simplification);
 		OctreeNode* getNodeAt(const glm::vec3 &pos, bool simplification);
 		float getSdfAt(const glm::vec3 &pos);
 		void handleQuadNodes(const BoundingCube &cube, uint level, const float sdf[8], std::vector<OctreeNodeTriangleHandler*> * handlers, bool simplification, ThreadContext * context);
-		OctreeNode * fetch(const BoundingCube &cube, uint level, OctreeNode ** out, int i, bool simplification, ThreadContext * context);
+		OctreeNodeLevel fetch(glm::vec3 pos, uint level, bool simplification, ThreadContext * context);
 		int getMaxLevel(OctreeNode * node, int level);
 
 		uint getMaxLevel(BoundingCube &cube);
