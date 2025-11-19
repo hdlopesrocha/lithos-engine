@@ -27,6 +27,26 @@ ChildBlock * OctreeNode::getBlock(OctreeAllocator &allocator) const {
 	return allocator.childAllocator.getFromIndex(this->id);
 }
 
+
+void OctreeNode::setChildren(OctreeAllocator &allocator, uint children[8]) {
+	uint blockId = this->id;
+	ChildBlock * block = NULL;
+	if(blockId == UINT_MAX) {
+		block = allocator.childAllocator.allocate()->init();
+		this->id = allocator.childAllocator.getIndex(block);
+	} else {
+		block = allocator.childAllocator.getFromIndex(blockId);
+	}
+	memcpy(block->children, children, sizeof(uint)*8);
+}
+
+void OctreeNode::getChildren(OctreeAllocator &allocator, OctreeNode * childNodes[8]) const {
+	ChildBlock * block = getBlock(allocator);
+	if(block != NULL) {
+	    allocator.get(childNodes, block->children);
+	}
+}
+
 ChildBlock * OctreeNode::allocate(OctreeAllocator &allocator) {
 	ChildBlock * block = NULL;
 	if(this->id == UINT_MAX) {

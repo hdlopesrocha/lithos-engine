@@ -124,3 +124,15 @@ void BoundingCube::setMinY(float v){
 void BoundingCube::setMinZ(float v){
     this->min.z = v;
 }
+
+void BoundingCube::setMaxX(float v){
+    this->min.x = v-length;
+}
+
+void BoundingCube::setMaxY(float v){
+    this->min.y = v-length;
+}
+
+void BoundingCube::setMaxZ(float v){
+    this->min.z = v-length;
+}

@@ -29,10 +29,10 @@ void Processor::after(Octree * tree, OctreeNodeData *data) {
     
     
     if(data->context != NULL) {
-        tree->iterateNeighbor(data->cube, tree->root, *tree, tree->root->sdf, [this, tree, data](const BoundingCube &cube, const float sdf[8]){
+        tree->iterateNeighbor(data->cube, tree->root, *tree, tree->root->sdf, 0, [this, tree, data](const BoundingCube &cube, const float sdf[8], uint level){
             //std::lock_guard<std::mutex> lock(processorMutex);
             //std::cout << "Neighbor " << cube.getMin().x << "," << cube.getMin().y << "," << cube.getMin().z << " size " << cube.getLengthX() << std::endl;
-            tree->handleQuadNodes(cube, data->level, sdf, handlers, true, context);
+            tree->handleQuadNodes(cube, level, sdf, handlers, true, context);
         });
         //virtualize(tree, data->cube, data->sdf, data->level, levels);
 

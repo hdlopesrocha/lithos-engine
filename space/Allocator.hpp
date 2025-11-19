@@ -130,15 +130,17 @@ public:
         //throw std::runtime_error("Invalid index");
     }
 
-    void getFromIndices(T ** pointers, uint indices[8]) {
-        std::shared_lock lock(mutex); // multiple allowed
-        for(size_t i = 0 ; i < 8 ; ++i) {
-            uint index = indices[i];
 
+    void getFromIndices(T * nodes[8], uint indices[8]) {
+        std::shared_lock lock(mutex); // multiple allowed        
+        
+        for(int i = 0 ; i < 8 ; ++i) {
+            uint index = indices[i];
             if (index == UINT_MAX) {
-                pointers[i] = NULL;
+                nodes[i] = NULL;
                 continue;
             }
+
             uint blockIdx = index / blockSize;
             if (blockIdx >= blocks.size()) {
                 throw std::runtime_error("Invalid index");
@@ -151,12 +153,11 @@ public:
                 throw std::runtime_error("Accessing deallocated pointer");
             }
             #endif
-    
-            pointers[i] = ptr;        
-        }  
-                //throw std::runtime_error("Invalid index");
+     
+            nodes[i] = ptr;
+        }
+      
     }
-
 
     uint allocateIndex() {
         T* ptr = allocate();

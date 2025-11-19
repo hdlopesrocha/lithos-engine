@@ -116,35 +116,37 @@ void Octree::iterateNeighbor(
             const BoundingCube &cube, 
             const OctreeNode *node, 
             const BoundingCube &nodeCube, 
-            float nodeSDF[8], 
-            const std::function<void(const BoundingCube &childCube, const float sdf[8])> &func)
+            float nodeSDF[8],
+            uint level, 
+            const std::function<void(const BoundingCube &childCube, const float sdf[8], uint level)> &func)
 {
     if (!node) return;
 
-    // --- Leaf case ---
-    if (node->isSimplified()) {
+    if (node->isLeaf()) {
         if (!node->isSolid() && !node->isEmpty()) {
-            BoundingCube childCube = nodeCube;
-       
-            if (cube.getMaxX() <= childCube.getMinX() + childCube.getLengthX()) {
-                childCube.setMinX(cube.getMaxX() - childCube.getLengthX());
+            BoundingCube pseudo = BoundingCube(nodeCube);
+            bool adjacent = false;
+
+            if (nodeCube.getMaxX() > cube.getMaxX()) {
+                pseudo.setMaxX(cube.getMaxX());
+                adjacent = true;
             }
-            else if (cube.getMaxY() <= childCube.getMinY() + childCube.getLengthY()) {
-                childCube.setMinY(cube.getMaxY() - childCube.getLengthY());
+            else if (nodeCube.getMaxY() > cube.getMaxY()) {
+                pseudo.setMaxY(cube.getMaxY());
+                adjacent = true;
             }
-            else if (cube.getMaxZ() <= childCube.getMinZ() + childCube.getLengthZ()) {
-                childCube.setMinZ(cube.getMaxZ() - childCube.getLengthZ());
+            else if (nodeCube.getMaxZ() > cube.getMaxZ()) {
+                pseudo.setMaxZ(cube.getMaxZ());
+                adjacent = true;
             }
-            
-            if(cube.contains(childCube)) {
-                float childSDF[8];
-                for(uint i=0 ; i < 8 ; ++i) {
-                    childSDF[i] = SDF::interpolate(nodeSDF, childCube.getCorner(i), nodeCube);
-                }
-                SpaceType type = SDF::eval(childSDF);
-                if(type == SpaceType::Surface) {
-                    func(childCube, childSDF);
-                }
+
+            if (adjacent && cube.contains(pseudo)) {
+                float sdf[8];
+                for (uint i = 0; i < 8; ++i)
+                    sdf[i] = SDF::interpolate(nodeSDF, pseudo.getCorner(i), nodeCube);
+
+                if (node->getType() == SpaceType::Surface)
+                    func(pseudo, sdf, level);
             }
         }
         return;
@@ -152,27 +154,23 @@ void Octree::iterateNeighbor(
 
     bool isSize = nodeCube.getLengthX() <= cube.getLengthX();
 
-
     // --- Recurse into children ---
-
-    ChildBlock * block = node->getBlock(*allocator);
-    OctreeNode * childNodes[8];
-    block->getChildren(*allocator, childNodes);
-
+    OctreeNode * children[8] = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
+    node->getChildren(*allocator, children);
 
     for (int i = 0; i < 8; ++i) {
-        BoundingCube childCube = nodeCube.getChild(i); 
-            // Neighbor conditions:
-        bool isAfter = !isSize || (isSize && (
-            childCube.getMinX() == cube.getMaxX() ||
-            childCube.getMinY() == cube.getMaxY() ||
-            childCube.getMinZ() == cube.getMaxZ()
-        ));
-        if(isAfter) {
-            if (!block) return;
-            OctreeNode *child = childNodes[i];
-            if (!child || child->getType() != SpaceType::Surface) continue;
-            iterateNeighbor(cube, child, childCube, child->sdf, func);
+        OctreeNode *child = children[i];
+        if (child != NULL && child->getType() == SpaceType::Surface) {
+            BoundingCube childCube = nodeCube.getChild(i); 
+                // Neighbor conditions:
+            bool isNeighbor = !isSize || (isSize && (
+                (childCube.getMinX() <= cube.getMaxX() && childCube.getMaxX() > cube.getMaxX()) ||
+                (childCube.getMinY() <= cube.getMaxY() && childCube.getMaxY() > cube.getMaxY()) ||
+                (childCube.getMinZ() <= cube.getMaxZ() && childCube.getMaxZ() > cube.getMaxZ())
+            ));
+            if(isNeighbor && cube.intersects(childCube)) {
+                iterateNeighbor(cube, child, childCube, child->sdf, level + 1, func);
+            }
         }
     }
 }
@@ -410,10 +408,12 @@ bool Octree::isThreadNode(float length, float minSize, int threadSize) const {
 NodeOperationResult Octree::shape(OctreeNodeFrame frame, const ShapeArgs &args, ThreadContext * threadContext) {    
     ContainmentType check = args.function->check(frame.cube, args.model, args.minSize);
     OctreeNode * node = frame.node;
+    bool process = true;
 
     if(check == ContainmentType::Disjoint) {
+        process = false;
         SpaceType resultType = node ? node->getType() : SDF::eval(frame.sdf);
-        return NodeOperationResult(node, SpaceType::Empty, resultType, frame.sdf, INFINITY_ARRAY, false, node ? node->isSimplified() : true, DISCARD_BRUSH_INDEX);  // Skip this node
+        return NodeOperationResult(node, SpaceType::Empty, resultType, frame.sdf, INFINITY_ARRAY, process, node ? node->isSimplified() : true, DISCARD_BRUSH_INDEX);  // Skip this node
     }
 
     ChildBlock * block = NULL;
@@ -430,13 +430,11 @@ NodeOperationResult Octree::shape(OctreeNodeFrame frame, const ShapeArgs &args, 
     if (!isLeaf) {
         bool isChildThread = isThreadNode(length*0.5f, args.minSize, 16);
         bool isChildChunk = isChunkNode(length*0.5f);
-        block = node ? node->getBlock(*allocator) : NULL;
 
         OctreeNode * childNodes[8] = {NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL};
-        if(block != NULL) {
-            block->getChildren(*allocator, childNodes);
+        if(node != NULL) {
+            node->getChildren(*allocator, childNodes);
         }
-
         // --------------------------------
         // Iterate nodes and create threads
         // --------------------------------
@@ -534,7 +532,7 @@ NodeOperationResult Octree::shape(OctreeNodeFrame frame, const ShapeArgs &args, 
 
     if(shapeType == SpaceType::Empty && !frame.interpolated) {
         // Do nothing
-        node = NULL;
+        process = false;
     }
     else if(resultType == SpaceType::Surface) {
         // ------------------------------
@@ -575,10 +573,11 @@ NodeOperationResult Octree::shape(OctreeNodeFrame frame, const ShapeArgs &args, 
                 }
 
                 bool isChildChunk = isChunkNode(length*0.5f);
-
+                uint childNodes[8] = {UINT_MAX,UINT_MAX,UINT_MAX,UINT_MAX,UINT_MAX,UINT_MAX,UINT_MAX,UINT_MAX};
                 for(uint i =0 ; i < 8 ; ++i) {
                     NodeOperationResult & child = children[i];
                     OctreeNode * childNode = child.node;
+
                     if(child.process) {
                         if(child.resultType != SpaceType::Surface) {
                             BoundingCube childCube = frame.cube.getChild(i);
@@ -601,19 +600,19 @@ NodeOperationResult Octree::shape(OctreeNodeFrame frame, const ShapeArgs &args, 
                             childNode->setDirty(true);
                         }
                     }
-
+                    childNodes[i] = allocator->nodeAllocator.getIndex(childNode);
                     if(frame.node != NULL && childNode == node) {
                         throw std::runtime_error("Infinite recursion! " + std::to_string((long) childNode) + " " + std::to_string((long)node) );
-                    }
-                    block->set(i, childNode, *allocator); 
+                    }                
                 }
+                node->setChildren(*allocator, childNodes);
             }
             if(isChunk && args.changeHandler != NULL) {
                 args.changeHandler->update(node);
             }
         }
     } else if(resultType != SpaceType::Surface) {
-
+        isSimplified = true;
         if(node != NULL && isChunk && args.changeHandler != NULL) {
             args.changeHandler->erase(node);
         }
@@ -621,15 +620,17 @@ NodeOperationResult Octree::shape(OctreeNodeFrame frame, const ShapeArgs &args, 
         // ------------------------------
         // Delete nodes if result is Empty
         // ------------------------------
-        block = node ? node->clear(*allocator, args.changeHandler, block) : NULL;
-
+        ChildBlock * block = node ? node->getBlock(*allocator) : NULL;
+        if(block) {
+            node->clear(*allocator, args.changeHandler, block);
+        } 
         /*if(resultType == SpaceType::Empty) {
             node = node ? allocator->deallocate(node) : NULL;
         }
         */
     }
 
-    if(node!= NULL) {
+    if(node!= NULL && process) {
         node->setSDF(resultSDF);
         node->setSolid(resultType == SpaceType::Solid);
         node->setEmpty(resultType == SpaceType::Empty);
@@ -639,7 +640,7 @@ NodeOperationResult Octree::shape(OctreeNodeFrame frame, const ShapeArgs &args, 
         node->setLeaf(isLeaf);
     }
 
-    return NodeOperationResult(node, shapeType, resultType, resultSDF, shapeSDF, true, isSimplified, brushIndex);
+    return NodeOperationResult(node, shapeType, resultType, resultSDF, shapeSDF, process, isSimplified, brushIndex);
 }
 
 

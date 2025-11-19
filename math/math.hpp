@@ -244,11 +244,14 @@ class BoundingCube : public AbstractBoundingBox {
 	public: 
 		BoundingCube();
 		BoundingCube(glm::vec3 min, float length);
+		BoundingCube(const BoundingCube &other) : AbstractBoundingBox(other.getMin()), length(other.length) {}
 		void setLength(float l);
 		void setMinX(float v);
 		void setMinY(float v);
 		void setMinZ(float v);
-		
+		void setMaxX(float v);
+		void setMaxY(float v);
+		void setMaxZ(float v);
 		glm::vec3 getLength() const override;
 		float getLengthX() const override;
 		float getLengthY() const override;

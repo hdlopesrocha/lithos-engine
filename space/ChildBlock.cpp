@@ -1,15 +1,11 @@
 #include "space.hpp"
 
 ChildBlock::ChildBlock() {
-    for(int i=0; i < 8 ; ++i) {
-        children[i] = UINT_MAX;
-    }
+
 }
 
 ChildBlock * ChildBlock::init() {
-    for(int i=0; i < 8 ; ++i) {
-        children[i] = UINT_MAX;
-    }
+    memcpy(children, UINT_MAX_ARRAY, sizeof(uint)*8);
     return this;
 }
 
@@ -22,8 +18,8 @@ void ChildBlock::clear(OctreeAllocator &allocator, OctreeChangeHandler * handler
                 child->clear(allocator, handler, NULL);
                 allocator.deallocate(child); // libertar nó
             }
-            children[i] = UINT_MAX;
         }
+        memcpy(children, UINT_MAX_ARRAY, sizeof(uint)*8);
     }
 }
 
@@ -35,10 +31,6 @@ void ChildBlock::set(uint i, OctreeNode* node, OctreeAllocator& allocator) {
     children[i] = newIndex;
 }
 
-
-void ChildBlock::getChildren(OctreeAllocator &allocator, OctreeNode * childNodes[8]) {
-    allocator.get(childNodes, children);
-}
 
 OctreeNode * ChildBlock::get(uint i, OctreeAllocator &allocator){
     uint index = children[i];
