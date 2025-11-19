@@ -245,7 +245,10 @@ class BoundingCube : public AbstractBoundingBox {
 		BoundingCube();
 		BoundingCube(glm::vec3 min, float length);
 		void setLength(float l);
-
+		void setMinX(float v);
+		void setMinY(float v);
+		void setMinZ(float v);
+		
 		glm::vec3 getLength() const override;
 		float getLengthX() const override;
 		float getLengthY() const override;
@@ -256,6 +259,12 @@ class BoundingCube : public AbstractBoundingBox {
 		glm::vec3 getMax() const override;	
 
 		BoundingCube getChild(int i) const;
+		bool overlaps1D(float aMin, float aMax, float bMin, float bMax) const;
+		bool overlapsX(const BoundingCube &o) const ;
+		bool overlapsY(const BoundingCube &o) const ;
+		bool overlapsZ(const BoundingCube &o) const ;
+		bool isFaceAdjacent(const BoundingCube &other) const;
+		bool isNeighbor(const BoundingCube &o) const;
 
 	    bool operator<(const BoundingCube& other) const;
 		bool operator==(const BoundingCube& other) const;

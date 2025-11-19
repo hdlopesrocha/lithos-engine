@@ -5,22 +5,6 @@ Processor::Processor(long * count, ThreadContext * context, std::vector<OctreeNo
 
 }
 
-void Processor::virtualize(Octree * tree, const BoundingCube &cube, float * sdf, uint level, uint levels) {
-    if(level >= levels) {
-        tree->handleQuadNodes(cube, level, sdf, handlers, true, context);
-        return;
-    } else {
-        float childSDF[8] = {INFINITY,INFINITY,INFINITY,INFINITY,INFINITY,INFINITY,INFINITY,INFINITY};
-        for(uint i = 0 ; i < 8 ; ++i) {
-            SDF::getChildSDF(sdf, i, childSDF);
-            BoundingCube childCube = cube.getChild(i);
-            virtualize(tree, childCube, childSDF, level + 1, levels);                  
-        }
-        return;
-    }
-}
-
-
 bool Processor::test(Octree * tree, OctreeNodeData *data) {
     if(data == NULL) {
         return false;
@@ -40,11 +24,18 @@ bool Processor::test(Octree * tree, OctreeNodeData *data) {
 void Processor::before(Octree * tree, OctreeNodeData *data) {		
 
 }
-
+//std::mutex processorMutex;
 void Processor::after(Octree * tree, OctreeNodeData *data) {
+    
+    
     if(data->context != NULL) {
-        uint levels = tree->getMaxLevel(data->cube);
-        virtualize(tree, data->cube, data->sdf, data->level, levels);
+        tree->iterateNeighbor(data->cube, tree->root, *tree, tree->root->sdf, [this, tree, data](const BoundingCube &cube, const float sdf[8]){
+            //std::lock_guard<std::mutex> lock(processorMutex);
+            //std::cout << "Neighbor " << cube.getMin().x << "," << cube.getMin().y << "," << cube.getMin().z << " size " << cube.getLengthX() << std::endl;
+            tree->handleQuadNodes(cube, data->level, sdf, handlers, true, context);
+        });
+        //virtualize(tree, data->cube, data->sdf, data->level, levels);
+
     }
 }
 

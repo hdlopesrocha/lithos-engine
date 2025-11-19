@@ -79,11 +79,11 @@ bool Scene::processLiquid(OctreeNodeData &data, Octree * tree) {
         InstanceGeometry<InstanceData> * pre = new InstanceGeometry<InstanceData>(tesselator.geometry);
         pre->instances.emplace_back(InstanceData(0, glm::mat4(1.0), 0.0f));
 
-		if(loadSpace(tree, data, &liquidInfo, pre)) {
+		if(data.node != NULL && loadSpace(tree, data, &liquidInfo, pre)) {
 			result = true;
 		}
 	}else {
-		if(loadSpace(tree, data, &liquidInfo, (InstanceGeometry<InstanceData>*) NULL)) {
+		if(data.node != NULL && (tree, data, &liquidInfo, (InstanceGeometry<InstanceData>*) NULL)) {
 			result = true;
 		}
 	}
@@ -227,10 +227,10 @@ bool Scene::processSpace() {
 	//std::cout << "process " << std::to_string((long)allVisibleNodes.size()) <<  std::endl;
 
     std::vector<std::future<bool>> threads;
-	threads.reserve(64);
+	threads.reserve(36);
 
 	// Thread pool zone
-	int workCount = 8;	
+	int workCount = 12;	
 	for (OctreeNodeData* data : allVisibleNodes) {
 		if (data->node && data->node->isDirty() && --workCount>=0) {
 			threads.emplace_back(threadPool.enqueue([this, data]() {
@@ -238,7 +238,7 @@ bool Scene::processSpace() {
 			}));
 		}
 	}
-	workCount = 8;
+	workCount = 12;
 	for (OctreeNodeData& brush : brushRenderer->visibleNodes) {
 		if (brush.node && brush.node->isDirty() && --workCount>=0) {
 			threads.emplace_back(threadPool.enqueue([this, &brush]() {
@@ -246,7 +246,7 @@ bool Scene::processSpace() {
 			}));
 		}
 	}
-	workCount = 8;
+	workCount = 12;
 	for (OctreeNodeData& liquid : liquidRenderer->visibleNodes) {
 		if (liquid.node && liquid.node->isDirty() && --workCount>=0) {
 			threads.emplace_back(threadPool.enqueue([this, &liquid]() {

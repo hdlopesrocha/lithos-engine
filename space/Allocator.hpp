@@ -1,6 +1,7 @@
 #include <vector>
 #include <unordered_set>
 #include <mutex>
+#include <shared_mutex>
 #include <cassert>
 #include <cstdlib>
 #include <stdexcept>
@@ -22,7 +23,7 @@ private:
     #endif
     const size_t blockSize;
     size_t totalAllocated = 0;
-    std::mutex mutex;
+    mutable std::shared_mutex mutex;    
 
     void allocateBlock() {
         T* data = static_cast<T*>(std::malloc(blockSize * sizeof(T)));
@@ -53,7 +54,7 @@ public:
     // Alocação / Liberação
     // -------------------
     T* allocate() {
-        std::lock_guard<std::mutex> lock(mutex);
+        std::unique_lock lock(mutex);
         if (freeList.empty()) allocateBlock();
 
         T* ptr = freeList.back();
@@ -71,7 +72,7 @@ public:
     void deallocate(T* ptr) {
         if (!ptr) return;
 
-        std::lock_guard<std::mutex> lock(mutex);
+        std::unique_lock lock(mutex);
         #ifndef NDEBUG
         if (deallocatedSet.find(ptr) != deallocatedSet.end()) {
             throw std::runtime_error("Double deallocate!");
@@ -95,7 +96,7 @@ public:
     uint getIndex(T* ptr) {
         if (!ptr) return UINT_MAX;
 
-        std::lock_guard<std::mutex> lock(mutex);
+        std::shared_lock lock(mutex); // multiple allowed
 
         for (auto &b : blocks) {
             if (ptr >= b.data && ptr < b.data + blockSize) {
@@ -108,21 +109,25 @@ public:
     T* getFromIndex(uint index) {
         if (index == UINT_MAX) return nullptr;
 
-        std::lock_guard<std::mutex> lock(mutex);
-
-        // encontra o bloco que contém o índice usando startIndex (correto)
-        for (auto &b : blocks) {
-            if (index >= b.startIndex && index < b.startIndex + blockSize) {
-                size_t offset = index - b.startIndex;
-                T* ptr = &b.data[offset];
-                #ifndef NDEBUG
-                if (deallocatedSet.find(ptr) != deallocatedSet.end())
-                    throw std::runtime_error("Accessing deallocated pointer");
-                #endif
-                return ptr;
-            }
+        std::shared_lock lock(mutex); // multiple allowed
+        uint blockIdx = index / blockSize;
+        if (blockIdx >= blocks.size()) {
+            throw std::runtime_error("Invalid index");
         }
-        throw std::runtime_error("Invalid index");
+        uint offset = index % blockSize;
+
+        Block& b = blocks[blockIdx];
+        
+        T* ptr = b.data + offset;
+        
+        #ifndef NDEBUG
+        if (deallocatedSet.find(ptr) != deallocatedSet.end()) {
+            throw std::runtime_error("Accessing deallocated pointer");
+        }
+        #endif
+ 
+        return ptr;
+        //throw std::runtime_error("Invalid index");
     }
 
     uint allocateIndex() {
@@ -131,7 +136,7 @@ public:
     }
 
     size_t getAllocatedBlocksCount() {
-        std::lock_guard<std::mutex> lock(mutex);
+        std::shared_lock lock(mutex);
         return blocks.size();
     }
 

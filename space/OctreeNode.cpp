@@ -23,7 +23,7 @@ OctreeNode * OctreeNode::init(Vertex vertex) {
 	return this;
 }
 
-ChildBlock * OctreeNode::getBlock(OctreeAllocator &allocator) {
+ChildBlock * OctreeNode::getBlock(OctreeAllocator &allocator) const {
 	return allocator.childAllocator.getFromIndex(this->id);
 }
 
@@ -79,7 +79,7 @@ void OctreeNode::setSDF(float value[8]) {
 	memcpy(this->sdf, value, sizeof(float)*8);
 }
 
-bool OctreeNode::isSolid(){
+bool OctreeNode::isSolid() const {
 	return this->bits & (0x1 << 0);
 }
 
@@ -88,7 +88,7 @@ void OctreeNode::setSolid(bool value){
 	this->bits = (this->bits & (mask ^ 0xff)) | (value ? mask : 0x0);
 }
 
-bool OctreeNode::isEmpty(){
+bool OctreeNode::isEmpty() const {
 	return this->bits & (0x1 << 1);
 }
 
@@ -97,7 +97,7 @@ void OctreeNode::setEmpty(bool value){
 	this->bits = (this->bits & (mask ^ 0xff)) | (value ? mask : 0x0);
 }
 
-bool OctreeNode::isSimplified(){
+bool OctreeNode::isSimplified() const {
 	return this->bits & (0x1 << 2);
 }
 
@@ -106,7 +106,7 @@ void OctreeNode::setSimplified(bool value){
 	this->bits = (this->bits & ~mask) | (value ? mask : 0x0);
 }
 
-bool OctreeNode::isDirty(){
+bool OctreeNode::isDirty() const {
 	return this->bits & (0x1 << 3);
 }
 
@@ -115,7 +115,7 @@ void OctreeNode::setDirty(bool value){
 	this->bits = (this->bits & ~mask) | (value ? mask : 0x0);
 }
 
-bool OctreeNode::isChunk() {
+bool OctreeNode::isChunk() const {
 	return this->bits & (0x1 << 4);
 }
 void OctreeNode::setChunk(bool value) {
@@ -123,7 +123,7 @@ void OctreeNode::setChunk(bool value) {
 	this->bits = (this->bits & ~mask) | (value ? mask : 0x0);
 }
 
-bool OctreeNode::isLeaf() {
+bool OctreeNode::isLeaf() const {
 	return this->bits & (0x1 << 5);
 }
 
@@ -133,7 +133,7 @@ void OctreeNode::setLeaf(bool value) {
 }
 
 
-SpaceType OctreeNode::getType()  {
+SpaceType OctreeNode::getType() const {
 	if(isSolid()) {
 		return SpaceType::Solid;
 	} else if(isEmpty()) {

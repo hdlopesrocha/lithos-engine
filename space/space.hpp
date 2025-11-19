@@ -89,29 +89,29 @@ class OctreeNode {
 		~OctreeNode();
 		OctreeNode * init(Vertex vertex);
 		ChildBlock * clear(OctreeAllocator &allocator, OctreeChangeHandler * handler, ChildBlock * block);
-		ChildBlock * getBlock(OctreeAllocator &allocator);
+		ChildBlock * getBlock(OctreeAllocator &allocator) const;
 		ChildBlock * allocate(OctreeAllocator &allocator);
 		ChildBlock * deallocate(OctreeAllocator &allocator, ChildBlock * block);
 
-		bool isSolid();
+		bool isSolid() const ;
 		void setSolid(bool value);
 		
-		bool isEmpty();
+		bool isEmpty() const ;
 		void setEmpty(bool value);
 		
-		bool isSimplified();
+		bool isSimplified() const;
 		void setSimplified(bool value);
 		
-		bool isDirty();
+		bool isDirty() const ;
 		void setDirty(bool value);
 		
-		bool isChunk();
+		bool isChunk() const ;
 		void setChunk(bool value);
 		
-		bool isLeaf();
+		bool isLeaf() const ;
 		void setLeaf(bool value);
 
-		SpaceType getType();
+		SpaceType getType() const ;
 
 		void setSDF(float value[8]);
 		uint exportSerialization(OctreeAllocator &allocator, std::vector<OctreeNodeCubeSerialized> * nodes, int * leafNodes, BoundingCube cube, BoundingCube chunk, uint level);
@@ -184,8 +184,8 @@ class OctreeNodeTriangleHandler {
 
 class OctreeAllocator {
 	public: 
-	Allocator<OctreeNode> nodeAllocator = Allocator<OctreeNode>(1024);
-	Allocator<ChildBlock> childAllocator = Allocator<ChildBlock>(1024);
+	Allocator<OctreeNode> nodeAllocator = Allocator<OctreeNode>(1048576);
+	Allocator<ChildBlock> childAllocator = Allocator<ChildBlock>(1048576);
 	OctreeNode * allocate();
 	OctreeNode * get(uint index);
 	OctreeNode * deallocate(OctreeNode * node);
@@ -324,7 +324,7 @@ class Octree: public BoundingCube {
 		void expand(const ShapeArgs &args);
 		void add(WrappedSignedDistanceFunction *function, const Transformation model, glm::vec4 translate, glm::vec4 scale, const TexturePainter &painter, float minSize, Simplifier &simplifier, OctreeChangeHandler * changeHandler);
 		void del(WrappedSignedDistanceFunction *function, const Transformation model, glm::vec4 translate, glm::vec4 scale, const TexturePainter &painter, float minSize, Simplifier &simplifier, OctreeChangeHandler * changeHandler);
-		NodeOperationResult shape(OctreeNodeFrame frame, const ShapeArgs &args, ThreadContext * threadContext, std::string coords);
+		NodeOperationResult shape(OctreeNodeFrame frame, const ShapeArgs &args, ThreadContext * threadContext);
 		void iterate(IteratorHandler &handler);
 		void iterateFlat(IteratorHandler &handler);
 
@@ -334,7 +334,8 @@ class Octree: public BoundingCube {
 		void handleQuadNodes(const BoundingCube &cube, uint level, const float sdf[8], std::vector<OctreeNodeTriangleHandler*> * handlers, bool simplification, ThreadContext * context);
 		OctreeNodeLevel fetch(glm::vec3 pos, uint level, bool simplification, ThreadContext * context);
 		int getMaxLevel(OctreeNode * node, int level);
-
+		void iterateNeighbor(const BoundingCube &cube, const OctreeNode *node, const BoundingCube &nodeCube, float nodeSDF[8], const std::function<void(const BoundingCube &childCube, const float sdf[8])> &func);
+		void callLeafSubcellsAtSize(const BoundingCube &target, const BoundingCube &leafCube, const float leafSDF[8], float targetSize, const std::function<void(const BoundingCube&, const float[8])> &func);
 		uint getMaxLevel(BoundingCube &cube);
 		uint getMaxLevel(OctreeNode *node, BoundingCube &cube, BoundingCube &c, uint level);
 		bool isChunkNode(float length) const;
