@@ -130,6 +130,34 @@ public:
         //throw std::runtime_error("Invalid index");
     }
 
+    void getFromIndices(T ** pointers, uint indices[8]) {
+        std::shared_lock lock(mutex); // multiple allowed
+        for(size_t i = 0 ; i < 8 ; ++i) {
+            uint index = indices[i];
+
+            if (index == UINT_MAX) {
+                pointers[i] = NULL;
+                continue;
+            }
+            uint blockIdx = index / blockSize;
+            if (blockIdx >= blocks.size()) {
+                throw std::runtime_error("Invalid index");
+            }
+            uint offset = index % blockSize;
+            T* ptr = &blocks[blockIdx].data[offset];
+            
+            #ifndef NDEBUG
+            if (deallocatedSet.find(ptr) != deallocatedSet.end()) {
+                throw std::runtime_error("Accessing deallocated pointer");
+            }
+            #endif
+    
+            pointers[i] = ptr;        
+        }  
+                //throw std::runtime_error("Invalid index");
+    }
+
+
     uint allocateIndex() {
         T* ptr = allocate();
         return getIndex(ptr);

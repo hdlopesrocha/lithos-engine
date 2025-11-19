@@ -142,6 +142,8 @@ struct ChildBlock {
 
 	bool isEmpty();
 	void set(uint i, OctreeNode * node, OctreeAllocator &allocator);
+    void getChildren(OctreeAllocator &allocator, OctreeNode * childNodes[8]);
+
 	OctreeNode * get(uint i, OctreeAllocator &allocator);
 };
 
@@ -189,6 +191,9 @@ class OctreeAllocator {
 	OctreeNode * allocate();
 	OctreeNode * get(uint index);
 	OctreeNode * deallocate(OctreeNode * node);
+
+
+	void get(OctreeNode * nodes[8], uint indices[8]);
 	uint getIndex(OctreeNode * node);
     size_t getBlockSize() const;
     size_t getAllocatedBlocksCount() ;

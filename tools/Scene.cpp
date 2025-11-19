@@ -83,7 +83,7 @@ bool Scene::processLiquid(OctreeNodeData &data, Octree * tree) {
 			result = true;
 		}
 	}else {
-		if(data.node != NULL && (tree, data, &liquidInfo, (InstanceGeometry<InstanceData>*) NULL)) {
+		if(data.node != NULL && loadSpace(tree, data, &liquidInfo, (InstanceGeometry<InstanceData>*) NULL)) {
 			result = true;
 		}
 	}
@@ -226,35 +226,35 @@ bool Scene::processSpace() {
 	int loadCount = 0;
 	//std::cout << "process " << std::to_string((long)allVisibleNodes.size()) <<  std::endl;
 
-    std::vector<std::future<bool>> threads;
-	threads.reserve(36);
+    std::vector<std::future<bool>> futures;
+	futures.reserve(6);
 
 	// Thread pool zone
-	int workCount = 12;	
+	int workCount = 2;	
 	for (OctreeNodeData* data : allVisibleNodes) {
 		if (data->node && data->node->isDirty() && --workCount>=0) {
-			threads.emplace_back(threadPool.enqueue([this, data]() {
+			futures.emplace_back(threadPool.enqueue([this, data]() {
 				return processSolid(*data, &solidSpace);
 			}));
 		}
 	}
-	workCount = 12;
+	workCount = 2;
 	for (OctreeNodeData& brush : brushRenderer->visibleNodes) {
 		if (brush.node && brush.node->isDirty() && --workCount>=0) {
-			threads.emplace_back(threadPool.enqueue([this, &brush]() {
+			futures.emplace_back(threadPool.enqueue([this, &brush]() {
 				return processBrush(brush, &brushSpace);
 			}));
 		}
 	}
-	workCount = 12;
+	workCount = 2;
 	for (OctreeNodeData& liquid : liquidRenderer->visibleNodes) {
 		if (liquid.node && liquid.node->isDirty() && --workCount>=0) {
-			threads.emplace_back(threadPool.enqueue([this, &liquid]() {
+			futures.emplace_back(threadPool.enqueue([this, &liquid]() {
 				return processLiquid(liquid, &liquidSpace);
 			}));
 		}
 	}
-	for(auto &t : threads) {
+	for(auto &t : futures) {
 		bool ret = t.get();
 		if(ret) {
 			++loadCount;

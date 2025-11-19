@@ -36,6 +36,10 @@ void ChildBlock::set(uint i, OctreeNode* node, OctreeAllocator& allocator) {
 }
 
 
+void ChildBlock::getChildren(OctreeAllocator &allocator, OctreeNode * childNodes[8]) {
+    allocator.get(childNodes, children);
+}
+
 OctreeNode * ChildBlock::get(uint i, OctreeAllocator &allocator){
     uint index = children[i];
     if(index == UINT_MAX) return NULL;

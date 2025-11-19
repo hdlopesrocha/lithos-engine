@@ -247,7 +247,6 @@ class Scene {
 	Vegetation3d * vegetationGeometry;
 	ThreadPool threadPool = ThreadPool(std::thread::hardware_concurrency());
 
-
 	Scene(Settings * settings, BrushContext * brushContext);
 
 	bool processSpace();
