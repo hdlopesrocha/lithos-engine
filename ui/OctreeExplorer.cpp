@@ -46,7 +46,7 @@ void OctreeExplorer::recursiveDraw(OctreeNode * node, BoundingCube cube, uint le
         ImGui::PopStyleColor();
     }
     {
-        std::string text ="level = " + std::to_string(level) + "/" + std::to_string(tree->getMaxLevel(cube));
+        std::string text ="level = " + std::to_string(level);
         ImGui::Text(text.c_str());
     }
     ChildBlock * block = node->getBlock(*tree->allocator);

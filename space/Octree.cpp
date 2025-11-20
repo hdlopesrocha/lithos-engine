@@ -122,97 +122,71 @@ void Octree::iterateNeighbor(
 {
     if (!node) return;
 
+    // ----------------------
+    // LEAF CASE
+    // ----------------------
     if (node->isLeaf()) {
-        if (!node->isSolid() && !node->isEmpty()) {
-            BoundingCube pseudo = BoundingCube(nodeCube);
-            bool adjacent = false;
+        BoundingCube pseudo = nodeCube;
+        bool adjacent = false;
 
-            if (nodeCube.getMaxX() > cube.getMaxX()) {
-                pseudo.setMaxX(cube.getMaxX());
-                adjacent = true;
-            }
-            else if (nodeCube.getMaxY() > cube.getMaxY()) {
-                pseudo.setMaxY(cube.getMaxY());
-                adjacent = true;
-            }
-            else if (nodeCube.getMaxZ() > cube.getMaxZ()) {
-                pseudo.setMaxZ(cube.getMaxZ());
-                adjacent = true;
-            }
-
-            if (adjacent && cube.contains(pseudo)) {
-                float sdf[8];
-                for (uint i = 0; i < 8; ++i)
-                    sdf[i] = SDF::interpolate(nodeSDF, pseudo.getCorner(i), nodeCube);
-
-                if (node->getType() == SpaceType::Surface)
-                    func(pseudo, sdf, level);
-            }
+        // Correct crossing detection
+        if (nodeCube.getMinX() <= cube.getMaxX() && nodeCube.getMaxX() > cube.getMaxX()) {
+            pseudo.setMaxX(cube.getMaxX());
+            adjacent = true;
         }
+        if (nodeCube.getMinY() <= cube.getMaxY() && nodeCube.getMaxY() > cube.getMaxY()) {
+            pseudo.setMaxY(cube.getMaxY());
+            adjacent = true;
+        }
+        if (nodeCube.getMinZ() <= cube.getMaxZ() && nodeCube.getMaxZ() > cube.getMaxZ()) {
+            pseudo.setMaxZ(cube.getMaxZ());
+            adjacent = true;
+        }
+
+        if (adjacent && cube.contains(pseudo)) {
+            float sdf[8];
+            for (uint i = 0; i < 8; ++i)
+                sdf[i] = SDF::interpolate(nodeSDF, pseudo.getCorner(i), nodeCube);
+
+            if (SDF::eval(sdf) == SpaceType::Surface)
+                func(pseudo, sdf, level);
+        }
+        
         return;
     }
 
-    bool isSize = nodeCube.getLengthX() <= cube.getLengthX();
-
-    // --- Recurse into children ---
-    OctreeNode * children[8] = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
+    // ----------------------
+    // INTERNAL NODE
+    // ----------------------
+    OctreeNode * children[8] = {};
     node->getChildren(*allocator, children);
+    bool isSize = nodeCube.getLengthX() <= cube.getLengthX()*2.0f;
 
-    for (int i = 0; i < 8; ++i) {
+    for (uint i = 0; i < 8; ++i) {
         OctreeNode *child = children[i];
         if (child != NULL && child->getType() == SpaceType::Surface) {
-            BoundingCube childCube = nodeCube.getChild(i); 
-                // Neighbor conditions:
-            bool isNeighbor = !isSize || (isSize && (
-                (childCube.getMinX() <= cube.getMaxX() && childCube.getMaxX() > cube.getMaxX()) ||
-                (childCube.getMinY() <= cube.getMaxY() && childCube.getMaxY() > cube.getMaxY()) ||
-                (childCube.getMinZ() <= cube.getMaxZ() && childCube.getMaxZ() > cube.getMaxZ())
-            ));
-            if(isNeighbor && cube.intersects(childCube)) {
-                iterateNeighbor(cube, child, childCube, child->sdf, level + 1, func);
-            }
-        }
-    }
-}
-
-
-uint Octree::getMaxLevel(BoundingCube &cube) {
-    return getMaxLevel(this->root, cube, *this, 0);
-}
-
-
-uint Octree::getMaxLevel(OctreeNode *node, BoundingCube &cube, BoundingCube &nodeCube, uint level) {
-    uint l = level;
-    if(!node->isSimplified()) {
-        ChildBlock * block = node->getBlock(*allocator);
-        if(block != NULL) {
-            bool isSize = nodeCube.getLengthX() <= cube.getLengthX()*2.0f;
-            for(int i=0; i < 8; ++i) {
-                BoundingCube childCube = nodeCube.getChild(i); 
-                    // Neighbor conditions:
+            BoundingCube childCube = nodeCube.getChild(i);
+            if(false) {
                 bool isAfter = !isSize || (isSize && (
                     childCube.getMinX() == cube.getMaxX() ||
                     childCube.getMinY() == cube.getMaxY() ||
                     childCube.getMinZ() == cube.getMaxZ()
                 ));
                 if(isAfter) {
-                    bool isNeighbor = !cube.contains(childCube) && cube.intersects(childCube);
-                    if (isNeighbor) {
-                        OctreeNode * childNode = block->get(i, *allocator);
-                        if(childNode!=NULL && !childNode->isSolid() && !childNode->isEmpty()) {
-                            if(childNode->isSimplified()) {
-                                l = glm::max(l, level + 1);                                
-                            }
-                            else {
-                                l = glm::max(l, getMaxLevel(childNode, cube, childCube, level + 1));
-                            }
-                        }
-                    }
+                    iterateNeighbor(cube, child, childCube, child->sdf, level + 1, func);
+                }
+            } else {
+                bool crosses =
+                    (childCube.getMinX() <= cube.getMaxX() && cube.getMaxX() < childCube.getMaxX()) ||
+                    (childCube.getMinY() <= cube.getMaxY() && cube.getMaxY() < childCube.getMaxY()) ||
+                    (childCube.getMinZ() <= cube.getMaxZ() && cube.getMaxZ() < childCube.getMaxZ());
+
+                if (crosses && cube.intersects(childCube)) {
+                    iterateNeighbor(cube, child, childCube, child->sdf, level + 1, func);
                 }
             }
         }
     }
-    return l;
 }
 
 OctreeNodeLevel Octree::fetch(glm::vec3 pos, uint level, bool simplification, ThreadContext * context) {
@@ -582,9 +556,6 @@ NodeOperationResult Octree::shape(OctreeNodeFrame frame, const ShapeArgs &args, 
                         if(child.resultType != SpaceType::Surface) {
                             BoundingCube childCube = frame.cube.getChild(i);
                             bool childIsLeaf = length *0.5f <= args.minSize;
-                            if(childNode != NULL && !childNode->isLeaf()) {
-                                childIsLeaf = false;
-                            }
                            
                             if(childNode == NULL) {
                                 childNode = allocator->allocate()->init(Vertex(childCube.getCenter()));

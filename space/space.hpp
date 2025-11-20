@@ -339,11 +339,8 @@ class Octree: public BoundingCube {
 		float getSdfAt(const glm::vec3 &pos);
 		void handleQuadNodes(const BoundingCube &cube, uint level, const float sdf[8], std::vector<OctreeNodeTriangleHandler*> * handlers, bool simplification, ThreadContext * context);
 		OctreeNodeLevel fetch(glm::vec3 pos, uint level, bool simplification, ThreadContext * context);
-		int getMaxLevel(OctreeNode * node, int level);
 		void iterateNeighbor(const BoundingCube &cube, const OctreeNode *node, const BoundingCube &nodeCube, float nodeSDF[8], uint level, const std::function<void(const BoundingCube &childCube, const float sdf[8], uint level)> &func);
 		void callLeafSubcellsAtSize(const BoundingCube &target, const BoundingCube &leafCube, const float leafSDF[8], float targetSize, const std::function<void(const BoundingCube&, const float[8])> &func);
-		uint getMaxLevel(BoundingCube &cube);
-		uint getMaxLevel(OctreeNode *node, BoundingCube &cube, BoundingCube &c, uint level);
 		bool isChunkNode(float length) const;
 		bool isThreadNode(float length, float minSize, int threadSize) const;
 		void exportOctreeSerialization(OctreeSerialized * octree);
