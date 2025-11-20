@@ -32,12 +32,12 @@ const char* toString(SdfType t);
 static const glm::ivec2 SDF_EDGES[12] = {
     {0, 1}, 
     {1, 3}, 
-    {3, 2}, 
-    {2, 0},
+    {2, 3}, 
+    {0, 2},
     {4, 5},
     {5, 7}, 
-    {7, 6}, 
-    {6, 4},
+    {6, 7}, 
+    {4, 6},
     {0, 4}, 
     {1, 5}, 
     {2, 6}, 
@@ -78,7 +78,9 @@ public:
     static void getChildSDF(const float sdf[8], uint i , float result[8]);
     static void copySDF(const float src[8], float dst[8]);
     static float interpolate(const float sdf[8], const glm::vec3 &position, const BoundingCube &cube);
-    static SpaceType eval(float sdf[8]);
+    static SpaceType eval(const float sdf[8]);
+    static bool isSurfaceNet(const float sdf[8]);
+    static bool isSurfaceNet2(const float sdf[8]);
 };
 
 class SignedDistanceFunction {

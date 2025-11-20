@@ -449,6 +449,25 @@ float SDF::interpolate(const float sdf[8], const glm::vec3 &position, const Boun
     glm::vec3 local = (position - cube.getMin()) / cube.getLength(); // [0,1]^3
     float x = local.x, y = local.y, z = local.z;
 
+    if(x== 0.0f) {
+        if(y == 0.0f) {
+            if(z == 0.0f) return sdf[0];
+            if(z == 1.0f) return sdf[1];
+        }
+        if(y == 1.0f) {
+            if(z == 0.0f) return sdf[2];
+            if(z == 1.0f) return sdf[3];
+        }
+    } else if(x == 1.0f) {
+        if(y == 0.0f) {
+            if(z == 0.0f) return sdf[4];
+            if(z == 1.0f) return sdf[5];
+        }
+        if(y == 1.0f) {
+            if(z == 0.0f) return sdf[6];
+            if(z == 1.0f) return sdf[7];
+        }
+    }
     // Interpolate along z for each (x, y) pair
     float v000 = glm::mix(sdf[0], sdf[1], z); // (0,0,0)-(0,0,1)
     float v010 = glm::mix(sdf[2], sdf[3], z); // (0,1,0)-(0,1,1)
@@ -481,7 +500,7 @@ void SDF::copySDF(const float src[8], float dst[8]) {
     memcpy(dst, src, sizeof(float)*8);
 }
 
-SpaceType SDF::eval(float sdf[8]) {
+SpaceType SDF::eval(const float sdf[8]) {
     bool hasPositive = false;
     bool hasNegative = false;
     for (int i = 0; i < 8; ++i) {  
@@ -494,4 +513,22 @@ SpaceType SDF::eval(float sdf[8]) {
         }
     }
     return hasNegative && hasPositive ? SpaceType::Surface : (hasPositive ? SpaceType::Empty : SpaceType::Solid);
+}
+
+bool SDF::isSurfaceNet(const float sdf[8]) {
+    bool hasNeg = false;
+    bool hasPos = false;
+
+    for (int i = 0; i < 8; ++i) {
+        if (sdf[i] < 0.0f) hasNeg = true;
+        else               hasPos = true;
+
+        if (hasNeg && hasPos)
+            return true;
+    }
+    return false;
+}
+
+bool SDF::isSurfaceNet2(const float sdf[8]) {
+    return (sdf[0] < 0.0f) != (sdf[1] < 0.0f) || (sdf[0] < 0.0f) != (sdf[2] < 0.0f) || (sdf[0] < 0.0f) != (sdf[4] < 0.0f); 
 }

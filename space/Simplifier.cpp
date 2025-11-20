@@ -32,7 +32,6 @@ std::pair<bool,int> Simplifier::simplify(const BoundingCube chunkCube, const Bou
 		// for leaf nodes shouldn't loop
 		for(uint i=0; i < 8 ; ++i) {
 			NodeOperationResult * child = &children[i];
-			if(!child->process)	 continue;
 			if(child->resultType == SpaceType::Surface) {
 				if(!child->isSimplified) {
 					return {false, brushIndex};	
@@ -53,6 +52,7 @@ std::pair<bool,int> Simplifier::simplify(const BoundingCube chunkCube, const Bou
 				}
 
 				++nodeCount;
+				
 			}
 		}
 		

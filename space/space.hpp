@@ -18,6 +18,7 @@ class OctreeNode;
 class OctreeAllocator;
 class Simplifier;
 struct ChildBlock;
+typedef std::function<void(const BoundingCube &childCube, const float sdf[8], uint level)> IterateBorderFunction;
 
 #pragma pack(16)  // Ensure 16-byte alignment for UBO
 struct OctreeSerialized {
@@ -311,8 +312,6 @@ class ThreadContext {
 	}
 };
 
-
-
 class Octree: public BoundingCube {
 	using BoundingCube::BoundingCube;
 	public: 
@@ -339,7 +338,16 @@ class Octree: public BoundingCube {
 		float getSdfAt(const glm::vec3 &pos);
 		void handleQuadNodes(const BoundingCube &cube, uint level, const float sdf[8], std::vector<OctreeNodeTriangleHandler*> * handlers, bool simplification, ThreadContext * context);
 		OctreeNodeLevel fetch(glm::vec3 pos, uint level, bool simplification, ThreadContext * context);
-		void iterateNeighbor(const BoundingCube &cube, const OctreeNode *node, const BoundingCube &nodeCube, float nodeSDF[8], uint level, const std::function<void(const BoundingCube &childCube, const float sdf[8], uint level)> &func);
+		void iterateNeighbor(
+            const OctreeNode * from,
+			const BoundingCube &fromCube,
+            const float fromSDF[8],
+            const uint fromLevel,
+            const OctreeNode *to, 
+            const BoundingCube &toCube, 
+            const float toSDF[8],
+            const uint toLevel, 
+            const IterateBorderFunction &func);
 		void callLeafSubcellsAtSize(const BoundingCube &target, const BoundingCube &leafCube, const float leafSDF[8], float targetSize, const std::function<void(const BoundingCube&, const float[8])> &func);
 		bool isChunkNode(float length) const;
 		bool isThreadNode(float length, float minSize, int threadSize) const;

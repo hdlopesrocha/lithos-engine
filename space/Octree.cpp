@@ -13,9 +13,9 @@ static bool initialized = false;
 
 static void initialize() {
     if(!initialized) {
-        TESSELATION_ORDERS.push_back(glm::ivec4(0,1,3,2));TESSELATION_EDGES.push_back(glm::ivec2(3,7));
-        TESSELATION_ORDERS.push_back(glm::ivec4(0,2,6,4));TESSELATION_EDGES.push_back(glm::ivec2(6,7));
-        TESSELATION_ORDERS.push_back(glm::ivec4(0,4,5,1));TESSELATION_EDGES.push_back(glm::ivec2(5,7));
+        TESSELATION_ORDERS.push_back(glm::ivec4(0,1,3,2));TESSELATION_EDGES.push_back(SDF_EDGES[11]);
+        TESSELATION_ORDERS.push_back(glm::ivec4(0,2,6,4));TESSELATION_EDGES.push_back(SDF_EDGES[6]);
+        TESSELATION_ORDERS.push_back(glm::ivec4(0,4,5,1));TESSELATION_EDGES.push_back(SDF_EDGES[5]);
         initialized = true;
     }
 }
@@ -110,84 +110,98 @@ float Octree::getSdfAt(const glm::vec3 &pos) {
     std::cerr << "Not interpolated" << std::endl;
     return INFINITY;
 }
-
-
 void Octree::iterateNeighbor(
-            const BoundingCube &cube, 
-            const OctreeNode *node, 
-            const BoundingCube &nodeCube, 
-            float nodeSDF[8],
-            uint level, 
-            const std::function<void(const BoundingCube &childCube, const float sdf[8], uint level)> &func)
+            const OctreeNode * from,
+            const BoundingCube &fromCube,
+            const float fromSDF[8],
+            const uint fromLevel,
+
+            const OctreeNode *to,
+            const BoundingCube &toCube,
+            const float toSDF[8],
+            const uint toLevel,
+
+            const IterateBorderFunction &func)
 {
-    if (!node) return;
+    if (!to) return;
 
     // ----------------------
-    // LEAF CASE
+    // LEAF / SIMPLIFIED CASE
     // ----------------------
-    if (node->isLeaf()) {
-        BoundingCube pseudo = nodeCube;
-        bool adjacent = false;
+    if (to->isSimplified()) {
 
-        // Correct crossing detection
-        if (nodeCube.getMinX() <= cube.getMaxX() && nodeCube.getMaxX() > cube.getMaxX()) {
-            pseudo.setMaxX(cube.getMaxX());
-            adjacent = true;
+        // CASE A: toCube is same size or finer than fromCube
+        // -> build pseudo as a clipped subregion of toCube (use toSDF)
+        if (toCube.getLengthX() < fromCube.getLengthX()) {
+            BoundingCube toCubeShifted = toCube;
+            bool adjacent = false;
+
+            // test each axis independently (allow face/edge/corner cases)
+            if (toCube.getMinX() <= fromCube.getMaxX() && toCube.getMaxX() > fromCube.getMaxX()) {
+                toCubeShifted.setMaxX(fromCube.getMaxX());
+                adjacent = true;
+            }
+            if (toCube.getMinY() <= fromCube.getMaxY() && toCube.getMaxY() > fromCube.getMaxY()) {
+                toCubeShifted.setMaxY(fromCube.getMaxY());
+                adjacent = true;
+            }
+            if (toCube.getMinZ() <= fromCube.getMaxZ() && toCube.getMaxZ() > fromCube.getMaxZ()) {
+                toCubeShifted.setMaxZ(fromCube.getMaxZ());
+                adjacent = true;
+            }
+
+            // Ensure pseudo actually overlaps the from side (we clipped to fromPlane)
+            if (adjacent && fromCube.intersects(toCubeShifted)) {
+                float toSdfShifted[8];
+                // interpolate using the cube that contains pseudo -> toCube => use toSDF
+                for (uint i = 0; i < 8; ++i) {
+                    toSdfShifted[i] = SDF::interpolate(fromSDF, toCubeShifted.getCorner(i), fromCube);
+                }
+                func(toCubeShifted, toSdfShifted, toLevel);
+            }
         }
-        if (nodeCube.getMinY() <= cube.getMaxY() && nodeCube.getMaxY() > cube.getMaxY()) {
-            pseudo.setMaxY(cube.getMaxY());
-            adjacent = true;
-        }
-        if (nodeCube.getMinZ() <= cube.getMaxZ() && nodeCube.getMaxZ() > cube.getMaxZ()) {
-            pseudo.setMaxZ(cube.getMaxZ());
-            adjacent = true;
+        // CASE B: toCube is coarser/larger than fromCube
+        // -> build pseudo as a clipped subregion of fromCube (use fromSDF)
+        else {
+            if(to->getType() == SpaceType::Surface) {
+                func(fromCube, fromSDF, fromLevel);
+            }
         }
 
-        if (adjacent && cube.contains(pseudo)) {
-            float sdf[8];
-            for (uint i = 0; i < 8; ++i)
-                sdf[i] = SDF::interpolate(nodeSDF, pseudo.getCorner(i), nodeCube);
-
-            if (SDF::eval(sdf) == SpaceType::Surface)
-                func(pseudo, sdf, level);
-        }
-        
         return;
     }
 
     // ----------------------
-    // INTERNAL NODE
+    // INTERNAL NODE: recurse into children of `to`
     // ----------------------
     OctreeNode * children[8] = {};
-    node->getChildren(*allocator, children);
-    bool isSize = nodeCube.getLengthX() <= cube.getLengthX()*2.0f;
+    to->getChildren(*allocator, children);
+
+    // decide a threshold for treating `to` as "similar size" to `from`
+    // (kept your original heuristic, but you can tune or replace it)
 
     for (uint i = 0; i < 8; ++i) {
-        OctreeNode *child = children[i];
-        if (child != NULL && child->getType() == SpaceType::Surface) {
-            BoundingCube childCube = nodeCube.getChild(i);
-            if(false) {
-                bool isAfter = !isSize || (isSize && (
-                    childCube.getMinX() == cube.getMaxX() ||
-                    childCube.getMinY() == cube.getMaxY() ||
-                    childCube.getMinZ() == cube.getMaxZ()
-                ));
-                if(isAfter) {
-                    iterateNeighbor(cube, child, childCube, child->sdf, level + 1, func);
-                }
-            } else {
-                bool crosses =
-                    (childCube.getMinX() <= cube.getMaxX() && cube.getMaxX() < childCube.getMaxX()) ||
-                    (childCube.getMinY() <= cube.getMaxY() && cube.getMaxY() < childCube.getMaxY()) ||
-                    (childCube.getMinZ() <= cube.getMaxZ() && cube.getMaxZ() < childCube.getMaxZ());
+        OctreeNode * to = children[i];
+        if (to != NULL && to->getType() == SpaceType::Surface) {
 
-                if (crosses && cube.intersects(childCube)) {
-                    iterateNeighbor(cube, child, childCube, child->sdf, level + 1, func);
-                }
+            BoundingCube childCube = toCube.getChild(i);
+
+            // plane-crossing test (mixed-LOD safe) for any of the +X/+Y/+Z faces
+            bool crosses =
+                (childCube.getMinX() <= fromCube.getMaxX() && childCube.getMaxX() > fromCube.getMaxX()) ||
+                (childCube.getMinY() <= fromCube.getMaxY() && childCube.getMaxY() > fromCube.getMaxY()) ||
+                (childCube.getMinZ() <= fromCube.getMaxZ() && childCube.getMaxZ() > fromCube.getMaxZ());
+
+            bool isNeighbor = crosses;
+
+            // final prune: ensure actual overlap (avoids distant children)
+            if (isNeighbor && fromCube.intersects(childCube)) {
+                iterateNeighbor(from, fromCube, fromSDF, fromLevel, to, childCube, to->sdf, toLevel + 1, func);
             }
         }
     }
 }
+
 
 OctreeNodeLevel Octree::fetch(glm::vec3 pos, uint level, bool simplification, ThreadContext * context) {
     glm::vec4 key = glm::vec4(pos, level);
@@ -237,12 +251,12 @@ void Octree::handleQuadNodes(const BoundingCube &cube, uint level, const float s
             Vertex vertices[4] = { Vertex(), Vertex(), Vertex(), Vertex() };
 			for(uint i =0; i < 4 ; ++i) {
                 uint neighborIndex = quad[i];
-				OctreeNodeLevel * childLevel = &neighbors[neighborIndex];
-                if(childLevel->node == NULL) {
+				OctreeNodeLevel * neighbor = &neighbors[neighborIndex];
+                if(neighbor->node == NULL) {
                     glm::vec3 pos = cube.getCenter() + cube.getLength() * Octree::getShift(neighborIndex);
-                    *childLevel = fetch(pos, level, simplification, context);              
+                    *neighbor = fetch(pos, level, simplification, context);              
                 }
-                OctreeNode * childNode = childLevel->node;
+                OctreeNode * childNode = neighbor->node;
                 if(childNode != NULL && !childNode->isSolid() && !childNode->isEmpty()) {
                     vertices[i] = childNode->vertex;
                 } else {
@@ -420,7 +434,7 @@ NodeOperationResult Octree::shape(OctreeNodeFrame frame, const ShapeArgs &args, 
             }
             
             float childSDF[8] = {INFINITY,INFINITY,INFINITY,INFINITY,INFINITY,INFINITY,INFINITY,INFINITY};
-            int childBrushIndex = frame.brushIndex;
+            int childBrushIndex = node != NULL ? node->vertex.brushIndex : frame.brushIndex;
             bool isChildInterpolated = frame.interpolated;
 
             if(childNode != NULL) {
@@ -524,10 +538,9 @@ NodeOperationResult Octree::shape(OctreeNodeFrame frame, const ShapeArgs &args, 
             // Simplification & Painting
             // ------------------------------
             if(isLeaf) {
-                isSimplified = true;
                 if(shapeType != SpaceType::Empty) {
                     brushIndex = args.painter.paint(node->vertex, args.translate, args.scale);
-                }            
+                }        
             } else {
                 if(childSimplified && !isChunk) {
                     std::pair<bool,int> simplificationResult = args.simplifier.simplify(frame.chunkCube, frame.cube, resultSDF, children);
