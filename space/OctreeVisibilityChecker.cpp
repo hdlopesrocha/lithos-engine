@@ -2,7 +2,7 @@
 
 
 OctreeVisibilityChecker::OctreeVisibilityChecker() {
-	visibleNodes.clear();
+	visibleNodes.reserve(1024);
 }
 
 void OctreeVisibilityChecker::update(glm::mat4 m) {
@@ -26,12 +26,10 @@ bool OctreeVisibilityChecker::test(Octree * tree, OctreeNodeData *params) {
 		if(containmentType == ContainmentType::Disjoint) {
 			return false;
 		}
-		if(params->node != NULL) {
-			if(params->node->isChunk()) {
-				params->context = params->node;
-			}
-			return true;
+		if(params->node->isChunk() && params->node->getType() == SpaceType::Surface) {
+			params->context = params->node;
 		}
+		return true;
 	}
 	return false;
 }

@@ -73,9 +73,10 @@ uint OctreeNodeFile::saveRecursive(OctreeNode * node, std::vector<OctreeNodeSeri
 
 		uint index = nodes->size(); 
 		nodes->push_back(n);
-		ChildBlock * block = node->getBlock(*tree->allocator);
+		OctreeNode * children[8] = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
+		node->getChildren(*tree->allocator, children);
 		for(int i=0; i < 8; ++i) {
-            (*nodes)[index].children[i] = saveRecursive(block->get(i, *tree->allocator), nodes);
+            (*nodes)[index].children[i] = saveRecursive(children[i], nodes);
 		}
 		return index;
 	}

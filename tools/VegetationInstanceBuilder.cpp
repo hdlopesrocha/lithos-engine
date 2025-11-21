@@ -75,7 +75,7 @@ void VegetationInstanceBuilder::handle(Vertex &v0, Vertex &v1, Vertex &v2, bool 
 
                 model = glm::translate(model, point);
                 if(height > 1.0) {
-                    model = glm::scale(model, scale*glm::vec3(1.0, height, 1.0));
+                    model = glm::scale(model, scale*glm::vec3(height));
                 }     
                 // model *=  Math::getRotationMatrixFromNormal(n, up);
 

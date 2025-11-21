@@ -1,7 +1,6 @@
 #define STB_IMAGE_IMPLEMENTATION
 
 #include <stb/stb_image.h>
-
 #include "gl.hpp"
 double lastFrameTime = 0.0;
 
@@ -226,8 +225,6 @@ void LithosApplication::run() {
 	if(!initWindow()) {
         // Backup original framebuffer
         glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &originalFrameBuffer);
-        
-
         setup();
         mainLoop();
         clean();

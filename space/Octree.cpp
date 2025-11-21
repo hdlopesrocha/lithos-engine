@@ -174,7 +174,7 @@ void Octree::iterateNeighbor(
     // ----------------------
     // INTERNAL NODE: recurse into children of `to`
     // ----------------------
-    OctreeNode * children[8] = {};
+    OctreeNode * children[8] = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
     to->getChildren(*allocator, children);
 
     // decide a threshold for treating `to` as "similar size" to `from`
@@ -183,19 +183,15 @@ void Octree::iterateNeighbor(
     for (uint i = 0; i < 8; ++i) {
         OctreeNode * to = children[i];
         if (to != NULL && to->getType() == SpaceType::Surface) {
-
             BoundingCube childCube = toCube.getChild(i);
-
             // plane-crossing test (mixed-LOD safe) for any of the +X/+Y/+Z faces
             bool crosses =
                 (childCube.getMinX() <= fromCube.getMaxX() && childCube.getMaxX() > fromCube.getMaxX()) ||
                 (childCube.getMinY() <= fromCube.getMaxY() && childCube.getMaxY() > fromCube.getMaxY()) ||
                 (childCube.getMinZ() <= fromCube.getMaxZ() && childCube.getMaxZ() > fromCube.getMaxZ());
 
-            bool isNeighbor = crosses;
-
             // final prune: ensure actual overlap (avoids distant children)
-            if (isNeighbor && fromCube.intersects(childCube)) {
+            if (crosses && fromCube.intersects(childCube)) {
                 iterateNeighbor(from, fromCube, fromSDF, fromLevel, to, childCube, to->sdf, toLevel + 1, func);
             }
         }
@@ -403,8 +399,6 @@ NodeOperationResult Octree::shape(OctreeNodeFrame frame, const ShapeArgs &args, 
         SpaceType resultType = node ? node->getType() : SDF::eval(frame.sdf);
         return NodeOperationResult(node, SpaceType::Empty, resultType, frame.sdf, INFINITY_ARRAY, process, node ? node->isSimplified() : true, DISCARD_BRUSH_INDEX);  // Skip this node
     }
-
-    ChildBlock * block = NULL;
     float length = frame.cube.getLengthX();
     bool isChunk = isChunkNode(length);
     bool isLeaf = length <= args.minSize;
@@ -412,41 +406,41 @@ NodeOperationResult Octree::shape(OctreeNodeFrame frame, const ShapeArgs &args, 
         isLeaf = false;
     }
 
-    NodeOperationResult children[8];
+    NodeOperationResult childResult[8];
     std::vector<std::thread> threads;
     threads.reserve(8);
     if (!isLeaf) {
         bool isChildThread = isThreadNode(length*0.5f, args.minSize, 16);
         bool isChildChunk = isChunkNode(length*0.5f);
 
-        OctreeNode * childNodes[8] = {NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL};
+        OctreeNode * children[8] = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
         if(node != NULL) {
-            node->getChildren(*allocator, childNodes);
+            node->getChildren(*allocator, children);
         }
         // --------------------------------
         // Iterate nodes and create threads
         // --------------------------------
 
         for (uint i = 0; i < 8; ++i) {
-            OctreeNode * childNode = childNodes[i];
-            if(node!=NULL && childNode == node) {
-		        throw std::runtime_error("Infinite loop " + std::to_string((long)childNode) + " " + std::to_string((long)node));
+            OctreeNode * child = children[i];
+            if(node!=NULL && child == node) {
+		        throw std::runtime_error("Infinite loop " + std::to_string((long)child) + " " + std::to_string((long)node));
             }
             
             float childSDF[8] = {INFINITY,INFINITY,INFINITY,INFINITY,INFINITY,INFINITY,INFINITY,INFINITY};
             int childBrushIndex = node != NULL ? node->vertex.brushIndex : frame.brushIndex;
             bool isChildInterpolated = frame.interpolated;
 
-            if(childNode != NULL) {
-                childBrushIndex = childNode->vertex.brushIndex;
-                SDF::copySDF(childNode->sdf, childSDF);
+            if(child != NULL) {
+                childBrushIndex = child->vertex.brushIndex;
+                SDF::copySDF(child->sdf, childSDF);
             } else {
                 isChildInterpolated = true;
                 SDF::getChildSDF(frame.sdf, i, childSDF);
             }
             BoundingCube childCube = frame.cube.getChild(i);
             OctreeNodeFrame childFrame = OctreeNodeFrame(
-                childNode, 
+                child, 
                 childCube, 
                 frame.level + 1, 
                 childSDF,
@@ -457,13 +451,13 @@ NodeOperationResult Octree::shape(OctreeNodeFrame frame, const ShapeArgs &args, 
 
             if(isChildThread) {
                 ++threadsCreated;
-                NodeOperationResult * result = &children[i];
+                NodeOperationResult * result = &childResult[i];
                 threads.emplace_back([this, childFrame, args, result]() {
                    ThreadContext localThreadContext(childFrame.cube);
                    *result = shape(childFrame, args, &localThreadContext);
                 });
             } else {
-                children[i] = shape(childFrame, args, threadContext);
+                childResult[i] = shape(childFrame, args, threadContext);
             }
             
             (*shapeCounter)++;
@@ -496,16 +490,16 @@ NodeOperationResult Octree::shape(OctreeNodeFrame frame, const ShapeArgs &args, 
 
     if(!isLeaf) {
         for(uint i = 0; i < 8; ++i) {
-            NodeOperationResult & child = children[i];   
+            NodeOperationResult & result = childResult[i];   
 
-            childResultEmpty &= child.resultType == SpaceType::Empty;
-            childResultSolid &= child.resultType == SpaceType::Solid;
-            childShapeEmpty &= child.shapeType == SpaceType::Empty;
-            childShapeSolid &= child.shapeType == SpaceType::Solid;
-            childSimplified &= child.isSimplified;
-            if(child.process) {
-                resultSDF[i] = child.resultSDF[i];
-                shapeSDF[i] = child.shapeSDF[i];
+            childResultEmpty &= result.resultType == SpaceType::Empty;
+            childResultSolid &= result.resultType == SpaceType::Solid;
+            childShapeEmpty &= result.shapeType == SpaceType::Empty;
+            childShapeSolid &= result.shapeType == SpaceType::Solid;
+            childSimplified &= result.isSimplified;
+            if(result.process) {
+                resultSDF[i] = result.resultSDF[i];
+                shapeSDF[i] = result.shapeSDF[i];
             } 
         }
     }
@@ -543,7 +537,7 @@ NodeOperationResult Octree::shape(OctreeNodeFrame frame, const ShapeArgs &args, 
                 }        
             } else {
                 if(childSimplified && !isChunk) {
-                    std::pair<bool,int> simplificationResult = args.simplifier.simplify(frame.chunkCube, frame.cube, resultSDF, children);
+                    std::pair<bool,int> simplificationResult = args.simplifier.simplify(frame.chunkCube, frame.cube, resultSDF, childResult);
                     isSimplified = simplificationResult.first;
                     brushIndex = simplificationResult.second;
                 }
@@ -555,14 +549,10 @@ NodeOperationResult Octree::shape(OctreeNodeFrame frame, const ShapeArgs &args, 
                 // ------------------------------
                 // Created at least one solid child
                 // ------------------------------
-                if(block == NULL) {
-                    block = node->allocate(*allocator)->init();
-                }
-
                 bool isChildChunk = isChunkNode(length*0.5f);
                 uint childNodes[8] = {UINT_MAX,UINT_MAX,UINT_MAX,UINT_MAX,UINT_MAX,UINT_MAX,UINT_MAX,UINT_MAX};
                 for(uint i =0 ; i < 8 ; ++i) {
-                    NodeOperationResult & child = children[i];
+                    NodeOperationResult & child = childResult[i];
                     OctreeNode * childNode = child.node;
 
                     if(child.process) {
@@ -572,7 +562,7 @@ NodeOperationResult Octree::shape(OctreeNodeFrame frame, const ShapeArgs &args, 
                            
                             if(childNode == NULL) {
                                 childNode = allocator->allocate()->init(Vertex(childCube.getCenter()));
-                                children[i].node = childNode;
+                                childResult[i].node = childNode;
                             }
            
                             childNode->setSolid(child.resultType == SpaceType::Solid);

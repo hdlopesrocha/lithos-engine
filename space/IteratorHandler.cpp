@@ -7,10 +7,11 @@ void IteratorHandler::iterate(Octree * tree, OctreeNodeData *params) {
             uint8_t internalOrder[8];
             getOrder(tree, params, internalOrder);
 
-            ChildBlock * block = params->node->getBlock(*tree->allocator);
+            OctreeNode* children[8] = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
+            params->node->getChildren(*tree->allocator, children);
             for(int i=0; i <8 ; ++i) {
                 uint8_t j = internalOrder[i];
-                OctreeNode * child = block ? block->get(j, *tree->allocator) : NULL;
+                OctreeNode * child = children[j];
                 if (child == params->node) {
                     throw std::runtime_error("Wrong pointer @ iter!");
                 }                
@@ -38,11 +39,11 @@ void IteratorHandler::iterateFlatIn(Octree* tree, OctreeNodeData* params) {
 
         if (node != NULL && test(tree, &data)) {
             getOrder(tree, &data, internalOrder);
-            ChildBlock* block = node->getBlock(*tree->allocator);
-
+            OctreeNode* children[8] = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
+            node->getChildren(*tree->allocator, children);
             for (int i = 7; i >= 0; --i) {
                 uint8_t j = internalOrder[i];
-                OctreeNode* child = block ? block->get(j, *tree->allocator) : NULL;
+                OctreeNode* child = children[j];
 
                 if (child == node) {
                     throw std::runtime_error("Wrong pointer!");

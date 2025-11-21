@@ -11,13 +11,16 @@
 #define SQRT_3_OVER_2 0.866025404f
 #include "ThreadPool.hpp"
 #include "Allocator.hpp"
-const float INFINITY_ARRAY [8] = {INFINITY,INFINITY,INFINITY,INFINITY,INFINITY,INFINITY,INFINITY,INFINITY};
-const uint UINT_MAX_ARRAY [8] = {UINT_MAX,UINT_MAX,UINT_MAX,UINT_MAX,UINT_MAX,UINT_MAX,UINT_MAX,UINT_MAX};
+
 class Octree;
 class OctreeNode;
 class OctreeAllocator;
 class Simplifier;
 struct ChildBlock;
+
+const float INFINITY_ARRAY [8] = {INFINITY,INFINITY,INFINITY,INFINITY,INFINITY,INFINITY,INFINITY,INFINITY};
+const uint UINT_MAX_ARRAY [8] = {UINT_MAX,UINT_MAX,UINT_MAX,UINT_MAX,UINT_MAX,UINT_MAX,UINT_MAX,UINT_MAX};
+
 typedef std::function<void(const BoundingCube &childCube, const float sdf[8], uint level)> IterateBorderFunction;
 
 #pragma pack(16)  // Ensure 16-byte alignment for UBO

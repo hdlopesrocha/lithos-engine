@@ -8,6 +8,7 @@
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include "controller/controller.hpp"
+#include <valgrind/callgrind.h>
 
 class MainApplication : public LithosApplication {
 	std::vector<UniformBlockBrush> brushes;
@@ -106,6 +107,8 @@ public:
 	}
 
 	virtual void setup() {
+		CALLGRIND_STOP_INSTRUMENTATION;
+
 		glEnable(GL_DEPTH_TEST);
 		glDepthFunc(GL_LEQUAL);
 		glClearDepth(1.0f);
@@ -634,10 +637,12 @@ public:
 			processTime += endTime - startTime;
 		}
 		else {
+			CALLGRIND_START_INSTRUMENTATION;
 			#ifdef CLOSE_AFTER_GENERATE
 			this->close();
 			#endif
 		}
+
 		glPolygonMode(GL_FRONT, GL_FILL);
 		glPatchParameteri(GL_PATCH_VERTICES, 3); // Define the number of control points per patch
 		glEnable(GL_DEPTH_TEST);

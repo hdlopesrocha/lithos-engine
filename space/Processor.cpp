@@ -16,7 +16,7 @@ bool Processor::test(Octree * tree, OctreeNodeData *data) {
         if(data->node->isLeaf()) {
             data->context = data->node;
         }
-        return true;
+        return data->node->getType() == SpaceType::Surface;
     }
 	return false;
 }

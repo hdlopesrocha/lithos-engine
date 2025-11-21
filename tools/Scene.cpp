@@ -105,7 +105,7 @@ bool Scene::processSolid(OctreeNodeData &data, Octree * tree) {
 	Tesselator tesselator(&trianglesCount, &context);
 	std::vector<InstanceData> vegetationInstances; 
 	long count = 0;
-	VegetationInstanceBuilder vegetationBuilder(tree, &count, &vegetationInstances, 0.1, 4);
+	VegetationInstanceBuilder vegetationBuilder(tree, &count, &vegetationInstances, 0.01, 4);
 
 	std::vector<OctreeNodeTriangleHandler*> triangleHandlers;
 	triangleHandlers.emplace_back(&tesselator);
