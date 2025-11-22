@@ -92,7 +92,7 @@ class OctreeInstanceBuilderHandler : public InstanceBuilderHandler<DebugInstance
 	public:
 	OctreeInstanceBuilderHandler();
 
-	void handle(Octree * tree, OctreeNodeData &data, std::vector<DebugInstanceData> * instances, ThreadContext * context) override;
+	void handle(const Octree &tree, OctreeNodeData &data, std::vector<DebugInstanceData> * instances, ThreadContext * context) override;
 };
 
 

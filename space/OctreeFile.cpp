@@ -101,7 +101,6 @@ uint OctreeFile::saveRecursive(OctreeNode * node, std::vector<OctreeNodeSerializ
 			OctreeNode * children[8] = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
 			node->getChildren(*tree->allocator, children);
 
-			ChildBlock * block = node->getBlock(*tree->allocator);
 			for(int i=0; i < 8; ++i) {
 				BoundingCube c = cube.getChild(i);
 				(*nodes)[index].children[i] = saveRecursive(children[i], nodes, chunkSize, filename, c, baseFolder);

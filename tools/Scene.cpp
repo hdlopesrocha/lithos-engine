@@ -73,7 +73,7 @@ bool Scene::processLiquid(OctreeNodeData &data, Octree * tree) {
 	std::vector<OctreeNodeTriangleHandler*> handlers;
 	handlers.emplace_back(&tesselator);
 	Processor processor(&trianglesCount, &context, &handlers);
-	processor.iterateFlatIn(tree, &data);
+	processor.iterateFlatIn(*tree, data);
 
  	if(tesselator.geometry->indices.size() > 0) {
         InstanceGeometry<InstanceData> * pre = new InstanceGeometry<InstanceData>(tesselator.geometry);
@@ -113,7 +113,7 @@ bool Scene::processSolid(OctreeNodeData &data, Octree * tree) {
 	//std::cout << "\tprocessor" << std::endl;
 	Processor triangleProcessor(&trianglesCount, &context, &triangleHandlers);
 	//std::cout << "\tprocessor.iterateFlatIn" << std::endl;
-	triangleProcessor.iterateFlatIn(tree, &data);
+	triangleProcessor.iterateFlatIn(*tree, data);
 
  	if(tesselator.geometry->indices.size() > 0) {
         InstanceGeometry<InstanceData> * pre = new InstanceGeometry<InstanceData>(tesselator.geometry);
@@ -179,7 +179,7 @@ bool Scene::processBrush(OctreeNodeData &data, Octree * tree) {
 	std::vector<OctreeNodeTriangleHandler*> handlers;
 	handlers.emplace_back(&tesselator);
 	Processor processor(&trianglesCount, &context, &handlers);
-	processor.iterateFlatIn(tree, &data);
+	processor.iterateFlatIn(*tree, data);
 
  	if(tesselator.geometry->indices.size() > 0) {
         InstanceGeometry<InstanceData> * pre = new InstanceGeometry<InstanceData>(tesselator.geometry);

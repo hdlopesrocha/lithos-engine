@@ -40,7 +40,7 @@ int getNodeIndex(const glm::vec3 &vec, const BoundingCube &cube) {
 
 
 
-OctreeNodeLevel Octree::getNodeAt(const glm::vec3 &pos, int level, bool simplification) {
+OctreeNodeLevel Octree::getNodeAt(const glm::vec3 &pos, int level, bool simplification) const{
     OctreeNode * candidate = root;
     OctreeNode* node = candidate;
     BoundingCube cube = *this;
@@ -64,7 +64,7 @@ OctreeNodeLevel Octree::getNodeAt(const glm::vec3 &pos, int level, bool simplifi
     return OctreeNodeLevel(node, currentLevel);
 }
 
-OctreeNode* Octree::getNodeAt(const glm::vec3 &pos, bool simplification) {
+OctreeNode* Octree::getNodeAt(const glm::vec3 &pos, bool simplification) const {
     OctreeNode * candidate = root;
     OctreeNode* node = candidate;
     BoundingCube cube = *this;
@@ -121,7 +121,7 @@ void Octree::iterateNeighbor(
             const float toSDF[8],
             const uint toLevel,
 
-            const IterateBorderFunction &func)
+            const IterateBorderFunction &func) const
 {
     if (!to) return;
 
@@ -199,7 +199,7 @@ void Octree::iterateNeighbor(
 }
 
 
-OctreeNodeLevel Octree::fetch(glm::vec3 pos, uint level, bool simplification, ThreadContext * context) {
+OctreeNodeLevel Octree::fetch(glm::vec3 pos, uint level, bool simplification, ThreadContext * context) const {
     glm::vec4 key = glm::vec4(pos, level);
     if(context->nodeCache.find(key) != context->nodeCache.end()) {
         return context->nodeCache[key];
@@ -232,7 +232,7 @@ bool allDifferent(const T& first, const Args&... args) {
     return true;
 }
 
-void Octree::handleQuadNodes(const BoundingCube &cube, uint level, const float sdf[8], std::vector<OctreeNodeTriangleHandler*> * handlers, bool simplification, ThreadContext * context) {
+void Octree::handleQuadNodes(const BoundingCube &cube, uint level, const float sdf[8], std::vector<OctreeNodeTriangleHandler*> * handlers, bool simplification, ThreadContext * context) const {
     OctreeNodeLevel neighbors[8] = {
         OctreeNodeLevel(),OctreeNodeLevel(),OctreeNodeLevel(),OctreeNodeLevel(),
         OctreeNodeLevel(),OctreeNodeLevel(),OctreeNodeLevel(),OctreeNodeLevel()
@@ -620,12 +620,12 @@ NodeOperationResult Octree::shape(OctreeNodeFrame frame, const ShapeArgs &args, 
 
 void Octree::iterate(IteratorHandler &handler) {
     OctreeNodeData data(0, root, *this, NULL, root->sdf);
-	handler.iterate(this, &data);
+	handler.iterate(*this, data);
 }
 
 void Octree::iterateFlat(IteratorHandler &handler) {
     OctreeNodeData data(0, root, *this, NULL, root->sdf);
-    handler.iterateFlatIn(this, &data);
+    handler.iterateFlatIn(*this, data);
 }
 
 void Octree::exportOctreeSerialization(OctreeSerialized * node) {
