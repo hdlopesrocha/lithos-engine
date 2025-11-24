@@ -158,13 +158,15 @@ struct OctreeNodeData {
 	uint level;
 	OctreeNode * node;
 	BoundingCube cube;
+	ContainmentType containmentType;
 	void * context;
 	float sdf[8];
-	OctreeNodeData(uint level, OctreeNode * node, BoundingCube cube, void * context, float * sdf) {
+	OctreeNodeData(uint level, OctreeNode * node, BoundingCube cube, ContainmentType containmentType, void * context, float * sdf) {
 		this->level = level;
 		this->node = node;
 		this->cube = cube;
 		this->context = context;
+		this->containmentType = containmentType;
 		SDF::copySDF(sdf, this->sdf);
 	}
 
@@ -173,10 +175,13 @@ struct OctreeNodeData {
 		this->node = data.node;
 		this->cube = data.cube;
 		this->context = data.context;
+		this->containmentType = data.containmentType;
 		SDF::copySDF(data.sdf, this->sdf);
 	}
 
-
+	OctreeNodeData() {
+		
+	}
 };
 
 class OctreeNodeTriangleHandler {
@@ -326,7 +331,7 @@ class Octree: public BoundingCube {
 		std::unordered_map<glm::vec3, ThreadContext> chunks;
 		ThreadPool threadPool = ThreadPool(std::thread::hardware_concurrency());
 		std::mutex mutex;
-		Octree(BoundingCube mxnCube, float chunkSize);
+		Octree(BoundingCube minCube, float chunkSize);
 		Octree();
 		
 		void expand(const ShapeArgs &args);
@@ -335,7 +340,7 @@ class Octree: public BoundingCube {
 		NodeOperationResult shape(OctreeNodeFrame frame, const ShapeArgs &args, ThreadContext * threadContext);
 		void iterate(IteratorHandler &handler);
 		void iterateFlat(IteratorHandler &handler);
-
+		void iterateParallel(IteratorHandler &handler);
 		OctreeNodeLevel getNodeAt(const glm::vec3 &pos, int level, bool simplification) const;
 		OctreeNode* getNodeAt(const glm::vec3 &pos, bool simplification) const;
 		float getSdfAt(const glm::vec3 &pos);
@@ -432,15 +437,21 @@ class IteratorHandler {
     std::stack<OctreeNodeData> flatData;
     std::stack<StackFrame> stack;
     std::stack<StackFrameOut> stackOut;
+
 	public: 
 		virtual bool test(const Octree &tree, OctreeNodeData &params) = 0;
 		virtual void before(const Octree &tree, OctreeNodeData &params) = 0;
 		virtual void after(const Octree &tree, OctreeNodeData &params) = 0;
 		virtual void getOrder(const Octree &tree, OctreeNodeData &params, uint8_t order[8]) = 0;
 		void iterate(const Octree &tree, OctreeNodeData &params);
+		void iterateMultiThreaded(const Octree &tree, OctreeNodeData &params);
+
 		void iterateFlatIn(const Octree &tree, OctreeNodeData &params);
 		void iterateFlatOut(const Octree &tree, OctreeNodeData &params);
 		void iterateFlat(const Octree &tree, OctreeNodeData &params);
+		void iterateBFS(const Octree &tree, OctreeNodeData &rootParams);
+		void iterateParallelBFS(const Octree &tree, OctreeNodeData &rootParams, ThreadPool& pool);
+
 };
 
 template <typename T> class InstanceBuilderHandler {
@@ -492,8 +503,9 @@ class Tesselator : public OctreeNodeTriangleHandler{
 class Processor : public IteratorHandler {
 	ThreadContext * context;
 	std::vector<OctreeNodeTriangleHandler*> * handlers;
+	ThreadPool &threadPool;
 	public:
-		Processor(long * count, ThreadContext * context, std::vector<OctreeNodeTriangleHandler*> * handlers);
+		Processor(long * count, ThreadPool &threadPool, ThreadContext * context, std::vector<OctreeNodeTriangleHandler*> * handlers);
 		void before(const Octree &tree, OctreeNodeData &params) override;
 		void after(const Octree &tree, OctreeNodeData &params) override;
 		bool test(const Octree &tree, OctreeNodeData &params) override;
@@ -535,6 +547,7 @@ class OctreeVisibilityChecker : public IteratorHandler{
 	public:
 		glm::vec3 sortPosition;
 		std::vector<OctreeNodeData> visibleNodes;
+		std::mutex mutex;
 		OctreeVisibilityChecker();
 		void update(glm::mat4 m);
 		void before(const Octree &tree, OctreeNodeData &params) override;

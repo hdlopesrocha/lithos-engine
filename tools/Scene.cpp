@@ -72,7 +72,7 @@ bool Scene::processLiquid(OctreeNodeData &data, Octree * tree) {
 	Tesselator tesselator(&trianglesCount, &context);
 	std::vector<OctreeNodeTriangleHandler*> handlers;
 	handlers.emplace_back(&tesselator);
-	Processor processor(&trianglesCount, &context, &handlers);
+	Processor processor(&trianglesCount, threadPool, &context, &handlers);
 	processor.iterateFlatIn(*tree, data);
 
  	if(tesselator.geometry->indices.size() > 0) {
@@ -111,7 +111,7 @@ bool Scene::processSolid(OctreeNodeData &data, Octree * tree) {
 	triangleHandlers.emplace_back(&tesselator);
 	triangleHandlers.emplace_back(&vegetationBuilder);
 	//std::cout << "\tprocessor" << std::endl;
-	Processor triangleProcessor(&trianglesCount, &context, &triangleHandlers);
+	Processor triangleProcessor(&trianglesCount, threadPool, &context, &triangleHandlers);
 	//std::cout << "\tprocessor.iterateFlatIn" << std::endl;
 	triangleProcessor.iterateFlatIn(*tree, data);
 
@@ -178,7 +178,7 @@ bool Scene::processBrush(OctreeNodeData &data, Octree * tree) {
 
 	std::vector<OctreeNodeTriangleHandler*> handlers;
 	handlers.emplace_back(&tesselator);
-	Processor processor(&trianglesCount, &context, &handlers);
+	Processor processor(&trianglesCount, threadPool, &context, &handlers);
 	processor.iterateFlatIn(*tree, data);
 
  	if(tesselator.geometry->indices.size() > 0) {
@@ -280,8 +280,7 @@ void Scene::setVisibleNodes(Octree * tree, glm::mat4 viewProjection, glm::vec3 s
 	//checker.visibleNodes->reserve(128);
 	checker->sortPosition = sortPosition;
 	checker->update(viewProjection);
-	//TODO change to best iterator
-	tree->iterateFlat(*checker);	//here we get the visible nodes for that LOD + geometryLevel
+	tree->iterateParallel(*checker);	//here we get the visible nodes for that LOD + geometryLevel
 }
 
 template <typename T> DrawableInstanceGeometry<T> * Scene::loadIfNeeded(OctreeLayer<T>* infos, OctreeNode* node, InstanceHandler<T> * handler) {

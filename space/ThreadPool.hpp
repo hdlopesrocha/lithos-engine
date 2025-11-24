@@ -21,6 +21,7 @@ public:
     template<class F, class... Args>
     auto enqueue(F&& f, Args&&... args) 
         -> std::future<std::invoke_result_t<F, Args...>>;
+    size_t threadCount() const;
 
 private:
     // Worker threads
@@ -70,6 +71,11 @@ inline ThreadPool::~ThreadPool()
         if(worker.joinable())
             worker.join();
     }
+}
+
+inline size_t ThreadPool::threadCount() const
+{
+    return workers.size();
 }
 
 // Enqueue a new task

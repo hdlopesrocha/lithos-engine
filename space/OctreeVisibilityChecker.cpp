@@ -16,19 +16,31 @@ void OctreeVisibilityChecker::before(const Octree &tree, OctreeNodeData &params)
 void OctreeVisibilityChecker::after(const Octree &tree, OctreeNodeData &params) {			
 	if(params.context != NULL) {
 		params.context = NULL;
+		std::lock_guard<std::mutex> lock(mutex);
 		visibleNodes.push_back(params);
 	}
 }
 
 bool OctreeVisibilityChecker::test(const Octree &tree, OctreeNodeData &params) {
 	if(params.context == NULL) {	
-		ContainmentType containmentType = frustum.test(params.cube);
+		ContainmentType containmentType = params.containmentType == ContainmentType::Contains ? params.containmentType : frustum.test(params.cube);
 		if(containmentType == ContainmentType::Disjoint) {
+			params.containmentType = ContainmentType::Disjoint;
 			return false;
 		}
-		if(params.node->isChunk() && params.node->getType() == SpaceType::Surface) {
-			params.context = params.node;
+
+		if(params.node->isChunk()) {
+			if(params.node->getType() == SpaceType::Surface) {
+				params.context = params.node;
+			} else {
+				return false;
+			}
 		}
+
+		if(containmentType == ContainmentType::Contains) {
+			params.containmentType = ContainmentType::Contains;
+		}
+
 		return true;
 	}
 	return false;
@@ -36,7 +48,7 @@ bool OctreeVisibilityChecker::test(const Octree &tree, OctreeNodeData &params) {
 
 
 void OctreeVisibilityChecker::getOrder(const Octree &tree, OctreeNodeData &params, uint8_t order[8]){
-	static std::pair<float, uint> internalSortingVector[8]={};
+	std::pair<float, uint> internalSortingVector[8]={};
 	
 	for(uint i =0; i< 8; ++i){
 		BoundingCube c = params.cube.getChild(i);

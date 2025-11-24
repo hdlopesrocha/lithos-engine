@@ -619,13 +619,19 @@ NodeOperationResult Octree::shape(OctreeNodeFrame frame, const ShapeArgs &args, 
 
 
 void Octree::iterate(IteratorHandler &handler) {
-    OctreeNodeData data(0, root, *this, NULL, root->sdf);
+    OctreeNodeData data(0, root, *this, ContainmentType::Intersects, NULL, root->sdf);
 	handler.iterate(*this, data);
 }
 
 void Octree::iterateFlat(IteratorHandler &handler) {
-    OctreeNodeData data(0, root, *this, NULL, root->sdf);
+    OctreeNodeData data(0, root, *this, ContainmentType::Intersects, NULL, root->sdf);
     handler.iterateFlatIn(*this, data);
+}
+
+void Octree::iterateParallel(IteratorHandler &handler) {
+    OctreeNodeData data(0, root, *this, ContainmentType::Intersects, NULL, root->sdf);
+    handler.iterateBFS(*this, data);
+    //handler.iterateParallelBFS(*this, data, threadPool);
 }
 
 void Octree::exportOctreeSerialization(OctreeSerialized * node) {
