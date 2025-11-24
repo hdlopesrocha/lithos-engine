@@ -12,12 +12,11 @@ OctreeNode::OctreeNode(Vertex vertex) {
 OctreeNode * OctreeNode::init(Vertex vertex) {
 	memcpy(this->sdf, INFINITY_ARRAY, sizeof(float)*8);
 	this->bits = 0x0;
-	this->setSolid(false);
 	this->setLeaf(false);
-	this->setEmpty(false);
 	this->setSimplified(false);
 	this->setDirty(true);
 	this->setChunk(false);
+	this->setType(SpaceType::Empty);
 	this->vertex = vertex;
 	this->id = UINT_MAX;
 	return this;
@@ -99,22 +98,10 @@ void OctreeNode::setSDF(float value[8]) {
 	memcpy(this->sdf, value, sizeof(float)*8);
 }
 
-bool OctreeNode::isSolid() const {
-	return this->bits & (0x1 << 0);
-}
-
-void OctreeNode::setSolid(bool value){
-	uint8_t mask = (0x1 << 0);
-	this->bits = (this->bits & (mask ^ 0xff)) | (value ? mask : 0x0);
-}
-
-bool OctreeNode::isEmpty() const {
-	return this->bits & (0x1 << 1);
-}
-
-void OctreeNode::setEmpty(bool value){
-	uint8_t mask = (0x1 << 1);
-	this->bits = (this->bits & (mask ^ 0xff)) | (value ? mask : 0x0);
+void OctreeNode::setType(SpaceType type) {
+	uint8_t mask = (0x1 << 0) | (0x1 << 1);
+	uint8_t value = (type  == SpaceType::Solid ? 0x1 : 0x0) | (type  == SpaceType::Empty ? 0x1 : 0x0) << 1;
+	this->bits = (this->bits & (mask ^ 0xff)) | value;
 }
 
 bool OctreeNode::isSimplified() const {
@@ -152,11 +139,10 @@ void OctreeNode::setLeaf(bool value) {
 	this->bits = (this->bits & ~mask) | (value ? mask : 0x0);
 }
 
-
 SpaceType OctreeNode::getType() const {
-	if(isSolid()) {
+	if(this->bits & (0x1 << 0)) {
 		return SpaceType::Solid;
-	} else if(isEmpty()) {
+	} else if(this->bits & (0x1 << 1)) {
 		return SpaceType::Empty;
 	} else {
 		return SpaceType::Surface;
@@ -190,7 +176,7 @@ OctreeNode * OctreeNode::compress(OctreeAllocator &allocator, BoundingCube * cub
 
 
 uint OctreeNode::exportSerialization(OctreeAllocator &allocator, std::vector<OctreeNodeCubeSerialized> * nodes, int * leafNodes, BoundingCube cube, BoundingCube chunk, uint level) {
-	if( this->isEmpty() || this->isSolid() || !chunk.intersects(cube)) {
+	if( this->getType() != SpaceType::Surface || !chunk.intersects(cube)) {
 		return 0; // Skip this node
 	}
 	uint index = nodes->size(); 

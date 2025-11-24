@@ -21,7 +21,7 @@ struct ChildBlock;
 const float INFINITY_ARRAY [8] = {INFINITY,INFINITY,INFINITY,INFINITY,INFINITY,INFINITY,INFINITY,INFINITY};
 const uint UINT_MAX_ARRAY [8] = {UINT_MAX,UINT_MAX,UINT_MAX,UINT_MAX,UINT_MAX,UINT_MAX,UINT_MAX,UINT_MAX};
 
-typedef std::function<void(const BoundingCube &childCube, const float sdf[8], uint level)> IterateBorderFunction;
+typedef std::function<void(const BoundingCube &childCube, const float sdf[8], uint level)> IterateBorderHandler;
 
 #pragma pack(16)  // Ensure 16-byte alignment for UBO
 struct OctreeSerialized {
@@ -99,11 +99,7 @@ class OctreeNode {
 		void getChildren(OctreeAllocator &allocator, OctreeNode * childNodes[8]) const;
 		void setChildren(OctreeAllocator &allocator, uint children[8]);
 
-		bool isSolid() const ;
-		void setSolid(bool value);
-		
-		bool isEmpty() const ;
-		void setEmpty(bool value);
+		void setType(SpaceType type);
 		
 		bool isSimplified() const;
 		void setSimplified(bool value);
@@ -346,7 +342,7 @@ class Octree: public BoundingCube {
 		float getSdfAt(const glm::vec3 &pos);
 		void handleQuadNodes(const BoundingCube &cube, uint level, const float sdf[8], std::vector<OctreeNodeTriangleHandler*> * handlers, bool simplification, ThreadContext * context) const;
 		OctreeNodeLevel fetch(glm::vec3 pos, uint level, bool simplification, ThreadContext * context) const;
-		void iterateNeighbor(
+		void iterateBorder(
             const OctreeNode * from,
 			const BoundingCube &fromCube,
             const float fromSDF[8],
@@ -355,8 +351,7 @@ class Octree: public BoundingCube {
             const BoundingCube &toCube, 
             const float toSDF[8],
             const uint toLevel, 
-            const IterateBorderFunction &func) const;
-		void callLeafSubcellsAtSize(const BoundingCube &target, const BoundingCube &leafCube, const float leafSDF[8], float targetSize, const std::function<void(const BoundingCube&, const float[8])> &func);
+            const IterateBorderHandler &func) const;
 		bool isChunkNode(float length) const;
 		bool isThreadNode(float length, float minSize, int threadSize) const;
 		void exportOctreeSerialization(OctreeSerialized * octree);
@@ -501,11 +496,12 @@ class Tesselator : public OctreeNodeTriangleHandler{
 };
 
 class Processor : public IteratorHandler {
+	ThreadPool &threadPool;
 	ThreadContext * context;
 	std::vector<OctreeNodeTriangleHandler*> * handlers;
-	ThreadPool &threadPool;
 	public:
 		Processor(long * count, ThreadPool &threadPool, ThreadContext * context, std::vector<OctreeNodeTriangleHandler*> * handlers);
+		void iterate(const Octree &tree, OctreeNodeData &params);
 		void before(const Octree &tree, OctreeNodeData &params) override;
 		void after(const Octree &tree, OctreeNodeData &params) override;
 		bool test(const Octree &tree, OctreeNodeData &params) override;
@@ -544,6 +540,7 @@ class OctreeNodeFile {
 
 class OctreeVisibilityChecker : public IteratorHandler{
 	Frustum frustum;
+	glm::vec3 viewDir;
 	public:
 		glm::vec3 sortPosition;
 		std::vector<OctreeNodeData> visibleNodes;

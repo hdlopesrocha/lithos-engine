@@ -49,6 +49,12 @@ BoundingCube BoundingCube::getChild(int i) const {
     return BoundingCube(getMin() + newLength * AbstractBoundingBox::getShift(i), newLength);
 }
 
+glm::vec3 BoundingCube::getChildCenter(int i) const {
+	float newLength = 0.5f*getLengthX();
+    return getMin() + AbstractBoundingBox::getShift(i)*newLength + glm::vec3(0.5f*newLength);
+}
+
+
 bool BoundingCube::operator<(const BoundingCube& other) const {
     if (getMinX() != other.getMinX()) return getMinX() < other.getMinX();
     if (getMinY() != other.getMinY()) return getMinY() < other.getMinY();

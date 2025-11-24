@@ -262,6 +262,8 @@ class BoundingCube : public AbstractBoundingBox {
 		glm::vec3 getMax() const override;	
 
 		BoundingCube getChild(int i) const;
+		glm::vec3 getChildCenter(int i) const;
+
 		bool overlaps1D(float aMin, float aMax, float bMin, float bMax) const;
 		bool overlapsX(const BoundingCube &o) const ;
 		bool overlapsY(const BoundingCube &o) const ;

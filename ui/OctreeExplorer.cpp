@@ -10,13 +10,13 @@ void OctreeExplorer::recursiveDraw(OctreeNode * node, BoundingCube cube, uint le
     openNodes.push_back({cube, node});
 
     {
+        SpaceType type = node->getType();
         glm::vec3 rgb = Math::brushColor(node->vertex.brushIndex);
-        ImVec4 color(node->isSolid() ? 1.0 : 0.5, node->isEmpty() ? 1.0 : 0.5, node->isChunk() ? 1.0 : 0.5, 1.0f);
+        ImVec4 color(type == SpaceType::Solid ? 1.0 : 0.5, type == SpaceType::Empty ? 1.0 : 0.5, node->isChunk() ? 1.0 : 0.5, 1.0f);
         std::string flags ="";
         flags += node->isDirty() ? "*":"_"; 
-        flags += node->isChunk() ? "X":"_";
-        flags += node->isSolid() ? "S":"_";
-        flags += node->isEmpty() ? "E":"_";
+        flags += node->isChunk() ? "C":"_";
+        flags += type == SpaceType::Solid ? "S": type == SpaceType::Empty ? "E" : "-";
         flags += node->isLeaf() ? "/":"_";
         flags += node->isSimplified() ? "#":"_"; 
         std::string text ="bits = " + flags ;
