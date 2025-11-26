@@ -300,6 +300,18 @@ class BoundingCube : public AbstractBoundingBox {
 
 	    bool operator<(const BoundingCube& other) const;
 		bool operator==(const BoundingCube& other) const;
+
+		
+};
+
+struct BoundingCubeHasher {
+    std::size_t operator()(const BoundingCube &v) const {
+        std::size_t hash = 0;
+		// Combine position, normal, texCoord, and brushIndex
+		hash ^= std::hash<glm::vec3>{}(v.getMin()) + 0x9e3779b9 + (hash << 6) + (hash >> 2); // Position
+		hash ^= std::hash<float>{}(v.getLengthX()) + 0x01000193 + (hash << 6) + (hash >> 2);   // Normal
+        return hash;
+    }
 };
 
 // Custom hash function for unordered_map.
@@ -439,7 +451,6 @@ public:
 	std::vector<Vertex> vertices;
 	std::vector<uint> indices;
 	std::unordered_map<Vertex, size_t, VertexHasher> compactMap;
-	std::unordered_set<Triple<uint,uint,uint>, TripleHasher> triangleSet;
 	
 	glm::vec3 center;
 	bool reusable;
@@ -447,10 +458,8 @@ public:
 	Geometry(bool reusable);
 	~Geometry();
 
-	uint addVertex(const Vertex &vertex);
-	uint addVertex(const uint idx);
-	uint getIndex(const Vertex &vertex);
-	bool addTriangle(const Vertex &v0, const Vertex &v1, const Vertex &v2);
+	void addVertex(const Vertex &vertex);
+	void addTriangle(const Vertex &v0, const Vertex &v1, const Vertex &v2);
 	static glm::vec3 getNormal(Vertex * a, Vertex * b, Vertex * c);
 	glm::vec3 getCenter();
 	void setCenter();

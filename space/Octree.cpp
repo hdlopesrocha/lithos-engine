@@ -120,7 +120,7 @@ void Octree::iterateBorder(
             const BoundingCube &toCube,
             const float toSDF[8],
             const uint toLevel,
-
+            bool &nodeIterated, 
             const IterateBorderHandler &func) const
 {
     if (!to) return;
@@ -162,7 +162,10 @@ void Octree::iterateBorder(
         // -> build pseudo as a clipped subregion of fromCube (use fromSDF)
         else {
             if(to->getType() == SpaceType::Surface) {
-                func(fromCube, fromSDF, fromLevel);
+                if(!nodeIterated) {
+                    nodeIterated = true;
+                    func(fromCube, fromSDF, fromLevel);
+                }
             }
         }
 
@@ -192,7 +195,7 @@ void Octree::iterateBorder(
                 axis = 2;
 
             if (axis != -1 && fromCube.intersects(childCube)) {
-                iterateBorder(from, fromCube, fromSDF, fromLevel, to, childCube, to->sdf, toLevel + 1, func);
+                iterateBorder(from, fromCube, fromSDF, fromLevel, to, childCube, to->sdf, toLevel + 1, nodeIterated, func);
             }
         }
     }

@@ -351,6 +351,7 @@ class Octree: public BoundingCube {
             const BoundingCube &toCube, 
             const float toSDF[8],
             const uint toLevel, 
+			bool &nodeIterated, 
             const IterateBorderHandler &func) const;
 		bool isChunkNode(float length) const;
 		bool isThreadNode(float length, float minSize, int threadSize) const;
@@ -499,6 +500,8 @@ class Processor : public IteratorHandler {
 	ThreadPool &threadPool;
 	ThreadContext * context;
 	std::vector<OctreeNodeTriangleHandler*> * handlers;
+    std::unordered_set<BoundingCube,BoundingCubeHasher> iteratedCubes;
+
 	public:
 		Processor(long * count, ThreadPool &threadPool, ThreadContext * context, std::vector<OctreeNodeTriangleHandler*> * handlers);
 		void iterate(const Octree &tree, OctreeNodeData &params);

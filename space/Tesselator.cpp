@@ -48,8 +48,7 @@ void Tesselator::handle(Vertex &v0, Vertex &v1, Vertex &v2, bool reverse) {
             v1.texCoord = triplanarMapping(v1.position, plane)*triplanarScale;
             v2.texCoord = triplanarMapping(v2.position, plane)*triplanarScale;
         }
-        if(geometry->addTriangle(reverse ? v2 : v0, v1, reverse ? v0 : v2)) {
-            ++(*count);
-        }
+        geometry->addTriangle(reverse ? v2 : v0, v1, reverse ? v0 : v2);
+        ++(*count);
     }
 }
