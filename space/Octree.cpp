@@ -134,30 +134,28 @@ void Octree::iterateBorder(
         // -> build pseudo as a clipped subregion of toCube (use toSDF)
         if (toCube.getLengthX() < fromCube.getLengthX()) {
             BoundingCube toCubeShifted = toCube;
-            bool adjacent = false;
+            int axis = -1;
 
-            // test each axis independently (allow face/edge/corner cases)
-            if (toCube.getMinX() <= fromCube.getMaxX() && toCube.getMaxX() > fromCube.getMaxX()) {
-                toCubeShifted.setMaxX(fromCube.getMaxX());
-                adjacent = true;
-            }
-            if (toCube.getMinY() <= fromCube.getMaxY() && toCube.getMaxY() > fromCube.getMaxY()) {
-                toCubeShifted.setMaxY(fromCube.getMaxY());
-                adjacent = true;
-            }
-            if (toCube.getMinZ() <= fromCube.getMaxZ() && toCube.getMaxZ() > fromCube.getMaxZ()) {
-                toCubeShifted.setMaxZ(fromCube.getMaxZ());
-                adjacent = true;
-            }
+            if (toCube.getMinX() <= fromCube.getMaxX() && toCube.getMaxX() > fromCube.getMaxX())
+                axis = 0;
+            else if (toCube.getMinY() <= fromCube.getMaxY() && toCube.getMaxY() > fromCube.getMaxY())
+                axis = 1;
+            else if (toCube.getMinZ() <= fromCube.getMaxZ() && toCube.getMaxZ() > fromCube.getMaxZ())
+                axis = 2;
 
-            // Ensure pseudo actually overlaps the from side (we clipped to fromPlane)
-            if (adjacent && fromCube.intersects(toCubeShifted)) {
-                float toSdfShifted[8];
-                // interpolate using the cube that contains pseudo -> toCube => use toSDF
-                for (uint i = 0; i < 8; ++i) {
-                    toSdfShifted[i] = SDF::interpolate(fromSDF, toCubeShifted.getCorner(i), fromCube);
+            if (axis != -1) {
+                BoundingCube toCubeShifted = toCube;
+                if (axis == 0) toCubeShifted.setMaxX(fromCube.getMaxX());
+                if (axis == 1) toCubeShifted.setMaxY(fromCube.getMaxY());
+                if (axis == 2) toCubeShifted.setMaxZ(fromCube.getMaxZ());
+
+                if (fromCube.intersects(toCubeShifted)) {
+                    float toSdfShifted[8];
+                    for (uint i = 0; i < 8; ++i) {
+                        toSdfShifted[i] = SDF::interpolate(toSDF, toCubeShifted.getCorner(i), toCube);
+                    }
+                    func(toCubeShifted, toSdfShifted, toLevel);
                 }
-                func(toCubeShifted, toSdfShifted, toLevel);
             }
         }
         // CASE B: toCube is coarser/larger than fromCube
@@ -184,14 +182,16 @@ void Octree::iterateBorder(
         OctreeNode * to = children[i];
         if (to != NULL && to->getType() == SpaceType::Surface) {
             BoundingCube childCube = toCube.getChild(i);
-            // plane-crossing test (mixed-LOD safe) for any of the +X/+Y/+Z faces
-            bool crosses =
-                (childCube.getMinX() <= fromCube.getMaxX() && childCube.getMaxX() > fromCube.getMaxX()) ||
-                (childCube.getMinY() <= fromCube.getMaxY() && childCube.getMaxY() > fromCube.getMaxY()) ||
-                (childCube.getMinZ() <= fromCube.getMaxZ() && childCube.getMaxZ() > fromCube.getMaxZ());
+            int axis = -1;
 
-            // final prune: ensure actual overlap (avoids distant children)
-            if (crosses && fromCube.intersects(childCube)) {
+            if (childCube.getMinX() <= fromCube.getMaxX() && childCube.getMaxX() > fromCube.getMaxX())
+                axis = 0;
+            else if (childCube.getMinY() <= fromCube.getMaxY() && childCube.getMaxY() > fromCube.getMaxY())
+                axis = 1;
+            else if (childCube.getMinZ() <= fromCube.getMaxZ() && childCube.getMaxZ() > fromCube.getMaxZ())
+                axis = 2;
+
+            if (axis != -1 && fromCube.intersects(childCube)) {
                 iterateBorder(from, fromCube, fromSDF, fromLevel, to, childCube, to->sdf, toLevel + 1, func);
             }
         }

@@ -53,6 +53,19 @@ enum ContainmentType {
 	Disjoint
 };
 
+template<typename A, typename B, typename C>
+struct Triple {
+    A first;
+    B second;
+    C third;
+
+    bool operator==(const Triple& other) const {
+        return first == other.first &&
+               second == other.second &&
+               third == other.third;
+    }
+};
+
 struct alignas(16)  Vertex {
 	public:
     glm::vec4 position;
@@ -142,6 +155,20 @@ struct VertexHasher {
 		hash ^= std::hash<glm::vec3>{}(v.position) + 0x9e3779b9 + (hash << 6) + (hash >> 2); // Position
 		hash ^= std::hash<glm::vec3>{}(v.normal) + 0x01000193 + (hash << 6) + (hash >> 2);   // Normal
 		hash ^= std::hash<glm::vec2>{}(v.texCoord) + 0x27d4eb2f + (hash << 6) + (hash >> 2);  // TexCoord
+		//hash ^= std::hash<int>{}(v.brushIndex) + 0x9e3779b9 + (hash << 6) + (hash >> 2);      // Brush Index
+
+        return hash;
+    }
+};
+
+struct TripleHasher {
+    std::size_t operator()(const Triple<uint,uint,uint> &v) const {
+        std::size_t hash = 0;
+
+		// Combine position, normal, texCoord, and brushIndex
+		hash ^= std::hash<uint>{}(v.first) + 0x9e3779b9 + (hash << 6) + (hash >> 2); // Position
+		hash ^= std::hash<uint>{}(v.second) + 0x01000193 + (hash << 6) + (hash >> 2);   // Normal
+		hash ^= std::hash<uint>{}(v.third) + 0x27d4eb2f + (hash << 6) + (hash >> 2);  // TexCoord
 		//hash ^= std::hash<int>{}(v.brushIndex) + 0x9e3779b9 + (hash << 6) + (hash >> 2);      // Brush Index
 
         return hash;
@@ -412,13 +439,18 @@ public:
 	std::vector<Vertex> vertices;
 	std::vector<uint> indices;
 	std::unordered_map<Vertex, size_t, VertexHasher> compactMap;
+	std::unordered_set<Triple<uint,uint,uint>, TripleHasher> triangleSet;
+	
 	glm::vec3 center;
 	bool reusable;
 
 	Geometry(bool reusable);
 	~Geometry();
 
-	Vertex * addVertex(const Vertex &vertex);
+	uint addVertex(const Vertex &vertex);
+	uint addVertex(const uint idx);
+	uint getIndex(const Vertex &vertex);
+	bool addTriangle(const Vertex &v0, const Vertex &v1, const Vertex &v2);
 	static glm::vec3 getNormal(Vertex * a, Vertex * b, Vertex * c);
 	glm::vec3 getCenter();
 	void setCenter();

@@ -29,7 +29,31 @@ void Geometry::setCenter(){
     }
 }
 
-Vertex * Geometry::addVertex(const Vertex &vertex) {
+bool Geometry::addTriangle(const Vertex &v0, const Vertex &v1, const Vertex &v2) {
+    uint idx0 = getIndex(v0);
+    uint idx1 = getIndex(v1);
+    uint idx2 = getIndex(v2);
+    if(triangleSet.find(Triple<uint,uint,uint>(idx0, idx1, idx2)) == triangleSet.end()) {
+        idx0 = idx0 == UINT_MAX ? addVertex(v0) : addVertex(idx0);
+        idx1 = idx1 == UINT_MAX ? addVertex(v1) : addVertex(idx1);
+        idx2 = idx2 == UINT_MAX ? addVertex(v2) : addVertex(idx2);
+        triangleSet.insert(Triple<uint,uint,uint>(idx0, idx1, idx2));
+        return true;
+    } else {
+        //std::cout << "Duplicate triangle detected and ignored." << std::endl;
+        return false;
+    }
+}
+
+uint Geometry::getIndex(const Vertex &vertex) {
+    auto it = compactMap.find(vertex);
+    if (it != compactMap.end()) {
+        return it->second;
+    }
+    return UINT_MAX; // or some other invalid value
+}
+
+uint Geometry::addVertex(const Vertex &vertex) {
     auto [it, inserted] = compactMap.try_emplace(vertex, compactMap.size());
     size_t idx = it->second;
     
@@ -37,7 +61,12 @@ Vertex * Geometry::addVertex(const Vertex &vertex) {
         vertices.push_back(vertex);
     }
     indices.push_back(idx);
-    return &vertices[idx];
+    return idx;
+}
+
+uint Geometry::addVertex(const uint idx){
+    indices.push_back(idx);
+    return idx;
 }
 
 glm::vec3 Geometry::getNormal(Vertex * a, Vertex * b, Vertex * c) {
