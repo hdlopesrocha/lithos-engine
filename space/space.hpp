@@ -95,7 +95,6 @@ class OctreeNode {
 		ChildBlock * clear(OctreeAllocator &allocator, OctreeChangeHandler * handler, ChildBlock * block);
 		ChildBlock * getBlock(OctreeAllocator &allocator) const;
 		ChildBlock * allocate(OctreeAllocator &allocator);
-		ChildBlock * deallocate(OctreeAllocator &allocator, ChildBlock * block);
 		void getChildren(OctreeAllocator &allocator, OctreeNode * childNodes[8]) const;
 		void setChildren(OctreeAllocator &allocator, uint children[8]);
 

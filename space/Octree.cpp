@@ -321,7 +321,7 @@ void Octree::expand(const ShapeArgs &args) {
 
             if (emptyNode && emptyBlock) {
                 if (oldBlock != NULL) {
-                    oldBlock = oldRoot->deallocate(*allocator,oldBlock);
+                    oldBlock = oldRoot->clear(*allocator, args.changeHandler, oldBlock);
                 }
                 oldRoot = allocator->deallocate(oldRoot);
             }

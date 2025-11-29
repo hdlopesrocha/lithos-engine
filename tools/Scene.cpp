@@ -616,6 +616,8 @@ void Scene::generate(Camera &camera) {
 		Transformation model = Transformation();
 		std::cout << "\tliquidSpace.add(water)"<< std::endl;
 		BoundingBox waterBox = mapBox;
+		waterBox.setMax(mapBox.getMax() - glm::vec3(minSize*2.0f));
+		waterBox.setMin(mapBox.getMin() + glm::vec3(minSize*2.0f));
 		waterBox.setMaxY(0);
 		waterBox.setMinY(mapBox.getMinY()*0.5f);
 		OctreeDifferenceFunction function(&solidSpace, waterBox, minSize*2.0f);

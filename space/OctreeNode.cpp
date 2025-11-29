@@ -58,17 +58,6 @@ ChildBlock * OctreeNode::allocate(OctreeAllocator &allocator) {
 	return block;
 }
 
-ChildBlock * OctreeNode::deallocate(OctreeAllocator &allocator, ChildBlock * block) {
-    if(this->id != UINT_MAX && block->isEmpty()) {
-        allocator.childAllocator.deallocate(block);
-		block = NULL;
-		this->id = UINT_MAX;
-    }
-    else {
-        throw std::runtime_error("ChildBlock::deallocate possible child missing "  );
-    }
-    return block;
-}
 
 
 OctreeNode::~OctreeNode() {
@@ -81,16 +70,13 @@ ChildBlock * OctreeNode::clear(OctreeAllocator &allocator, OctreeChangeHandler *
 		if(block == NULL) {
 			block = getBlock(allocator);
 		}
-		bool isEmpty = (block!=NULL && block->isEmpty()) || block == NULL;
-
-		if(isEmpty && block!=NULL) {	
+		if(block!=NULL) {	
 			block->clear(allocator, handler);
-			block = deallocate(allocator, block);
-		} else if(block != NULL) {
-			//throw std::runtime_error("OctreeNode::clear possible child missing "  );
+			allocator.childAllocator.deallocate(block);
+			this->id = UINT_MAX;
+			block = NULL;
 		}
 	}
-
 	return block;
 }
 
