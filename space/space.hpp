@@ -191,8 +191,8 @@ class OctreeNodeTriangleHandler {
 
 class OctreeAllocator {
 	public: 
-	Allocator<OctreeNode> nodeAllocator = Allocator<OctreeNode>(1048576);
-	Allocator<ChildBlock> childAllocator = Allocator<ChildBlock>(1048576);
+	Allocator<OctreeNode> nodeAllocator = Allocator<OctreeNode>(131072);
+	Allocator<ChildBlock> childAllocator = Allocator<ChildBlock>(131072);
 	OctreeNode * allocate();
 	OctreeNode * get(uint index);
 	OctreeNode * deallocate(OctreeNode * node);
