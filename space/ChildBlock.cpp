@@ -10,14 +10,13 @@ ChildBlock * ChildBlock::init() {
 }
 
 void ChildBlock::clear(OctreeAllocator &allocator, OctreeChangeHandler * handler) {
+    OctreeNode * childNodes[8] = {NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL};
+    allocator.get(childNodes, children);
     for(int i=0; i < 8 ; ++i) {
-        uint childNode = children[i];
-        if(childNode != UINT_MAX) {
-            OctreeNode * child = allocator.get(childNode);
-            if(child != NULL) {
-                child->clear(allocator, handler, NULL);
-                allocator.deallocate(child); // libertar nó
-            }
+        OctreeNode * child = childNodes[i];
+        if(child != NULL) {
+            child->clear(allocator, handler, NULL);
+            allocator.deallocate(child); // libertar nó
         }
     }
     memcpy(children, UINT_MAX_ARRAY, sizeof(uint)*8);
