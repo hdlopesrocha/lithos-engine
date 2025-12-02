@@ -105,6 +105,8 @@ template<typename T> void BrushEventHandler<T>::handle(T * event) {
         Octree * space = &scene.brushSpace;
         space->root->clear(*space->allocator, scene.brushSpaceChangeHandler, NULL);
         space->root->init(space->root->vertex);
+        //space->reset();
+        //scene.brushInfo.info.clear();
         context.apply(*space, scene.brushSpaceChangeHandler, true);
     }
 };

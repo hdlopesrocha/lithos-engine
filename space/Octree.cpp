@@ -121,14 +121,16 @@ void Octree::iterateBorder(
             const float toSDF[8],
             const uint toLevel,
             bool &nodeIterated, 
-            const IterateBorderHandler &func) const
+            const IterateBorderHandler &func,
+            ThreadContext * context) const
 {
-    if (!to) return;
+    if (!to || nodeIterated) return;
 
     // ----------------------
     // LEAF / SIMPLIFIED CASE
     // ----------------------
     if (to->isSimplified()) {
+        context->nodeCache[glm::vec4(toCube.getCenter(), toLevel)] = OctreeNodeLevel((OctreeNode*)to, toLevel);
 
         // CASE A: toCube is same size or finer than fromCube
         // -> build pseudo as a clipped subregion of toCube (use toSDF)
@@ -195,7 +197,7 @@ void Octree::iterateBorder(
                 axis = 2;
 
             if (axis != -1 && fromCube.intersects(childCube)) {
-                iterateBorder(from, fromCube, fromSDF, fromLevel, to, childCube, to->sdf, toLevel + 1, nodeIterated, func);
+                iterateBorder(from, fromCube, fromSDF, fromLevel, to, childCube, to->sdf, toLevel + 1, nodeIterated, func, context);
             }
         }
     }
@@ -656,3 +658,10 @@ void Octree::exportNodesSerialization(std::vector<OctreeNodeCubeSerialized> * no
 	std::cout << "exportNodesSerialization Ok!" << std::endl;
 }
 
+void Octree::reset() {
+    if(root != NULL) {
+        allocator->childAllocator.reset();
+        allocator->nodeAllocator.reset();
+        this->root = allocator->allocate()->init(glm::vec3(getCenter()));
+    }
+}

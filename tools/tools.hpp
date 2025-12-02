@@ -132,9 +132,11 @@ template <typename T> struct NodeInfo {
 	~NodeInfo() {
 		if(drawable != NULL) {
 			delete drawable;
+			//std::cout << "NodeInfo: Deleted drawable" << std::endl;
 		}
 		if(loadable != NULL) {
 			delete loadable;
+			//std::cout << "NodeInfo: Deleted loadable" << std::endl;
 		}
 	}
 };
@@ -161,10 +163,12 @@ class LiquidSpaceChangeHandler : public OctreeChangeHandler {
 
 class SolidSpaceChangeHandler : public OctreeChangeHandler {
 	OctreeLayer<InstanceData> * vegetationInfo;
+    OctreeLayer<DebugInstanceData> * octreeWireframeInfo;
 
 	public:
 	SolidSpaceChangeHandler(
-		OctreeLayer<InstanceData> * vegetationInfo
+		OctreeLayer<InstanceData> * vegetationInfo,
+	    OctreeLayer<DebugInstanceData> * octreeWireframeInfo
 	);
 
 	void create(OctreeNode* nodeId) override;
@@ -174,11 +178,9 @@ class SolidSpaceChangeHandler : public OctreeChangeHandler {
 
 class BrushSpaceChangeHandler : public OctreeChangeHandler {
 	OctreeLayer<InstanceData> * brushInfo;
-	OctreeLayer<DebugInstanceData> * octreeWireframeInfo;
 	public:
 	BrushSpaceChangeHandler(
-		OctreeLayer<InstanceData> * brushInfo,
-		OctreeLayer<DebugInstanceData> * octreeWireframeInfo
+		OctreeLayer<InstanceData> * brushInfo
 	);
 
 	void create(OctreeNode* nodeId) override;

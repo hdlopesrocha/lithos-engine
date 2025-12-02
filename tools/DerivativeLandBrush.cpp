@@ -1,7 +1,7 @@
 #include "tools.hpp"
 
 DerivativeLandBrush::DerivativeLandBrush(){
-    this->underground = 8;
+    this->underground = DISCARD_BRUSH_INDEX;
     this->grass = 3;
     this->sand = 4;
     this->softSand = 15;

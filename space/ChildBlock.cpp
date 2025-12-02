@@ -19,8 +19,8 @@ void ChildBlock::clear(OctreeAllocator &allocator, OctreeChangeHandler * handler
                 allocator.deallocate(child); // libertar nó
             }
         }
-        memcpy(children, UINT_MAX_ARRAY, sizeof(uint)*8);
     }
+    memcpy(children, UINT_MAX_ARRAY, sizeof(uint)*8);
 }
 
 void ChildBlock::set(uint i, OctreeNode* node, OctreeAllocator& allocator) {

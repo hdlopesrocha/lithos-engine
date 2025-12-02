@@ -332,6 +332,7 @@ class Octree: public BoundingCube {
 		void expand(const ShapeArgs &args);
 		void add(WrappedSignedDistanceFunction *function, const Transformation model, glm::vec4 translate, glm::vec4 scale, const TexturePainter &painter, float minSize, Simplifier &simplifier, OctreeChangeHandler * changeHandler);
 		void del(WrappedSignedDistanceFunction *function, const Transformation model, glm::vec4 translate, glm::vec4 scale, const TexturePainter &painter, float minSize, Simplifier &simplifier, OctreeChangeHandler * changeHandler);
+		void reset();
 		NodeOperationResult shape(OctreeNodeFrame frame, const ShapeArgs &args, ThreadContext * threadContext);
 		void iterate(IteratorHandler &handler);
 		void iterateFlat(IteratorHandler &handler);
@@ -351,7 +352,8 @@ class Octree: public BoundingCube {
             const float toSDF[8],
             const uint toLevel, 
 			bool &nodeIterated, 
-            const IterateBorderHandler &func) const;
+            const IterateBorderHandler &func,
+			ThreadContext * context) const;
 		bool isChunkNode(float length) const;
 		bool isThreadNode(float length, float minSize, int threadSize) const;
 		void exportOctreeSerialization(OctreeSerialized * octree);

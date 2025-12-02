@@ -28,7 +28,7 @@ void Processor::after(const Octree &tree, OctreeNodeData &params) {
         tree.iterateBorder(params.node, params.cube, params.sdf, params.level, tree.root, tree, tree.root->sdf, 0, nodeIterated,
             [this, &tree, params](const BoundingCube &cube, const float sdf[8], uint level){
                 tree.handleQuadNodes(cube, level, sdf, handlers, true, context);
-            }
+            }, context
         );
     }
 }

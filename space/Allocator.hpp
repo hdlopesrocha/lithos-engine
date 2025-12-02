@@ -6,7 +6,7 @@
 #include <cstdlib>
 #include <stdexcept>
 #include <iostream>
-#define NDEBUG 1
+//#define NDEBUG 1
 
 template <typename T>
 class Allocator {
@@ -157,6 +157,23 @@ public:
             nodes[i] = ptr;
         }
       
+    }
+
+    void reset() {
+        std::unique_lock lock(mutex);
+        freeList.clear();
+        #ifndef NDEBUG
+        deallocatedSet.clear();
+        #endif
+        for (auto &b : blocks) {
+            for (size_t i = 0; i < blockSize; ++i) {
+                T* ptr = &b.data[i];
+                freeList.push_back(ptr);
+                #ifndef NDEBUG
+                deallocatedSet.insert(ptr);
+                #endif
+            }
+        }
     }
 
     uint allocateIndex() {

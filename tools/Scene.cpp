@@ -31,8 +31,8 @@ Scene::Scene(Settings * settings, BrushContext * brushContext):
 	}
 
 	liquidSpaceChangeHandler = new LiquidSpaceChangeHandler(&liquidInfo);
-	solidSpaceChangeHandler = new SolidSpaceChangeHandler(&vegetationInfo);
-	brushSpaceChangeHandler = new BrushSpaceChangeHandler(&brushInfo, &octreeWireframeInfo);
+	solidSpaceChangeHandler = new SolidSpaceChangeHandler(&vegetationInfo, &octreeWireframeInfo);
+	brushSpaceChangeHandler = new BrushSpaceChangeHandler(&brushInfo);
 	vegetationGeometry = new Vegetation3d(1.0);
 }
 
@@ -648,12 +648,11 @@ void Scene::generate(Camera &camera) {
 		solidSpace.add(&wrappedFunction, model, translate, scale, SimpleBrush(9), minSize*0.25, *brushContext->simplifier, solidSpaceChangeHandler);
 	}
 
-	//exportOctree();
-
 	double endTime = glfwGetTime(); // Get elapsed time in seconds
 	//std::cout << "Scene::callsToSDF " << std::to_string(WrappedSignedDistanceFunction::_calls)   << std::endl;
 
 	std::cout << "Scene::generate Ok! " << std::to_string(endTime-startTime) << "s"  << std::endl;
+	brushContext->model.scale = glm::vec3(256.0f);
 }
 
 
@@ -680,8 +679,8 @@ void Scene::import(const std::string &filename, Camera &camera) {
 
 	BoundingBox waterBox = mapBox;
 	waterBox.setMaxY(0);
-	
-	//exportOctree();
+
+	brushContext->model.scale = glm::vec3(256.0f);	
 }
 
 void Scene::save(std::string folderPath, Camera &camera) {
