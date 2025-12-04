@@ -279,20 +279,20 @@ void Octree::handleQuadNodes(const BoundingCube &cube, uint level, const float s
 	}
 }
 
-float Octree::evaluateSDF(const ShapeArgs &args, std::unordered_map<glm::vec3, float> * cache, glm::vec3 p) const {
-    if(cache->find(p) != cache->end()) {
-       return (*cache)[p];
-    } else {
-        float d = args.function->distance(p, args.model);
-        (*cache)[p] = d;
-        return d;
-    }
+float Octree::evaluateSDF(const ShapeArgs &args, tsl::robin_map<glm::vec3, float> *cache, glm::vec3 p) const {
+    auto it = cache->find(p);
+    if (it != cache->end())
+        return it->second;
+
+    float d = args.function->distance(p, args.model);
+    cache->try_emplace(p, d);
+    return d;
 }
 
 void Octree::buildSDF(const ShapeArgs &args, BoundingCube &cube, float shapeSDF[8], float resultSDF[8], float existingResultSDF[8], ThreadContext * threadContext) const {
     const glm::vec3 min = cube.getMin();
     const glm::vec3 length = cube.getLength();
-    std::unordered_map<glm::vec3, float> * shapeSdfCache = &threadContext->shapeSdfCache;
+    tsl::robin_map<glm::vec3, float> * shapeSdfCache = &threadContext->shapeSdfCache;
 
     for (uint i = 0; i < 8; ++i) {
         if(shapeSDF[i] == INFINITY) {

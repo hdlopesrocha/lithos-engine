@@ -543,14 +543,17 @@ public:
 		ImGui_ImplOpenGL3_Init("#version 460");
 
 		//mainScene->generate(camera);
+		CALLGRIND_START_INSTRUMENTATION;
 	}
-
-
 
 	virtual void update(float deltaTime){
 		time += deltaTime;
 		gamepadControllerStrategy->handleInput(deltaTime);
 		keyboardControllerStrategy->handleInput(deltaTime);
+
+		mainScene->brushContext->model.translate = glm::vec3(1024*glm::sin(time), 256.0f, 1024*glm::cos(time));
+		eventManager.publish<Event>(Event(EVENT_BRUSH_CHANGED));
+
 	//    camera.projection[1][1] *= -1;
 	 //   modelMatrix = glm::rotate(modelMatrix, deltaTime * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 
@@ -637,7 +640,6 @@ public:
 			processTime += endTime - startTime;
 		}
 		else {
-			CALLGRIND_START_INSTRUMENTATION;
 			#ifdef CLOSE_AFTER_GENERATE
 			this->close();
 			#endif

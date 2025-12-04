@@ -3,6 +3,7 @@
 #include <semaphore>
 #include <thread>
 #include <future>
+#include <tsl/robin_map.h>
 #include <unordered_set>
 #include <utility>
 #include <shared_mutex>
@@ -304,14 +305,16 @@ struct ShapeArgs {
 
 class ThreadContext {
 	public:
-	std::unordered_map<glm::vec3, float> shapeSdfCache;
-	std::unordered_map<glm::vec4, OctreeNodeLevel> nodeCache;
+	tsl::robin_map<glm::vec3, float> shapeSdfCache;
+	tsl::robin_map<glm::vec4, OctreeNodeLevel> nodeCache;
     std::shared_mutex mutex;
 	BoundingCube cube;
 	
 	ThreadContext(BoundingCube cube) : cube(cube) {
 		shapeSdfCache.clear();
+		shapeSdfCache.reserve(1024);
 		nodeCache.clear();
+		nodeCache.reserve(1024);
 	}
 };
 
@@ -360,7 +363,7 @@ class Octree: public BoundingCube {
 		void exportNodesSerialization(std::vector<OctreeNodeCubeSerialized> * nodes);
 	private:
 		void buildSDF(const ShapeArgs &args, BoundingCube &cube, float shapeSDF[8], float resultSDF[8], float existingResultSDF[8], ThreadContext * threadContext) const;
-		float evaluateSDF(const ShapeArgs &args, std::unordered_map<glm::vec3, float> * threadContext, glm::vec3 p) const;
+		float evaluateSDF(const ShapeArgs &args, tsl::robin_map<glm::vec3, float> * threadContext, glm::vec3 p) const;
 	};
 
 class Simplifier {

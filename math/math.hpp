@@ -21,6 +21,7 @@
 #include <stack>
 #include <map>
 #include <unordered_map>
+#include <tsl/robin_map.h>
 #include <filesystem>
 #include <algorithm>
 #include <gdal/gdal_priv.h>
@@ -52,6 +53,33 @@ enum ContainmentType {
 	Intersects,
 	Disjoint
 };
+
+
+//
+// Strong 64-bit mixing (MurmurHash3 finalizer)
+//
+inline uint64_t murmurMix(uint64_t k) {
+	k ^= k >> 33;
+	k *= 0xff51afd7ed558ccdULL;
+	k ^= k >> 33;
+	k *= 0xc4ceb9fe1a85ec53ULL;
+	k ^= k >> 33;
+	return k;
+}
+
+//
+// Combine new value v into hash h
+//
+inline uint64_t hashCombine(uint64_t h, uint64_t v) {
+	return h ^ murmurMix(v + 0x9e3779b97f4a7c15ULL + (h << 6) + (h >> 2));
+}
+
+
+inline uint64_t pack2(float a, float b) {
+	struct Pair { float x; float y; };
+	static_assert(sizeof(Pair) == sizeof(uint64_t));
+	return std::bit_cast<uint64_t>(Pair{a, b});
+}
 
 template<typename A, typename B, typename C>
 struct Triple {
@@ -99,65 +127,78 @@ struct alignas(16)  Vertex {
              < std::tie(other.position.x, other.position.y, other.position.z, other.normal.x, other.normal.y, other.normal.z, other.texCoord.x, other.texCoord.y, other.brushIndex);
     }
 
-	bool operator==(const Vertex &other) const {
-        return position.x == other.position.x && position.y == other.position.y && position.z == other.position.z
-		&& normal.x == other.normal.x && normal.y == other.normal.y && normal.z == other.normal.z
-		&& texCoord.x == other.texCoord.x && texCoord.y == other.texCoord.y && brushIndex == other.brushIndex;
-    }
+	bool operator==(const Vertex& o) const {
+    	return std::bit_cast<uint64_t>(pack2(position.x, position.y)) ==
+           std::bit_cast<uint64_t>(pack2(o.position.x, o.position.y)) &&
+           std::bit_cast<uint32_t>(position.z) ==
+           std::bit_cast<uint32_t>(o.position.z) &&
+
+           std::bit_cast<uint64_t>(pack2(normal.x, normal.y)) ==
+           std::bit_cast<uint64_t>(pack2(o.normal.x, o.normal.y)) &&
+           std::bit_cast<uint32_t>(normal.z) ==
+           std::bit_cast<uint32_t>(o.normal.z) &&
+
+           std::bit_cast<uint64_t>(pack2(texCoord.x, texCoord.y)) ==
+           std::bit_cast<uint64_t>(pack2(o.texCoord.x, o.texCoord.y)) &&
+
+           brushIndex == o.brushIndex;
+	}
 
     bool operator!=(const Vertex& other) const {
         return !(*this == other);
     }
 };
 
+
 // Custom hash function for glm::vec3
 namespace std {
+
     template <> struct hash<glm::vec4> {
-        std::size_t operator()(const glm::vec4& v) const {
-            std::size_t hx = std::hash<float>{}(v.x);
-            std::size_t hy = std::hash<float>{}(v.y);
-            std::size_t hz = std::hash<float>{}(v.z);
-            std::size_t hw = std::hash<float>{}(v.w);
-            
-            // Combine the individual component hashes using XOR and shifting
-            return hx ^ (hy << 1) ^ (hz << 2) ^ (hw << 3);
+        uint64_t operator()(const glm::vec4& v) const {
+			uint64_t h = 0;
+            h = hashCombine(h, pack2(v.x, v.y));
+            h = hashCombine(h, pack2(v.z, v.w));
+			return h;
         }
     };
 
-	template <> struct hash<glm::vec3> {
-        std::size_t operator()(const glm::vec3& v) const {
-            std::size_t hx = std::hash<float>{}(v.x);
-            std::size_t hy = std::hash<float>{}(v.y);
-            std::size_t hz = std::hash<float>{}(v.z);
-            
-            // Combine the individual component hashes using XOR and shifting
-            return hx ^ (hy << 1) ^ (hz << 2);
+    template<> struct hash<glm::vec3> {
+        uint64_t operator()(const glm::vec3& v) const noexcept {
+            uint64_t h = 0;
+
+            // pack X + Y together
+            h = hashCombine(h, pack2(v.x, v.y));
+
+            // add Z separately
+            uint64_t zbits = std::bit_cast<uint32_t>(v.z);
+            h = hashCombine(h, zbits);
+
+            return h;
         }
     };
 
     // Custom hash function for glm::vec2 (texture coordinates)
-    template <> struct hash<glm::vec2> {
-        std::size_t operator()(const glm::vec2& v) const {
-            std::size_t hx = std::hash<float>{}(v.x);
-            std::size_t hy = std::hash<float>{}(v.y);
-
-            // Combine the individual component hashes using XOR and shifting
-            return hx ^ (hy << 1);
+    template<> struct hash<glm::vec2> {
+        uint64_t operator()(const glm::vec2& v) const noexcept {
+            // Pack both floats together
+            uint64_t k = pack2(v.x, v.y);
+            return murmurMix(k);
         }
     };
 }
 
 struct VertexHasher {
-    std::size_t operator()(const Vertex &v) const {
-        std::size_t hash = 0;
+   uint64_t operator()(const Vertex& v) const noexcept {
+        uint64_t h = 0;
 
-		// Combine position, normal, texCoord, and brushIndex
-		hash ^= std::hash<glm::vec3>{}(v.position) + 0x9e3779b9 + (hash << 6) + (hash >> 2); // Position
-		hash ^= std::hash<glm::vec3>{}(v.normal) + 0x01000193 + (hash << 6) + (hash >> 2);   // Normal
-		hash ^= std::hash<glm::vec2>{}(v.texCoord) + 0x27d4eb2f + (hash << 6) + (hash >> 2);  // TexCoord
-		//hash ^= std::hash<int>{}(v.brushIndex) + 0x9e3779b9 + (hash << 6) + (hash >> 2);      // Brush Index
+        h = hashCombine(h, std::hash<glm::vec3>{}(v.position));
+        h = hashCombine(h, std::hash<glm::vec3>{}(v.normal));
+        h = hashCombine(h, std::hash<glm::vec2>{}(v.texCoord));
 
-        return hash;
+        // If you use brushIndex, just add:
+        // h = hashCombine(h, std::bit_cast<uint32_t>(v.brushIndex));
+
+        return h;
     }
 };
 
@@ -450,7 +491,7 @@ class Geometry
 public:
 	std::vector<Vertex> vertices;
 	std::vector<uint> indices;
-	std::unordered_map<Vertex, size_t, VertexHasher> compactMap;
+	tsl::robin_map<Vertex, size_t, VertexHasher> compactMap;
 	
 	glm::vec3 center;
 	bool reusable;

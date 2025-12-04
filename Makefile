@@ -71,9 +71,10 @@ tool: $(OBJ_DIR)/tools/wavefrontConverter.o
 # Install dependencies (assuming Ubuntu-based system)
 install:
 	@echo "To install dependencies, run:"
-	@echo "  sudo apt-get install libimgui-dev libglew-dev libstb-dev libgdal-dev gdal-bin"
-	@echo "  sudo apt-get install cloc kcachegrind massif-visualizer"
+	@echo "  sudo apt-get install libimgui-dev libglew-dev libstb-dev libgdal-dev gdal-bin robin-map-dev"
 	@echo "  make libs"
+	@echo "Optionally, for profiling and code analysis tools, run:"
+	@echo "  sudo apt-get install cloc kcachegrind massif-visualizer"
 
 # Count lines of code
 report:
