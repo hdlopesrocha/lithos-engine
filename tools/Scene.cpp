@@ -305,9 +305,10 @@ template <typename T> DrawableInstanceGeometry<T> * Scene::loadIfNeeded(OctreeLa
 }
 
 template <typename T, typename H>
-void Scene::draw(uint drawableType, int mode, glm::vec3 cameraPosition,
+void Scene::drawIndirect(uint drawableType, int mode, glm::vec3 cameraPosition,
                  const OctreeVisibilityChecker* checker,
-                 OctreeLayer<T>* info, long* count) {
+                 OctreeLayer<T>* info, long* count,
+				std::vector<DrawElementsIndirectCommand> & commands) {
     H handler;
     if (checker == NULL) return;
 
@@ -325,40 +326,49 @@ void Scene::draw(uint drawableType, int mode, glm::vec3 cameraPosition,
                 0.0f, 1.0f
             );
             if (amount > 0.8f) amount = 1.0f;
-            drawable->draw(mode, amount, count);
+            drawable->drawIndirect(amount, commands);
         }
         else if (drawableType == TYPE_INSTANCE_FULL_DRAWABLE) {
-            drawable->draw(mode, 1.0f, count);
+            drawable->drawIndirect(1.0f, commands);
         }
     }
+
+	for(auto cmd : commands) {
+		cmd.draw(mode, count);
+	}
 }
+
 
 void Scene::drawVegetation(glm::vec3 cameraPosition, const OctreeVisibilityChecker * checker) {
 	glDisable(GL_CULL_FACE);
 	vegetationInstancesVisible = 0;
-	draw<InstanceData, InstanceDataHandler>(TYPE_INSTANCE_AMOUNT_DRAWABLE, GL_PATCHES, cameraPosition, checker, &vegetationInfo, &vegetationInstancesVisible);
+	drawCommandsVegetation.clear();
+	drawIndirect<InstanceData, InstanceDataHandler>(TYPE_INSTANCE_AMOUNT_DRAWABLE, GL_PATCHES, cameraPosition, checker, &vegetationInfo, &vegetationInstancesVisible, drawCommandsVegetation);
 	glEnable(GL_CULL_FACE);
 }
 
 void Scene::draw3dSolid(glm::vec3 cameraPosition, const OctreeVisibilityChecker * checker) {
 	solidInstancesVisible = 0;
-	draw<InstanceData, InstanceDataHandler>(TYPE_INSTANCE_FULL_DRAWABLE, GL_PATCHES, cameraPosition, checker, &solidInfo, &solidInstancesVisible);
+	drawCommandsSolid.clear();
+	drawIndirect<InstanceData, InstanceDataHandler>(TYPE_INSTANCE_FULL_DRAWABLE, GL_PATCHES, cameraPosition, checker, &solidInfo, &solidInstancesVisible, drawCommandsSolid);
 }
 
 void Scene::draw3dBrush(glm::vec3 cameraPosition, const OctreeVisibilityChecker * checker) {
 	brushInstancesVisible = 0;
-	draw<InstanceData, InstanceDataHandler>(TYPE_INSTANCE_FULL_DRAWABLE, GL_PATCHES, cameraPosition, checker, &brushInfo, &brushInstancesVisible);
+	drawCommandsBrush.clear();
+	drawIndirect<InstanceData, InstanceDataHandler>(TYPE_INSTANCE_FULL_DRAWABLE, GL_PATCHES, cameraPosition, checker, &brushInfo, &brushInstancesVisible, drawCommandsBrush);
 }
 
 void Scene::draw3dLiquid(glm::vec3 cameraPosition, const OctreeVisibilityChecker * checker) {
 	liquidInstancesVisible = 0;
-	draw<InstanceData, InstanceDataHandler>(TYPE_INSTANCE_FULL_DRAWABLE, GL_PATCHES, cameraPosition, checker, &liquidInfo, &liquidInstancesVisible);
+	drawCommandsLiquid.clear();
+	drawIndirect<InstanceData, InstanceDataHandler>(TYPE_INSTANCE_FULL_DRAWABLE, GL_PATCHES, cameraPosition, checker, &liquidInfo, &liquidInstancesVisible, drawCommandsLiquid);
 }
 
 void Scene::draw3dOctree(glm::vec3 cameraPosition, const OctreeVisibilityChecker * checker) {
 	glDisable(GL_CULL_FACE);
 	debugInstancesVisible = 0;
-	draw<DebugInstanceData, DebugInstanceDataHandler>(TYPE_INSTANCE_FULL_DRAWABLE, GL_TRIANGLES, cameraPosition, checker, &octreeWireframeInfo, &debugInstancesVisible);
+	drawIndirect<DebugInstanceData, DebugInstanceDataHandler>(TYPE_INSTANCE_FULL_DRAWABLE, GL_TRIANGLES, cameraPosition, checker, &octreeWireframeInfo, &debugInstancesVisible, drawCommandsOctree);
 	glEnable(GL_CULL_FACE);
 }
 

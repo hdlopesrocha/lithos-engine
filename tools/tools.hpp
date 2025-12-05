@@ -217,6 +217,11 @@ class Scene {
 	Octree solidSpace;
 	Octree liquidSpace;
 	Octree brushSpace;
+ 	std::vector<DrawElementsIndirectCommand> drawCommandsSolid;
+ 	std::vector<DrawElementsIndirectCommand> drawCommandsVegetation;
+ 	std::vector<DrawElementsIndirectCommand> drawCommandsLiquid;
+ 	std::vector<DrawElementsIndirectCommand> drawCommandsBrush;
+ 	std::vector<DrawElementsIndirectCommand> drawCommandsOctree;
 
 	long brushTrianglesCount;
 	long trianglesCount;
@@ -259,7 +264,8 @@ class Scene {
 	void setVisibility(glm::mat4 viewProjection, std::vector<std::pair<glm::mat4, glm::vec3>> lightProjection ,Camera &camera);
 	void setVisibleNodes(Octree * tree, glm::mat4 viewProjection, glm::vec3 sortPosition, OctreeVisibilityChecker * checker);
 
-	template <typename T, typename H> void draw (uint drawableType, int mode, glm::vec3 cameraPosition, const OctreeVisibilityChecker * checker, OctreeLayer<T> * info,long * count);
+	template <typename T, typename H> void drawIndirect(uint drawableType, int mode, glm::vec3 cameraPosition, const OctreeVisibilityChecker* checker, OctreeLayer<T>* info, long* count, std::vector<DrawElementsIndirectCommand> & commands);
+	
 	void drawVegetation(glm::vec3 cameraPosition, const OctreeVisibilityChecker * checker);
 	void draw3dSolid(glm::vec3 cameraPosition, const OctreeVisibilityChecker * checker) ;
 	void draw3dLiquid(glm::vec3 cameraPosition, const OctreeVisibilityChecker * checker);

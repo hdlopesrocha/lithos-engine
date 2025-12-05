@@ -82,6 +82,25 @@ template <typename T> void DrawableInstanceGeometry<T>::draw(uint mode, float am
 	}
 }
 
+template <typename T> void DrawableInstanceGeometry<T>::drawIndirect(float amount, std::vector<DrawElementsIndirectCommand> & commands) {
+
+	if(vertexArrayObject) {
+		if (instancesCount <= 0) {
+			std::cerr << "Error: instancesCount is " << instancesCount << std::endl;
+			return;
+		}
+		commands.push_back(DrawElementsIndirectCommand{
+			this->vertexArrayObject,
+			GLuint(this->indicesCount),
+			GLuint(ceil(float(instancesCount)*amount)),
+			0,
+			0,
+			0
+		});
+	}
+}
+
+
 template <typename T> void DrawableInstanceGeometry<T>::draw(uint mode, long * count) {
 	draw(mode, 1.0, count);
 }

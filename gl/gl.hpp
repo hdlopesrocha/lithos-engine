@@ -110,7 +110,16 @@ struct UniformBlockBrush {
 };
 #pragma pack()  // Reset to default packing
 
+struct DrawElementsIndirectCommand {
+    GLuint vertexArrayObject;
+    GLuint indexCount;
+    GLuint instanceCount;
+    GLuint firstIndex;
+    GLuint baseVertex;
+    GLuint baseInstance;
 
+    void draw(uint mode, long * count);
+};
 
 struct TextureArray {
     GLuint index;
@@ -124,8 +133,6 @@ struct TextureImage {
     size_t width;
     size_t height;
 };
-
-
 
 
 struct DirectionalLight {
@@ -247,6 +254,7 @@ template <typename T> class DrawableInstanceGeometry {
     ~DrawableInstanceGeometry();
     void draw(uint mode, long * count);
     void draw(uint mode, float amount, long * count);
+    void drawIndirect(float amount, std::vector<DrawElementsIndirectCommand> & commands);
 };
 
 template class DrawableInstanceGeometry<InstanceData>;
