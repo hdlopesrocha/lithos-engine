@@ -95,7 +95,7 @@ class SignedDistanceFunction {
 class WrappedSignedDistanceFunction : public SignedDistanceFunction {
     protected:
     SignedDistanceFunction * function;
-    std::unordered_map<glm::vec3, float> cacheSDF;
+    tsl::robin_map<glm::vec3, float> cacheSDF;
     std::mutex mtx;
     public:
     bool cacheEnabled = false;

@@ -38,28 +38,27 @@ Scene::Scene(Settings * settings, BrushContext * brushContext):
 
 template <typename T> bool Scene::loadSpace(Octree* tree, OctreeNodeData& data, OctreeLayer<T>* infos, InstanceGeometry<T>* loadable) {
 	if (loadable == NULL) {
-		std::unique_lock(infos->mutex2);
-		// No geometry to load — erase entry if it exists
-		//TODO check thread safety
-		infos->info.erase(data.node);
+		infos->erase(data.node);
 		return false;
 	}
 	using MapType   = std::unordered_map<OctreeNode*, NodeInfo<T>>;
 	using Iterator  = typename MapType::iterator;
 
+	NodeInfo<T> * ni = NULL;
+	bool inserted;
 	// Try to insert a new NodeInfo with loadable
-	std::unique_lock(infos->mutex2);
-
-	std::pair<Iterator, bool> iter = infos->info.try_emplace(data.node, loadable);
-	Iterator it = iter.first;
-	bool inserted = iter.second;
-
+	{
+		std::pair<Iterator, bool> iter = infos->tryInsert(data.node, loadable);
+		Iterator it = iter.first;
+		inserted = iter.second;
+		ni = &it->second;
+	}
 	if (!inserted) {
 		// Already existed — replace existing loadable
-		if (it->second.loadable) {
-			delete it->second.loadable;
+		if (ni->loadable) {
+			delete ni->loadable;
 		}
-		it->second.loadable = loadable;
+		ni->loadable = loadable;
 	}
 	return true;
 }
@@ -284,24 +283,24 @@ void Scene::setVisibleNodes(Octree * tree, glm::mat4 viewProjection, glm::vec3 s
 }
 
 template <typename T> DrawableInstanceGeometry<T> * Scene::loadIfNeeded(OctreeLayer<T>* infos, OctreeNode* node, InstanceHandler<T> * handler) {
-	auto it = infos->info.find(node);
-	auto end = infos->info.end();
-	if (it == end) {
+
+	NodeInfo<T> * ni = infos->find(node);
+	if (ni == NULL) {
 		return NULL;
 	}
-	NodeInfo<T>& ni = it->second;
-	if (ni.loadable) {
+
+	if (ni->loadable) {
 		//std::cout << "Scene::loadIfNeeded " << std::to_string((long)ni.loadable) << std:: endl;
 
-		if (ni.drawable) {
-			delete ni.drawable;
+		if (ni->drawable) {
+			delete ni->drawable;
 		}
-		ni.drawable = new DrawableInstanceGeometry<T>(ni.loadable->geometry, &ni.loadable->instances, handler);
-		delete ni.loadable;
-		ni.loadable = NULL;
+		ni->drawable = new DrawableInstanceGeometry<T>(ni->loadable->geometry, &ni->loadable->instances, handler);
+		delete ni->loadable;
+		ni->loadable = NULL;
 	}
 	
-	return ni.drawable;
+	return ni->drawable;
 }
 
 template <typename T, typename H>

@@ -326,7 +326,7 @@ class Octree: public BoundingCube {
 		OctreeAllocator * allocator;
 		int threadsCreated = 0;
 		std::shared_ptr<std::atomic<int>> shapeCounter = std::make_shared<std::atomic<int>>(0);
-		std::unordered_map<glm::vec3, ThreadContext> chunks;
+		tsl::robin_map<glm::vec3, ThreadContext> chunks;
 		ThreadPool threadPool = ThreadPool(std::thread::hardware_concurrency());
 		std::mutex mutex;
 		Octree(BoundingCube minCube, float chunkSize);

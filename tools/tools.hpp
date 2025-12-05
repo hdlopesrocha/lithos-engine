@@ -12,6 +12,7 @@
 #include "../handler/handler.hpp"
 #include <algorithm>
 #include <random>
+#include <unordered_map>
 
 
 enum Tab {
@@ -142,9 +143,38 @@ template <typename T> struct NodeInfo {
 };
 
 template <typename T> struct OctreeLayer {
+	private:
 	std::unordered_map<OctreeNode*, NodeInfo<T>> info;
-    std::shared_mutex mutex;
-    std::shared_mutex mutex2;
+    std::shared_mutex infoMutex;
+	using MapType   = std::unordered_map<OctreeNode*, NodeInfo<T>>;
+	using Iterator  = typename MapType::iterator;
+	
+	public:
+	void erase(OctreeNode* node) {
+		if(node!=NULL) {
+			std::unique_lock<std::shared_mutex> lock(infoMutex);
+			info.erase(node);
+		}
+	};
+
+	size_t size() {
+		return info.size();
+	}
+
+	NodeInfo<T>* find(OctreeNode * node) {
+		std::unique_lock<std::shared_mutex> lock(infoMutex);
+		Iterator it = info.find(node);
+		Iterator end = info.end();
+		if (it == end) {
+			return NULL;
+		}
+		return &it->second;
+	}
+
+	std::pair<Iterator, bool> tryInsert(OctreeNode * node, InstanceGeometry<T>* loadable) {
+		std::unique_lock<std::shared_mutex> lock(infoMutex);
+		return info.try_emplace(node, loadable);
+	}
 };
 
 

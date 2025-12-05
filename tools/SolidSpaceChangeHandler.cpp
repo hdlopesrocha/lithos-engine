@@ -20,14 +20,9 @@ void SolidSpaceChangeHandler::update(OctreeNode* node) {
 
 void SolidSpaceChangeHandler::erase(OctreeNode* node) {
     if(node!= NULL) {
-        std::unique_lock<std::shared_mutex> lock(vegetationInfo->mutex);
-        vegetationInfo->info.erase(node);
+        vegetationInfo->erase(node);
+        #ifdef DEBUG_OCTREE_WIREFRAME
+        octreeWireframeInfo->erase(node);
+        #endif
     }
-    #ifdef DEBUG_OCTREE_WIREFRAME
-    {
-        std::unique_lock<std::shared_mutex> lock(octreeWireframeInfo->mutex);
-        octreeWireframeInfo->info.erase(node);
-    }
-    #endif
-
 };

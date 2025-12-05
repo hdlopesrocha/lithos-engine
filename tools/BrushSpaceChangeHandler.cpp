@@ -16,9 +16,6 @@ void BrushSpaceChangeHandler::update(OctreeNode* node) {
 
 void BrushSpaceChangeHandler::erase(OctreeNode* node) {
     if(node!=NULL) {
-        {
-            std::unique_lock<std::shared_mutex> lock(brushInfo->mutex);
-            brushInfo->info.erase(node);
-        }
+        brushInfo->erase(node);
     }
 };
