@@ -144,10 +144,11 @@ template <typename T> struct NodeInfo {
 
 template <typename T> struct OctreeLayer {
 	private:
-	std::unordered_map<OctreeNode*, NodeInfo<T>> info;
-    std::shared_mutex infoMutex;
 	using MapType   = std::unordered_map<OctreeNode*, NodeInfo<T>>;
 	using Iterator  = typename MapType::iterator;
+	MapType info;
+    std::shared_mutex infoMutex;
+
 	
 	public:
 	void erase(OctreeNode* node) {

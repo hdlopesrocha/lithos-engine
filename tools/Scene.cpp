@@ -44,15 +44,13 @@ template <typename T> bool Scene::loadSpace(Octree* tree, OctreeNodeData& data, 
 	using MapType   = std::unordered_map<OctreeNode*, NodeInfo<T>>;
 	using Iterator  = typename MapType::iterator;
 
-	NodeInfo<T> * ni = NULL;
-	bool inserted;
 	// Try to insert a new NodeInfo with loadable
-	{
-		std::pair<Iterator, bool> iter = infos->tryInsert(data.node, loadable);
-		Iterator it = iter.first;
-		inserted = iter.second;
-		ni = &it->second;
-	}
+	
+	std::pair<Iterator, bool> iter = infos->tryInsert(data.node, loadable);
+	Iterator it = iter.first;
+	bool inserted = iter.second;
+	NodeInfo<T> * ni = &it->second;
+	
 	if (!inserted) {
 		// Already existed — replace existing loadable
 		if (ni->loadable) {
@@ -290,8 +288,6 @@ template <typename T> DrawableInstanceGeometry<T> * Scene::loadIfNeeded(OctreeLa
 	}
 
 	if (ni->loadable) {
-		//std::cout << "Scene::loadIfNeeded " << std::to_string((long)ni.loadable) << std:: endl;
-
 		if (ni->drawable) {
 			delete ni->drawable;
 		}

@@ -551,10 +551,10 @@ public:
 		gamepadControllerStrategy->handleInput(deltaTime);
 		keyboardControllerStrategy->handleInput(deltaTime);
 
-		mainScene->brushContext->model.translate = glm::vec3(1024*glm::sin(time), 512.0f+256*glm::cos(time*4.0f), 1024*glm::cos(time));
-		mainScene->brushContext->model.scale = glm::vec3(128.0f + 64.0f*glm::sin(time*8.0f));
+		//mainScene->brushContext->model.translate = glm::vec3(1024*glm::sin(time), 512.0f+256*glm::cos(time*4.0f), 1024*glm::cos(time));
+		//mainScene->brushContext->model.scale = glm::vec3(128.0f + 64.0f*glm::sin(time*8.0f));
 		
-		eventManager.publish<Event>(Event(EVENT_BRUSH_CHANGED));
+		//eventManager.publish<Event>(Event(EVENT_BRUSH_CHANGED));
 
 	//    camera.projection[1][1] *= -1;
 	 //   modelMatrix = glm::rotate(modelMatrix, deltaTime * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
