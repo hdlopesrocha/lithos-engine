@@ -42,86 +42,37 @@ Frustum::Frustum(glm::mat4 m)
 ContainmentType Frustum::test(const AbstractBoundingBox &box) {
     glm::vec3 minp = box.getMin();
     glm::vec3 maxp = box.getMax();
-    
-    // Check if the box is contained in the frustum
-    bool contained = true;
-    for (int i = 0; i < Count; i++) {
-        if ((glm::dot(m_planes[i], glm::vec4(minp.x, minp.y, minp.z, 1.0f)) < 0.0f) &&
-            (glm::dot(m_planes[i], glm::vec4(maxp.x, minp.y, minp.z, 1.0f)) < 0.0f) &&
-            (glm::dot(m_planes[i], glm::vec4(minp.x, maxp.y, minp.z, 1.0f)) < 0.0f) &&
-            (glm::dot(m_planes[i], glm::vec4(maxp.x, maxp.y, minp.z, 1.0f)) < 0.0f) &&
-            (glm::dot(m_planes[i], glm::vec4(minp.x, minp.y, maxp.z, 1.0f)) < 0.0f) &&
-            (glm::dot(m_planes[i], glm::vec4(maxp.x, minp.y, maxp.z, 1.0f)) < 0.0f) &&
-            (glm::dot(m_planes[i], glm::vec4(minp.x, maxp.y, maxp.z, 1.0f)) < 0.0f) &&
-            (glm::dot(m_planes[i], glm::vec4(maxp.x, maxp.y, maxp.z, 1.0f)) < 0.0f)) {
-            contained = false;
-            break;
+
+    // Build the 8 corner points of the AABB (homogeneous w=1)
+    glm::vec4 corners[8] = {
+        glm::vec4(minp.x, minp.y, minp.z, 1.0f),
+        glm::vec4(maxp.x, minp.y, minp.z, 1.0f),
+        glm::vec4(minp.x, maxp.y, minp.z, 1.0f),
+        glm::vec4(maxp.x, maxp.y, minp.z, 1.0f),
+        glm::vec4(minp.x, minp.y, maxp.z, 1.0f),
+        glm::vec4(maxp.x, minp.y, maxp.z, 1.0f),
+        glm::vec4(minp.x, maxp.y, maxp.z, 1.0f),
+        glm::vec4(maxp.x, maxp.y, maxp.z, 1.0f)
+    };
+
+    bool allInside = true;
+
+    // For each frustum plane, count how many AABB corners are outside (dot < 0)
+    for (int i = 0; i < Count; ++i) {
+        int outside = 0;
+        for (int j = 0; j < 8; ++j) {
+            if (glm::dot(m_planes[i], corners[j]) < 0.0f) ++outside;
         }
+
+        // If all corners are outside of a plane, the box is disjoint
+        if (outside == 8) return ContainmentType::Disjoint;
+
+        if (outside > 0) allInside = false;
     }
 
-    if (contained) {
-        return ContainmentType::Contains;
-    }
+    if (allInside) return ContainmentType::Contains;
 
-    // Check if the box intersects the frustum
-    bool intersects = false;
-    for (int i = 0; i < Count; i++) {
-        int out = 0;
-        for (int j = 0; j < 8; j++) {
-            out += ((m_points[j].x > maxp.x) ? 1 : 0);
-        }
-        if (out != 8) {
-            intersects = true;
-            break;
-        }
-        out = 0;
-        for (int j = 0; j < 8; j++) {
-            out += ((m_points[j].x < minp.x) ? 1 : 0);
-        }
-        if (out != 8) {
-            intersects = true;
-            break;
-        }
-        out = 0;
-        for (int j = 0; j < 8; j++) {
-            out += ((m_points[j].y > maxp.y) ? 1 : 0);
-        }
-        if (out != 8) {
-            intersects = true;
-            break;
-        }
-        out = 0;
-        for (int j = 0; j < 8; j++) {
-            out += ((m_points[j].y < minp.y) ? 1 : 0);
-        }
-        if (out != 8) {
-            intersects = true;
-            break;
-        }
-        out = 0;
-        for (int j = 0; j < 8; j++) {
-            out += ((m_points[j].z > maxp.z) ? 1 : 0);
-        }
-        if (out != 8) {
-            intersects = true;
-            break;
-        }
-        out = 0;
-        for (int j = 0; j < 8; j++) {
-            out += ((m_points[j].z < minp.z) ? 1 : 0);
-        }
-        if (out != 8) {
-            intersects = true;
-            break;
-        }
-    }
-
-    if (intersects) {
-        return ContainmentType::Intersects;
-    }
-
-    // If neither contained nor intersects, it must be disjoint
-    return ContainmentType::Disjoint;
+    return ContainmentType::Intersects;
 }
 
 
