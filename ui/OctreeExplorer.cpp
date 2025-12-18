@@ -51,8 +51,10 @@ void OctreeExplorer::recursiveDraw(OctreeNode * node, BoundingCube cube, uint le
     }
     ChildBlock * block = node->getBlock(*tree->allocator);
     if(block != NULL) {
+        OctreeNode* children[8] = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
+        tree->allocator->get(children, block->children);
         for(int i =0 ; i < 8 ; ++i) {
-            OctreeNode * child = block->get(i, *tree->allocator);
+            OctreeNode * child = children[i];
             if(child != NULL) {
                 std::string nodeName = "children[" + std::to_string(i) + "] = " + std::to_string(block->children[i]);     
                 if (ImGui::TreeNode(nodeName.c_str())) {

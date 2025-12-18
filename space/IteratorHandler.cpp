@@ -335,13 +335,15 @@ void IteratorHandler::iterateFlatOut(const Octree &tree, OctreeNodeData &params)
 
             // Push all valid children in reverse order so that they are processed
             // in the original (correct) order when popped.
-            for (int i = 7; i >= 0; --i) {
-                uint8_t j = internalOrder[i];
-                OctreeNode * node = frame.node;
-                ChildBlock * block = node->getBlock(*tree.allocator);
-                OctreeNode* child = block->get(j, *tree.allocator);
-                if (child) {
-                    stackOut.push(StackFrameOut(OctreeNodeData(frame.level + 1, child, frame.cube.getChild(j), frame.containmentType, frame.context, child->sdf), false));
+            {
+                OctreeNode* children[8] = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
+                frame.node->getChildren(*tree.allocator, children);
+                for (int i = 7; i >= 0; --i) {
+                    uint8_t j = internalOrder[i];
+                    OctreeNode* child = children[j];
+                    if (child) {
+                        stackOut.push(StackFrameOut(OctreeNodeData(frame.level + 1, child, frame.cube.getChild(j), frame.containmentType, frame.context, child->sdf), false));
+                    }
                 }
             }
         } else {

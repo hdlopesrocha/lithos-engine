@@ -149,7 +149,9 @@ OctreeNode * OctreeNode::compress(OctreeAllocator &allocator, BoundingCube * cub
 	if(intersectingChildCount == 1) {
 		ChildBlock * block = this->getBlock(allocator);
 		if(block != NULL) {
-			OctreeNode * childNode = block->get(intersectingIndex, allocator);
+			OctreeNode* childNodes[8] = {NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL};
+			allocator.get(childNodes, block->children);
+			OctreeNode * childNode = childNodes[intersectingIndex];
 			if(childNode != NULL) {
 				BoundingCube c = cube->getChild(intersectingIndex);
 				*cube = c;
@@ -175,11 +177,13 @@ uint OctreeNode::exportSerialization(OctreeAllocator &allocator, std::vector<Oct
 
 	ChildBlock * block = this->getBlock(allocator);
 	if(block != NULL) {
+		OctreeNode* childNodes[8] = {NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL};
+		allocator.get(childNodes, block->children);
 		for(int i=0; i < 8; ++i) {
-			OctreeNode * childNode = block->get(i, allocator);
+			OctreeNode * childNode = childNodes[i];
 			if(childNode != NULL) {
 				BoundingCube c = cube.getChild(i);
-			    (*nodes)[index].children[i] = childNode->exportSerialization(allocator, nodes, leafNodes, c, chunk, level + 1);
+				(*nodes)[index].children[i] = childNode->exportSerialization(allocator, nodes, leafNodes, c, chunk, level + 1);
 			}
 		}
 	}

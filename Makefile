@@ -1,7 +1,7 @@
 # Compiler and flags
 CC = g++
 # Use system include directory so includes like <imgui/imgui.h> resolve correctly
-CFLAGS = -std=c++20 -pthread -Wall -I/usr/include/imgui -Ilibs/FastNoise2/include
+CFLAGS = -std=c++20 -pthread -Wall -I/usr/include/imgui -I/usr/include/imgui/backends -Ilibs/FastNoise2/include
 LIBS = -lGLEW -lglfw -lGL -lz -limgui -lstb -lgdal libs/FastNoise2/build/lib/libFastNoise.a
 LDFLAGS = 
 

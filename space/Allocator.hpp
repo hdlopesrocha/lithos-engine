@@ -78,10 +78,10 @@ public:
             throw std::runtime_error("Double deallocate!");
         }
         #endif
-        // check pointer belongs to a block
+        // check pointer belongs to a block — iterate from most-recently-added blocks
         bool valid = false;
-        for (auto &b : blocks) {
-            if (ptr >= b.data && ptr < b.data + blockSize) { valid = true; break; }
+        for (auto it = blocks.rbegin(); it != blocks.rend(); ++it) {
+            if (ptr >= it->data && ptr < it->data + blockSize) { valid = true; break; }
         }
         assert(valid && "Pointer does not belong to allocator");
         #ifndef NDEBUG
@@ -98,9 +98,9 @@ public:
 
         std::shared_lock lock(mutex); // multiple allowed
 
-        for (auto &b : blocks) {
-            if (ptr >= b.data && ptr < b.data + blockSize) {
-                return static_cast<uint>(b.startIndex + (ptr - b.data));
+        for (auto it = blocks.rbegin(); it != blocks.rend(); ++it) {
+            if (ptr >= it->data && ptr < it->data + blockSize) {
+                return static_cast<uint>(it->startIndex + (ptr - it->data));
             }
         }
         throw std::runtime_error("Pointer does not belong to allocator");
