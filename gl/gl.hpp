@@ -76,6 +76,7 @@ struct UniformBlock {
     glm::vec4 cameraPosition;   
     glm::vec4 floatData[2];  
     glm::uvec4 uintData;      
+    glm::vec4 ambientColor;  
 
     public:
     static std::string toString(UniformBlock * block);
@@ -365,6 +366,8 @@ class Settings {
         bool octreeWireframe;
         float safetyDetailRatio;
         bool showBrushVolume;
+        glm::vec3 ambientColor;
+        float ambientIntensity;
         Settings();
 
 };

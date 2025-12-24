@@ -81,6 +81,8 @@ void SettingsEditor::draw2d(float time){
 
     ImGui::Checkbox("Light", &settings->lightEnabled);
     ImGui::Checkbox("Opacity", &settings->opacityEnabled);
+    ImGui::ColorEdit3("Ambient Color", (float*)&settings->ambientColor);
+    ImGui::DragFloat("Ambient Intensity", &settings->ambientIntensity, 0.01f, 0.0f, 4.0f, "%.2f");
     ImGui::Checkbox("Override", &settings->overrideEnabled);
 
     int_value = static_cast<int>(settings->overrideBrush);

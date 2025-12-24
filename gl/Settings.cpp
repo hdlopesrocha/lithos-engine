@@ -22,4 +22,6 @@ Settings::Settings() {
     this->octreeWireframe = false;
     this->safetyDetailRatio = 0.05f;
     this->showBrushVolume = false;
+    this->ambientColor = glm::vec3(0.2f,0.2f,0.2f);
+    this->ambientIntensity = 1.0f;
 }

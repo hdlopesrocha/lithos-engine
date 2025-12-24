@@ -654,7 +654,8 @@ public:
 
         uniformBlock.uintData = glm::uvec4(0u, 0u, settings->debugMode, settings->overrideBrush);
 		uniformBlock.floatData[0] = glm::vec4( time, settings->blendSharpness, settings->parallaxDistance ,settings->parallaxPower);
-		uniformBlock.floatData[1] = glm::vec4( camera.near , camera.far, 0, 0);
+		uniformBlock.floatData[1] = glm::vec4( camera.near , camera.far, 0.0f, 0.0f);
+		uniformBlock.ambientColor = glm::vec4(settings->ambientColor, settings->ambientIntensity);
 		uniformBlock.world = worldModel;
 		uniformBlock.lightDirection = glm::vec4(light.direction, 0.0f);
 		uniformBlock.cameraPosition = glm::vec4(camera.position, 0.0f);

@@ -8,7 +8,8 @@ layout(std140, binding = 0) uniform UniformBlock {
 	vec4 lightDirection;
 	vec4 cameraPosition;
     vec4 floatData[2];
-    uvec4 uintData; 
+	uvec4 uintData; 
+	vec4 ambientColor;
 };
 
 
@@ -44,3 +45,5 @@ float parallaxDistance = floatData[0].z;
 float parallaxPower = floatData[0].w;
 float near = floatData[1].x;
 float far = floatData[1].y;
+vec3 uAmbientColor = ambientColor.xyz;
+float uAmbientIntensity = ambientColor.w;
